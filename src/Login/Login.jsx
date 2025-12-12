@@ -3,9 +3,10 @@ import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, sendPa
 import { auth } from "../firebase";
 import { useNavigate, Link } from "react-router-dom";
 import "./Login.css";
-import Header from "../Header/Header";
+import logo from "../logo.jpeg";
 import { FcGoogle } from "react-icons/fc";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -50,13 +51,18 @@ const Login = () => {
       navigate("/dashboard");
     } catch (error) {
       
+      
     }
   };
 
   return (
     <>
-      <Header />
+    
+    
+    
       <div className="wrapper">
+      <nav className="nav-bar" style={{backgroundColor:"transparent"}}>
+    <img src={logo} alt="Company Logo" className="logo" /></nav>
 
       <div className="log">
         <h2>Login</h2>

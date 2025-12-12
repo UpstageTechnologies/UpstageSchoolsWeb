@@ -1,17 +1,18 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "./Landing.css";
-import Header from "../Header/Header";
+import logo from "../logo.jpeg";
+
 
 export default function Landing() {
   return (
     <div className="landing-container">
-      {/* Header / Navbar */}
-      <Header />
+      
+      
         
       <nav className="nav-bar">
           <div className="nav-logo">
-            
+          <img src={logo} alt="Company Logo" className="logo" />
           </div>
           <div className="nav-links">
             <a href="#features">Features</a>

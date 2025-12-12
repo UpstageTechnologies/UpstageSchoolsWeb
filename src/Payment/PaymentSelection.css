@@ -4,62 +4,57 @@
     padding: 0;
     font-family: 'Poppins', sans-serif;
     background: linear-gradient(135deg, #2140df, #bbcff2);
-    min-height: 100vh;  /* use min-height instead of height */
-    width: 100vw;
+    min-height: 100vh;
+    width: 100%;
   
     display: flex;
     justify-content: center;
-    align-items: center;
-  
-    overflow-y: auto;  /* allow vertical scrolling */
+    align-items: flex-start; /* start content from top */
     flex-wrap: wrap;
-  }
-  
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* ---------- PAYMENT BODY ---------- */
+.payment-body {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 10px;
+    box-sizing: border-box;
+}
 
 /* ---------- PAYMENT WRAPPER ---------- */
-.payment-body {
-    margin: 0;
-    font-family: 'Poppins', sans-serif;
-    background: transparent;
-    min-height: 100vh;     /* better than fixed height */
-    display: flex;
-    flex-direction: column;
-    align-items: center;   /* keep this */
-    justify-content: flex-start;  /* content starts from top */
-    padding-top: 20px;     /* small spacing */
-}
-
 .payment-wrapper {
     width: 100%;
     max-width: 1200px;
-    padding: 60px 20px 50px; /* FIXED - lowered top padding */
+    padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    box-sizing: border-box;
 }
 
-/* ---------- TITLE ---------- */
-.payment-wrapper {
-    width: 100%;
-    max-width: 1200px;
-    padding: 20px 20px 50px; /* reduced from 60px */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+/* ---------- PAYMENT TITLE ---------- */
+.payment-title {
+    color: #f9f9f9;
+    font-size: 28px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 20px;
 }
-
 
 /* ---------- PAYMENT CONTAINER ---------- */
 .payment-container {
     display: flex;
-    justify-content: center;
     flex-wrap: wrap;
+    justify-content: center;
     gap: 20px;
     width: 100%;
-    max-width: 1200px;
-    padding: 20px 10px 50px; /* reduced from 105px */
+    padding: 20px 10px 50px;
+    box-sizing: border-box;
 }
-
 
 /* ---------- PLAN BOX ---------- */
 .plan-box {
@@ -69,12 +64,12 @@
     box-shadow: inset 0 0 10px rgba(255,255,255,0.3);
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
-   
     width: 280px;
-    height: 500px;
+    min-height: 480px;
     transition: 0.5s;
+    box-sizing: border-box;
 }
 
 .plan-box:hover {
@@ -84,7 +79,6 @@
     color: black;
 }
 
-/* Hover text & price */
 .plan-box:hover h3,
 .plan-box:hover .desc {
     color: black !important;
@@ -94,11 +88,12 @@
     color: #0a53e4;
 }
 
-/* ---------- TEXT ---------- */
+/* ---------- PLAN TEXT ---------- */
 .plan-box h3 {
     color: white;
     font-size: 22px;
     margin-bottom: 8px;
+    text-align: center;
 }
 
 .price {
@@ -112,6 +107,7 @@
     color: #f3f3f3;
     font-size: 14px;
     margin-bottom: 12px;
+    text-align: center;
 }
 
 /* ---------- BUTTON ---------- */
@@ -125,7 +121,7 @@
     border: none;
     cursor: pointer;
     transition: 0.25s;
-    margin-top: 20px;
+    margin-top: auto; /* push to bottom */
 }
 
 .choose-btn:hover {
@@ -134,53 +130,27 @@
     box-shadow: 0 6px 20px rgba(0,0,0,0.3);
 }
 
-/* ---------- MOBILE RESPONSIVE ---------- */
-@media (max-width: 768px) {
-    .payment-container {
-        flex-direction: column;
-        align-items: center;
-        padding-top: 60px;
-    }
-
-    .plan-box {
-        width: 90%;
-        height: auto;
-        margin-bottom: 20px;
-    }
-}
-.payment-title{
-    color: #f9f9f9;
-}
-/* MAIN TICK LIST */
-.tick {
+/* ---------- TICK LIST ---------- */
+.tick, .wrong {
     list-style: none;
     padding: 0;
     margin: 0;
+    width: 100%;
 }
 
-.tick li,
-.wrong li {
+.tick li, .wrong li {
     display: flex;
     align-items: center;
-    gap: 10px;          /* text & icon spacing */
-    margin: 6px 0;
+    gap: 10px;
     font-size: 15px;
-    margin-left: 10px;
+    margin: 6px 0;
 }
 
-/* TICK ICON */
 .tick li::before {
     content: "✓";
     color: green;
     font-size: 18px;
     font-weight: bold;
-}
-
-/* WRONG LIST (INSIDE BASIC PLAN) */
-.wrong {
-    list-style: none;
-    padding-left: 0;
-    margin-top: 5px;
 }
 
 .wrong li::before {
@@ -190,6 +160,46 @@
     font-weight: bold;
 }
 
-  .old{
+.old {
     text-decoration: line-through;
-  }
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 1024px) {
+    .payment-container {
+        gap: 15px;
+    }
+    .plan-box {
+        width: 45%;
+        min-height: 450px;
+    }
+}
+
+@media (max-width: 768px) {
+    .payment-container {
+        flex-direction: column;
+        align-items: center;
+        padding-top: 40px;
+    }
+    .plan-box {
+        width: 90%;
+        min-height: auto;
+        margin-bottom: 20px;
+    }
+    .payment-title {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .plan-box {
+        width: 95%;
+        padding: 15px;
+    }
+    .price {
+        font-size: 22px;
+    }
+    .plan-box h3 {
+        font-size: 20px;
+    }
+}

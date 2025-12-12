@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 import "./PaymentSelection.css";
-import Header from "../Header/Header";
 
 const Payment = () => {
   const location = useLocation();
@@ -15,28 +14,35 @@ const Payment = () => {
     navigate("/dashboard");
   };
 
-  const handlePaymentSuccess = async () => {
+  const handlePaymentSuccess = async (planName) => {
     try {
-      if (!isGoogle) {
-        await createUserWithEmailAndPassword(auth, email, password);
-      }
-
       alert("Payment Successful!");
+  
+      const user = auth.currentUser;
+      if (user) {
+        // Update user's plan in Firestore
+        const userRef = doc(db, "users", user.uid);
+        await updateDoc(userRef, {
+          plan: planName.toLowerCase() // store as "premium" or "lifetime"
+        });
+      }
+  
       navigate("/dashboard");
     } catch (err) {
       alert(err.message);
     }
   };
+  
 
   const openRazorpay = (amount, planName) => {
     const options = {
-      key: "YOUR_RAZORPAY_KEY_ID",  
+      key: "rzp_test_RqckwEGqKZFqMk",  
       amount: amount * 100,          
       currency: "INR",
       name: "UpStageTeachnology",
       description: planName,
-      handler: function () {
-        handlePaymentSuccess();
+      handler: async function (response) {
+        await handlePaymentSuccess(planName); // pass planName here
       },
       prefill: {
         email: email,
@@ -45,10 +51,11 @@ const Payment = () => {
         color: "#2140df",
       },
     };
-
+  
     const rzp = new window.Razorpay(options);
     rzp.open();
   };
+  
 
   return (
     <div className="wrapper">
@@ -104,7 +111,7 @@ const Payment = () => {
 
               <button
                 className="choose-btn"
-                onClick={() => openRazorpay(299, "Premium Plan")}
+                onClick={() => openRazorpay(1, "Premium Plan")}
               >
                 Buy Premium
               </button>
@@ -130,7 +137,8 @@ const Payment = () => {
 
               <button
                 className="choose-btn"
-                onClick={() => openRazorpay(999, "Lifetime Access")}
+                onClick={() => openRazorpay(1, "Lifetime Access")}
+            
               >
                 Buy Lifetime
               </button>

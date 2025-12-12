@@ -1,42 +1,47 @@
+/* ---------------- WRAPPER ---------------- */
 .wrapper {
   margin: 0;
   padding: 0;
   font-family: 'Poppins', sans-serif;
- 
-  min-height: 100vh; /* use min-height instead of height */
+  min-height: 100vh;
   width: 100vw;
-
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow-y: auto; /* allow vertical scrolling */
+  overflow-y: auto;
   flex-wrap: wrap;
 }
-/* Full page container */
 
+/* ---------------- DASHBOARD ---------------- */
 .dashboard-container {
   display: flex;
   height: 100vh;
   width: 100vw;
   background: #f4f4f4;
   font-family: 'Poppins', sans-serif;
-  flex-wrap: wrap;
-  
 }
 
-/* SIDEBAR */
+/* ---------------- SIDEBAR ---------------- */
 .sidebar {
-  width: 220px;
+  width: clamp(160px, 22vw, 220px);
   background: #1f1f1f;
   color: white;
   display: flex;
   flex-direction: column;
   padding: 20px;
+  box-sizing: border-box;
+  transition: 0.3s ease;
+  position: fixed;
+  top: 70px;
+  left: 0;
+  height: calc(100vh - 70px);
+  z-index: 100;
 }
 
 .sidebar ul {
   list-style: none;
   padding: 0;
+  margin-top: 20px;
 }
 
 .sidebar ul li {
@@ -47,6 +52,7 @@
   align-items: center;
   gap: 10px;
   transition: 0.2s;
+  font-size: clamp(14px, 3vw, 16px);
 }
 
 .sidebar ul li:hover {
@@ -54,79 +60,137 @@
   border-radius: 5px;
 }
 
-.school {
-  width: 100px;
-  height: 100px;
-  margin-top: 80px;
-  margin-left: 20px;
-  object-fit: contain;
+/* SIDEBAR STATES */
+.sidebar-close {
+  left: -250px;
 }
 
-.sidebar-title {
-  font-size: 1.5rem;
-  margin-left: 20px;
+.sidebar-open {
+  left: 0;
 }
 
-/* MAIN CONTENT */
+/* ---------------- MAIN CONTENT ---------------- */
 .main-content {
   flex: 1;
+  margin-left: clamp(160px, 22vw, 220px);
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
+  transition: margin-left 0.3s ease;
 }
 
-/* NAVBAR */
+.sidebar-close ~ .main-content {
+  margin-left: 0;
+}
+
+/* ---------------- NAVBAR ---------------- */
 .navbar {
   display: flex;
-  justify-content: space-between; /* Logo left, links right */
+  justify-content: space-between; /* left & right edges */
   align-items: center;
   width: 100%;
-  padding: 20px 40px;
+  padding: 10px 20px;
   position: fixed;
   top: 0;
   left: 0;
-  background:white;
-  z-index: 100;
+  background: white;
+  z-index: 150;
+  border-bottom: 1px solid #eee;
   box-sizing: border-box;
 }
 
-/* NAVBAR LEFT SIDE */
+/* LEFT: Hamburger + School */
 .nav-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 10px; /* small gap between hamburger, logo, and name */
+}
+
+.menu-toggle {
+  font-size: 28px;
+  cursor: pointer;
+  display: block; /* always visible */
+  z-index: 200;
 }
 
 .nav-school-logo {
-  width: 45px;
-  height: 45px;
-  object-fit: contain;
+  width: 40px; /* adjust size */
+  height: auto;
 }
 
 .nav-school-name {
-  font-size: 1.2rem;
+  font-size: 18px;
   font-weight: 600;
+  white-space: nowrap; /* prevent line break */
 }
 
-/* NAVBAR RIGHT USER INFO */
+/* RIGHT: User */
 .user-info {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .user-icon {
-  font-size: 1.8rem;
+  font-size: 24px;
 }
 
 .username {
+  font-size: 16px;
   font-weight: 500;
+  white-space: nowrap;
 }
 
-/* DASHBOARD BODY */
+/* ---------------- DASHBOARD CONTENT ---------------- */
 .dashboard-content {
   flex: 1;
-  padding: 30px;
+  padding: clamp(20px, 5vw, 30px);
+  margin-top: 80px;
+  box-sizing: border-box;
 }
-.sidebar{
-  margin-top: 70px;
+
+/* ---------------- HAMBURGER ---------------- */
+.menu-toggle {
+  font-size: 28px;
+  cursor: pointer;
+  padding: 8px 12px;
+  display: block; /* always visible */
+  z-index: 200;
+}
+
+/* ---------------- RESPONSIVE ---------------- */
+@media (max-width: 900px) {
+  .sidebar {
+    width: 200px;
+    top: 0;
+    height: 100vh;
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    padding: 10px 15px;
+  }
+
+  .nav-school-name {
+    font-size: 16px;
+  }
+
+  .dashboard-content {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 360px) {
+  .nav-school-name {
+    font-size: 14px;
+  }
+
+  .username {
+    font-size: 13px;
+  }
 }

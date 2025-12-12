@@ -11,9 +11,10 @@ import schoolLogo from "./school-logo.png";
 const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [school, setSchool] = useState("");
+  const [menuOpen, setMenuOpen] = useState(true); // start open
   const navigate = useNavigate();
 
-  const goToLogin = () => {
+  const goToUpgrade = () => {
     navigate("/payment");
   };
 
@@ -28,7 +29,7 @@ const Dashboard = () => {
           setSchool(userData.school || "");
         }
       } else {
-        navigate("/login",{replace:true});
+        navigate("/login", { replace: true });
       }
     });
 
@@ -37,17 +38,16 @@ const Dashboard = () => {
 
   const handleLogout = async () => {
     await signOut(auth);
-    navigate("/logout"); // LOGOUT → LOGIN PAGE
+    navigate("/logout");
   };
 
   return (
     <div className="dashboard-container">
-      
       {/* SIDEBAR */}
-      <div className="sidebar">
+      <div className={`sidebar ${menuOpen ? "sidebar-open" : "sidebar-close"}`}>
         <ul>
           <li><FaHome /> Home</li>
-          <li onClick={goToLogin}><FaSignOutAlt />Upgrade</li><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+          <li onClick={goToUpgrade}><FaSignOutAlt /> Upgrade</li>
           <li><FaCog /> Settings</li>
           <li onClick={handleLogout}><FaSignOutAlt /> Logout</li>
         </ul>
@@ -55,31 +55,31 @@ const Dashboard = () => {
 
       {/* MAIN CONTENT */}
       <div className="main-content">
-
         {/* NAVBAR */}
         <nav className="navbar">
+  {/* LEFT: Hamburger + School */}
+  <div className="nav-left">
+    <div className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)}>
+      ☰
+    </div>
+    <img src={schoolLogo} alt="School Logo" className="nav-school-logo" />
+    <span className="nav-school-name">{school || "School Name"}</span>
+  </div>
 
-          {/* LEFT SIDE — School logo + name */}
-          <div className="nav-left">
-            <img src={schoolLogo} alt="School Logo" className="nav-school-logo" />
-            <span className="nav-school-name">{school || "School Name"}</span>
-          </div>
+  {/* RIGHT: User */}
+  <div className="user-info">
+    <FaUserCircle className="user-icon" />
+    <span className="username">
+      {user?.displayName || user?.email.split("@")[0]}
+    </span>
+  </div>
+</nav>
 
-          {/* RIGHT SIDE — User info */}
-          <div className="user-info">
-            <FaUserCircle className="user-icon" />
-            <span className="username">
-              {user?.displayName || user?.email.split("@")[0]}
-            </span>
-          </div>
 
-        </nav>
-
-        {/* DASHBOARD BODY */}
+        {/* DASHBOARD CONTENT */}
         <div className="dashboard-content">
-          {/* Your content here */}
+          {/* Your content goes here */}
         </div>
-
       </div>
     </div>
   );

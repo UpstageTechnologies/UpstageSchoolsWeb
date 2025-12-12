@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import "./Register.css";
-import Header from "../Header/Header";
+import logo from "../logo.jpeg";
 import { FcGoogle } from "react-icons/fc";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword } from "firebase/auth";
@@ -16,6 +16,7 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
+
   
 
   const navigate = useNavigate();
@@ -32,6 +33,7 @@ const Register = () => {
         username: username || "",
         email: user.email,
         isGoogle: true,
+        plan: "basic"
       });
 
       navigate("/dashboard", {
@@ -60,7 +62,8 @@ const Register = () => {
       await setDoc(doc(db, "users", user.uid), {
         username,
         email,
-        isGoogle: false
+        isGoogle: false,
+        plan: "basic"
       });
 
       navigate("/dashboard", {
@@ -74,8 +77,10 @@ const Register = () => {
 
   return (
     <>
-      <Header />
+      
       <div className="wrapper">
+      <nav className="nav-bar" style={{backgroundColor:"transparent"}}>
+    <img src={logo} alt="Company Logo" className="logo" /></nav>
       <div className="log" style={{ marginTop: "80px" }}>
         <h2>Register</h2>
 
