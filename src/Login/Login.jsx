@@ -60,9 +60,9 @@ const Login = () => {
     
     
     
-      <div className="wrapper">
+      <div className="wrapper"><span>
       <nav className="nav-bar" style={{backgroundColor:"transparent"}}>
-    <img src={logo} alt="Company Logo" className="logo" /></nav>
+    <img src={logo} alt="Company Logo" className="logo" /></nav></span>
 
       <div className="log">
         <h2>Login</h2>
