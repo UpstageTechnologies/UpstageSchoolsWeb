@@ -24,3 +24,8 @@
       included_files = [
         "./emails/**"
       ]
+
+      [[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
