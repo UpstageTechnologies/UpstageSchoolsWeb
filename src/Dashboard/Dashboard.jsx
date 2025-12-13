@@ -66,7 +66,7 @@ const Dashboard = () => {
     <span className="nav-school-name">{school || "School Name"}</span>
   </div>
 
-  {/* RIGHT: User */}
+  {/* RIGHT: User  */}
   <div className="user-info">
     <FaUserCircle className="user-icon" />
     <span className="username">
