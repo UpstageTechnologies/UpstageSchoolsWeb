@@ -5,25 +5,24 @@
     "./emails/**"
   ]
 
-[context.production]
+[context]
 
-  [context.production.functions]
+  [context.production]
 
-    [context.production.functions.emails]
-    included_files = [
-      "./emails/**"
-    ]
+    [context.production.functions]
 
-[context.main]
+      [context.production.functions.emails]
+      included_files = [
+        "./emails/**"
+      ]
 
-  [context.main.functions]
+  [context.main]
 
-    [context.main.functions.emails]
-    included_files = [
-      "./emails/**"
-    ]
+    [context.main.functions]
 
-[[redirects]]
-from = "/*"
-to = "/index.html"
-status = 200
+      [context.main.functions.emails]
+      included_files = [
+        "./emails/**"
+      ]
+
+   
