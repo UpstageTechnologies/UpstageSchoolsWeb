@@ -1,18 +1,8 @@
-/* ---------------- WRAPPER ---------------- */
-.wrapper {
-  margin: 0;
-  padding: 0;
-  font-family: 'Poppins', sans-serif;
-  min-height: 100vh;
-  width: 100vw;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow-y: auto;
-  flex-wrap: wrap;
+/* ---------------- BASE ---------------- */
+* {
+  box-sizing: border-box;
 }
 
-/* ---------------- DASHBOARD ---------------- */
 .dashboard-container {
   display: flex;
   height: 100vh;
@@ -26,16 +16,14 @@
   width: clamp(160px, 22vw, 220px);
   background: #1f1f1f;
   color: white;
-  display: flex;
-  flex-direction: column;
   padding: 20px;
-  box-sizing: border-box;
-  transition: 0.3s ease;
   position: fixed;
-  top: 70px;
+  top: 60px;
   left: 0;
-  height: calc(100vh - 70px);
+  height: calc(100vh - 60px);
+  transition: all 0.35s ease;
   z-index: 100;
+  min-width: 250px;
 }
 
 .sidebar ul {
@@ -45,38 +33,36 @@
 }
 
 .sidebar ul li {
-  padding: 10px 5px;
+  padding: 10px;
   margin: 10px 0;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 10px;
-  transition: 0.2s;
-  font-size: clamp(14px, 3vw, 16px);
+  transition: all 0.25s ease;
 }
 
 .sidebar ul li:hover {
   background: #333;
-  border-radius: 5px;
+  transform: translateX(6px);
+  border-radius: 6px;
 }
 
-/* SIDEBAR STATES */
 .sidebar-close {
-  left: -250px;
+  left: -260px;
 }
 
 .sidebar-open {
   left: 0;
 }
 
-/* ---------------- MAIN CONTENT ---------------- */
+/* ---------------- MAIN ---------------- */
 .main-content {
   flex: 1;
   margin-left: clamp(160px, 22vw, 220px);
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
-  transition: margin-left 0.3s ease;
+  transition: margin-left 0.35s ease;
 }
 
 .sidebar-close ~ .main-content {
@@ -86,49 +72,61 @@
 /* ---------------- NAVBAR ---------------- */
 .navbar {
   display: flex;
-  justify-content: space-between; /* left & right edges */
+  justify-content: space-between;
   align-items: center;
-  width: 100%;
   padding: 10px 20px;
   position: fixed;
+  width: 100%;
   top: 0;
   left: 0;
   background: white;
-  z-index: 150;
   border-bottom: 1px solid #eee;
-  box-sizing: border-box;
+  z-index: 150;
+  animation: navbarDrop 0.4s ease;
 }
 
-/* LEFT: Hamburger + School */
+@keyframes navbarDrop {
+  from { transform: translateY(-25px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
 .nav-left {
   display: flex;
   align-items: center;
-  gap: 10px; /* small gap between hamburger, logo, and name */
+  gap: 10px;
 }
 
 .menu-toggle {
   font-size: 28px;
   cursor: pointer;
-  display: block; /* always visible */
-  z-index: 200;
+  transition: transform 0.3s ease;
+}
+
+.menu-toggle:hover {
+  transform: rotate(90deg) scale(1.1);
 }
 
 .nav-school-logo {
-  width: 40px; /* adjust size */
-  height: auto;
+  width: 40px;
 }
 
 .nav-school-name {
   font-size: 18px;
   font-weight: 600;
-  white-space: nowrap; /* prevent line break */
+  white-space: nowrap;
 }
 
-/* RIGHT: User */
+/* ---------------- USER ---------------- */
 .user-info {
   display: flex;
   align-items: center;
   gap: 8px;
+  animation: userFade 0.6s ease;
+}
+
+@keyframes userFade {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .user-icon {
@@ -138,32 +136,142 @@
 .username {
   font-size: 16px;
   font-weight: 500;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* ---------------- DASHBOARD CONTENT ---------------- */
+/* ---------------- CONTENT ---------------- */
 .dashboard-content {
-  flex: 1;
-  padding: clamp(20px, 5vw, 30px);
   margin-top: 80px;
-  box-sizing: border-box;
+  padding: 25px;
+  animation: contentFade 0.5s ease;
 }
 
-/* ---------------- HAMBURGER ---------------- */
-.menu-toggle {
-  font-size: 28px;
+@keyframes contentFade {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* Account Creation main menu item */
+.account-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  white-space: nowrap;      
   cursor: pointer;
-  padding: 8px 12px;
-  display: block; /* always visible */
-  z-index: 200;
 }
 
-/* ---------------- RESPONSIVE ---------------- */
-@media (max-width: 900px) {
+
+.account-main svg:first-child {
+  margin-right: 8px;
+}
+
+/* Chevron icon right side */
+.account-main svg:last-child {
+  margin-left: auto;
+}
+
+/* Submenu styling (already irundhaal ok) */
+.account-submenu {
+  padding-left: 35px;
+}
+
+.account-submenu li {
+  font-size: 14px;
+  padding: 6px 0;
+  cursor: pointer;
+}
+/* -------- PLAN INFO -------- */
+
+.plan-info {
+  
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+
+  display: flex;
+  flex-direction: column;   
+  gap: 6px;                 
+}
+
+/* each line */
+.plan-row {
+  display: block;           /* force new line */
+  white-space: nowrap;
+}
+
+/* BASIC */
+.plan-info.basic {
+  background: #2c2c2c;
+  color: #ccc;
+  border: 1px solid #444;
+}
+
+/* PREMIUM – SILVER */
+.plan-info.premium {
+  background: linear-gradient(135deg, #cfd3d6, #9ea4aa);
+  color: #111;
+}
+
+/* LIFETIME – GOLD */
+.plan-info.lifetime {
+  background: linear-gradient(135deg, #f5c542, #d4a017);
+  color: #111;
+}
+/* ================= EXTRA LARGE SCREENS (4K, TV) ================= */
+@media (min-width: 1600px) {
   .sidebar {
-    width: 200px;
-    top: 0;
-    height: 100vh;
+    width: 280px;
+  }
+
+  .main-content {
+    margin-left: 280px;
+  }
+
+  .nav-school-name {
+    font-size: 20px;
+  }
+}
+
+/* ================= LARGE LAPTOPS ================= */
+@media (max-width: 1440px) {
+  .sidebar {
+    width: 240px;
+  }
+
+  .main-content {
+    margin-left: 240px;
+  }
+}
+
+/* ================= LAPTOP ================= */
+@media (max-width: 1280px) {
+  .sidebar {
+    width: 220px;
+  }
+
+  .main-content {
+    margin-left: 220px;
+  }
+
+  .nav-school-name {
+    font-size: 17px;
+  }
+}
+
+/* ================= TABLET LANDSCAPE ================= */
+@media (max-width: 1024px) {
+  .sidebar {
+    left: -260px;
+  }
+
+  .sidebar-open {
+    left: 0;
   }
 
   .main-content {
@@ -171,13 +279,58 @@
   }
 }
 
-@media (max-width: 480px) {
+/* ================= TABLET PORTRAIT ================= */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 240px;
+    top: 0;
+    height: 100vh;
+    padding-top: 80px;
+  }
+
   .navbar {
-    padding: 10px 15px;
+    padding: 10px 14px;
+  }
+
+  .menu-toggle {
+    font-size: 26px;
+  }
+
+  .dashboard-content {
+    padding: 20px;
+  }
+}
+
+/* ================= LARGE MOBILE ================= */
+@media (max-width: 600px) {
+  .sidebar {
+    width: 220px;
   }
 
   .nav-school-name {
-    font-size: 16px;
+    font-size: 15px;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .username {
+    font-size: 14px;
+  }
+}
+
+/* ================= MOBILE ================= */
+@media (max-width: 480px) {
+  .sidebar {
+    width: 200px;
+  }
+
+  .menu-toggle {
+    font-size: 24px;
+  }
+
+  .nav-school-logo {
+    width: 32px;
   }
 
   .dashboard-content {
@@ -185,12 +338,17 @@
   }
 }
 
+/* ================= SMALL MOBILE ================= */
 @media (max-width: 360px) {
+  .sidebar {
+    width: 180px;
+  }
+
   .nav-school-name {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .username {
-    font-size: 13px;
+    font-size: 12px;
   }
 }

@@ -6,7 +6,7 @@ import { FcGoogle } from "react-icons/fc";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc ,serverTimestamp } from "firebase/firestore";
 
 
 const Register = () => {
@@ -33,7 +33,8 @@ const Register = () => {
         username: username || "",
         email: user.email,
         isGoogle: true,
-        plan: "basic"
+        plan: "basic",
+        createdAt: serverTimestamp()
       });
 
       navigate("/dashboard", {
@@ -63,7 +64,8 @@ const Register = () => {
         username,
         email,
         isGoogle: false,
-        plan: "basic"
+        plan: "basic",
+        createdAt: serverTimestamp()
       });
 
       navigate("/dashboard", {
@@ -78,7 +80,7 @@ const Register = () => {
   return (
     <>
       <span>
-     <img src={logo} alt="Company Logo" className="top-left-logo" />
+     <img src={logo} alt="Company Logo" className="logo1" />
     </span>
       <div className="wrapper">
       
@@ -119,10 +121,8 @@ const Register = () => {
   <span className="eye-icon" onClick={() => setShowPass(!showPass)}>
     {showPass ? <FaEyeSlash /> : <FaEye />}
   </span>
-</div>
 
 {/* CONFIRM PASSWORD */}
-<div className="password-wrapper">
   <input
     type={showPass ? "text" : "password"}
     placeholder="Confirm Password"
@@ -130,7 +130,7 @@ const Register = () => {
     onChange={(e) => setConfirmPassword(e.target.value)}
     required
   />
-  <span className="eye-icon" onClick={() => setShowPass(!showPass)}>
+  <span className="eye-icon1" onClick={() => setShowPass(!showPass)}>
     
   </span>
 </div>
@@ -138,7 +138,7 @@ const Register = () => {
 
           {error && <p style={{ color: "red" }}>{error}</p>}
 
-          <button type="submit">Register</button>
+          <button className="register-btn" type="submit">Register</button>
 
 
           <button type="button" className="google-btn" onClick={handleGoogleSignIn}>

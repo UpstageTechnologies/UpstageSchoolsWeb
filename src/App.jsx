@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter , Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Landing from "./Landing/Landing";
 import Login from "./Login/Login";
 import Register from "./Register/Register";
@@ -11,7 +11,7 @@ import Logout from "./Logout/Logout";
 
 function App() {
   return (
-    <BrowserRouter>
+    <Router>
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
@@ -21,7 +21,7 @@ function App() {
         <Route path="/logout" element={<Logout />} />
  
       </Routes>
-    </BrowserRouter>
+    </Router>
   );
 }
 

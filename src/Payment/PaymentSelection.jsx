@@ -3,6 +3,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 import "./PaymentSelection.css";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "../firebase";
+
 
 const Payment = () => {
   const location = useLocation();
@@ -19,19 +22,44 @@ const Payment = () => {
       alert("Payment Successful!");
   
       const user = auth.currentUser;
-      if (user) {
-        // Update user's plan in Firestore
-        const userRef = doc(db, "users", user.uid);
-        await updateDoc(userRef, {
-          plan: planName.toLowerCase() // store as "premium" or "lifetime"
-        });
+      if (!user) return;
+  
+      let planValue = "";
+      let planSince = new Date();
+      let planExpiry = null;
+  
+      if (planName === "Premium Plan") {
+        planValue = "premium";
+  
+        // 30 days expiry
+        planExpiry = new Date();
+        planExpiry.setDate(planExpiry.getDate() + 30);
+  
+      } else if (planName === "Lifetime Access") {
+        planValue = "lifetime";
+  
+        // Lifetime – no expiry (or you can set very far future)
+        planExpiry = null;
       }
   
+      const userRef = doc(db, "users", user.uid);
+  
+      await updateDoc(userRef, {
+        plan: planValue,
+        planSince: planSince,
+        planExpiry: planExpiry,
+        isActive: true,
+        updatedAt: new Date(),
+      });
+  
       navigate("/dashboard");
+  
     } catch (err) {
       alert(err.message);
     }
   };
+  
+  
   
 
   const openRazorpay = (amount, planName) => {

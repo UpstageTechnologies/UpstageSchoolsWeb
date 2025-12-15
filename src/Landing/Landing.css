@@ -44,7 +44,9 @@
   display: flex;
   align-items: center;
   gap: 25px;
+  margin-left: auto;   /* 👈 THIS IS THE KEY */
 }
+
 
 .nav-links a {
   text-decoration: none;

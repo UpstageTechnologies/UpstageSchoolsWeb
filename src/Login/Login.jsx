@@ -1,22 +1,28 @@
 import React, { useState } from "react";
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail } from "firebase/auth";
-import { auth } from "../firebase";
+import {
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  sendPasswordResetEmail,
+  signOut
+} from "firebase/auth";
+import { auth, db } from "../firebase";
+import { doc, getDoc } from "firebase/firestore";
 import { useNavigate, Link } from "react-router-dom";
 import "./Login.css";
 import logo from "../logo.jpeg";
 import { FcGoogle } from "react-icons/fc";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
-
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
-  
 
   const navigate = useNavigate();
   const provider = new GoogleAuthProvider();
 
+  // NORMAL LOGIN
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
@@ -27,96 +33,93 @@ const Login = () => {
     }
   };
 
+  // FORGOT PASSWORD
   const handleForgotPassword = async () => {
     const email = prompt("Enter your registered email:");
-  
     if (!email) return;
-  
+
     try {
       await sendPasswordResetEmail(auth, email);
-      alert("Password reset link sent! Check your email.");
+      alert("Password reset link sent!");
     } catch (error) {
-      // Check if the error is because user not found
-      if (error.code === "auth/user-not-found") {
-        alert("This email is not registered. Please check and try again.");
-      } else {
-        alert(error.message);
-      }
+      alert(error.message);
     }
   };
-  
+
+  // ✅ GOOGLE LOGIN (REGISTER CHECK ADDED)
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // 🔍 CHECK USER IN FIRESTORE
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        // ❌ NOT REGISTERED
+        await signOut(auth);
+        alert("This Google account is not registered. Please sign up first.");
+        return;
+      }
+
+      // ✅ REGISTERED USER
       navigate("/dashboard");
+
     } catch (error) {
-      
-      
+      alert(error.message);
     }
   };
 
   return (
     <>
-    <span>
-  <img src={logo} alt="Company Logo" className="top-left-logo" />
-</span>
+      <img src={logo} alt="Logo" className="logo" />
 
-<div className="wrapper">
+      <div className="wrapper">
+        <div className="log">
+          <h2>Login</h2>
 
-  <div className="log">
+          <form onSubmit={handleLogin}>
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
 
-    <h2>Login</h2>
+            <div className="password-wrapper">
+              <input
+                type={showPass ? "text" : "password"}
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <span className="eye" onClick={() => setShowPass(!showPass)}>
+                {showPass ? <FaEyeSlash /> : <FaEye />}
+              </span>
+            </div>
 
-    <form onSubmit={handleLogin} className="form-box">
+            <p className="forgot-text" onClick={handleForgotPassword}>
+              Forgot Password?
+            </p>
 
-      {/* EMAIL */}
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
+            <button className="log-btn" type="submit">Login</button>
+          </form>
 
-      {/* PASSWORD */}
-      <div className="poss">
-        <input
-          type={showPass ? "text" : "password"}
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+          <p>--- or ---</p>
 
-        <span onClick={() => setShowPass(!showPass)}>
-          {showPass ? <FaEyeSlash /> : <FaEye />}
-        </span>
+          <button className="google-btn" onClick={handleGoogleSignIn}>
+            <FcGoogle /> Sign in with Google
+          </button>
+
+          <p>
+            Don&apos;t have an account? <Link to="/register">Register</Link>
+          </p>
+        </div>
       </div>
-
-      <p className="forgot-text" onClick={handleForgotPassword}>
-        Forgot Password?
-      </p>
-
-      {/* LOGIN BUTTON */}
-      <button type="submit" className="log-button">
-        Login
-      </button>
-    </form>
-
-    <div className="or">--- or ---</div>
-
-    {/* GOOGLE LOGIN */}
-    <button type="button" onClick={handleGoogleSignIn} className="google-btn">
-      <FcGoogle className="google-icon" /> Sign in with Google
-    </button>
-
-    <p>
-      Don't have an account? <Link to="/register">Register here</Link>
-    </p>
-
-  </div>
-</div>
-</>
+    </>
   );
 };
 
