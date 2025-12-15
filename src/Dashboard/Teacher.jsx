@@ -31,7 +31,7 @@ const Teacher = () => {
 
   const uid = auth.currentUser?.uid;
 
-  // 🔄 FETCH TEACHERS
+  // FETCH TEACHERS
   const fetchTeachers = async () => {
     if (!uid) return;
 
