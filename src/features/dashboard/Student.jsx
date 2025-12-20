@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FaPlus, FaSearch, FaEdit, FaTrash } from "react-icons/fa";
-import "./Teacher.css";
+import "../dashboard_styles/Teacher.css";
 import {
   collection,
   addDoc,
@@ -10,7 +10,7 @@ import {
   doc,
   updateDoc
 } from "firebase/firestore";
-import { auth, db } from "../firebase";
+import { auth, db } from "../../services/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 
 /* 🔢 Class 1–12 */

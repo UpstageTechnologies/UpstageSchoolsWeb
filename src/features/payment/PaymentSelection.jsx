@@ -1,10 +1,10 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase";
-import "./PaymentSelection.css";
+import { auth } from "../../services/firebase";
+import "../../useTheme/styles/PaymentSelection.css";
 import { doc, updateDoc } from "firebase/firestore";
-import { db } from "../firebase";
+import { db } from "../../services/firebase";
 
 
 const Payment = () => {

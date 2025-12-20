@@ -4,8 +4,8 @@ import {
   getDoc,
   setDoc
 } from "firebase/firestore";
-import { auth ,db } from "../firebase";
-import "./AdminTimetable.css";
+import { auth ,db } from "../../services/firebase";
+import "../dashboard_styles/AdminTimetable.css";
 
 const CLASSES = Array.from({ length: 12 }, (_, i) => i + 1);
 const SECTIONS = ["A", "B", "C", "D"];
@@ -18,7 +18,7 @@ const AdminTimetable = () => {
   const [selectedDay, setSelectedDay] = useState("Monday");
   const [table, setTable] = useState({});
 
-  // 🔥 ADMIN UID (from dashboard / login)
+  // ADMIN UID (from dashboard / login)
   const adminUid = localStorage.getItem("adminUid");
 
   /* ================= LOAD ================= */

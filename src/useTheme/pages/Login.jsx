@@ -6,11 +6,11 @@ import {
   sendPasswordResetEmail,
   signOut
 } from "firebase/auth";
-import { auth, db } from "../firebase";
+import { auth, db } from "../../services/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import "./Login.css";
-import logo from "../logo.jpeg";
+import "../styles/Login.css";
+import logo from "../../assets/logo.jpeg";
 import { FcGoogle } from "react-icons/fc";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 

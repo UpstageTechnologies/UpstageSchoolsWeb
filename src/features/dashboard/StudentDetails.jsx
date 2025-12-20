@@ -6,8 +6,8 @@ import {
   updateDoc
 } from "firebase/firestore";
 import { useLocation, useNavigate } from "react-router-dom";
-import { db } from "../firebase";
-import "./Teacher.css";
+import { db } from "../../services/firebase";
+import "../dashboard_styles/Teacher.css";
 
 const subjects = ["tamil", "english", "maths", "science", "social"];
 

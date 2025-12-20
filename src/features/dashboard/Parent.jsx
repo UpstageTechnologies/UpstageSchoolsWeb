@@ -9,8 +9,8 @@ import {
   doc,
   updateDoc
 } from "firebase/firestore";
-import { auth, db } from "../firebase";
-import "./Teacher.css";
+import { auth, db } from "../../services/firebase";
+import "../dashboard_styles/Teacher.css";
 
 const Parent = () => {
   const adminUid = auth.currentUser?.uid;

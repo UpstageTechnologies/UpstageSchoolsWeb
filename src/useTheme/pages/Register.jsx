@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import "./Register.css";
-import logo from "../logo.jpeg";
+import "../styles/Register.css";
+import logo from "../../assets/logo.jpeg";
 import { FcGoogle } from "react-icons/fc";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword } from "firebase/auth";
-import { auth, db } from "../firebase";
+import { auth, db } from "../../services/firebase";
 import { doc, setDoc ,serverTimestamp } from "firebase/firestore";
 
 

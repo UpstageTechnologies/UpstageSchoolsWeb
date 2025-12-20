@@ -1,15 +1,15 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Landing from "./Landing/Landing";
-import Login from "./Login/Login";
-import Register from "./Register/Register";
-import Dashboard from "./Dashboard/Dashboard";
-import PaymentSelection from "./Payment/PaymentSelection";
-import Logout from "./Logout/Logout";
-import ChooseLogin from "./Landing/ChooseLogin";
-import TeacherLogin from "./Landing/TeacherLogin";
-import ParentLogin from "./Landing/ParentLogin";
-import AdminLogin from "./Landing/AdminLogin";
+import Landing from "./useTheme/pages/Landing";
+import Login from "./useTheme/pages/Login";
+import Register from "./useTheme/pages/Register";
+import Dashboard from "./features/dashboard/Dashboard";
+import PaymentSelection from "./features/payment/PaymentSelection";
+import Logout from "./useTheme/pages/Logout";
+import ChooseLogin from "./useTheme/pages/ChooseLogin";
+import TeacherLogin from "./useTheme/pages/TeacherLogin";
+import ParentLogin from "./useTheme/pages/ParentLogin";
+import AdminLogin from "./useTheme/pages/AdminLogin";
 
 
 

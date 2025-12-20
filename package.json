@@ -37,13 +37,13 @@
   "main": "eslint.config.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/UpstageTechnologies/schooltrain.git"
+    "url": "git+https://github.com/UpstageTechnologies/upstage.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/UpstageTechnologies/schooltrain/issues"
+    "url": "https://github.com/UpstageTechnologies/upstage/issues"
   },
-  "homepage": "https://github.com/UpstageTechnologies/schooltrain#readme"
+  "homepage": "https://github.com/UpstageTechnologies/upstage#readme"
 }

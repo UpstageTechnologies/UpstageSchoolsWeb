@@ -6,11 +6,11 @@ import {
   where,
   getDocs
 } from "firebase/firestore";
-import { db } from "../firebase";
+import { db } from "../../services/firebase";
 
-import logo from "../logo.jpeg";
+import logo from "../../assets/logo.jpeg";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import "../Login/Login.css";
+import "../styles/Login.css";
 
 const AdminLogin = () => {
   const [adminId, setAdminId] = useState("");

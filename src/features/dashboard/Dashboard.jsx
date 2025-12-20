@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { auth } from "../firebase";
+import { auth } from "../../services/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebase";
+import { db } from "../../services/firebase";
 import { useNavigate } from "react-router-dom";
-import "./Dashboard.css";
+import "../dashboard_styles/Dashboard.css";
 
 import {
   FaUserCircle,
@@ -16,7 +16,7 @@ import {
   FaChevronUp
 } from "react-icons/fa";
 
-import schoolLogo from "./school-logo.png";
+import schoolLogo from "../../assets/school-logo.png";
 import Teacher from "./Teacher";
 import Parent from "./Parent";
 import Student from "./Student";
@@ -98,20 +98,26 @@ const Dashboard = () => {
   useEffect(() => {
     const storedRole = localStorage.getItem("role");
 
-    // 🔐 TEACHER / PARENT (Firestore login)
-    if (storedRole === "teacher" || storedRole === "parent") {
-      setRole(storedRole);
+ // 🔐 TEACHER / PARENT / SUB ADMIN (Firestore login)
+if (
+  storedRole === "teacher" ||
+  storedRole === "parent" ||
+  storedRole === "sub_admin"
+) {
+  setRole(storedRole);
 
-      setUser({
-        displayName:
-          localStorage.getItem("teacherName") ||
-          localStorage.getItem("parentName") ||
-          "User",
-        email: localStorage.getItem("email") || ""
-      });
+  setUser({
+    displayName:
+      localStorage.getItem("adminName") ||
+      localStorage.getItem("teacherName") ||
+      localStorage.getItem("parentName") ||
+      "User",
+    email: localStorage.getItem("email") || ""
+  });
 
-      return;
-    }
+  return; // ❗ VERY IMPORTANT
+}
+
 
     // 🔐 ADMIN (Firebase Auth)
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
