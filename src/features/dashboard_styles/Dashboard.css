@@ -9,6 +9,7 @@
   width: 100vw;
   background: #f4f4f4;
   font-family: 'Poppins', sans-serif;
+  color: #000;
 }
 
 /* ---------------- SIDEBAR ---------------- */
@@ -48,12 +49,15 @@
   border-radius: 6px;
 }
 
-.sidebar-close {
-  left: -260px;
-}
-
 .sidebar-open {
   left: 0;
+}
+
+.sidebar-close {
+  left: 0;
+  width: 70px;
+  min-width: 70px;
+  padding: 20px 10px;
 }
 
 /* ---------------- MAIN ---------------- */
@@ -66,7 +70,7 @@
 }
 
 .sidebar-close ~ .main-content {
-  margin-left: 0;
+  margin-left: 70px;
 }
 
 /* ---------------- NAVBAR ---------------- */
@@ -82,12 +86,7 @@
   background: white;
   border-bottom: 1px solid #eee;
   z-index: 150;
-  animation: navbarDrop 0.4s ease;
-}
-
-@keyframes navbarDrop {
-  from { transform: translateY(-25px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  color: #000;
 }
 
 .nav-left {
@@ -99,11 +98,6 @@
 .menu-toggle {
   font-size: 28px;
   cursor: pointer;
-  transition: transform 0.3s ease;
-}
-
-.menu-toggle:hover {
-  transform: rotate(90deg) scale(1.1);
 }
 
 .nav-school-logo {
@@ -113,7 +107,6 @@
 .nav-school-name {
   font-size: 18px;
   font-weight: 600;
-  white-space: nowrap;
 }
 
 /* ---------------- USER ---------------- */
@@ -121,64 +114,45 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  animation: userFade 0.6s ease;
-}
-
-@keyframes userFade {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.user-icon {
-  font-size: 24px;
 }
 
 .username {
   font-size: 16px;
   font-weight: 500;
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* ---------------- CONTENT ---------------- */
 .dashboard-content {
   margin-top: 80px;
   padding: 25px;
-  animation: contentFade 0.5s ease;
+  color: #000;
 }
 
-@keyframes contentFade {
-  from { opacity: 0; transform: translateY(15px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-
-/* Account Creation main menu item */
+/* ---------------- ACCOUNT CREATION ---------------- */
 .account-main {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-
-  white-space: nowrap;      
   cursor: pointer;
 }
-
 
 .account-main svg:first-child {
   margin-right: 8px;
 }
 
-/* Chevron icon right side */
 .account-main svg:last-child {
   margin-left: auto;
 }
 
-/* Submenu styling (already irundhaal ok) */
+/* -------- DROPDOWN FIX (IMPORTANT) -------- */
 .account-submenu {
+  display: none;
   padding-left: 35px;
+}
+
+.sidebar-open .account-submenu {
+  display: block;
 }
 
 .account-submenu li {
@@ -186,193 +160,77 @@
   padding: 6px 0;
   cursor: pointer;
 }
-/* -------- PLAN INFO -------- */
 
+/* ---------------- PLAN INFO ---------------- */
 .plan-info {
-  
   padding: 12px;
   border-radius: 8px;
   font-size: 14px;
-
   display: flex;
-  flex-direction: column;   
-  gap: 6px;                 
+  flex-direction: column;
+  gap: 6px;
 }
 
-/* each line */
-.plan-row {
-  display: block;           /* force new line */
-  white-space: nowrap;
-}
-
-/* BASIC */
 .plan-info.basic {
   background: #2c2c2c;
   color: #ccc;
-  border: 1px solid #444;
 }
 
-/* PREMIUM – SILVER */
 .plan-info.premium {
   background: linear-gradient(135deg, #cfd3d6, #9ea4aa);
   color: #111;
 }
 
-/* LIFETIME – GOLD */
 .plan-info.lifetime {
   background: linear-gradient(135deg, #f5c542, #d4a017);
   color: #111;
 }
-/* ================= EXTRA LARGE SCREENS (4K, TV) ================= */
-@media (min-width: 1600px) {
-  .sidebar {
-    width: 280px;
-  }
 
-  .main-content {
-    margin-left: 280px;
-  }
-
-  .nav-school-name {
-    font-size: 20px;
-  }
+/* ---------------- COLLAPSED SIDEBAR (ICON ONLY) ---------------- */
+.sidebar-close ul li {
+  justify-content: center;
+  font-size: 0;
 }
 
-/* ================= LARGE LAPTOPS ================= */
-@media (max-width: 1440px) {
-  .sidebar {
-    width: 240px;
-  }
-
-  .main-content {
-    margin-left: 240px;
-  }
+.sidebar-close ul li svg {
+  font-size: 22px;
 }
 
-/* ================= LAPTOP ================= */
-@media (max-width: 1280px) {
-  .sidebar {
-    width: 220px;
-  }
-
-  .main-content {
-    margin-left: 220px;
-  }
-
-  .nav-school-name {
-    font-size: 17px;
-  }
+.sidebar-close .plan-info,
+.sidebar-close .account-submenu {
+  display: none !important;
 }
 
-/* ================= TABLET LANDSCAPE ================= */
-@media (max-width: 1024px) {
-  .sidebar {
-    left: -260px;
-  }
-
-  .sidebar-open {
-    left: 0;
-  }
-
-  .main-content {
-    margin-left: 0;
-  }
+/* Account Creation – icon only */
+.sidebar-close .account-main {
+  font-size: 0;
 }
 
-/* ================= TABLET PORTRAIT ================= */
-@media (max-width: 768px) {
-  .sidebar {
-    width: 240px;
-    top: 0;
-    height: 100vh;
-    padding-top: 80px;
-  }
-
-  .navbar {
-    padding: 10px 14px;
-  }
-
-  .menu-toggle {
-    font-size: 26px;
-  }
-
-  .dashboard-content {
-    padding: 20px;
-  }
+.sidebar-close .account-main svg:first-child {
+  font-size: 22px;
 }
 
-/* ================= LARGE MOBILE ================= */
-@media (max-width: 600px) {
-  .sidebar {
-    width: 220px;
-  }
-
-  .nav-school-name {
-    font-size: 15px;
-    max-width: 120px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .username {
-    font-size: 14px;
-  }
+.sidebar-close .account-main svg:last-child {
+  display: none;
 }
 
-/* ================= MOBILE ================= */
-@media (max-width: 480px) {
-  .sidebar {
-    width: 200px;
-  }
-
-  .menu-toggle {
-    font-size: 24px;
-  }
-
-  .nav-school-logo {
-    width: 32px;
-  }
-
-  .dashboard-content {
-    padding: 15px;
-  }
-}
-
-/* ================= SMALL MOBILE ================= */
-@media (max-width: 360px) {
-  .sidebar {
-    width: 180px;
-  }
-
-  .nav-school-name {
-    font-size: 13px;
-  }
-
-  .username {
-    font-size: 12px;
-  }
-}
-/* ================= SLIDER (FIX ONLY – NO OTHER CHANGES) ================= */
-
+/* ---------------- SLIDER ---------------- */
 .slider-container {
   width: 100%;
-  height: 450px;                 /* desktop big */
+  height: 450px;
   border-radius: 20px;
   overflow: hidden;
-  position: relative;
   background: #000;
 }
 
 .slider-track {
   display: flex;
-  width: 100%;
   height: 100%;
   transition: transform 0.6s ease-in-out;
 }
 
 .slide {
   min-width: 100%;
-  height: 100%;
 }
 
 .slide img {
@@ -381,7 +239,6 @@
   object-fit: cover;
 }
 
-/* dots */
 .slider-dots {
   position: absolute;
   bottom: 14px;
@@ -396,8 +253,6 @@
   height: 10px;
   background: rgba(255, 255, 255, 0.5);
   border-radius: 50%;
-  cursor: pointer;
-  transition: 0.3s;
 }
 
 .dot.active {
@@ -405,21 +260,17 @@
   transform: scale(1.3);
 }
 
-/* responsive slider only */
+/* ---------------- RESPONSIVE ---------------- */
 @media (max-width: 1024px) {
-  .slider-container {
-    height: 320px;
-  }
+  .slider-container { height: 320px; }
 }
 
 @media (max-width: 768px) {
-  .slider-container {
-    height: 260px;
-  }
+  .slider-container { height: 260px; }
 }
 
 @media (max-width: 480px) {
-  .slider-container {
-    height: 200px;
-  }
+  
+  .slider-container { height: 200px; }
 }
+

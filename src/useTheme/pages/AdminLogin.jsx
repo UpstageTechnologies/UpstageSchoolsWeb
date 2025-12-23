@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate ,Link } from "react-router-dom";
 import {
   collectionGroup,
   query,
@@ -78,11 +78,20 @@ const AdminLogin = () => {
 
   return (
     <>
-      <img src={logo} alt="Logo" className="logo" />
+      
 
       <div className="wrapper">
+      <nav className="nav-bar">
+        
+        <img src={logo} alt="Company Logo" className="logo" />
+        <div className="nav-links">
+          <a href="/">Home</a>
+          <a href="#about">About</a>
+          <Link to="/login" className="start-btn">Login</Link>
+        </div>
+      </nav>
         <div className="log">
-          <h2>Admin Login</h2>
+          <h2>Login</h2>
 
           <form onSubmit={handleLogin}>
             <input
@@ -108,9 +117,10 @@ const AdminLogin = () => {
               </span>
             </div>
 
-            <button className="log-btn" type="submit">
-              Login
+            <button className="log-btn" type="submit" disabled={loading}>
+             {loading ? "Loading..." : "Login"}
             </button>
+
           </form>
 
           <p style={{ marginTop: "15px" }}>

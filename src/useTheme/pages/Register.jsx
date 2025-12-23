@@ -16,6 +16,7 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   
 
@@ -51,10 +52,13 @@ const Register = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
 
+    if (loading) return;
+
     if (password !== confirmPassword) {
       setError("Passwords do not match!");
       return;
     }
+    setLoading(true);
 
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -76,15 +80,24 @@ const Register = () => {
 
     } catch (err) {
       setError(err.message);
+    }finally {
+      setLoading(false);
     }
   };
 
   return (
     <>
-      <span>
-     <img src={logo} alt="Company Logo" className="logo1" />
-    </span>
+    
       <div className="wrapper">
+      <nav className="nav-bar">
+        
+        <img src={logo} alt="Company Logo" className="logo" />
+        <div className="nav-links">
+          <a href="/">Home</a>
+          <a href="login">Login</a>
+          <Link to="/choose-login" className="start-btn">School Login</Link>
+        </div>
+      </nav>
       
       <div className="log" style={{ marginTop: "80px" }}>
         <h2>Register</h2>
@@ -140,7 +153,9 @@ const Register = () => {
 
           {error && <p style={{ color: "red" }}>{error}</p>}
 
-          <button className="register-btn" type="submit">Register</button>
+          <button className="register-btn" type="submit" disabled={loading}>
+             {loading ? "Loading..." : "Register"}
+            </button>
 
 
           <button type="button" className="google-btn" onClick={handleGoogleSignIn}>

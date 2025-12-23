@@ -5,7 +5,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import { useNavigate } from "react-router-dom";
 import "../dashboard_styles/Dashboard.css";
-import Approvals from "../../useTheme/pages/Approvals";
+import Approvals from "./Approvals";
 
 import {
   FaUserCircle,
@@ -14,7 +14,7 @@ import {
   FaCog,
   FaSignOutAlt,
   FaChevronDown,
-  FaChevronUp
+  FaChevronUp,FaCalendarAlt,FaClipboardCheck
 } from "react-icons/fa";
 
 import schoolLogo from "../../assets/school-logo.png";
@@ -25,6 +25,8 @@ import Admin from "./Admin";
 import StudentDetails from "./StudentDetails";
 import AdminTimetable from "./AdminTimetable";
 import TeacherTimetable from "./TeacherTimetable";
+import BackConfirm from "../../components/BackConfirm";
+
 
 
 
@@ -51,6 +53,7 @@ const DashboardSlider = () => {
   }, []);
 
   return (
+    
     <div className="slider-container">
       <div
         className="slider-track"
@@ -73,6 +76,7 @@ const DashboardSlider = () => {
         ))}
       </div>
     </div>
+    
   );
 };
 /* ================= END SLIDER ================= */
@@ -151,14 +155,20 @@ const Dashboard = () => {
   }, [navigate]);
 
   const handleLogout = async () => {
+    const confirmLogout = window.confirm("Do you want to logout?");
+  
+    if (!confirmLogout) return; // ❌ NO → stay same page
+  
     localStorage.clear();
     await signOut(auth);
-    navigate("/logout");
+    navigate("/logout", { replace: true }); // ✅ YES → home page
   };
+  
 
   const adminUid = user?.uid || localStorage.getItem("adminUid");
 
   return (
+    <><BackConfirm />
     <div className="dashboard-container">
       {/* ================= SIDEBAR ================= */}
       <div className={`sidebar ${menuOpen ? "sidebar-open" : "sidebar-close"}`}>
@@ -212,7 +222,7 @@ const Dashboard = () => {
               )}
 
               <li onClick={() => setActivePage("timetable")}>
-                📅 Timetable
+              <FaCalendarAlt />Timetable
               </li>
              
             </>
@@ -224,14 +234,14 @@ const Dashboard = () => {
               <FaUserGraduate /> Student Details
             </li>
              <li onClick={() => setActivePage("teacher-timetable")}>
-             📅 Teacher Timetable
+             <FaCalendarAlt/> Teacher Timetable
            </li>
            </>
           )}
           
             {role === "admin" && (
            <li onClick={() => setActivePage("approvals")}>
-           Approvals
+           <FaClipboardCheck/>Approvals
            </li>
           )}
 
@@ -319,6 +329,7 @@ const Dashboard = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

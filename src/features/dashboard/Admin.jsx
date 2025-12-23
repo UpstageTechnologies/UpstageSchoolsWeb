@@ -165,52 +165,53 @@ const Admin = () => {
         </thead>
 
         <tbody>
-          {admins
-            .filter(a =>
-              a.name?.toLowerCase().includes(search.toLowerCase())
-            )
-            .map(a => (
-              <tr key={a.id}>
-                <td>{a.name}</td>
-                <td>{a.adminId}</td>
-                <td>{a.email}</td>
-                <td>{a.phone}</td>
-                <td>{a.gender || "-"}</td>
-                <td>{a.qualification || "-"}</td>
-                <td>{a.experience || "-"}</td>
-                
-                <td>
-                  <button
-                    className="edit-btn"
-                    onClick={() => {
-                      setForm({
-                        name: a.name || "",
-                        adminId: a.adminId || "",
-                        email: a.email || "",
-                        phone: a.phone || "",
-                        address: a.address || "",
-                        gender: a.gender || "",
-                        qualification: a.qualification || "",
-                        experience: a.experience || ""
-                      });
-                      setEditId(a.id);
-                      setPassword("");
-                      setShowModal(true);
-                    }}
-                  >
-                    <FaEdit /> Edit
-                  </button>
+  {admins
+    .filter(a =>
+      a.name?.toLowerCase().includes(search.toLowerCase())
+    )
+    .map(a => (
+      <tr key={a.id} className="mobile-card">
+        <td data-label="Name">{a.name}</td>
+        <td data-label="Admin ID">{a.adminId}</td>
+        <td data-label="Email">{a.email}</td>
+        <td data-label="Phone">{a.phone}</td>
+        <td data-label="Gender">{a.gender || "-"}</td>
+        <td data-label="Qualification">{a.qualification || "-"}</td>
+        <td data-label="Experience">{a.experience || "-"}</td>
 
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleDelete(a.id)}
-                  >
-                    <FaTrash /> Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-        </tbody>
+        <td data-label="Action" className="action-cell">
+          <button
+            className="edit-btn"
+            onClick={() => {
+              setForm({
+                name: a.name || "",
+                adminId: a.adminId || "",
+                email: a.email || "",
+                phone: a.phone || "",
+                address: a.address || "",
+                gender: a.gender || "",
+                qualification: a.qualification || "",
+                experience: a.experience || ""
+              });
+              setEditId(a.id);
+              setPassword("");
+              setShowModal(true);
+            }}
+          >
+            <FaEdit /> Edit
+          </button>
+
+          <button
+            className="delete-btn"
+            onClick={() => handleDelete(a.id)}
+          >
+            <FaTrash /> Delete
+          </button>
+        </td>
+      </tr>
+    ))}
+</tbody>
+
       </table>
 
       {/* ===== MODAL ===== */}

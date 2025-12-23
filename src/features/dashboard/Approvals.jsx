@@ -1,0 +1,154 @@
+import React, { useEffect, useState } from "react";
+import {
+  collection,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc
+} from "firebase/firestore";
+import { db, auth } from "../../services/firebase";
+
+const Approvals = () => {
+  const adminUid =
+    auth.currentUser?.uid || localStorage.getItem("adminUid");
+
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  /* ================= FETCH APPROVAL REQUESTS ================= */
+  const fetchRequests = async () => {
+    if (!adminUid) return;
+
+    setLoading(true);
+
+    const snap = await getDocs(
+      collection(db, "users", adminUid, "approval_requests")
+    );
+
+    const pending = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .filter(r => r.status === "pending");
+
+    setRequests(pending);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchRequests();
+  }, [adminUid]);
+
+  /* ================= APPROVE ================= */
+  const approveRequest = async (r) => {
+    try {
+      const basePath = ["users", adminUid, `${r.module}s`];
+
+      if (r.action === "create") {
+        await addDoc(collection(db, ...basePath), r.payload);
+      }
+
+      if (r.action === "update") {
+        await updateDoc(
+          doc(db, ...basePath, r.targetId),
+          r.payload
+        );
+      }
+
+      if (r.action === "delete") {
+        await deleteDoc(
+          doc(db, ...basePath, r.targetId)
+        );
+      }
+
+      await updateDoc(
+        doc(db, "users", adminUid, "approval_requests", r.id),
+        {
+          status: "approved",
+          approvedAt: new Date()
+        }
+      );
+
+      fetchRequests();
+      alert("✅ Approved successfully");
+    } catch (err) {
+      console.error(err);
+      alert("Approval failed");
+    }
+  };
+
+  /* ================= REJECT ================= */
+  const rejectRequest = async (id) => {
+    await updateDoc(
+      doc(db, "users", adminUid, "approval_requests", id),
+      {
+        status: "rejected",
+        rejectedAt: new Date()
+      }
+    );
+
+    fetchRequests();
+  };
+
+  /* ================= UI ================= */
+  return (
+    <div style={{ padding: 20 }}>
+      <h2>Approvals</h2>
+
+      {loading && <p>Loading approvals...</p>}
+
+      {!loading && requests.length === 0 && (
+        <p>No pending approvals</p>
+      )}
+
+      {requests.map(r => (
+        <div
+          key={r.id}
+          style={{
+            border: "1px solid #ddd",
+            borderRadius: 6,
+            padding: 15,
+            marginBottom: 15,
+            maxWidth: 500
+          }}
+        >
+          <p><b>Module:</b> {r.module}</p>
+          <p><b>Action:</b> {r.action}</p>
+          <p><b>Requested By:</b> {r.createdBy}</p>
+
+          <div style={{ marginTop: 10 }}>
+            <button
+              onClick={() => approveRequest(r)}
+              style={{
+                background: "green",
+                color: "#fff",
+                border: "none",
+                padding: "6px 14px",
+                marginRight: 10,
+                cursor: "pointer",
+                borderRadius: 4
+              }}
+            >
+              ✅ Approve
+            </button>
+
+            <button
+              onClick={() => rejectRequest(r.id)}
+              style={{
+                background: "red",
+                color: "#fff",
+                border: "none",
+                padding: "6px 14px",
+                cursor: "pointer",
+                borderRadius: 4
+              }}
+            >
+              ❌ Reject
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default Approvals;

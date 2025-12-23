@@ -282,3 +282,47 @@
     padding: 6px;
   }
 }
+/* ================= MOBILE MODAL FIX ================= */
+@media (max-width: 620px) {
+
+  .modal-overlay {
+    align-items: flex-start;   /* top align */
+    padding: 12px;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: 92vh;          /* screen-ku ullae */
+    overflow-y: auto;          /* scroll */
+    border-radius: 12px;
+    padding: 14px;
+  }
+
+  .modal h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  .modal input,
+  .modal select,
+  .modal button {
+    font-size: 14px;
+  }
+
+  .modal-actions {
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    padding-top: 10px;
+    gap: 8px;
+  }
+
+  .save,
+  .cancel {
+    padding: 10px;
+    font-size: 14px;
+  }
+}
+

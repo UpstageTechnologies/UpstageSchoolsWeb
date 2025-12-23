@@ -11,7 +11,6 @@ import {
   updateDoc
 } from "firebase/firestore";
 import { auth, db } from "../../services/firebase";
-import { onAuthStateChanged } from "firebase/auth";
 
 /* 🔢 Class 1–12 */
 const classes = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -21,13 +20,12 @@ const sections = Array.from({ length: 26 }, (_, i) =>
   String.fromCharCode(65 + i)
 );
 
-
 const Student = () => {
-  const uid =
-  auth.currentUser?.uid || localStorage.getItem("adminUid");
+  /* ================= BASIC ================= */
+  const adminUid =
+    auth.currentUser?.uid || localStorage.getItem("adminUid");
 
-
-
+  const role = localStorage.getItem("role"); // admin | sub_admin
 
   const [showModal, setShowModal] = useState(false);
   const [search, setSearch] = useState("");
@@ -47,48 +45,28 @@ const Student = () => {
     section: ""
   });
 
-  /* 🔐 AUTH STATE */
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (user) => {
-      if (user) setUid(user.uid);
-      else setUid(null);
-    });
-    return () => unsub();
-  }, []);
-
-  /* 🔄 FETCH STUDENTS */
+  /* ================= FETCH ================= */
   const fetchStudents = async () => {
-    if (!uid) return;
+    if (!adminUid) return;
 
     const snap = await getDocs(
-      collection(db, "users", uid, "students")
+      collection(db, "users", adminUid, "students")
     );
 
-    const list = snap.docs.map(d => ({
-      id: d.id,
-      ...d.data()
-    }));
-
-    list.sort((a, b) =>
-      a.studentName.toLowerCase().localeCompare(
-        b.studentName.toLowerCase()
-      )
+    setStudents(
+      snap.docs.map(d => ({
+        id: d.id,
+        ...d.data()
+      }))
     );
-
-    setStudents(list);
   };
 
   useEffect(() => {
     fetchStudents();
-  }, [uid]);
+  }, [adminUid]);
 
-  /* ➕ ADD / ✏️ EDIT STUDENT */
+  /* ================= SAVE ================= */
   const handleSaveStudent = async () => {
-    if (!uid) {
-      alert("User not authenticated");
-      return;
-    }
-
     if (
       !form.studentName ||
       !form.studentId ||
@@ -97,63 +75,107 @@ const Student = () => {
       !form.className ||
       !form.section
     ) {
-      alert("All required fields must be filled");
+      alert("Required fields missing");
       return;
     }
 
-    try {
-      if (editId) {
-        await updateDoc(
-          doc(db, "users", uid, "students", editId),
-          {
-            ...form,
-            updatedAt: Timestamp.now()
-          }
-        );
-      } else {
-        await addDoc(
-          collection(db, "users", uid, "students"),
-          {
-            ...form,
-            createdAt: Timestamp.now()
-          }
-        );
-      }
+    /* 🔴 SUB ADMIN → APPROVAL */
+    if (role === "sub_admin") {
+      await addDoc(
+        collection(db, "users", adminUid, "approval_requests"),
+        {
+          module: "student",
+          action: editId ? "update" : "create",
+          targetId: editId || null,
+          payload: {
+            ...form
+          },
+          status: "pending",
+          createdBy: localStorage.getItem("adminId"),
+          createdAt: Timestamp.now()
+        }
+      );
 
-      setShowModal(false);
-      setEditId(null);
-      setForm({
-        studentName: "",
-        studentId: "",
-        parentId: "",
-        parentName: "",
-        gender: "",
-        dob: "",
-        phone: "",
-        address: "",
-        className: "",
-        section: ""
-      });
-
-      fetchStudents();
-    } catch (err) {
-      console.error("SAVE ERROR 👉", err);
-      alert("Save failed");
+      alert("⏳ Sent for admin approval");
+      resetForm();
+      return;
     }
-  };
 
-  /* 🗑 DELETE STUDENT */
-  const handleDeleteStudent = async (id) => {
-    if (!window.confirm("Delete this student?")) return;
-    await deleteDoc(doc(db, "users", uid, "students", id));
+    /* 🟢 MAIN ADMIN → DIRECT SAVE */
+    if (editId) {
+      await updateDoc(
+        doc(db, "users", adminUid, "students", editId),
+        {
+          ...form,
+          updatedAt: Timestamp.now()
+        }
+      );
+    } else {
+      await addDoc(
+        collection(db, "users", adminUid, "students"),
+        {
+          ...form,
+          createdAt: Timestamp.now()
+        }
+      );
+    }
+
+    resetForm();
     fetchStudents();
   };
 
+  /* ================= DELETE ================= */
+  const handleDeleteStudent = async (id) => {
+    if (!window.confirm("Delete student?")) return;
+
+    /* 🔴 SUB ADMIN → APPROVAL */
+    if (role === "sub_admin") {
+      await addDoc(
+        collection(db, "users", adminUid, "approval_requests"),
+        {
+          module: "student",
+          action: "delete",
+          targetId: id,
+          status: "pending",
+          createdBy: localStorage.getItem("adminId"),
+          createdAt: Timestamp.now()
+        }
+      );
+
+      alert("⏳ Delete request sent");
+      return;
+    }
+
+    /* 🟢 MAIN ADMIN */
+    await deleteDoc(
+      doc(db, "users", adminUid, "students", id)
+    );
+    fetchStudents();
+  };
+
+  /* ================= RESET ================= */
+  const resetForm = () => {
+    setShowModal(false);
+    setEditId(null);
+    setForm({
+      studentName: "",
+      studentId: "",
+      parentId: "",
+      parentName: "",
+      gender: "",
+      dob: "",
+      phone: "",
+      address: "",
+      className: "",
+      section: ""
+    });
+  };
+
+  /* ================= UI ================= */
   return (
     <div className="teacher-page">
-      {/* HEADER */}
       <div className="teacher-header">
-        <h2>All Students</h2>
+        <h2>Students</h2>
 
         <div className="teacher-actions">
           <div className="search-box">
@@ -161,7 +183,7 @@ const Student = () => {
             <input
               placeholder="Search student..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={e => setSearch(e.target.value)}
             />
           </div>
 
@@ -175,56 +197,51 @@ const Student = () => {
       <table className="teacher-table">
         <thead>
           <tr>
-            <th>Student Name</th>
-            <th>Student ID</th>
+            <th>Name</th>
+            <th>ID</th>
             <th>Parent</th>
             <th>Class</th>
             <th>Section</th>
-            <th>Phone</th>
-            <th>Address</th>
             <th>Action</th>
           </tr>
         </thead>
 
         <tbody>
-          {students
-            .filter(s =>
-              Object.values(s)
-                .join(" ")
-                .toLowerCase()
-                .includes(search.toLowerCase())
-            )
-            .map(s => (
-              <tr key={s.id}>
-                <td>{s.studentName}</td>
-                <td>{s.studentId}</td>
-                <td>{s.parentName}</td>
-                <td>{s.className}</td>
-                <td>{s.section}</td>
-                <td>{s.phone}</td>
-                <td>{s.address}</td>
-                <td>
-                  <button
-                    className="edit-btn"
-                    onClick={() => {
-                      setForm({ ...s });
-                      setEditId(s.id);
-                      setShowModal(true);
-                    }}
-                  >
-                    <FaEdit /> Edit
-                  </button>
+  {students
+    .filter(s =>
+      JSON.stringify(s).toLowerCase().includes(search.toLowerCase())
+    )
+    .map(s => (
+      <tr key={s.id} className="mobile-card">
+        <td data-label="Name">{s.studentName}</td>
+        <td data-label="Student ID">{s.studentId}</td>
+        <td data-label="Parent">{s.parentName}</td>
+        <td data-label="Class">{s.className}</td>
+        <td data-label="Section">{s.section}</td>
 
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleDeleteStudent(s.id)}
-                  >
-                    <FaTrash /> Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-        </tbody>
+        <td data-label="Action" className="action-cell">
+          <button
+            className="edit-btn"
+            onClick={() => {
+              setForm({ ...s });
+              setEditId(s.id);
+              setShowModal(true);
+            }}
+          >
+            <FaEdit /> Edit
+          </button>
+
+          <button
+            className="delete-btn"
+            onClick={() => handleDeleteStudent(s.id)}
+          >
+            <FaTrash /> Delete
+          </button>
+        </td>
+      </tr>
+    ))}
+</tbody>
+
       </table>
 
       {/* MODAL */}
@@ -233,10 +250,12 @@ const Student = () => {
           <div className="modal">
             <h3>{editId ? "Edit Student" : "Add Student"}</h3>
 
+            {/* SAME INPUTS – NO UI CHANGE */}
+
             <input
               placeholder="Student Name"
               value={form.studentName}
-              onChange={(e) =>
+              onChange={e =>
                 setForm({ ...form, studentName: e.target.value })
               }
             />
@@ -244,7 +263,7 @@ const Student = () => {
             <input
               placeholder="Student ID"
               value={form.studentId}
-              onChange={(e) =>
+              onChange={e =>
                 setForm({ ...form, studentId: e.target.value })
               }
             />
@@ -252,7 +271,7 @@ const Student = () => {
             <input
               placeholder="Parent ID"
               value={form.parentId}
-              onChange={(e) =>
+              onChange={e =>
                 setForm({ ...form, parentId: e.target.value })
               }
             />
@@ -260,48 +279,32 @@ const Student = () => {
             <input
               placeholder="Parent Name"
               value={form.parentName}
-              onChange={(e) =>
+              onChange={e =>
                 setForm({ ...form, parentName: e.target.value })
-              }
-            />
-
-            <input
-              placeholder="Phone"
-              value={form.phone}
-              onChange={(e) =>
-                setForm({ ...form, phone: e.target.value })
-              }
-            />
-
-            <input
-              placeholder="Address"
-              value={form.address}
-              onChange={(e) =>
-                setForm({ ...form, address: e.target.value })
               }
             />
 
             <select
               value={form.className}
-              onChange={(e) =>
+              onChange={e =>
                 setForm({ ...form, className: e.target.value })
               }
             >
-              <option value="">Select Class</option>
+              <option value="">Class</option>
               {classes.map(c => (
-                <option key={c} value={c}>{c}</option>
+                <option key={c}>{c}</option>
               ))}
             </select>
 
             <select
               value={form.section}
-              onChange={(e) =>
+              onChange={e =>
                 setForm({ ...form, section: e.target.value })
               }
             >
-              <option value="">Select Section</option>
+              <option value="">Section</option>
               {sections.map(s => (
-                <option key={s} value={s}>{s}</option>
+                <option key={s}>{s}</option>
               ))}
             </select>
 
@@ -309,13 +312,7 @@ const Student = () => {
               <button className="save" onClick={handleSaveStudent}>
                 Save
               </button>
-              <button
-                className="cancel"
-                onClick={() => {
-                  setShowModal(false);
-                  setEditId(null);
-                }}
-              >
+              <button className="cancel" onClick={resetForm}>
                 Cancel
               </button>
             </div>

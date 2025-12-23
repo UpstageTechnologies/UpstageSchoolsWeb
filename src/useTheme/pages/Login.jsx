@@ -14,10 +14,14 @@ import logo from "../../assets/logo.jpeg";
 import { FcGoogle } from "react-icons/fc";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
+
+
+
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -27,34 +31,38 @@ const Login = () => {
   // NORMAL LOGIN
   const handleLogin = async (e) => {
     e.preventDefault();
-
+    if (loading) return;
+  
+    setLoading(true);
+  
     try {
       const cred = await signInWithEmailAndPassword(
         auth,
         email,
         password
       );
-
+  
       const user = cred.user;
-
-      // 🔍 Check admin document in users collection
+  
       const userRef = doc(db, "users", user.uid);
       const userSnap = await getDoc(userRef);
-
-      // ❌ Teacher / Parent → no document
+  
       if (!userSnap.exists()) {
         await signOut(auth);
-        alert("Access denied");
+        alert("Please register first");
+        navigate("/register");
         return;
       }
-
-      // ✅ Admin allowed
+  
       navigate("/dashboard");
-
+  
     } catch (error) {
       alert(error.message);
+    } finally {
+      setLoading(false);
     }
   };
+  
 
   // FORGOT PASSWORD
   const handleForgotPassword = async () => {
@@ -80,7 +88,8 @@ const Login = () => {
 
       if (!userSnap.exists()) {
         await signOut(auth);
-        alert("Access denied");
+        alert("Please register first ");
+        navigate("/register");
         return;
       }
 
@@ -94,11 +103,20 @@ const Login = () => {
 
   return (
     <>
-      <img src={logo} alt="Logo" className="logo" />
+      
       
 
       <div className="wrapper">
-      <Link to="/choose-login" className="ch-btn">School Login</Link>
+      <nav className="nav-bar">
+        
+        <img src={logo} alt="Company Logo" className="logo" />
+        <div className="nav-links">
+          <a href="/">Home</a>
+          <a href="register">Register</a>
+          <Link to="/choose-login" className="start-btn">School Login</Link>
+        </div>
+      </nav>
+      
         <div className="log">
           <h2>
             Login  <span style={{ fontSize: "14px" }}> </span>
@@ -130,9 +148,10 @@ const Login = () => {
               Forgot Password?
             </p>
 
-            <button className="log-btn" type="submit">
-              Login
+            <button className="log-btn" type="submit" disabled={loading}>
+            {loading ? "Loading..." : "Login"} 
             </button>
+
           </form>
 
           

@@ -71,6 +71,13 @@ const Teacher = () => {
   useEffect(() => {
     fetchTeachers();
   }, [adminUid]);
+  const removeAssignedClass = (index) => {
+    setForm(prev => ({
+      ...prev,
+      assignedClasses: prev.assignedClasses.filter((_, i) => i !== index)
+    }));
+  };
+  
 
   /* ================= ADD CLASS ================= */
   const addAssignedClass = () => {
@@ -239,37 +246,44 @@ const Teacher = () => {
             )
             .map(t => (
               <tr key={t.id}>
-                <td>{t.name}</td>
-                <td>{t.teacherId}</td>
-                <td>{t.email}</td>
-                <td>{t.phone}</td>
-                <td>
-                  {t.assignedClasses?.length
+                <td data-label="Name">{t.name}</td>
+
+                <td data-label="Teacher ID">{t.teacherId}</td>
+
+                <td data-label="Email">{t.email}</td>
+
+                <td data-label="Phone">{t.phone}</td>
+
+                <td data-label="Classes">
+                {t.assignedClasses?.length
                     ? t.assignedClasses
-                        .map(c => `${c.className}-${c.section}`)
-                        .join(", ")
+                    .map(c => `${c.className}-${c.section}`)
+                    .join(", ")
                     : "-"}
                 </td>
-                <td>
-                  <button
-                    className="edit-btn"
-                    onClick={() => {
-                      setForm({ ...t });
-                      setEditId(t.id);
-                      setPassword("");
-                      setShowModal(true);
-                    }}
-                  >
-                    <FaEdit /> Edit
-                  </button>
 
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleDelete(t.id)}
-                  >
-                    <FaTrash /> Delete
-                  </button>
-                </td>
+                <td data-label="Action">
+  <button
+    className="edit-btn"
+    onClick={() => {
+      setForm({ ...t });
+      setEditId(t.id);
+      setPassword("");
+      setShowModal(true); // ✅ FIXED
+    }}
+  >
+    <FaEdit /> Edit
+  </button>
+
+  <button
+    className="delete-btn"
+    onClick={() => handleDelete(t.id)}
+  >
+    <FaTrash /> Delete
+  </button>
+</td>
+
+
               </tr>
             ))}
         </tbody>
@@ -361,12 +375,42 @@ const Teacher = () => {
             <button onClick={addAssignedClass}>+ Add Class</button>
 
             <ul>
-              {form.assignedClasses.map((c, i) => (
-                <li key={i}>
-                  {c.className}-{c.section} ({c.subject})
-                </li>
-              ))}
-            </ul>
+  {form.assignedClasses.map((c, i) => (
+    <li
+      key={i}
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: "6px"
+      }}
+    >
+      <span>
+        {c.className}-{c.section} ({c.subject})
+      </span>
+
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          removeAssignedClass(i);
+        }}
+        style={{
+          color: "red",
+          cursor: "pointer",
+          background: "none",
+          border: "none",
+          fontWeight: "bold"
+        }}
+      >
+        ❌ Remove
+      </button>
+    </li>
+  ))}
+</ul>
+
+
 
             <div className="modal-actions">
               <button className="save" onClick={handleSaveTeacher}>

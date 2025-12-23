@@ -11,7 +11,7 @@ const Logout = () => {
 
   return (
     <div className="wrapper">
-    <div className="logout-container">
+    <div className="logout-container" style={{ marginLeft: "45px" }}>
       <div className="logout-box">
         <h2>Your user ID logged out</h2>
         <p>You want to login again?</p>

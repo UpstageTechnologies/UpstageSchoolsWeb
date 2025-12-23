@@ -16,11 +16,15 @@ const TeacherLogin = () => {
   const [teacherId, setTeacherId] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (loading) return;
+  
+    setLoading(true);
 
     if (!teacherId || !password) {
       alert("Fill all fields");
@@ -60,9 +64,18 @@ const TeacherLogin = () => {
 
   return (
     <>
-      <img src={logo} alt="Logo" className="logo" />
+      
 
       <div className="wrapper">
+      <nav className="nav-bar">
+        
+        <img src={logo} alt="Company Logo" className="logo" />
+        <div className="nav-links">
+          <a href="/">Home</a>
+          <a href="#">about</a>
+          <Link to="/choose-login" className="start-btn">School Login</Link>
+        </div>
+      </nav>
         <div className="log">
           <h2>Login</h2>
 
@@ -90,8 +103,8 @@ const TeacherLogin = () => {
               </span>
             </div>
 
-            <button className="log-btn" type="submit">
-              Login
+            <button className="log-btn" type="submit" disabled={loading}>
+             {loading ? "Loading..." : "Login"}
             </button>
           </form>
 

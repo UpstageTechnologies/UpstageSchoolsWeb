@@ -21,6 +21,7 @@
   text-align: center;
   border-radius: 15px;
   box-shadow: 0px 5px 15px rgba(0,0,0,0.1);
+  justify-content: center;
 }
 
 .logout-box h2 {
@@ -54,7 +55,7 @@
 /* ---------- SMALL SCREENS FALLBACK ---------- */
 @media (max-width: 480px) {
   .logout-box {
-    width: 90%; /* ensure box fits small screens */
+    width: 80%; /* ensure box fits small screens */
     padding: 20px;
   }
 
