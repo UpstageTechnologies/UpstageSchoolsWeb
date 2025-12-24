@@ -97,8 +97,6 @@ const Dashboard = () => {
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-  
-      // Account Creation dropdown
       if (
         accountMenuOpen &&
         accountRef.current &&
@@ -107,7 +105,6 @@ const Dashboard = () => {
         setAccountMenuOpen(false);
       }
   
-      // User dropdown (Settings / Logout)
       if (
         userMenuOpen &&
         userMenuRef.current &&
@@ -117,9 +114,10 @@ const Dashboard = () => {
       }
     };
   
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("pointerdown", handleClickOutside, true);
+  
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("pointerdown", handleClickOutside, true);
     };
   }, [accountMenuOpen, userMenuOpen]);
   
