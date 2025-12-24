@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState , useRef  } from "react";
 import { auth } from "../../services/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
@@ -36,7 +36,6 @@ const sliderImages = [
   "/slider/slide2.jpg",
   "/slider/slide3.jpg",
   "/slider/slide4.jpg",
-  "/slider/slide5.jpg",
   "/slider/slide6.jpg"
 ];
 
@@ -88,9 +87,44 @@ const Dashboard = () => {
   const [plan, setPlan] = useState("basic");
   const [planExpiry, setPlanExpiry] = useState(null);
 
-  const [menuOpen, setMenuOpen] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [activePage, setActivePage] = useState("home");
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  const accountRef = useRef(null);
+  const userMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+  
+      // Account Creation dropdown
+      if (
+        accountMenuOpen &&
+        accountRef.current &&
+        !accountRef.current.contains(e.target)
+      ) {
+        setAccountMenuOpen(false);
+      }
+  
+      // User dropdown (Settings / Logout)
+      if (
+        userMenuOpen &&
+        userMenuRef.current &&
+        !userMenuRef.current.contains(e.target)
+      ) {
+        setUserMenuOpen(false);
+      }
+    };
+  
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [accountMenuOpen, userMenuOpen]);
+  
+
+
 
   const navigate = useNavigate();
 
@@ -180,6 +214,7 @@ const Dashboard = () => {
           {role === "admin" && (
             <li onClick={() => navigate("/payment")}>
               <FaSignOutAlt /> Upgrade
+                
             </li>
           )}
 
@@ -203,7 +238,7 @@ const Dashboard = () => {
             role === "sub_admin"
           ) && (
             <>
-              <li
+              <li ref={accountRef}
                 className="account-main"
                 onClick={() => setAccountMenuOpen(!accountMenuOpen)}
               >
@@ -214,10 +249,10 @@ const Dashboard = () => {
               {accountMenuOpen && (
                 <ul className="account-submenu">
                   {role === "admin" && (
-                  <li onClick={() => setActivePage("admin")}>Admin</li>)}
-                  <li onClick={() => setActivePage("teacher")}>Teacher</li>
-                  <li onClick={() => setActivePage("parent")}>Parent</li>
-                  <li onClick={() => setActivePage("student")}>Student</li>
+                  <li onClick={() => {setActivePage("admin");setAccountMenuOpen(false);}}>Admin</li>)}
+                  <li onClick={() => {setActivePage("teacher");setAccountMenuOpen(false);}}>Teacher</li>
+                  <li onClick={() => {setActivePage("parent");setAccountMenuOpen(false);}}>Parent</li>
+                  <li onClick={() => {setActivePage("student");setAccountMenuOpen(false);}}>Student</li>
                 </ul>
               )}
 
@@ -245,13 +280,7 @@ const Dashboard = () => {
            </li>
           )}
 
-          <li>
-            <FaCog /> Settings
-          </li>
-
-          <li onClick={handleLogout}>
-            <FaSignOutAlt /> Logout
-          </li>
+        
         </ul>
       </div>
 
@@ -271,17 +300,47 @@ const Dashboard = () => {
             </span>
           </div>
 
-          <div className="user-info">
-            <FaUserCircle />
-            <span className="username">
-              {localStorage.getItem("adminName") ||
-                localStorage.getItem("teacherName") ||
-                localStorage.getItem("parentName") ||
-                user?.displayName ||
-                user?.email ||
-                "User"}
-            </span>
-          </div>
+       <div
+        className="user-info"
+        ref={userMenuRef}
+         onClick={() => setUserMenuOpen(!userMenuOpen)}
+ >
+  <FaUserCircle />
+  <span className="username">
+    {localStorage.getItem("adminName") ||
+      localStorage.getItem("teacherName") ||
+      localStorage.getItem("parentName") ||
+      user?.displayName ||
+      user?.email ||
+      "User"}
+  </span>
+  <FaChevronDown />
+
+  {userMenuOpen && (
+    <div className="user-dropdown simple">
+      <div
+        className="dropdown-item"
+        onClick={() => {
+          setActivePage("settings");
+          setUserMenuOpen(false);
+          setAccountMenuOpen(false);
+        }}
+      >
+        <FaCog /> Settings
+        
+      </div>
+
+      <div
+        className="dropdown-item logout"
+        onClick={handleLogout}
+        
+      >
+        <FaSignOutAlt /> Logout
+      </div>
+    </div>
+  )}
+</div>
+
         </nav>
 
         <div className="dashboard-content">

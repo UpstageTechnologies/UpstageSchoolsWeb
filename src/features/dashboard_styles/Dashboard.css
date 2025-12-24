@@ -1,30 +1,35 @@
-/* ---------------- BASE ---------------- */
+/* =========================================================
+   BASE
+========================================================= */
 * {
   box-sizing: border-box;
 }
 
 .dashboard-container {
   display: flex;
-  height: 100vh;
+  min-height: 100vh;
   width: 100vw;
-  background: #f4f4f4;
+  background: #f9fbfb;
   font-family: 'Poppins', sans-serif;
   color: #000;
+  
 }
 
-/* ---------------- SIDEBAR ---------------- */
+/* =========================================================
+   SIDEBAR
+========================================================= */
 .sidebar {
-  width: clamp(160px, 22vw, 220px);
-  background: #1f1f1f;
-  color: white;
-  padding: 20px;
   position: fixed;
   top: 60px;
   left: 0;
   height: calc(100vh - 60px);
+  width: clamp(160px, 22vw, 220px);
+  min-width: 250px;
+  background: #1f1f1f;
+  color: #fff;
+  padding: 20px;
   transition: all 0.35s ease;
   z-index: 100;
-  min-width: 250px;
 }
 
 .sidebar ul {
@@ -36,10 +41,10 @@
 .sidebar ul li {
   padding: 10px;
   margin: 10px 0;
-  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 10px;
+  cursor: pointer;
   transition: all 0.25s ease;
 }
 
@@ -49,18 +54,20 @@
   border-radius: 6px;
 }
 
+/* Sidebar states */
 .sidebar-open {
   left: 0;
 }
 
 .sidebar-close {
-  left: 0;
   width: 70px;
   min-width: 70px;
   padding: 20px 10px;
 }
 
-/* ---------------- MAIN ---------------- */
+/* =========================================================
+   MAIN CONTENT
+========================================================= */
 .main-content {
   flex: 1;
   margin-left: clamp(160px, 22vw, 220px);
@@ -73,20 +80,21 @@
   margin-left: 70px;
 }
 
-/* ---------------- NAVBAR ---------------- */
+/* =========================================================
+   NAVBAR
+========================================================= */
 .navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 10px 20px;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  z-index: 150;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
-  position: fixed;
-  width: 100%;
-  top: 0;
-  left: 0;
-  background: white;
-  border-bottom: 1px solid #eee;
-  z-index: 150;
-  color: #000;
 }
 
 .nav-left {
@@ -109,11 +117,16 @@
   font-weight: 600;
 }
 
-/* ---------------- USER ---------------- */
+/* =========================================================
+   USER INFO (TOP RIGHT)
+========================================================= */
 .user-info {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
+  cursor: pointer;
+  user-select: none;
 }
 
 .username {
@@ -121,47 +134,94 @@
   font-weight: 500;
 }
 
-/* ---------------- CONTENT ---------------- */
+/* User dropdown */
+.user-dropdown {
+  position: absolute;
+  top: 45px;
+  right: 0;
+  min-width: 160px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  z-index: 999;
+  overflow: hidden;
+}
+
+.dropdown-item {
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+  background: #f2f2f2;
+}
+
+.dropdown-item.logout {
+  color: #d32f2f;
+  font-weight: 500;
+}
+
+/* =========================================================
+   PAGE CONTENT
+========================================================= */
 .dashboard-content {
   margin-top: 80px;
   padding: 25px;
-  color: #000;
 }
 
-/* ---------------- ACCOUNT CREATION ---------------- */
+/* =========================================================
+   ACCOUNT CREATION (SIDEBAR)
+========================================================= */
 .account-main {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  cursor: pointer;
 }
 
-.account-main svg:first-child {
-  margin-right: 8px;
-}
-
-.account-main svg:last-child {
-  margin-left: auto;
-}
-
-/* -------- DROPDOWN FIX (IMPORTANT) -------- */
+/* Submenu default */
 .account-submenu {
   display: none;
+}
+
+/* Sidebar OPEN → normal dropdown */
+.sidebar-open .account-submenu {
+  display: block;
   padding-left: 35px;
 }
 
-.sidebar-open .account-submenu {
+/* Sidebar CLOSED → SIDE FLYOUT (IMPORTANT FIX) */
+.sidebar-close .account-main + .account-submenu {
   display: block;
+  position: absolute;
+  left: 70px;
+  background: #1f1f1f;
+  padding: 10px 12px;
+  border-radius: 6px;
+  min-width: 170px;
+  z-index: 999;
 }
 
-.account-submenu li {
+.sidebar-close .account-submenu li {
+  padding: 8px 10px;
   font-size: 14px;
-  padding: 6px 0;
+  color: #fff;
   cursor: pointer;
+  white-space: nowrap;
 }
 
-/* ---------------- PLAN INFO ---------------- */
+.sidebar-close .account-submenu li:hover {
+  background: #333;
+  border-radius: 4px;
+}
+
+/* =========================================================
+   PLAN INFO
+========================================================= */
 .plan-info {
   padding: 12px;
   border-radius: 8px;
@@ -186,7 +246,9 @@
   color: #111;
 }
 
-/* ---------------- COLLAPSED SIDEBAR (ICON ONLY) ---------------- */
+/* =========================================================
+   COLLAPSED SIDEBAR (ICON ONLY)
+========================================================= */
 .sidebar-close ul li {
   justify-content: center;
   font-size: 0;
@@ -196,12 +258,10 @@
   font-size: 22px;
 }
 
-.sidebar-close .plan-info,
-.sidebar-close .account-submenu {
-  display: none !important;
+.sidebar-close .plan-info {
+  display: none;
 }
 
-/* Account Creation – icon only */
 .sidebar-close .account-main {
   font-size: 0;
 }
@@ -214,19 +274,18 @@
   display: none;
 }
 
-/* ---------------- SLIDER ---------------- */
+/* =========================================================
+   SLIDER
+========================================================= */
 .slider-container {
   width: 100%;
-  height: 450px;
-  border-radius: 20px;
+  max-width: 60%;
   overflow: hidden;
-  background: #000;
+  border-radius: 16px;
 }
 
 .slider-track {
   display: flex;
-  height: 100%;
-  transition: transform 0.6s ease-in-out;
 }
 
 .slide {
@@ -235,42 +294,53 @@
 
 .slide img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  display: block;
+  border-radius: 16px;
 }
 
-.slider-dots {
-  position: absolute;
-  bottom: 14px;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-}
-
-.dot {
-  width: 10px;
-  height: 10px;
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 50%;
-}
-
-.dot.active {
-  background: white;
-  transform: scale(1.3);
-}
-
-/* ---------------- RESPONSIVE ---------------- */
+/* =========================================================
+   RESPONSIVE
+========================================================= */
 @media (max-width: 1024px) {
-  .slider-container { height: 320px; }
+  .slider-container {
+    height: 320px;
+  }
 }
 
 @media (max-width: 768px) {
-  .slider-container { height: 260px; }
+ 
+  .slider-container {
+    height: 260px;
+  }
+
+  .user-dropdown {
+    min-width: 120px;
+    top: 32px;
+  }
+
+  .dropdown-item {
+    padding: 6px 10px;
+    font-size: 13px;
+    gap: 6px;
+  }
+
+  .dropdown-item svg {
+    font-size: 14px;
+  }
 }
 
 @media (max-width: 480px) {
-  
-  .slider-container { height: 200px; }
-}
+ 
 
+  /* Sidebar OPEN → full screen */
+  .sidebar.sidebar-open {
+    transform: translateX(0);
+    width: 100vw;
+    min-width: 100vw;
+  }
+  
+  .slider-container {
+    height: 200px;
+  }
+}
