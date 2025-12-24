@@ -10,6 +10,7 @@ import ChooseLogin from "./useTheme/pages/ChooseLogin";
 import TeacherLogin from "./useTheme/pages/TeacherLogin";
 import ParentLogin from "./useTheme/pages/ParentLogin";
 import AdminLogin from "./useTheme/pages/AdminLogin";
+import CalendarPage from "./useTheme/pages/CalendarPage";
 
 
 
@@ -28,6 +29,8 @@ function App() {
         <Route path="/teacher-login" element={<TeacherLogin />} />
         <Route path="/parent-login" element={<ParentLogin />} />
         <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/calendar" element={<CalendarPage />} />
+        
         
       </Routes>
     </Router>

@@ -1,0 +1,257 @@
+/* =====================================================
+   CALENDAR CONTAINER
+===================================================== */
+.sc-calendar {
+    width: 100%;
+    max-width: 340px;
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 16px;
+    box-shadow: 0 18px 45px rgba(0,0,0,0.12);
+    animation: fadeIn 0.3s ease;
+  }
+  
+  /* =====================================================
+     HEADER
+  ===================================================== */
+  .sc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  
+  .sc-header h3 {
+    font-size: 16px;
+    font-weight: 800;
+  }
+  
+  .sc-header button {
+    background: #2140df;
+    color: #fff;
+    border: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  
+  .sc-header button:hover {
+    transform: scale(1.08);
+  }
+  
+  /* =====================================================
+     WEEK LABELS
+  ===================================================== */
+  .sc-week {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    color: #666;
+    margin-bottom: 6px;
+  }
+  
+  /* =====================================================
+     CALENDAR GRID
+  ===================================================== */
+  .sc-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+  
+  .sc-empty {
+    height: 46px;
+  }
+  
+  /* =====================================================
+     DAY CELL
+  ===================================================== */
+  .sc-day {
+    height: 52px;
+    background: #f4f7fc;
+    border-radius: 14px;
+    padding: 6px;
+    cursor: pointer;
+  
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  
+    text-align: center;
+    transition: all 0.2s ease;
+  
+    overflow: hidden;        /* 🔥 important */
+    outline: none;
+    border: none;
+  }
+  
+  .sc-day span {
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1;
+  }
+  
+  /* Hover */
+  .sc-day:hover {
+    background: #e1e7ff;
+    transform: translateY(-2px);
+  }
+  
+  /* =====================================================
+     TODAY
+  ===================================================== */
+  .sc-day.today {
+    border: 2px solid #2140df;
+    background: #eef2ff;
+    color: #000;
+  }
+  
+  /* =====================================================
+     EVENT TEXT (WRAP SAFE)
+  ===================================================== */
+  .sc-day small {
+    font-size: 10px;
+    font-weight: 700;
+    margin-top: 3px;
+  
+    line-height: 1.2;
+    max-width: 100%;
+  
+    white-space: normal;     /* wrap */
+    word-break: break-word; /* long word safe */
+    text-align: center;
+  
+    overflow: hidden;
+  }
+  
+  /* =====================================================
+     SELECTED (OPTIONAL)
+  ===================================================== */
+  .sc-day.selected {
+    background: #2140df;
+    color: #fff;
+  }
+  
+  .sc-day.selected small {
+    color: #fff;
+  }
+  
+  /* remove focus / active highlight bug */
+  .sc-day:focus,
+  .sc-day:active {
+    outline: none;
+    box-shadow: none;
+  }
+  
+  /* =====================================================
+     UPCOMING EVENTS SECTION
+  ===================================================== */
+  .sc-upcoming {
+    margin-top: 16px;
+  }
+  
+  .sc-upcoming h4 {
+    font-size: 14px;
+    font-weight: 800;
+    margin-bottom: 10px;
+    color: #444;
+  }
+  
+  .sc-up-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f4f7fc;
+    padding: 10px;
+    border-radius: 14px;
+    margin-bottom: 8px;
+  }
+  
+  .sc-up-item strong {
+    font-size: 13px;
+  }
+  
+  .sc-up-item p {
+    font-size: 11px;
+    color: #666;
+  }
+  
+  /* colored dot */
+  .sc-up-item .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+  
+  /* event colors */
+  .dot.exam     { background: #ff9800; }
+  .dot.meeting  { background: #2196f3; }
+  .dot.holiday  { background: #e91e63; }
+  .dot.birthday { background: #9c27b0; }
+  .dot.event    { background: #2140df; }
+  
+  /* =====================================================
+     FOOTER
+  ===================================================== */
+  .sc-footer {
+    margin-top: 12px;
+    font-size: 11px;
+    color: #666;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  /* =====================================================
+     ANIMATION
+  ===================================================== */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* =====================================================
+     MOBILE RESPONSIVE
+  ===================================================== */
+  @media (max-width: 480px) {
+    .sc-calendar {
+      max-width: 100%;
+      padding: 14px;
+    }
+  
+    .sc-header h3 {
+      font-size: 15px;
+    }
+  
+    .sc-day {
+      height: 48px;
+      border-radius: 12px;
+    }
+  
+    .sc-day span {
+      font-size: 12px;
+    }
+  
+    .sc-day small {
+      font-size: 9px;
+    }
+  }
+  
+  /* EXTRA SMALL DEVICES */
+  @media (max-width: 360px) {
+    .sc-day {
+      height: 44px;
+    }
+  }
+    

@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from "react";
-import {
-  doc,
-  getDoc,
-  setDoc
-} from "firebase/firestore";
-import { auth ,db } from "../../services/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { auth, db } from "../../services/firebase";
 import "../dashboard_styles/AdminTimetable.css";
+import SchoolCalendar from "../../components/SchoolCalendar";
 
 const CLASSES = Array.from({ length: 12 }, (_, i) => i + 1);
 const SECTIONS = ["A", "B", "C", "D"];
@@ -18,9 +15,9 @@ const AdminTimetable = () => {
   const [selectedDay, setSelectedDay] = useState("Monday");
   const [table, setTable] = useState({});
 
-  // ADMIN UID (from dashboard / login)
+  // ADMIN UID
   const adminUid =
-  auth.currentUser?.uid || localStorage.getItem("adminUid");
+    auth.currentUser?.uid || localStorage.getItem("adminUid");
 
   /* ================= LOAD ================= */
   const loadTimetable = async () => {
@@ -47,20 +44,31 @@ const AdminTimetable = () => {
     loadTimetable();
   }, [selectedDay, selectedSection]);
 
+  const handleCalendarDateSelect = (dateStr) => {
+    // dateStr = "2025-12-04"
+    const date = new Date(dateStr + "T00:00:00"); // timezone safe
+  
+    const dayName = date.toLocaleDateString("en-US", {
+      weekday: "long"
+    });
+  
+    // Only allow school days
+    const allowedDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+  
+    if (allowedDays.includes(dayName)) {
+      setSelectedDay(dayName);
+    }
+  };
+  
+
   /* ================= SAVE ================= */
   const saveTimetable = async () => {
     try {
-      const adminUid =
-        auth.currentUser?.uid || localStorage.getItem("adminUid");
-  
-      const role = localStorage.getItem("role");
-      const subAdminId = localStorage.getItem("adminId"); // admin01
-  
       if (!adminUid) {
-        alert("Admin not logged in. Please logout & login again.");
+        alert("Admin not logged in");
         return;
       }
-  
+
       const ref = doc(
         db,
         "users",
@@ -68,25 +76,19 @@ const AdminTimetable = () => {
         "timetables",
         `${selectedClass}_${selectedSection}`
       );
-  
-      const payload = {
-        [selectedDay]: table
-      };
-  
-      // 🔥 ONLY FOR SUB ADMIN
-      if (role === "sub_admin") {
-        payload.createdBy = subAdminId;
-      }
-  
-      await setDoc(ref, payload, { merge: true });
-  
-      alert("✅ Timetable saved successfully");
+
+      await setDoc(
+        ref,
+        { [selectedDay]: table },
+        { merge: true }
+      );
+
+      alert("✅ Timetable saved");
     } catch (err) {
-      console.error("SAVE ERROR 👉", err);
-      alert(err.message);
+      console.error(err);
+      alert("Save failed");
     }
   };
-  
 
   const resetAll = () => {
     setSelectedClass(null);
@@ -98,7 +100,7 @@ const AdminTimetable = () => {
     <div className="tt-container">
       <h2 className="tt-title">Admin Timetable</h2>
 
-      {/* CLASS SELECT */}
+      {/* ================= CLASS SELECT ================= */}
       {!selectedClass && (
         <div className="class-grid">
           {CLASSES.map(c => (
@@ -113,7 +115,7 @@ const AdminTimetable = () => {
         </div>
       )}
 
-      {/* SECTION SELECT */}
+      {/* ================= SECTION SELECT ================= */}
       {selectedClass && !selectedSection && (
         <>
           <h3 className="tt-sub">
@@ -136,46 +138,63 @@ const AdminTimetable = () => {
         </>
       )}
 
-      {/* TIMETABLE */}
+      {/* ================= PERIODS + CALENDAR ================= */}
       {selectedClass && selectedSection && (
-        <>
-          <h3 className="tt-sub">
-            Class {selectedClass} – Section {selectedSection}
-          </h3>
+        <div className="tt-layout">
 
-          <div className="day-row">
-            {DAYS.map(d => (
-              <button
-                key={d}
-                className={`day-btn ${selectedDay === d ? "active" : ""}`}
-                onClick={() => setSelectedDay(d)}
-              >
-                {d}
-              </button>
+          {/* LEFT – TIMETABLE */}
+          <div className="tt-left">
+            <h3 className="tt-sub">
+              Class {selectedClass} – Section {selectedSection}
+            </h3>
+
+            <div className="day-row">
+              {DAYS.map(d => (
+                <button
+                  key={d}
+                  className={`day-btn ${selectedDay === d ? "active" : ""}`}
+                  onClick={() => setSelectedDay(d)}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+
+            {PERIODS.map(p => (
+              <div key={p} className="period-row">
+                <label>Period {p}</label>
+                <input
+                  placeholder="Enter Subject"
+                  value={table[`p${p}`] || ""}
+                  onChange={e =>
+                    setTable({
+                      ...table,
+                      [`p${p}`]: e.target.value
+                    })
+                  }
+                />
+              </div>
             ))}
+
+            <button className="save-btn" onClick={saveTimetable}>
+              Save Timetable
+            </button>
+
+            <p className="back" onClick={resetAll}>
+              ← Change Class / Section
+            </p>
           </div>
 
-          {PERIODS.map(p => (
-            <div key={p} className="period-row">
-              <label>Period {p}</label>
-              <input
-                placeholder="Enter Subject"
-                value={table[`p${p}`] || ""}
-                onChange={e =>
-                  setTable({ ...table, [`p${p}`]: e.target.value })
-                }
-              />
-            </div>
-          ))}
+          {/* RIGHT – CALENDAR (ONLY HERE) */}
+          <div className="tt-right">
+          <SchoolCalendar
+  adminUid={adminUid}
+  onDateSelect={handleCalendarDateSelect}
+/>
 
-          <button className="save-btn" onClick={saveTimetable}>
-            Save Timetable
-          </button>
+          </div>
 
-          <p className="back" onClick={resetAll}>
-            ← Change Class / Section
-          </p>
-        </>
+        </div>
       )}
     </div>
   );

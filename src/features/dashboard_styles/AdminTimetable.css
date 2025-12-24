@@ -117,4 +117,168 @@
     margin-top: 12px;
     cursor: pointer;
   }
-  
+ /* =========================================================
+   🔥 HARD MOBILE FORCE FIT (Dashboard unchangeable)
+========================================================= */
+@media (max-width: 480px) {
+
+  /* Force timetable to usable width */
+  .tt-container {
+    width: 100%;
+    max-width: 280px;       /* 🔥 important */
+    margin: 0 auto;
+    padding: 8px;
+    overflow-x: hidden;
+  }
+
+  .tt-title {
+    font-size: 16px;
+    text-align: center;
+  }
+
+  .tt-sub {
+    font-size: 14px;
+    text-align: center;
+  }
+
+  /* ===== DAYS ===== */
+  .day-row {
+    justify-content: flex-start;
+    gap: 6px;
+  }
+
+  .day-btn {
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: 14px;
+  }
+
+  /* ===== PERIOD CARDS ===== */
+  .period-row {
+    padding: 8px;
+    border-radius: 10px;
+  }
+
+  .period-row label {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+
+  .period-row input {
+    font-size: 12px;
+    padding: 6px;
+    border-radius: 6px;
+  }
+
+  /* ===== SAVE BUTTON ===== */
+  .save-btn {
+    font-size: 14px;
+    padding: 10px;
+    border-radius: 10px;
+  }
+
+  .back {
+    font-size: 13px;
+  }
+}
+
+/* =========================================================
+   EXTRA TINY DEVICES (320px)
+========================================================= */
+@media (max-width: 360px) {
+
+  .tt-container {
+    max-width: 250px;
+  }
+
+  .day-btn {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .save-btn {
+    font-size: 13px;
+  }
+}
+/* =========================================================
+   ONLY TIMETABLE FORM AREA – DESKTOP WIDTH CONTROL
+========================================================= */
+
+@media (min-width: 1024px) {
+
+  /* shrink only timetable form area */
+  .tt-sub,
+  .day-row,
+  .period-row,
+  .save-btn,
+  .back {
+    max-width: 60%;
+  }
+
+  /* align nicely from left */
+  .tt-sub,
+  .day-row,
+  .period-row,
+  .save-btn,
+  .back {
+    margin-left: 0;
+    margin-right: auto;
+  }
+}
+@media (max-width: 768px) {
+  .tt-sub,
+  .day-row,
+  .period-row,
+  .save-btn,
+  .back {
+    max-width: 100%;
+  }
+}
+.tt-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+/* Left timetable smaller */
+.tt-left {
+  width: 65%;
+}
+
+/* Right calendar */
+.tt-right {
+  width: 35%;
+  position: sticky;
+  top: 90px;
+}
+/* =========================================================
+   📱 MOBILE: CALENDAR FIRST → TIMETABLE BELOW
+========================================================= */
+@media (max-width: 768px) {
+
+  /* Stack layout vertically */
+  .tt-layout {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Calendar comes FIRST */
+  .tt-right {
+    order: -1;
+    width: 100%;
+    position: static;     /* remove sticky on mobile */
+    margin-bottom: 16px;
+  }
+
+  /* Timetable below calendar */
+  .tt-left {
+    order: 1;
+    width: 100%;
+  }
+
+  /* Calendar full width */
+  .sc-calendar {
+    max-width: 100%;
+    margin: 0 auto;
+  }
+}
