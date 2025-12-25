@@ -136,6 +136,7 @@ export default function Attendance({ adminUid }) {
   return (
     <div className="teacher-page">
       <h2>Attendance</h2>
+      <label style={{ fontSize: 13, marginBottom: 2,marginLeft:160 }}>CurrentDate</label>
 
       <div style={{ display: "flex", gap: 10, marginBottom: 15 }}>
         <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)}>
@@ -147,7 +148,7 @@ export default function Attendance({ adminUid }) {
           <option value="">Section</option>
           {SECTIONS.map(s => <option key={s}>{s}</option>)}
         </select>
-
+        
         <input type="date" value={date} onChange={e => setDate(e.target.value)} />
       </div>
 
@@ -190,13 +191,14 @@ export default function Attendance({ adminUid }) {
             {students.map(s => (
               <tr key={s.id}>
                 <td
+                 data-label="Name"
                   style={{ color: "#000", cursor: "pointer" }}
                   onClick={() => openStudentPopup(s)}
                 >
                   {s.studentName}
                 </td>
 
-                <td>{s.studentId}</td>
+                <td data-label="Student ID">{s.studentId}</td>
 
                 <td>
                   <div style={{ display: "flex", gap: 8 }}>
