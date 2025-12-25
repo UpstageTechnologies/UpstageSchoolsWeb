@@ -4,6 +4,9 @@
 * {
   box-sizing: border-box;
 }
+html, body { 
+ overflow-x: hidden;
+}
 
 .dashboard-container {
   display: flex;
@@ -342,5 +345,16 @@
   
   .slider-container {
     height: 200px;
+  }
+}
+@media (max-width: 400px) {
+  .sidebar {
+    width: 70px;
+    min-width: 60px;
+    padding: 16px 8px;
+  }
+
+  .main-content {
+    margin-left: 40px;
   }
 }

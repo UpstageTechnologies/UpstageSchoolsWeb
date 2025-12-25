@@ -1,0 +1,187 @@
+.attendance-page {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    
+  }
+  
+  /* Top filters */
+  .att-selects {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  
+  .att-selects select,
+  .att-selects input {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    flex: 1;
+    min-width: 110px;
+  }
+  
+  /* Student card */
+  .att-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* Name + Roll */
+  .att-top {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  
+  /* Buttons */
+  .status-btns {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  
+  .status-btns button {
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background: #fff;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  
+  /* Active */
+  .status-present { background:#4caf50; color:white; }
+  .status-absent  { background:#e74c3c; color:white; }
+  .status-late    { background:#f1c40f; color:black; }
+  
+  /* Save button */
+  button.save {
+    margin-top: 12px;
+    background: #2962ff;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+  }
+  
+  /* ===== MOBILE ===== */
+  @media (max-width: 768px) {
+
+    .attendance-page,
+    .att-card,
+    .att-selects {
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box;
+      overflow-x: hidden !important;
+    }
+  }
+  
+  /* ===== STRICT MOBILE (360–400px ONLY) ===== */
+  @media (max-width: 400px) and (min-width: 320px) {
+
+    .attendance-page {
+      padding: 8px !important;
+      overflow-x: hidden !important;
+    }
+  
+    /* Filters stack full width */
+    .att-selects {
+      width: 100% !important;
+      flex-direction: column;
+      flex-wrap: nowrap;
+      gap: 6px;
+    }
+  
+    .att-selects select,
+    .att-selects input {
+      width: 100% !important;
+      min-width: 0 !important;
+      font-size: 13px !important;
+    }
+  
+    .att-selects input[type="date"] {
+      font-size: 12px !important;
+    }
+  
+    /* Cards */
+    .att-card {
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+  
+    /* Status buttons */
+    .status-btns button {
+      font-size: 13px !important;
+      padding: 6px 10px;
+    }
+  
+    button.save {
+      width: 100%;
+    }
+  }
+/* ===== STRICT MOBILE (360–400px ONLY) ===== */
+@media (max-width: 400px) and (min-width: 320px) {
+
+    .attendance-page {
+      padding: 6px !important;
+    }
+  
+    /* Filters — tighter height */
+    .att-selects {
+      gap: 4px;
+    }
+  
+    .att-selects select,
+    .att-selects input {
+      padding: 5px 8px;
+      font-size: 12px !important;
+    }
+  
+    .att-selects input[type="date"] {
+      font-size: 11px !important;
+    }
+  
+    /* Cards — slimmer */
+    .att-card {
+      padding: 10px;
+      border-radius: 10px;
+    }
+  
+    /* Status buttons — smaller */
+    .status-btns button {
+      padding: 4px 8px;
+      font-size: 12px !important;
+      border-radius: 6px;
+    }
+  
+    /* Save button smaller */
+    button.save {
+      padding: 8px 10px;
+      font-size: 13px;
+    }
+  
+    /* Popup */
+    .att-modal-content {
+      width: 90% !important;
+      max-width: 300px;
+    }
+  
+    .chart-box {
+      width: 140px;
+      height: 140px;
+    }
+  }
+  

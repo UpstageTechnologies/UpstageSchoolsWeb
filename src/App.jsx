@@ -11,6 +11,7 @@ import TeacherLogin from "./useTheme/pages/TeacherLogin";
 import ParentLogin from "./useTheme/pages/ParentLogin";
 import AdminLogin from "./useTheme/pages/AdminLogin";
 import CalendarPage from "./useTheme/pages/CalendarPage";
+import Attendance from "./features/dashboard/Attendance";
 
 
 
@@ -30,7 +31,8 @@ function App() {
         <Route path="/parent-login" element={<ParentLogin />} />
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/calendar" element={<CalendarPage />} />
-        
+        <Route path="attendance" element={<Attendance />} />
+
         
       </Routes>
     </Router>

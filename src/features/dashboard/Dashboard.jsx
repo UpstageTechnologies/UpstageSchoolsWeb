@@ -11,7 +11,7 @@ import {
   FaUserCircle,
   FaUserGraduate,
   FaHome,
-  FaCog,
+  FaCog,FaUserCheck,
   FaSignOutAlt,
   FaChevronDown,
   FaChevronUp,FaCalendarAlt,FaClipboardCheck
@@ -26,6 +26,8 @@ import StudentDetails from "./StudentDetails";
 import AdminTimetable from "./AdminTimetable";
 import TeacherTimetable from "./TeacherTimetable";
 import BackConfirm from "../../components/BackConfirm";
+import Attendance from "./Attendance";
+
 
 
 
@@ -178,6 +180,7 @@ const Dashboard = () => {
             <FaHome /> Home
           </li>
 
+
           {role === "admin" && (
             <li onClick={() => navigate("/payment")}>
               <FaSignOutAlt /> Upgrade
@@ -246,6 +249,9 @@ const Dashboard = () => {
            <FaClipboardCheck/>Approvals
            </li>
           )}
+           <li onClick={() => setActivePage("attendance")}>
+           <FaUserCheck/> Attendance
+          </li>
 
         
         </ul>
@@ -349,6 +355,11 @@ const Dashboard = () => {
           {role === "teacher" && activePage === "teacher-timetable" && (
            <TeacherTimetable />
           )}
+       {isAdminOrSubAdmin && activePage === "attendance" && (
+  <Attendance adminUid={adminUid} />
+)}
+
+
 
 
         </div>

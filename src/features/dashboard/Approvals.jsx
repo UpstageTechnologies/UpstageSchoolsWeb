@@ -5,7 +5,8 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
-  doc
+  doc,
+  setDoc
 } from "firebase/firestore";
 import { db, auth } from "../../services/firebase";
 
@@ -16,7 +17,6 @@ const Approvals = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  /* ================= FETCH APPROVAL REQUESTS ================= */
   const fetchRequests = async () => {
     if (!adminUid) return;
 
@@ -26,11 +26,12 @@ const Approvals = () => {
       collection(db, "users", adminUid, "approval_requests")
     );
 
-    const pending = snap.docs
-      .map(d => ({ id: d.id, ...d.data() }))
-      .filter(r => r.status === "pending");
+    setRequests(
+      snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(r => r.status === "pending")
+    );
 
-    setRequests(pending);
     setLoading(false);
   };
 
@@ -38,28 +39,58 @@ const Approvals = () => {
     fetchRequests();
   }, [adminUid]);
 
+
   /* ================= APPROVE ================= */
   const approveRequest = async (r) => {
     try {
-      const basePath = ["users", adminUid, `${r.module}s`];
+      /* --- CALENDAR --- */
+      if (r.module === "calendar") {
 
-      if (r.action === "create") {
-        await addDoc(collection(db, ...basePath), r.payload);
+        if (r.action === "create") {
+          await setDoc(
+            doc(db, "users", adminUid, "calendar", r.targetDate),
+            r.payload
+          );
+        }
+
+        if (r.action === "delete") {
+          await deleteDoc(
+            doc(db, "users", adminUid, "calendar", r.targetDate)
+          );
+        }
       }
 
-      if (r.action === "update") {
-        await updateDoc(
-          doc(db, ...basePath, r.targetId),
-          r.payload
+
+      /* --- TIMETABLE --- */
+      if (r.module === "timetable") {
+
+        await setDoc(
+          doc(db, "users", adminUid, "timetables", r.classKey),
+          { [r.day]: r.payload },
+          { merge: true }
         );
       }
 
-      if (r.action === "delete") {
-        await deleteDoc(
-          doc(db, ...basePath, r.targetId)
-        );
+
+      /* --- TEACHERS (existing logic) --- */
+      if (r.module === "teacher") {
+        const base = ["users", adminUid, "teachers"];
+
+        if (r.action === "create") {
+          await addDoc(collection(db, ...base), r.payload);
+        }
+
+        if (r.action === "update") {
+          await updateDoc(doc(db, ...base, r.targetId), r.payload);
+        }
+
+        if (r.action === "delete") {
+          await deleteDoc(doc(db, ...base, r.targetId));
+        }
       }
 
+
+      /* MARK APPROVED */
       await updateDoc(
         doc(db, "users", adminUid, "approval_requests", r.id),
         {
@@ -70,39 +101,33 @@ const Approvals = () => {
 
       fetchRequests();
       alert("✅ Approved successfully");
+
     } catch (err) {
       console.error(err);
       alert("Approval failed");
     }
   };
 
-  /* ================= REJECT ================= */
+
   const rejectRequest = async (id) => {
     await updateDoc(
       doc(db, "users", adminUid, "approval_requests", id),
-      {
-        status: "rejected",
-        rejectedAt: new Date()
-      }
+      { status: "rejected", rejectedAt: new Date() }
     );
 
     fetchRequests();
   };
 
-  /* ================= UI ================= */
+
   return (
     <div style={{ padding: 20 }}>
       <h2>Approvals</h2>
 
       {loading && <p>Loading approvals...</p>}
-
-      {!loading && requests.length === 0 && (
-        <p>No pending approvals</p>
-      )}
+      {!loading && requests.length === 0 && <p>No pending approvals</p>}
 
       {requests.map(r => (
-        <div
-          key={r.id}
+        <div key={r.id}
           style={{
             border: "1px solid #ddd",
             borderRadius: 6,

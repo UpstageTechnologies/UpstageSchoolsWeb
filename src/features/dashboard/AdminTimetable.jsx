@@ -4,6 +4,9 @@ import { auth, db } from "../../services/firebase";
 import "../dashboard_styles/AdminTimetable.css";
 import SchoolCalendar from "../../components/SchoolCalendar";
 
+/*  🔥 (ONLY ADDED) */
+import { addDoc, collection, Timestamp } from "firebase/firestore";
+
 const CLASSES = Array.from({ length: 12 }, (_, i) => i + 1);
 const SECTIONS = ["A", "B", "C", "D"];
 const PERIODS = [1, 2, 3, 4, 5, 6];
@@ -14,10 +17,15 @@ const AdminTimetable = () => {
   const [selectedSection, setSelectedSection] = useState(null);
   const [selectedDay, setSelectedDay] = useState("Monday");
   const [table, setTable] = useState({});
-
-  // ADMIN UID
+  
   const adminUid =
-    auth.currentUser?.uid || localStorage.getItem("adminUid");
+  auth.currentUser?.uid || localStorage.getItem("adminUid");
+
+const role = localStorage.getItem("role");
+
+
+
+
 
   /* ================= LOAD ================= */
   const loadTimetable = async () => {
@@ -42,32 +50,23 @@ const AdminTimetable = () => {
 
   useEffect(() => {
     loadTimetable();
-  }, [selectedDay, selectedSection]);
+  }, [selectedDay, selectedSection,selectedClass]);
 
   const handleCalendarDateSelect = (dateStr) => {
-    // dateStr = "2025-12-04"
-    const date = new Date(dateStr + "T00:00:00"); // timezone safe
-  
+    const date = new Date(dateStr + "T00:00:00");
     const dayName = date.toLocaleDateString("en-US", {
       weekday: "long"
     });
-  
-    // Only allow school days
-    const allowedDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-  
-    if (allowedDays.includes(dayName)) {
-      setSelectedDay(dayName);
-    }
-  };
-  
 
-  /* ================= SAVE ================= */
+    const allowed = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+
+    if (allowed.includes(dayName)) setSelectedDay(dayName);
+  };
+
+  /* ================= SAVE (ADMIN) ================= */
   const saveTimetable = async () => {
     try {
-      if (!adminUid) {
-        alert("Admin not logged in");
-        return;
-      }
+      if (!adminUid) return;
 
       const ref = doc(
         db,
@@ -90,17 +89,37 @@ const AdminTimetable = () => {
     }
   };
 
+  /* ADDED — SUB ADMIN APPROVAL REQUEST  */
+  const requestTimetableApproval = async () => {
+    await addDoc(
+      collection(db, "users", adminUid, "approval_requests"),
+      {
+        module: "timetable",
+        action: "update",
+        classKey: `${selectedClass}_${selectedSection}`,
+        day: selectedDay,
+        payload: table,
+        status: "pending",
+        createdBy: localStorage.getItem("adminId"),
+        createdAt: Timestamp.now()
+      }
+    );
+
+    alert("⏳ Sent to main admin for approval");
+  };
+
   const resetAll = () => {
     setSelectedClass(null);
     setSelectedSection(null);
     setTable({});
   };
 
+
+
   return (
     <div className="tt-container">
       <h2 className="tt-title">Admin Timetable</h2>
 
-      {/* ================= CLASS SELECT ================= */}
       {!selectedClass && (
         <div className="class-grid">
           {CLASSES.map(c => (
@@ -115,7 +134,6 @@ const AdminTimetable = () => {
         </div>
       )}
 
-      {/* ================= SECTION SELECT ================= */}
       {selectedClass && !selectedSection && (
         <>
           <h3 className="tt-sub">
@@ -138,11 +156,9 @@ const AdminTimetable = () => {
         </>
       )}
 
-      {/* ================= PERIODS + CALENDAR ================= */}
       {selectedClass && selectedSection && (
         <div className="tt-layout">
 
-          {/* LEFT – TIMETABLE */}
           <div className="tt-left">
             <h3 className="tt-sub">
               Class {selectedClass} – Section {selectedSection}
@@ -176,7 +192,11 @@ const AdminTimetable = () => {
               </div>
             ))}
 
-            <button className="save-btn" onClick={saveTimetable}>
+            {/* ⭐ BUTTON LOGIC ONLY — SAVE CODE UNCHANGED ⭐ */}
+            <button
+              className="save-btn"
+              onClick={role === "sub_admin" ? requestTimetableApproval : saveTimetable}
+            >
               Save Timetable
             </button>
 
@@ -185,13 +205,12 @@ const AdminTimetable = () => {
             </p>
           </div>
 
-          {/* RIGHT – CALENDAR (ONLY HERE) */}
           <div className="tt-right">
-          <SchoolCalendar
-  adminUid={adminUid}
-  onDateSelect={handleCalendarDateSelect}
-/>
-
+            <SchoolCalendar
+              adminUid={adminUid}
+              role={role}
+              onDateSelect={handleCalendarDateSelect}
+            />
           </div>
 
         </div>
