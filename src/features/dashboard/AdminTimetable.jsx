@@ -7,7 +7,13 @@ import SchoolCalendar from "../../components/SchoolCalendar";
 /*  🔥 (ONLY ADDED) */
 import { addDoc, collection, Timestamp } from "firebase/firestore";
 
-const CLASSES = Array.from({ length: 12 }, (_, i) => i + 1);
+// 👉 Classes BEFORE class-1 added here
+const CLASSES = [
+  "LKG",
+  "UKG", "Play Group",
+  ...Array.from({ length: 12 }, (_, i) => i + 1)
+];
+
 const SECTIONS = ["A", "B", "C", "D"];
 const PERIODS = [1, 2, 3, 4, 5, 6];
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
@@ -118,18 +124,27 @@ const role = localStorage.getItem("role");
 
   return (
     <div className="tt-container">
+           {(selectedClass || selectedSection) && (
+    <p className="back" onClick={() => {
+      setSelectedClass("");
+      setSelectedSection("");
+    }}>
+      ← Back
+    </p>
+  )}
       <h2 className="tt-title">Admin Timetable</h2>
 
       {!selectedClass && (
         <div className="class-grid">
           {CLASSES.map(c => (
-            <div
-              key={c}
-              className="class-card"
-              onClick={() => setSelectedClass(c)}
-            >
-              {c} Std
-            </div>
+        <div
+        key={c}
+        className="class-card"
+        onClick={() => setSelectedClass(c)}
+      >
+        {typeof c === "number" ? `${c} Std` : c}
+      </div>
+      
           ))}
         </div>
       )}
@@ -152,7 +167,6 @@ const role = localStorage.getItem("role");
             ))}
           </div>
 
-          <p className="back" onClick={resetAll}>← Back</p>
         </>
       )}
 
@@ -200,9 +214,7 @@ const role = localStorage.getItem("role");
               Save Timetable
             </button>
 
-            <p className="back" onClick={resetAll}>
-              ← Change Class / Section
-            </p>
+           
           </div>
 
           <div className="tt-right">

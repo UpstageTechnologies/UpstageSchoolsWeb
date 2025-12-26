@@ -254,4 +254,84 @@
       height: 44px;
     }
   }
-    
+  /* =======================
+   EDIT MODAL
+======================= */
+.sc-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.sc-modal-box {
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  width: 360px;
+  max-width: 95%;
+  box-shadow: 0 18px 40px rgba(0,0,0,.18);
+}
+
+.sc-modal-box h4 {
+  margin-bottom: 10px;
+}
+
+.sc-modal-box input,
+.sc-modal-box select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  margin-bottom: 10px;
+}
+
+/* buttons */
+.sc-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sc-actions button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 480px) {
+
+  .sc-modal-box {
+    max-width: 330px;      /* smaller popup */
+    padding: 14px;
+  }
+
+  .sc-actions {
+    flex-wrap: wrap;       /*  all buttons always visible */
+  }
+
+  .sc-actions button {
+    flex: 1 1 48%;         /* 2 buttons per row */
+  }
+}
+
+
+/* ============================
+   📱 EXTRA SMALL (360 and below)
+============================ */
+@media (max-width: 360px) {
+
+  .sc-modal-box {
+    max-width: 300px;
+  }
+
+  .sc-actions button {
+    flex: 1 1 100%;       
+  }
+}

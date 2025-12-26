@@ -18,20 +18,32 @@
   
   /* CLASS GRID */
   .class-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 16px;
   }
   
+  
   .class-card {
-    width: 120px;
-    padding: 18px;
     background: #2140df;
     color: #fff;
     border-radius: 14px;
-    text-align: center;
-    font-weight: 800;
+    padding: 14px 10px;
+  
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    height: 70px;          /* 🔥 same size */
+    font-size: 15px;
+    font-weight: 700;
+  
     cursor: pointer;
+    transition: 0.2s;
+  }
+  
+  .class-card:hover {
+    transform: translateY(-2px);
   }
   
   /* SECTION */
@@ -185,19 +197,24 @@
 /* =========================================================
    EXTRA TINY DEVICES (320px)
 ========================================================= */
+@media (max-width: 480px) {
+  .class-grid {
+    grid-template-columns: repeat(2, 1fr);   /* ⭐ Stay 2 columns */
+  }
+
+  .class-card {
+    height: 76px;     /* slightly smaller */
+  }
+}
+
+/* -------- VERY SMALL PHONES (<360) — 1 COL -------- */
 @media (max-width: 360px) {
-
-  .tt-container {
-    max-width: 250px;
+  .class-grid {
+    grid-template-columns: repeat(1, 1fr);
   }
 
-  .day-btn {
-    font-size: 10px;
-    padding: 4px 8px;
-  }
-
-  .save-btn {
-    font-size: 13px;
+  .class-card {
+    height: 72px;
   }
 }
 /* =========================================================
@@ -281,4 +298,9 @@
     max-width: 100%;
     margin: 0 auto;
   }
+}
+.back {
+  text-align: left !important;
+  width: fit-content;
+  margin-left: 0;
 }
