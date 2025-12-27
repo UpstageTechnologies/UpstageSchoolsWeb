@@ -291,7 +291,7 @@ const Teacher = () => {
 
       {/* MODAL */}
       {showModal && (
-        <div className="modal popup-small" >
+        <div className="modal-overlay " >
           <div className="modal popup-box"  >
             <h3>{editId ? "Edit Teacher" : "Add Teacher"}</h3>
 
