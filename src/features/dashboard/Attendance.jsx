@@ -9,7 +9,7 @@ import {
   addDoc
 } from "firebase/firestore";
 import { db } from "../../services/firebase";
-import "../dashboard_styles/attendance.css";
+import "../dashboard_styles/Attendance.css";
 
 const CLASSES = ["LKG", "UKG", "Play Group", ...Array.from({ length: 12 }, (_, i) => i + 1)];
 const SECTIONS = ["A", "B", "C", "D"];
@@ -219,9 +219,9 @@ export default function Attendance({ adminUid }) {
 
               <tbody>
                 {students.map(s => (
-                  <>
-                  <tr key={s.id}>
-                    <td data-label="Name">{s.studentName}</td>
+                  < React.Fragment key={s.id}>
+                  <tr>
+                    <td data-label="Name ">{s.studentName}</td>
                     <td data-label="Student Id">{s.studentId}</td>
 
                     <td>
@@ -318,7 +318,7 @@ export default function Attendance({ adminUid }) {
   </td>
 </tr>
 
-</>
+</React.Fragment>
 
                   
                 ))}
