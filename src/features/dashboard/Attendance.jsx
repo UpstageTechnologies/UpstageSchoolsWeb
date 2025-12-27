@@ -192,12 +192,12 @@ export default function Attendance({ adminUid }) {
           />
 
           {students.length > 0 && (
-            <table className="teacher-table">
+            <table className="attendance-table">
               <thead>
                 <tr>
                   <th>Name</th>
                   <th>Student ID</th>
-                  <th style={{ width: "400px" }}>Status</th>
+                  <th>Status</th>
 
                   <th colSpan={dayLabels.length} style={{ textAlign: "center" }}>
                     Previous 7 Days
@@ -225,7 +225,7 @@ export default function Attendance({ adminUid }) {
                     <td data-label="Student Id">{s.studentId}</td>
 
                     <td>
-                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                      <div style={{ display: "flex", gap: 8, alignItems: "center" , justifyContent: "center" ,width: "100%"}}>
                         {["present", "absent", "late"].map(st => (
                           <button
                             key={st}
@@ -271,7 +271,7 @@ export default function Attendance({ adminUid }) {
                       const st = (history[s.id] || [])[i];
 
                       return (
-                        <td key={i} style={{ textAlign: "center", width: 40 }}>
+                        <td key={i}  className="prev-cell" style={{ textAlign: "center", width: 40 , }}>
                           <span
                             style={{
                               fontSize: 13,
@@ -294,7 +294,7 @@ export default function Attendance({ adminUid }) {
                  
                   <tr className="mobile-prev-row">
   <td colSpan={dayLabels.length + 3}>
-    <div className="prev-box">
+    <div className="prev-box"  style={{justifyContent: "center" ,width: "100%" , alignItems: "center"}}>
 
       {/* dates — SAME ORDER AS DESKTOP */}
       <div className="prev-dates">
@@ -304,7 +304,7 @@ export default function Attendance({ adminUid }) {
       </div>
 
       {/* icons — SAME ORDER AS DESKTOP */}
-      <div className="prev-row">
+      <div className="prev-row" >
         {(history[s.id] || []).map((st, i) => (
           <span key={i} className="prev-icon">
             {st === "present" ? "✔"
