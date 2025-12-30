@@ -4,64 +4,91 @@ import "../dashboard_styles/Teacher.css";
 import {
   collection,
   getDocs,
-  query,
-  where
+  doc,
+  getDoc
 } from "firebase/firestore";
 import { auth, db } from "../../services/firebase";
 
 const ShowTodaysAbsent = () => {
 
-  /* ---------- SAME METHOD AS TEACHER.jsx ---------- */
+  // 🔐 make sure admin uid is always correct
   const adminUid =
-    auth.currentUser?.uid || localStorage.getItem("adminUid");
+    localStorage.getItem("adminUid") ||
+    auth.currentUser?.uid;
 
-  const [date, setDate] = useState(
-    new Date().toISOString().substring(0, 10)
-  );
+  // 📅 use LOCAL date (correct — avoids timezone shift)
+  const [date, setDate] = useState(() => {
+    return new Date().toLocaleDateString("en-CA");   // yyyy-mm-dd
+  });
 
   const [absents, setAbsents] = useState([]);
   const [search, setSearch] = useState("");
 
-  /* ---------- LOAD ABSENT LIST ---------- */
   const loadAbsents = async () => {
     if (!adminUid) return;
 
-    // students
+    console.log("🔎 Searching date:", date);
+
+    // 1️⃣ load all students (map by document id)
     const sSnap = await getDocs(
       collection(db, "users", adminUid, "students")
     );
 
-    const studentMap = {};
-    sSnap.forEach(d => (studentMap[d.id] = d.data()));
-
-    // attendance (same path)
-    const q = query(
-      collection(db, "users", adminUid, "attendance"),
-      where("date", "==", date)
-    );
-
-    const aSnap = await getDocs(q);
+    const students = {};
+    sSnap.forEach(d => (students[d.id] = d.data()));
 
     const list = [];
 
-    aSnap.forEach(docSnap => {
-      const data = docSnap.data();
-      const records = data.records || {};
+    // 2️⃣ loop all class folders under attendance
+    const classSnap = await getDocs(
+      collection(db, "users", adminUid, "attendance")
+    );
 
-      Object.entries(records).forEach(([sid, status]) => {
-        if (status === "absent") {
-          const s = studentMap[sid];
-          if (s) {
-            list.push({
-              name: s.studentName,
-              studentId: s.studentId,
-              class: s.class,
-              section: s.section
-            });
-          }
+    for (const cDoc of classSnap.docs) {
+
+      // Allow only class folders: 1_A, 3_B, 10_C etc
+      if (!/^\d+_[A-Z]$/i.test(cDoc.id)) continue;
+    
+      console.log("📁 REAL class checked:", cDoc.id);
+    
+
+      // 3️⃣ read attendance document for selected date
+      const dateDoc = await getDoc(
+        doc(
+          db,
+          "users",
+          adminUid,
+          "attendance",
+          cDoc.id,
+          "dates",
+          date
+        )
+      );
+
+      console.log(
+        "➡️ Path:",
+        `users/${adminUid}/attendance/${cDoc.id}/dates/${date}`,
+        "| exists:", dateDoc.exists()
+      );
+
+      if (!dateDoc.exists()) continue;
+
+      const rec = dateDoc.data().records || {};
+
+      // 4️⃣ collect absentees
+      Object.entries(rec).forEach(([sid, status]) => {
+        if (status === "absent" && students[sid]) {
+          const s = students[sid];
+
+          list.push({
+            name: s.studentName,
+            studentId: s.studentId,
+            class: s.className,
+            section: s.section
+          });
         }
       });
-    });
+    }
 
     setAbsents(list);
   };
@@ -70,13 +97,14 @@ const ShowTodaysAbsent = () => {
     loadAbsents();
   }, [date, adminUid]);
 
-  /* ---------- UI ---------- */
   return (
     <div className="teacher-page">
       <div className="teacher-header">
         <h2>Today’s Absent</h2>
 
         <div className="teacher-actions">
+
+          {/* search */}
           <div className="search-box">
             <FaSearch />
             <input
@@ -86,6 +114,7 @@ const ShowTodaysAbsent = () => {
             />
           </div>
 
+          {/* calendar */}
           <input
             type="date"
             value={date}
@@ -95,6 +124,7 @@ const ShowTodaysAbsent = () => {
         </div>
       </div>
 
+      {/* TABLE */}
       <table className="teacher-table">
         <thead>
           <tr>
@@ -108,16 +138,16 @@ const ShowTodaysAbsent = () => {
         <tbody>
           {absents
             .filter(a =>
-              JSON.stringify(a)
+              JSON.stringify(a ?? {})
                 .toLowerCase()
                 .includes(search.toLowerCase())
             )
             .map((a, i) => (
               <tr key={i}>
-                <td data-label="Name">{a.name}</td>
-                <td data-label="Student ID">{a.studentId}</td>
-                <td data-label="Class">{a.class}</td>
-                <td data-label="Section">{a.section}</td>
+                <td data-label = "Name">{a.name}</td>
+                <td data-label = "Student Id">{a.studentId}</td>
+                <td data-label = "Class">{a.class}</td>
+                <td data-label = "Section">{a.section}</td><td></td>
               </tr>
             ))}
 

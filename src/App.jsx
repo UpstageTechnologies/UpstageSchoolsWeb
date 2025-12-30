@@ -14,6 +14,8 @@ import CalendarPage from "./useTheme/pages/CalendarPage";
 import Attendance from "./features/dashboard/Attendance";
 import ShowTodaysAbsent from "./features/dashboard/ShowTodaysAbsent";
 import Courses from "./features/dashboard/Courses";
+import TeacherAttendance from "./features/dashboard/TeacherAttendance";
+import ShowTodaysTeacherAbsent from "./features/dashboard/ShowTodaysTeacherAbsent";
 
 
 
@@ -36,11 +38,12 @@ function App() {
         <Route path="attendance" element={<Attendance />} />
         <Route path="/todays-absent" element={<ShowTodaysAbsent />} />
         <Route path="courses" element={<Courses />} />
+        <Route path="/teacher-attendance" element={<TeacherAttendance />} />
+        <Route path="/teacher-absents"element={<ShowTodaysTeacherAbsent />}/>
 
 
-
-        
-      </Routes>
+        </Routes>
+    
     </Router>
   );
 }

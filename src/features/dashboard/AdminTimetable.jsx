@@ -16,7 +16,7 @@ const CLASSES = [
 
 const SECTIONS = ["A", "B", "C", "D"];
 const PERIODS = [1, 2, 3, 4, 5, 6];
-const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+const DAYS = ["Sunday","Monday", "Tuesday", "Wednesday", "Thursday", "Friday","Saturday"];
 
 const AdminTimetable = () => {
   const [selectedClass, setSelectedClass] = useState(null);

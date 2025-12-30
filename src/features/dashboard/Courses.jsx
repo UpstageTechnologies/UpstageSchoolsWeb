@@ -1,261 +1,329 @@
-import { useState, useEffect } from "react";
-import { db, auth } from "../../services/firebase";
-import {
-  collection,
-  getDocs,
-  getDoc,
-  setDoc,
-  doc,
-  Timestamp
-} from "firebase/firestore";
+  import { useState, useEffect } from "react";
+  import { db, auth } from "../../services/firebase";
+  import {
+    collection,
+    getDocs,
+    getDoc,
+    setDoc,
+    doc,
+    Timestamp
+  } from "firebase/firestore";
 
-// ⭐ reuse dashboard styles
-import "../dashboard_styles/Attendance.css";
+  // ⭐ reuse dashboard styles
+  import "../dashboard_styles/Attendance.css";
 
-const CLASSES = [
-  "LKG",
-  "UKG",
-  "Play Group",
-  ...Array.from({ length: 12 }, (_, i) => i + 1)
-];
+  const CLASSES = [
+    "LKG",
+    "UKG",
+    "Play Group",
+    ...Array.from({ length: 12 }, (_, i) => i + 1)
+  ];
 
-export default function Courses() {
+  export default function Courses() {
 
-  const adminUid =
-    auth.currentUser?.uid || localStorage.getItem("adminUid");
+    const adminUid =
+      auth.currentUser?.uid || localStorage.getItem("adminUid");
 
-  const [selectedClass, setSelectedClass] = useState(null);
-  const [subjects, setSubjects] = useState([]);
-  const [selectedSubject, setSelectedSubject] = useState(null);
-  const [examGroups, setExamGroups] = useState([]);
+    const [selectedClass, setSelectedClass] = useState(null);
+    const [subjects, setSubjects] = useState([]);
+    const [selectedSubject, setSelectedSubject] = useState(null);
+    const [examGroups, setExamGroups] = useState([]);
 
-  /* ========= LOAD SUBJECTS ========= */
-  const loadSubjects = async () => {
-    if (!adminUid || !selectedClass) return;
+    /* ========= LOAD SUBJECTS ========= */
+    const loadSubjects = async () => {
+      if (!adminUid || !selectedClass) return;
 
-    const snap = await getDocs(
-      collection(
-        db,
-        "users",
-        adminUid,
-        "courses",
-        String(selectedClass),
-        "subjects"
-      )
-    );
+      const snap = await getDocs(
+        collection(
+          db,
+          "users",
+          adminUid,
+          "courses",
+          String(selectedClass),
+          "subjects"
+        )
+      );
 
-    setSubjects(snap.docs.map((d) => d.id));
-  };
+      setSubjects(snap.docs.map((d) => d.id));
+    };
 
-  useEffect(() => {
-    if (!adminUid || !selectedClass) return;
-    loadSubjects();
-  }, [adminUid, selectedClass]);
+    useEffect(() => {
+      if (!adminUid || !selectedClass) return;
+      loadSubjects();
+    }, [adminUid, selectedClass]);
 
-  /* ========= ADD SUBJECT ========= */
-  const addSubject = async () => {
-    const name = prompt("Enter Subject Name");
-    if (!name) return;
+    /* ========= ADD SUBJECT ========= */
+    const addSubject = async () => {
+      const name = prompt("Enter Subject Name");
+      if (!name) return;
 
-    await setDoc(
-      doc(
-        db,
-        "users",
-        adminUid,
-        "courses",
-        String(selectedClass),
-        "subjects",
-        name
-      ),
-      { examGroups: [] }
-    );
+      await setDoc(
+        doc(
+          db,
+          "users",
+          adminUid,
+          "courses",
+          String(selectedClass),
+          "subjects",
+          name
+        ),
+        { examGroups: [] }
+      );
 
-    loadSubjects();
-  };
+      loadSubjects();
+    };
 
-  /* ========= LOAD TOPICS FOR SUBJECT ========= */
-  const loadTopics = async (sub) => {
-    setSelectedSubject(sub);
+    /* ========= DELETE SUBJECT ========= */
+const deleteSubject = async (name) => {
+  if (!window.confirm(`Delete subject "${name}"?`)) return;
 
-    const ref = doc(
+  await setDoc(
+    doc(
       db,
       "users",
       adminUid,
       "courses",
       String(selectedClass),
       "subjects",
-      sub
-    );
+      name
+    ),
+    {},
+    { merge: false } // overwrite with empty → delete structure
+  );
 
-    const snap = await getDoc(ref);
+  // Firestore delete — safer way
+  await deleteDoc(
+    doc(
+      db,
+      "users",
+      adminUid,
+      "courses",
+      String(selectedClass),
+      "subjects",
+      name
+    )
+  );
 
-    if (snap.exists()) {
-      setExamGroups(snap.data().examGroups || []);
-    } else {
-      setExamGroups([]);
-    }
-  };
+  // refresh list
+  loadSubjects();
+};
 
-  /* ========= SAVE TOPICS ========= */
-  const saveTopics = async () => {
-    await setDoc(
-      doc(
+
+    /* ========= LOAD TOPICS FOR SUBJECT ========= */
+    const loadTopics = async (sub) => {
+      setSelectedSubject(sub);
+
+      const ref = doc(
         db,
         "users",
         adminUid,
         "courses",
         String(selectedClass),
         "subjects",
-        selectedSubject
-      ),
-      { examGroups, updatedAt: Timestamp.now() },
-      { merge: true }
-    );
+        sub
+      );
 
-    alert("Saved 👍");
-  };
+      const snap = await getDoc(ref);
 
-  return (
-    <div className="tt-container">
-           {/* ⬇️⬇️⬇️  👉 BACK BUTTON GOES HERE 👈  ⬇️⬇️⬇️ */}
-      {(selectedClass || selectedSubject) && (
-        <p
-          className="back"
-          onClick={() => {
-            if (selectedSubject) setSelectedSubject(null);
-            else setSelectedClass(null);
-          }}
-        >
-          ← Back
-        </p>
-      )}
+      if (snap.exists()) {
+        setExamGroups(snap.data().examGroups || []);
+      } else {
+        setExamGroups([]);
+      }
+    };
 
-      {/* ========== CLASS SELECT ========== */}
-      {!selectedClass && (
-        <>
-          <h2>Select Class</h2>
+    /* ========= SAVE TOPICS ========= */
+    const saveTopics = async () => {
+      await setDoc(
+        doc(
+          db,
+          "users",
+          adminUid,
+          "courses",
+          String(selectedClass),
+          "subjects",
+          selectedSubject
+        ),
+        { examGroups, updatedAt: Timestamp.now() },
+        { merge: true }
+      );
 
-          <div className="class-grid">
-            {CLASSES.map((c) => (
-              <div
-                key={c}
-                className="class-card"
-                onClick={() => setSelectedClass(c)}
-              >
-                {typeof c === "number" ? `${c} Std` : c}
-              </div>
-            ))}
-          </div>
-        </>
-      )}
+      alert("Saved 👍");
+    };
 
-      {/* ========== SUBJECT LIST ========== */}
-      {selectedClass && !selectedSubject && (
-        <>
-          <h3>Class {selectedClass} — Subjects</h3>
-
-          <button className="save-btn" onClick={addSubject} style={{ marginBottom: 16 }}        >
-            + Add Subject
-          </button>
-
-          <div className="class-grid">
-            {subjects.map((s) => (
-              <div
-                key={s}
-                className="class-card"
-                onClick={() => loadTopics(s)}
-              >
-                {s}
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-
-      {/* ========== TOPICS BUILDER ========== */}
-      {selectedSubject && (
-        <div className="topics-box">
-          <h3>{selectedSubject} — Titles & Topics</h3>
-
-          <button
-            className="save-btn"
-            onClick={() =>
-              setExamGroups([
-                ...examGroups,
-                { title: "", topics: [""] }
-              ])
-            }
-          >
-            + Add Title
-          </button>
-
-          {examGroups.map((grp, gi) => (
-            <div
-            key={gi}
-            className="exam-block"
-            style={{ 
-              display: "flex",
-              flexDirection: "column",
-              gap: 10,
-              marginBottom: 16 ,
-              maxWidth: 520,          // 👈 limit width
+    return (
+      <div className="tt-container">
+            {/* ⬇️⬇️⬇️  👉 BACK BUTTON GOES HERE 👈  ⬇️⬇️⬇️ */}
+        {(selectedClass || selectedSubject) && (
+          <p
+            className="back"
+            onClick={() => {
+              if (selectedSubject) setSelectedSubject(null);
+              else setSelectedClass(null);
             }}
           >
-          
+            ← Back
+          </p>
+        )}
 
-          <h4 style={{ marginBottom: 6 }}>
-  {grp.title || `Title ${gi + 1}`}
-</h4>
+        {/* ========== CLASS SELECT ========== */}
+        {!selectedClass && (
+          <>
+            <h2>Select Class</h2>
 
-<input
-  value={grp.title}
-  onChange={(e) => {
-    const copy = [...examGroups];
-    copy[gi].title = e.target.value;
-    setExamGroups(copy);
-  }}
-  style={{
-    padding: "6px 10px",
-    borderRadius: 8,
-    border: "1px solid #ccc",
-    marginBottom: 10
-  }}
-  placeholder="Enter title name"
-/>
-
-
-              {grp.topics.map((t, ti) => (
-                <input
-                  key={ti}
-                  placeholder={`Topic ${ti + 1}`}
-                  value={t}
-                  onChange={(e) => {
-                    const copy = [...examGroups];
-                    copy[gi].topics[ti] = e.target.value;
-                    setExamGroups(copy);
-                  }}
-                  style={{ marginTop: 6 }}
-                />
+            <div className="class-grid">
+              {CLASSES.map((c) => (
+                <div
+                  key={c}
+                  className="class-card"
+                  onClick={() => setSelectedClass(c)}
+                >
+                  {typeof c === "number" ? `${c} Std` : c}
+                </div>
               ))}
-
-<button
-  onClick={() => {
-    const copy = [...examGroups];
-    copy[gi].topics.push("");
-    setExamGroups(copy);
-  }}
->
-  + Add Topic
-</button>
-
             </div>
-          ))}
+          </>
+        )}
 
-          <button className="save-btn" onClick={saveTopics}>
-            Save
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
+        {/* ========== SUBJECT LIST ========== */}
+        {selectedClass && !selectedSubject && (
+          <>
+            <h3>Class {selectedClass} — Subjects</h3>
+
+            <button className="save-btn" onClick={addSubject} style={{ marginBottom: 16 }}        >
+              + Add Subject
+            </button>
+
+            <div className="class-grid">
+              {subjects.map((s) => (
+                <div
+                  key={s}
+                  className="class-card"
+                  onClick={() => loadTopics(s)}
+                >
+                  {s}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* ========== TOPICS BUILDER ========== */}
+        {selectedSubject && (
+          <div className="topics-box">
+            <h3>{selectedSubject} — Titles & Topics</h3>
+
+            <button
+              className="save-btn"
+              onClick={() =>
+                setExamGroups([
+                  ...examGroups,
+                  { title: "", topics: [""] }
+                ])
+              }
+            >
+              + Add Title
+            </button>
+
+            {examGroups.map((grp, gi) => (
+              <div
+              key={gi}
+              className="exam-block"
+              style={{ 
+                display: "flex",
+                flexDirection: "column",
+                gap: 10,
+                marginBottom: 16 ,
+                maxWidth: 520,          
+              }}
+            >
+            
+
+            <div
+       style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center"
+      }}
+      >
+       {/* TITLE — editable */}
+       <input
+         style={{
+          border: "1px solid #ccc",
+          padding: "6px 10px",
+          borderRadius: 6,
+          width: "70%",
+          fontWeight: 600,
+          marginTop:20
+        }}
+        value={grp.title}
+        placeholder={`Title ${gi + 1}`}
+        onChange={(e) => {
+          const copy = [...examGroups];
+          copy[gi].title = e.target.value;
+          setExamGroups(copy);
+        }}
+        />
+
+       {/* DELETE BUTTON */}
+       <button 
+         style={{  
+          background: "#ff4d4d",
+          border: "none",
+          padding: "6px 10px",
+          borderRadius: 6,
+          color: "#fff",
+          cursor: "pointer",
+          marginTop:20
+        }}
+        onClick={() => {
+          const copy = [...examGroups];
+          copy.splice(gi, 1);
+          setExamGroups(copy);
+        }}
+        >
+         Delete
+         </button>
+         </div>
+
+                {grp.topics.map((t, ti) => (
+                  <input
+                    key={ti}
+                    placeholder={`Topic ${ti + 1}`}
+                    value={t}
+                    onChange={(e) => {
+                      const copy = [...examGroups];
+                      copy[gi].topics[ti] = e.target.value;
+                      setExamGroups(copy);
+                    }}
+                    style={{
+                      border: "1px solid #ccc",
+                      padding: "6px 10px",
+                      borderRadius: 6,
+                      width: "70%",
+                      fontWeight: 600
+                    }}
+                  />
+                ))}
+  
+            <button
+                onClick={() => {
+                  const copy = [...examGroups];
+                  copy[gi].topics.push("");
+                  setExamGroups(copy);
+                }}
+              >
+                + Add Topic
+            </button>
+
+              </div>
+            ))}
+
+            <button className="save-btn" onClick={saveTopics}>
+              Save
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }

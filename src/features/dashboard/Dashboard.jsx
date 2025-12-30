@@ -30,9 +30,8 @@ import TeacherTimetable from "./TeacherTimetable";
 import BackConfirm from "../../components/BackConfirm";
 import Attendance from "./Attendance";
 import ShowTodaysAbsent from "./ShowTodaysAbsent";
-
-
-
+import TeacherAttendance from "./TeacherAttendance";
+import ShowTodaysTeacherAbsent from "./ShowTodaysTeacherAbsent";
 
 
 
@@ -234,6 +233,20 @@ const Dashboard = () => {
               <FaCalendarAlt />Timetable
               </li>
              
+          <li onClick={() => setActivePage("todays-absent")}>
+          
+             <FaUserTimes/>Teacher's Absences
+         </li>
+          <li onClick={() => setActivePage("todays-absent")}>
+          
+             <FaUserTimes/>Student's Absences
+         </li>
+         
+
+         <li onClick={() => setActivePage("attendance")}>
+           <FaUserCheck/> Teacher's Attendance
+          </li>
+             
             </>
           )}
 
@@ -244,6 +257,9 @@ const Dashboard = () => {
             </li>
              <li onClick={() => setActivePage("teacher-timetable")}>
              <FaCalendarAlt/> Teacher Timetable
+           </li>
+           <li onClick={() => setActivePage("teacher-attendance")}>
+           <FaUserCheck/>Teacher Timetable
            </li>
            </>
           )}
@@ -257,13 +273,7 @@ const Dashboard = () => {
           <FaBookOpen /> Courses
           </li>
 
-           <li onClick={() => setActivePage("attendance")}>
-           <FaUserCheck/> Attendance
-          </li>
-          <li onClick={() => setActivePage("todays-absent")}>
-          
-             <FaUserTimes/>Today Absent
-         </li>
+       
 
 
 
@@ -369,7 +379,7 @@ const Dashboard = () => {
           {role === "teacher" && activePage === "teacher-timetable" && (
            <TeacherTimetable />
           )}
-       {isAdminOrSubAdmin && activePage === "attendance" && (
+         {isAdminOrSubAdmin && activePage === "attendance" && (
             <Attendance adminUid={adminUid} />
             )}
           {isAdminOrSubAdmin && activePage === "todays-absent" && (
@@ -378,6 +388,14 @@ const Dashboard = () => {
           {isAdminOrSubAdmin && activePage === "courses" && (
            <Courses />
            )}
+           {role === "teacher" && activePage === "teacher-attendance" && (
+           <TeacherAttendance />
+           )}
+           {isAdminOrSubAdmin && activePage === "teacher-absent" && (
+  <ShowTodaysTeacherAbsent adminUid={adminUid} />
+)}
+
+
 
 
 
