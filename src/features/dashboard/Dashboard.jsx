@@ -46,45 +46,6 @@ const sliderImages = [
   "/slider/slide6.jpg"
 ];
 
-const SPECIAL_USER_UID = "vd8GKjbWrgfpO3FnokO5qHe2o1s2";
-
-const DashboardSlider = () => {
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setIndex(prev => (prev + 1) % sliderImages.length);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, []);
-
-  return (
-    
-    <div className="slider-container">
-      <div
-        className="slider-track"
-        style={{ transform: `translateX(-${index * 100}%)` }}
-      >
-        {sliderImages.map((img, i) => (
-          <div className="slide" key={i}>
-            <img src={img} alt={`slide-${i}`} />
-          </div>
-        ))}
-      </div>
-
-      <div className="slider-dots">
-        {sliderImages.map((_, i) => (
-          <span
-            key={i}
-            className={i === index ? "dot active" : "dot"}
-            onClick={() => setIndex(i)}
-          />
-        ))}
-      </div>
-    </div>
-    
-  );
-};
 /* ================= END SLIDER ================= */
 
 const Dashboard = () => {
@@ -235,15 +196,7 @@ const Dashboard = () => {
               <FaCalendarAlt />Timetable
               </li>
              
-          <li onClick={() => setActivePage("teacher-absents")}>
-          
-             <FaUserTimes/>Teacher's Absences
-         </li>
-          <li onClick={() => setActivePage("todays-absent")}>
-          
-             <FaUserTimes/>Student's Absences
-         </li>
-         
+        
          {role === "sub_admin" && (
          <li onClick={() => setActivePage("attendance")}>
            <FaUserCheck/> Teacher's Attendance
@@ -343,7 +296,8 @@ const Dashboard = () => {
         </nav>
 
         <div className="dashboard-content">
-       {activePage === "home" && <Home adminUid={adminUid} role={role} />}
+       {activePage === "home" && <Home adminUid={adminUid} role={role} setActivePage={setActivePage}/>}
+   
 
 
 
@@ -377,7 +331,7 @@ const Dashboard = () => {
             <Attendance adminUid={adminUid} />
             )}
           {isAdminOrSubAdmin && activePage === "todays-absent" && (
-            <ShowTodaysAbsent adminUid={adminUid} />
+            <ShowTodaysAbsent adminUid={adminUid} setActivePage={setActivePage} />
           )}
           {isAdminOrSubAdmin && activePage === "courses" && (
            <Courses />
@@ -386,16 +340,9 @@ const Dashboard = () => {
            <TeacherAttendance />
            )}
            {isAdminOrSubAdmin && activePage === "teacher-absents" && (
-             <ShowTodaysTeacherAbsent adminUid={adminUid} />
+             <ShowTodaysTeacherAbsent adminUid={adminUid} setActivePage={setActivePage} />
            )}
            
-
-
-
-
-
-
-
 
         </div>
       </div>

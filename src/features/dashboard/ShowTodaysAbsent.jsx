@@ -9,7 +9,7 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "../../services/firebase";
 
-const ShowTodaysAbsent = () => {
+const ShowTodaysAbsent = ({ setActivePage }) => {
 
   // 🔐 make sure admin uid is always correct
   const adminUid =
@@ -105,6 +105,12 @@ const ShowTodaysAbsent = () => {
 
   return (
     <div className="teacher-page">
+       <span
+        style={{ color: "#2140df", cursor: "pointer", fontWeight: 600 }}
+        onClick={() => setActivePage("home")}
+      >
+        ← Back
+      </span>
       <div className="teacher-header">
         <h2>Today’s Absent - Students</h2>
 

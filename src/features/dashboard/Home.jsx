@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 
 const today = new Date().toLocaleDateString("en-CA");
 
-export default function Home({ adminUid }) {
+export default function Home({ adminUid ,setActivePage }) {
   const [stats, setStats] = useState({
     studentPresent: 0,
     studentAbsent: 0,
@@ -84,7 +84,7 @@ export default function Home({ adminUid }) {
           <p>Today</p>
         </div>
 
-        <div className="home-card red" onClick={() => navigate("/todays-absent")}>
+        <div className="home-card red" onClick={() => setActivePage("todays-absent")}>
           <h4>Students Absent  <FaUserTimes/></h4>
           <h1>{stats.studentAbsent}</h1>
           <p>Today</p>
@@ -96,7 +96,7 @@ export default function Home({ adminUid }) {
           <p>Today</p>
         </div>
 
-        <div className="home-card purple" onClick={() => navigate("/teacher-absents")}>
+        <div className="home-card purple" onClick={() => setActivePage("teacher-absents")}>
           <h4>Teachers Absent  <FaChalkboardTeacher/></h4>
           <h1>{stats.teacherAbsent}</h1>
           <p>Today</p>

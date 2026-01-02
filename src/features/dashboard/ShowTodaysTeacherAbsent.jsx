@@ -9,7 +9,7 @@ import {
 import { auth, db } from "../../services/firebase";
 import "../dashboard_styles/Teacher.css";
 
-const ShowTodaysTeacherAbsent = () => {
+const ShowTodaysTeacherAbsent = ({ setActivePage }) => {
 
   // 🔐 correct admin id always
   const adminUid =
@@ -80,6 +80,12 @@ const ShowTodaysTeacherAbsent = () => {
 
   return (
     <div className="teacher-page">
+       <span
+        style={{ color: "#2140df", cursor: "pointer", fontWeight: 600 }}
+        onClick={() => setActivePage("home")}
+      >
+        ← Back
+      </span>
       <div className="teacher-header">
         <h2>Today’s Absent — Teachers</h2>
 
