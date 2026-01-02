@@ -319,7 +319,16 @@
 .sidebar, .dashboard-sidebar {
   z-index: 100 !important;
 }
+.form-scroll {
+  max-height: 90vh;      /* popup fits screen */
+  overflow-y: auto;      
+  padding-right: 8px;
+}
 
+/* stop page scroll when modal open (optional but good UX) */
+.modal {
+  overflow: hidden;
+}
 
 
 

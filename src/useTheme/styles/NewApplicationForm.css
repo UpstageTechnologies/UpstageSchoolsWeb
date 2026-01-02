@@ -1,0 +1,97 @@
+/* ---------- PAGE CENTER WRAPPER ---------- */
+.appform-wrapper {
+    min-height: 100vh;
+    width: 100vw;
+  
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  
+    background: linear-gradient(135deg, #2140df, #bbcff2);
+    font-family: "Poppins", sans-serif;
+  
+    position: relative;
+  }
+  
+  /* ---------- FORM CARD ---------- */
+  .appform-card {
+    width: 380px;
+    padding: 28px 22px;
+    text-align: center;
+  
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+  
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
+  }
+  
+  /* ---------- TITLE ---------- */
+  .appform-title {
+    color: #0f254f;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 18px;
+  }
+  
+  /* ---------- INPUTS ---------- */
+  .appform-input {
+    width: 90%;
+    padding: 12px 14px;
+    margin: 10px 0;
+  
+    border-radius: 10px;
+    border: none;
+    outline: none;
+  
+    background: rgba(255, 255, 255, 0.25);
+    color: #0f254f;
+    font-size: 15px;
+  
+    box-shadow: inset 0 0 4px rgba(255, 255, 255, 0.25);
+  }
+  
+  .appform-input::placeholder {
+    color: #3e4a6b;
+  }
+  
+  /* ---------- BUTTON ---------- */
+  .appform-btn {
+    width: 90%;
+    padding: 12px;
+    margin-top: 10px;
+  
+    border: none;
+    border-radius: 12px;
+  
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+  
+    background: linear-gradient(135deg, #1a62e0, #1a62e0);
+    cursor: pointer;
+  
+    transition: background 0.25s ease, transform 0.2s ease;
+  }
+  
+  .appform-btn:hover {
+    background: #e9ecff;
+    color: #000;
+    transform: translateY(-2px);
+  }
+  
+  /* ---------- MOBILE ---------- */
+  @media (max-width: 480px) {
+    .appform-card {
+      width: 92%;
+    }
+  
+    .appform-btn,
+    .appform-input {
+      width: 95%;
+    }
+  }
+  

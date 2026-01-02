@@ -2,15 +2,16 @@ import React, { useEffect, useState } from "react";
 import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import "../dashboard_styles/Home.css";
-import { FaUserGraduate, FaUserTimes, FaChalkboardTeacher, FaUserCheck } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-
-
-
+import {
+  FaUserGraduate,
+  FaUserTimes,
+  FaChalkboardTeacher,
+  FaUserCheck
+} from "react-icons/fa";
 
 const today = new Date().toLocaleDateString("en-CA");
 
-export default function Home({ adminUid ,setActivePage }) {
+export default function Home({ adminUid, setActivePage }) {
   const [stats, setStats] = useState({
     studentPresent: 0,
     studentAbsent: 0,
@@ -18,45 +19,55 @@ export default function Home({ adminUid ,setActivePage }) {
     teacherAbsent: 0
   });
 
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  
 
   const loadData = async () => {
     if (!adminUid) return;
 
-    let studentPresent = 0,
-      studentAbsent = 0,
-      teacherPresent = 0,
-      teacherAbsent = 0;
+    setLoading(true);
 
-    // STUDENT ATTENDANCE
+    /* ================= STUDENTS ================= */
+
     const classesSnap = await getDocs(
       collection(db, "users", adminUid, "attendance")
     );
 
-    for (const c of classesSnap.docs) {
-      const dateDoc = await getDoc(
+    // fetch all date docs **together**
+    const datePromises = classesSnap.docs.map(c =>
+      getDoc(
         doc(db, "users", adminUid, "attendance", c.id, "dates", today)
-      );
+      )
+    );
 
-      if (!dateDoc.exists()) continue;
+    const allDates = await Promise.all(datePromises);
 
+    let studentPresent = 0;
+    let studentAbsent = 0;
+
+    allDates.forEach(dateDoc => {
+      if (!dateDoc.exists()) return;
       const rec = dateDoc.data().records || {};
 
-      Object.values(rec).forEach((status) => {
+      Object.values(rec).forEach(status => {
         if (status === "present") studentPresent++;
         if (status === "absent") studentAbsent++;
       });
-    }
+    });
 
-    // TEACHER ATTENDANCE
+    /* ================= TEACHERS ================= */
+
+    let teacherPresent = 0;
+    let teacherAbsent = 0;
+
     const tDoc = await getDoc(
       doc(db, "users", adminUid, "teacherAttendance", today)
     );
 
     if (tDoc.exists()) {
-      const r = tDoc.data().records || {};
+      const rec = tDoc.data().records || {};
 
-      Object.values(r).forEach((status) => {
+      Object.values(rec).forEach(status => {
         if (status === "present") teacherPresent++;
         if (status === "absent") teacherAbsent++;
       });
@@ -68,6 +79,8 @@ export default function Home({ adminUid ,setActivePage }) {
       teacherPresent,
       teacherAbsent
     });
+
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -78,30 +91,61 @@ export default function Home({ adminUid ,setActivePage }) {
     <div className="home-wrapper">
       <div className="cards-row">
 
+        {/* STUDENTS */}
         <div className="home-card green">
-          <h4>Students Present  <FaUserGraduate/></h4>
-          <h1>{stats.studentPresent}</h1>
-          <p>Today</p>
+          <h4>
+            Students Present <FaUserGraduate />
+          </h4>
+
+          <h1>{loading ? "…" : stats.studentPresent}</h1>
+
+          <p>____________________________</p>
+
+          <h4>
+            Students Absent <FaUserTimes />
+          </h4>
+
+          <h1>{loading ? "…" : stats.studentAbsent}</h1>
+
+          <br />
+
+          <button
+            onClick={e => {
+              e.stopPropagation();
+              setActivePage("todays-absent");
+            }}
+          >
+            Absent list
+          </button>
         </div>
 
-        <div className="home-card red" onClick={() => setActivePage("todays-absent")}>
-          <h4>Students Absent  <FaUserTimes/></h4>
-          <h1>{stats.studentAbsent}</h1>
-          <p>Today</p>
-        </div>
-
+        {/* TEACHERS */}
         <div className="home-card blue">
-          <h4>Teachers Present  < FaUserCheck/></h4>
-          <h1>{stats.teacherPresent}</h1>
-          <p>Today</p>
-        </div>
+          <h4>
+            Teachers Present <FaUserCheck />
+          </h4>
 
-        <div className="home-card purple" onClick={() => setActivePage("teacher-absents")}>
-          <h4>Teachers Absent  <FaChalkboardTeacher/></h4>
-          <h1>{stats.teacherAbsent}</h1>
-          <p>Today</p>
-        </div>
+          <h1>{loading ? "…" : stats.teacherPresent}</h1>
 
+          <p>____________________________</p>
+
+          <h4>
+            Teachers Absent <FaChalkboardTeacher />
+          </h4>
+
+          <h1>{loading ? "…" : stats.teacherAbsent}</h1>
+
+          <br />
+
+          <button
+            onClick={e => {
+              e.stopPropagation();
+              setActivePage("teacher-absents");
+            }}
+          >
+            Absent list
+          </button>
+        </div>
       </div>
     </div>
   );

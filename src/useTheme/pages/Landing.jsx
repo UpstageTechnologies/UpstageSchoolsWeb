@@ -16,7 +16,7 @@ export default function Landing() {
           <img src={logo} alt="Company Logo" className="logo" />
           <div className="nav-links">
             <a href="#features">Features</a>
-            <a href="#about">About</a>
+            <a href="/application">Apply Now</a>
             <Link to="/login" className="start-btn">Login</Link>
           </div>
         </nav>

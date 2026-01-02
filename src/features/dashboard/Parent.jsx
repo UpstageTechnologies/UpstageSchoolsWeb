@@ -28,7 +28,7 @@ const Parent = () => {
 
   const [studentsCount, setStudentsCount] = useState(1);
   const [students, setStudents] = useState([
-    { studentId: "", studentName: "" }
+    { studentId: "", studentName: "", class: "", section: ""}
   ]);
 
   const [showPassword, setShowPassword] = useState(false);
@@ -78,7 +78,7 @@ const Parent = () => {
       const copy = [...prev];
       if (count > copy.length) {
         while (copy.length < count) {
-          copy.push({ studentId: "", studentName: "" });
+          copy.push({ studentId: "", studentName: "", class: "", section: ""});
         }
       } else {
         copy.length = count;
@@ -95,7 +95,7 @@ const Parent = () => {
       !form.email ||
       !form.phone ||
       !form.address ||
-      students.some(s => !s.studentId || !s.studentName) ||
+      students.some(s => !s.studentId || !s.studentName || !s.class || !s.section) ||
       (!editId && !password)
     ) {
       alert("All fields required");
@@ -257,8 +257,8 @@ if (editId) {
           studentId: s.studentId,
           parentId: payload.parentId,
           parentName: payload.parentName,
-          class: "",
-          section: "",
+          class: s.class,
+          section: s.section,
           createdAt: Timestamp.now()
         }
       );
@@ -289,8 +289,8 @@ if (editId) {
         parentId: payload.parentId,
         parentName: payload.parentName,
 
-        class: "",
-        section: "",
+        class: s.class,
+        section: s.section,
         createdAt: Timestamp.now()
       }
     );
@@ -357,7 +357,7 @@ if (editId) {
       .map(d => d.data())
       .filter(s => s.parentId === p.parentId);
   
-    setStudents(list.length ? list : [{ studentId: "", studentName: "" }]);
+    setStudents(list.length ? list : [{ studentId: "", studentName: "", class: "", section: "" }]);
     setStudentsCount(list.length || 1);
   
     setPassword(p.password ||"");
@@ -371,7 +371,7 @@ if (editId) {
     setEditId(null);
     setPassword("");
     setStudentsCount(1);
-    setStudents([{ studentId: "", studentName: "" }]);
+    setStudents([{ studentId: "", studentName: "", class: "", section: ""}]);
     setForm({
       parentName: "",
       parentId: "",
@@ -453,7 +453,8 @@ if (editId) {
 
       {/* MODAL same as before */}
       {showModal && (
-        <div className="modal-overlay">
+        <div className="modal-overlay ">
+           <div className="form-scroll">
           <div className="modal">
             <h3>{editId ? "Edit Parent" : "Add Parent"}</h3>
 
@@ -475,43 +476,43 @@ if (editId) {
               onChange={e => setForm({ ...form, email: e.target.value })}
             />
            <input
-  placeholder="Phone"
-  value={form.phone}
-  maxLength={10}
-  onChange={e => {
-    const v = e.target.value.replace(/\D/g, "");   // remove non-digits
-    setForm({ ...form, phone: v.slice(0, 10) });   // max 10 digits
-  }}
-/>
+              placeholder="Phone"
+              value={form.phone}
+              maxLength={10}
+              onChange={e => {
+                const v = e.target.value.replace(/\D/g, "");   // remove non-digits
+                setForm({ ...form, phone: v.slice(0, 10) });   // max 10 digits
+              }}             
+            />
             <input
               placeholder="Address"
               value={form.address}
               onChange={e => setForm({ ...form, address: e.target.value })}
             />
             <div style={{ position: "relative" }}>
-  <input
-    type={showPassword ? "text" : "password"}
-    placeholder= "Password"
-    value={password}
-    onChange={e => setPassword(e.target.value)}
-    style={{ width: "100%", paddingRight: 40 }}
-  />
+            <input
+                 type={showPassword ? "text" : "password"}
+                 placeholder= "Password"
+                 value={password}
+                 onChange={e => setPassword(e.target.value)}
+                 style={{ width: "100%", paddingRight: 40 }}
+             />
 
-  {/* 👁️ toggle button */}
-  <span
-    onClick={() => setShowPassword(prev => !prev)}
-    style={{
-      position: "absolute",
-      right: 10,
-      top: 28,
-      transform: "translateY(-50%)",
-      cursor: "pointer",
-      color: "#555"
-    }}
-  >
-    {showPassword ?  <FaEyeSlash /> : <FaEye />}
-  </span>
-</div>
+               {/* 👁️ toggle button */}
+               <span
+                 onClick={() => setShowPassword(prev => !prev)}
+                 style={{
+                  position: "absolute",
+                  right: 10,
+                  top: 28,
+                  transform: "translateY(-50%)",
+                  cursor: "pointer",
+                  color: "#555"
+                }}
+              >
+             {showPassword ?  <FaEyeSlash /> : <FaEye />}
+             </span>
+         </div>
 
             
 
@@ -530,28 +531,45 @@ if (editId) {
               </button>
             ))}
 
-{students.map((s, i) => (
-  <div key={i} style={{ display: "flex", gap: 8 }}>
-    <input
-      placeholder={`Student ${i + 1} ID`}
-      value={s.studentId}
-      onChange={e =>
-        handleStudentChange(i, "studentId", e.target.value)
-      }
-    />
+           {students.map((s, i) => (
+            <>
+               <div key={i} style={{ display: "flex", gap: 8 }}>
+                 <input
+                   placeholder={`Student ${i + 1} ID`}
+                   value={s.studentId}
+                   onChange={e =>
+                    handleStudentChange(i, "studentId", e.target.value)
+                  }
+                  />
 
-    <input
-      placeholder={`Student ${i + 1} Name`}
-      value={s.studentName}
-      onChange={e =>
-        handleStudentChange(i, "studentName", e.target.value)
-      }
-    />
+                 <input
+                   placeholder={`Student ${i + 1} Name`}
+                   value={s.studentName}
+                   onChange={e =>
+                    handleStudentChange(i, "studentName", e.target.value)
+                  }
+                  /></div> <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                   <input
+                   placeholder={`Student ${i + 1} Class`}
+                   value={s.class}
+                   onChange={e =>
+                    handleStudentChange(i, "class", e.target.value)
+                  }
+                  />
+                   <input
+                   placeholder={`Student ${i + 1} Section`}
+                   value={s.section}
+                   onChange={e =>
+                    handleStudentChange(i, "section", e.target.value)
+                  }
+                  />
+                  
 
     
 
-  </div>
-))}
+               </div>
+               </>
+             ))}
 
 
           
@@ -564,9 +582,10 @@ if (editId) {
                 Cancel
               </button>
             </div>
-          </div>
+          </div></div>
         </div>
       )}
+      
     </div>
   );
 };

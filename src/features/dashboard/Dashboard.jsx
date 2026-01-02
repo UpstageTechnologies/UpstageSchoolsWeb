@@ -59,6 +59,10 @@ const Dashboard = () => {
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [activePage, setActivePage] = useState("home");
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [homeStats, setHomeStats] = useState(null);
+
+  
+
 
 
   const navigate = useNavigate();
@@ -296,7 +300,15 @@ const Dashboard = () => {
         </nav>
 
         <div className="dashboard-content">
-       {activePage === "home" && <Home adminUid={adminUid} role={role} setActivePage={setActivePage}/>}
+       {activePage === "home" &&
+  <Home
+    adminUid={adminUid}
+    setActivePage={setActivePage}
+    setHomeStats={setHomeStats}
+    homeStats={homeStats}
+  />
+}
+
    
 
 

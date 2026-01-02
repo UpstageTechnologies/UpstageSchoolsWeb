@@ -17,11 +17,11 @@ import Courses from "./features/dashboard/Courses";
 import TeacherAttendance from "./features/dashboard/TeacherAttendance";
 import ShowTodaysTeacherAbsent from "./features/dashboard/ShowTodaysTeacherAbsent";
 
-
+/* ⭐ NEW — Application form page */
+import ApplicationForm from "./useTheme/pages/ApplicationForm";
 
 function App() {
   return (
-  
     <Router>
       <Routes>
         <Route path="/" element={<Landing />} />
@@ -39,11 +39,12 @@ function App() {
         <Route path="/todays-absent" element={<ShowTodaysAbsent />} />
         <Route path="courses" element={<Courses />} />
         <Route path="/teacher-attendance" element={<TeacherAttendance />} />
-        <Route path="/teacher-absents"element={<ShowTodaysTeacherAbsent />}/>
+        <Route path="/teacher-absents" element={<ShowTodaysTeacherAbsent />} />
 
+        {/* ⭐ NEW — application form route */}
+        <Route path="/application" element={<ApplicationForm />} />
 
-        </Routes>
-    
+      </Routes>
     </Router>
   );
 }
