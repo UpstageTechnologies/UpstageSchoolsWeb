@@ -51,7 +51,7 @@ const AdminLogin = () => {
       const admin = docSnap.data();
 
       // ❗ ROLE CHECK (extra safety)
-      if (admin.role !== "sub_admin") {
+      if (admin.role !== "admin") {
         alert("Access denied");
         setLoading(false);
         return;
@@ -61,7 +61,7 @@ const AdminLogin = () => {
       const superAdminUid = docSnap.ref.parent.parent.id;
 
       /* ✅ SESSION */
-      localStorage.setItem("role", "sub_admin");
+      localStorage.setItem("role", "admin");
       localStorage.setItem("adminUid", superAdminUid);
       localStorage.setItem("adminId", admin.adminId);
       localStorage.setItem("adminName", admin.name);

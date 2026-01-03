@@ -153,7 +153,7 @@ if (!/^\d{10}$/.test(phoneClean)) {
   } 
 
     /* 🔴 SUB ADMIN → APPROVAL */
-    if (role === "sub_admin") {
+    if (role === "admin") {
       await addDoc(
         collection(db, "users", adminUid, "approval_requests"),
         {
@@ -213,7 +213,7 @@ if (!/^\d{10}$/.test(phoneClean)) {
     if (!window.confirm("Delete teacher?")) return;
 
     /* 🔴 SUB ADMIN → APPROVAL */
-    if (role === "sub_admin") {
+    if (role === "admin") {
       await addDoc(
         collection(db, "users", adminUid, "approval_requests"),
         {

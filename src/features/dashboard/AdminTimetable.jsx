@@ -209,7 +209,7 @@ const role = localStorage.getItem("role");
             {/* ⭐ BUTTON LOGIC ONLY — SAVE CODE UNCHANGED ⭐ */}
             <button
               className="save-btn"
-              onClick={role === "sub_admin" ? requestTimetableApproval : saveTimetable}
+              onClick={role === "admin" ? requestTimetableApproval : saveTimetable}
             >
               Save Timetable
             </button>

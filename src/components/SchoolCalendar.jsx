@@ -60,7 +60,7 @@
 
       const data = { title, type, date: dateStr, createdAt: new Date() };
 
-      if (role === "sub_admin") return requestEventApproval(dateStr, data);
+      if (role === "admin") return requestEventApproval(dateStr, data);
 
       await setDoc(doc(db, "users", adminUid, "calendar", dateStr), data);
 

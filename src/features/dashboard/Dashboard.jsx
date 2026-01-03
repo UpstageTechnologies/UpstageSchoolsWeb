@@ -66,7 +66,7 @@ const Dashboard = () => {
 
   const navigate = useNavigate();
 
-  const isAdminOrSubAdmin = role === "admin" || role === "sub_admin";
+  const isAdminOrSubAdmin = role === "master" || role === "admin";
 
   const formatDate = (timestamp) => {
     if (!timestamp) return "No Expiry";
@@ -81,11 +81,11 @@ const Dashboard = () => {
   useEffect(() => {
     const storedRole = localStorage.getItem("role");
 
-    // 🔐 TEACHER / PARENT / SUB ADMIN
+    // 🔐 TEACHER / PARENT /  ADMIN
     if (
       storedRole === "teacher" ||
       storedRole === "parent" ||
-      storedRole === "sub_admin"
+      storedRole === "admin"
     ) {
       setRole(storedRole);
       setUser({
@@ -115,7 +115,7 @@ const Dashboard = () => {
       }
 
       const data = adminSnap.data();
-      setRole("admin");
+      setRole("master");
       setSchool(data.school || "");
       setPlan(data.plan || "basic");
       setPlanExpiry(data.planExpiry || null);
@@ -150,14 +150,14 @@ const Dashboard = () => {
           </li>
 
 
-          {role === "admin" && (
+          {role === "master" && (
             <li onClick={() => navigate("/payment")}>
               <FaSignOutAlt /> Upgrade
                 
             </li>
           )}
 
-          {role === "admin" && (
+          {role === "master" && (
             <li className={`plan-info ${plan}`}>
               <div className="plan-row">
                 Plan: <strong>{plan.toUpperCase()}</strong>
@@ -172,9 +172,9 @@ const Dashboard = () => {
 
           {/* 🔑 ADMIN + SUB_ADMIN */}
           {(
-            (role === "admin" &&
+            (role === "master" &&
               (plan === "premium" || plan === "lifetime")) ||
-            role === "sub_admin"
+            role === "admin"
           ) && (
             <>
               <li
@@ -187,7 +187,7 @@ const Dashboard = () => {
 
               {accountMenuOpen && (
                 <ul className="account-submenu">
-                  {role === "admin" && (
+                  {role === "master" && (
                   <li onClick={() => {setActivePage("admin");setAccountMenuOpen(false);}}>Admin</li>)}
                   <li onClick={() => {setActivePage("teacher");setAccountMenuOpen(false);}}>Teacher</li>
                   <li onClick={() => {setActivePage("parent");setAccountMenuOpen(false);}}>Parent</li>
@@ -200,7 +200,7 @@ const Dashboard = () => {
               </li>
              
         
-         {role === "sub_admin" && (
+         {role === "admin" && (
          <li onClick={() => setActivePage("attendance")}>
            <FaUserCheck/> Teacher's Attendance
           </li>
@@ -223,7 +223,7 @@ const Dashboard = () => {
            </>
           )}
           
-            {role === "admin" && (
+            {role === "master" && (
            <li onClick={() => setActivePage("approvals")}>
            <FaClipboardCheck/>Approvals
            </li>
@@ -232,7 +232,7 @@ const Dashboard = () => {
           <li onClick={() => setActivePage("courses")}>
           <FaBookOpen /> Courses
           </li>
-          {role === "admin" && (
+          {role === "master" && (
             <li onClick={() => setActivePage("applications")}>
               <FaWpforms /> Applications
               </li>
@@ -339,9 +339,9 @@ const Dashboard = () => {
             <AdminTimetable />
           )}
 
-          {(role === "admin") && activePage === "admin" && <Admin />}
+          {(role === "master") && activePage === "admin" && <Admin />}
 
-          {activePage === "approvals" && role === "admin" && <Approvals />}
+          {activePage === "approvals" && role === "master" && <Approvals />}
           {role === "teacher" && activePage === "teacher-timetable" && (
            <TeacherTimetable />
           )}
@@ -360,7 +360,7 @@ const Dashboard = () => {
            {isAdminOrSubAdmin && activePage === "teacher-absents" && (
              <ShowTodaysTeacherAbsent adminUid={adminUid} setActivePage={setActivePage} />
            )}
-           {role === "admin" && activePage === "applications" && (
+           {role === "master" && activePage === "applications" && (
             <ApplicationList />
             )}
 

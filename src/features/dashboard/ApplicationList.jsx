@@ -56,7 +56,7 @@ export default function ApplicationList() {
 
 
   const handleSelect = async (app) => {
-    if (!adminUid) return alert("Admin not found");
+    if (!adminUid) return alert("Master not found");
 
     if (!window.confirm("Approve & create Parent + Student?")) return;
 

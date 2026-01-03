@@ -188,7 +188,7 @@ for (const s of cleanStudents) {
     };
 
     /* 🔴 SUB ADMIN → APPROVAL */
-    if (role === "sub_admin") {
+    if (role === "admin") {
       await addDoc(
         collection(db, "users", adminUid, "approval_requests"),
         {
@@ -307,7 +307,7 @@ if (editId) {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete parent and all students?")) return;
   
-    if (role === "sub_admin") {
+    if (role === "admin") {
       // … your approval request logic (same)
       return;
     }

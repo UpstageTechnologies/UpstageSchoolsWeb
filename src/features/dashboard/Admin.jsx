@@ -18,7 +18,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 
 const role = localStorage.getItem("role");
-const isAdmin = role === "admin";
+const isAdmin = role === "master";
 
 const Admin = () => {
   const [showModal, setShowModal] = useState(false);
@@ -67,7 +67,7 @@ const Admin = () => {
   /* ================= ADD / EDIT ADMIN ================= */
   const handleSaveAdmin = async () => {
     if (!superAdminUid) {
-      alert("Admin not authenticated");
+      alert("Master not authenticated");
       return;
     }
   
@@ -91,8 +91,16 @@ if (!/^\d{10}$/.test(phoneClean)) {
   
     if (editId) {
       // --- UPDATE (same as before) ---
-      const updateData = { ...form, updatedAt: Timestamp.now() };
-      if (password && password.trim() !== "") updateData.password = password;
+      const updateData = {
+        ...form,
+        role: "admin",                 // 👈 force correct role always
+        updatedAt: Timestamp.now()
+      };
+      
+      if (password && password.trim() !== "") {
+        updateData.password = password;
+      }
+      
     
       await updateDoc(
         doc(db, "users", superAdminUid, "admins", editId),
@@ -116,7 +124,7 @@ if (!/^\d{10}$/.test(phoneClean)) {
         {
           ...form,
           password,
-          role: "sub_admin",
+          role: "admin",
           createdAt: Timestamp.now()
         }
       );

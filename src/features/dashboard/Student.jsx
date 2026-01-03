@@ -100,7 +100,7 @@ const Student = () => {
     }
   }
 
-    if (role === "sub_admin") {
+    if (role === "admin") {
       await addDoc(
         collection(db, "users", adminUid, "approval_requests"),
         {
@@ -144,7 +144,7 @@ const Student = () => {
   const handleDeleteStudent = async (id) => {
     if (!window.confirm("Delete student?")) return;
 
-    if (role === "sub_admin") {
+    if (role === "admin") {
       await addDoc(
         collection(db, "users", adminUid, "approval_requests"),
         {
