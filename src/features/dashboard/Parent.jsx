@@ -39,7 +39,8 @@ const Parent = () => {
     parentId: "",
     email: "",
     phone: "",
-    address: ""
+    address: "",
+    photoURL: "" 
   });
 
   /* ================= FETCH ================= */
@@ -345,7 +346,9 @@ if (editId) {
       parentId: p.parentId,
       email: p.email,
       phone: p.phone,
-      address: p.address
+      address: p.address,
+      photoURL: p.photoURL || ""
+
     });
   
     // ⭐ load students REALLY in DB now
@@ -377,7 +380,8 @@ if (editId) {
       parentId: "",
       email: "",
       phone: "",
-      address: ""
+      address: "",
+      photoURL: ""
     });
   };
 
@@ -406,6 +410,7 @@ if (editId) {
       <table className="teacher-table">
         <thead>
           <tr>
+          <th>Photo</th>
             <th>Parent</th>
             <th>Parent ID</th>
             <th>Students</th>
@@ -423,6 +428,39 @@ if (editId) {
     )
     .map(p => (
       <tr key={p.id} className="mobile-card">
+       <td data-label="Photo">
+  {p.photoURL ? (
+    <img
+      src={p.photoURL}
+      alt=""
+      style={{
+        width: 40,
+        height: 40,
+        borderRadius: "50%",
+        objectFit: "cover"
+      }}
+    />
+  ) : (
+    <div
+      style={{
+        width: 40,
+        height: 40,
+        borderRadius: "50%",
+        background: "#e5e7eb",
+        color: "#374151",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontWeight: 600,
+        textTransform: "uppercase"
+      }}
+    >
+      {p.parentName?.charAt(0) || "P"}
+    </div>
+  )}
+</td>
+
+
         <td data-label="Name">{p.parentName}</td>
         <td data-label="Parent ID">{p.parentId}</td>
         <td data-label="Students">{p.studentsCount}</td>
@@ -457,6 +495,53 @@ if (editId) {
            <div className="form-scroll">
           <div className="modal">
             <h3>{editId ? "Edit Parent" : "Add Parent"}</h3>
+
+            <div style={{ textAlign: "center", marginBottom: 10 }}>
+  <label
+    style={{
+      width: 90,
+      height: 90,
+      borderRadius: "50%",
+      background: "#f3f3f3",
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      cursor: "pointer",
+      position: "relative",
+      overflow: "hidden",
+      border: "2px dashed #ccc"
+    }}
+  >
+    {form.photoURL ? (
+      <img
+        src={form.photoURL}
+        alt="parent"
+        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+      />
+    ) : (
+      <span style={{ fontSize: 32, color: "#888" }}>+</span>
+    )}
+
+    <input
+      type="file"
+      accept="image/*"
+      style={{ display: "none" }}
+      onChange={(e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onloadend = () =>
+          setForm(prev => ({ ...prev, photoURL: reader.result }));
+
+        reader.readAsDataURL(file);
+      }}
+    />
+  </label>
+
+  <p style={{ fontSize: 12, color: "#777" }}>Select profile photo</p>
+</div>
+
 
             <input
               placeholder="Parent Name"
@@ -563,10 +648,7 @@ if (editId) {
                     handleStudentChange(i, "section", e.target.value)
                   }
                   />
-                  
-
-    
-
+     
                </div>
                </>
              ))}

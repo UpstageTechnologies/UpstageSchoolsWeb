@@ -51,7 +51,8 @@ const Teacher = () => {
     gender: "",
     qualification: "",
     experience: "",
-    assignedClasses: []
+    assignedClasses: [],
+    photoURL: ""
   });
 
   const [classForm, setClassForm] = useState({
@@ -234,7 +235,7 @@ if (!/^\d{10}$/.test(phoneClean)) {
     await deleteDoc(doc(db, "users", adminUid, "teachers", id));
     fetchTeachers();
   };
-
+ 
   /* ================= RESET ================= */
   const resetForm = () => {
     setShowModal(false);
@@ -249,7 +250,8 @@ if (!/^\d{10}$/.test(phoneClean)) {
       gender: "",
       qualification: "",
       experience: "",
-      assignedClasses: []
+      assignedClasses: [],
+      photoURL: ""   
     });
     setClassForm({ class: "", section: "", subject: "" });
   };
@@ -280,6 +282,7 @@ if (!/^\d{10}$/.test(phoneClean)) {
       <table className="teacher-table">
         <thead>
           <tr>
+          <th>Photo</th>
             <th>Name</th>
             <th>Teacher ID</th>
             <th>Email</th>
@@ -296,6 +299,36 @@ if (!/^\d{10}$/.test(phoneClean)) {
             )
             .map(t => (
               <tr key={t.id}>
+                 <td data-label="Photo">
+    {t.photoURL ? (
+      <img
+        src={t.photoURL}
+        alt="teacher"
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: "50%",
+          objectFit: "cover",
+          border: "1px solid #ddd"
+        }}
+      />
+    ) : (
+      <div
+        style={{
+        width: 40,
+        height: 40,
+        borderRadius: "50%",
+        background: "#ddd",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontWeight: 600
+        }}
+      >
+        {t.name?.charAt(0).toUpperCase()}
+      </div>
+    )}
+  </td>
                 <td data-label="Name">{t.name}</td>
 
                 <td data-label="Teacher ID">{t.teacherId}</td>
@@ -342,8 +375,54 @@ if (!/^\d{10}$/.test(phoneClean)) {
       {/* MODAL */}
       {showModal && (
         <div className="modal-overlay " >
+          <div className="form-scroll">
           <div className="modal popup-box"  >
             <h3>{editId ? "Edit Teacher" : "Add Teacher"}</h3>
+            <div style={{ textAlign: "center", marginBottom: 10 }}>
+  <label
+    style={{
+      width: 90,
+      height: 90,
+      borderRadius: "50%",
+      background: "#f3f3f3",
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      cursor: "pointer",
+      overflow: "hidden",
+      border: "2px dashed #ccc"
+    }}
+  >
+    {form.photoURL ? (
+      <img
+        src={form.photoURL}
+        alt="teacher"
+        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+      />
+    ) : (
+      <span style={{ fontSize: 32, color: "#888" }}>+</span>
+    )}
+
+    <input
+      type="file"
+      accept="image/*"
+      style={{ display: "none" }}
+      onChange={e => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onloadend = () =>
+          setForm(prev => ({ ...prev, photoURL: reader.result }));
+
+        reader.readAsDataURL(file);
+      }}
+    />
+  </label>
+
+  <p style={{ fontSize: 12, color: "#777" }}>Select profile photo</p>
+</div>
+
 
             <input
               placeholder="Teacher Name"
@@ -493,6 +572,7 @@ if (!/^\d{10}$/.test(phoneClean)) {
                 Cancel
               </button>
             </div>
+          </div>
           </div>
         </div>
       )}

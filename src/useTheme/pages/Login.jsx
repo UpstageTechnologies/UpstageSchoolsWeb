@@ -52,8 +52,17 @@ const Login = () => {
         alert("Please register first");
         navigate("/register");
         return;
-      }
+      }const d = userSnap.data();
+
+
+      // ⭐ ⭐ IMPORTANT — save profile photo + name
+localStorage.setItem("profilePhoto", d.photoURL || "");
+localStorage.setItem("adminName", d.username || "Admin");
   
+      // SAVE MASTER LOGIN INFO
+localStorage.setItem("role", "master");
+localStorage.setItem("adminUid", user.uid);
+
       navigate("/dashboard");
   
     } catch (error) {

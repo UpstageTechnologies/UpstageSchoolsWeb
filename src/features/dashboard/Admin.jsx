@@ -37,8 +37,11 @@ const Admin = () => {
     address: "",
     gender: "",
     qualification: "",
-    experience: ""
+    experience: "",
+    photoURL: ""
+
   });
+  
 
   const superAdminUid =
   auth.currentUser?.uid || localStorage.getItem("adminUid");
@@ -95,6 +98,7 @@ if (!/^\d{10}$/.test(phoneClean)) {
         ...form,
         role: "admin",                 // 👈 force correct role always
         updatedAt: Timestamp.now()
+        
       };
       
       if (password && password.trim() !== "") {
@@ -158,13 +162,15 @@ if (!/^\d{10}$/.test(phoneClean)) {
       address: "",
       gender: "",
       qualification: "",
-      experience: ""
+      experience: "",
+      photoURL: ""
     });
   };
 
   return (
     <div className="teacher-page">
       {/* ===== HEADER ===== */}
+  
       <div className="teacher-header">
         <h2>Admins</h2>
 
@@ -188,6 +194,7 @@ if (!/^\d{10}$/.test(phoneClean)) {
       <table className="teacher-table">
         <thead>
           <tr>
+          <th>Photo</th>
             <th>Name</th>
             <th>Admin ID</th>
             <th>Email</th>
@@ -206,6 +213,36 @@ if (!/^\d{10}$/.test(phoneClean)) {
     )
     .map(a => (
       <tr key={a.id} className="mobile-card">
+         <td data-label="Photo">
+    {a.photoURL ? (
+      <img
+        src={a.photoURL}
+        alt="admin"
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: "50%",
+          objectFit: "cover",
+          border: "1px solid #ddd"
+        }}
+      />
+    ) : (
+      <div
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: "50%",
+          background: "#ddd",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontWeight: 600
+        }}
+      >
+        {a.name?.charAt(0).toUpperCase()}
+      </div>
+    )}
+  </td>
         <td data-label="Name">{a.name}</td>
         <td data-label="Admin ID">{a.adminId}</td>
         <td data-label="Email">{a.email}</td>
@@ -226,8 +263,10 @@ if (!/^\d{10}$/.test(phoneClean)) {
                 address: a.address || "",
                 gender: a.gender || "",
                 qualification: a.qualification || "",
-                experience: a.experience || ""
+                experience: a.experience || "",
+                photoURL: a.photoURL || "" 
               });
+              localStorage.setItem("profilePhoto", a.photoURL || "");
               setEditId(a.id);
               setPassword(a.password || ""); 
               setShowModal(true);
@@ -254,6 +293,53 @@ if (!/^\d{10}$/.test(phoneClean)) {
         <div className="modal-overlay">
           <div className="modal">
             <h3>{editId ? "Edit Admin" : "Add Admin"}</h3>
+            <div style={{ textAlign: "center", marginBottom: 10 }}>
+  <label
+    style={{
+      width: 90,
+      height: 90,
+      borderRadius: "50%",
+      background: "#f3f3f3",
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      cursor: "pointer",
+      position: "relative",
+      overflow: "hidden",
+      border: "2px dashed #ccc"
+    }}
+  >
+    {/* show image OR + sign */}
+    {form.photoURL ? (
+      <img
+        src={form.photoURL}
+        alt="admin"
+        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+      />
+    ) : (
+      <span style={{ fontSize: 32, color: "#888" }}>+</span>
+    )}
+
+    <input
+      type="file"
+      accept="image/*"
+      style={{ display: "none" }}
+      onChange={(e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onloadend = () =>
+          setForm(prev => ({ ...prev, photoURL: reader.result }));
+
+        reader.readAsDataURL(file);
+      }}
+    />
+  </label>
+
+  <p style={{ fontSize: 12, color: "#777" }}>Select profile photo</p>
+</div>
+
 
             <input
               placeholder="Admin Name"

@@ -38,7 +38,8 @@ const Student = () => {
     phone: "",
     address: "",
     class: "",
-    section: ""
+    section: "",
+    photoURL: ""  
   });
 
   const fetchStudents = async () => {
@@ -178,7 +179,8 @@ const Student = () => {
       phone: "",
       address: "",
       class: "",
-      section: ""
+      section: "",
+      photoURL: ""  
     });
   };
 
@@ -206,6 +208,7 @@ const Student = () => {
       <table className="teacher-table">
         <thead>
           <tr>
+            <th>Photo</th>
             <th>Name</th>
             <th>ID</th>
             <th>Parent</th>
@@ -222,6 +225,37 @@ const Student = () => {
             )
             .map(s => (
               <tr key={s.id} className="mobile-card">
+                 <td data-label="Photo">
+          {s.photoURL ? (
+            <img
+              src={s.photoURL}
+              alt=""
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: "50%",
+                objectFit: "cover"
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: "50%",
+                background: "#e5e7eb",
+                color: "#374151",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: 600,
+                textTransform: "uppercase"
+              }}
+            >
+              {s.studentName?.charAt(0) || "S"}
+            </div>
+          )}
+        </td>
                 <td data-label="Name">{s.studentName}</td>
                 <td data-label="Student ID">{s.studentId}</td>
                 <td data-label="Parent">{s.parentName}</td>
@@ -254,8 +288,55 @@ const Student = () => {
 
       {showModal && (
         <div className="modal-overlay">
+          <div className="form-scroll">
           <div className="modal">
             <h3>{editId ? "Edit Student" : "Add Student"}</h3>
+            <div style={{ textAlign: "center", marginBottom: 10 }}>
+  <label
+    style={{
+      width: 90,
+      height: 90,
+      borderRadius: "50%",
+      background: "#f3f3f3",
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      cursor: "pointer",
+      position: "relative",
+      overflow: "hidden",
+      border: "2px dashed #ccc"
+    }}
+  >
+    {form.photoURL ? (
+      <img
+        src={form.photoURL}
+        alt="student"
+        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+      />
+    ) : (
+      <span style={{ fontSize: 32, color: "#888" }}>+</span>
+    )}
+
+    <input
+      type="file"
+      accept="image/*"
+      style={{ display: "none" }}
+      onChange={(e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onloadend = () =>
+          setForm(prev => ({ ...prev, photoURL: reader.result }));
+
+        reader.readAsDataURL(file);
+      }}
+    />
+  </label>
+
+  <p style={{ fontSize: 12, color: "#777" }}>Select profile photo</p>
+</div>
+
 
             <input
               placeholder="Student Name"
@@ -321,6 +402,7 @@ const Student = () => {
                 Cancel
               </button>
             </div>
+          </div>
           </div>
         </div>
       )}

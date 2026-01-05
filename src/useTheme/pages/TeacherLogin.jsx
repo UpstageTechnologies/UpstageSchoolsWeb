@@ -50,6 +50,16 @@ const TeacherLogin = () => {
 
       const adminUid = docSnap.ref.parent.parent.id;
 
+      const teacherData = docSnap.data();
+
+      localStorage.setItem("teacherId", teacherData.teacherId);
+      localStorage.setItem("teacherName", teacherData.name || "");
+      localStorage.setItem("email", teacherData.email || "");
+      localStorage.setItem("profilePhoto", teacherData.photoURL || "");
+      
+
+
+
       localStorage.setItem("role", "teacher");
       localStorage.setItem("adminUid", adminUid);
       localStorage.setItem("teacherId", teacher.teacherId);

@@ -53,6 +53,14 @@ const ParentLogin = () => {
       // 🔑 SAME LOGIC
       const adminUid = docSnap.ref.parent.parent.id;
 
+      const parentData = docSnap.data();
+
+      localStorage.setItem("parentId", parentData.parentId);
+      localStorage.setItem("parentName", parentData.parentName || "");
+      localStorage.setItem("email", parentData.email || "");
+      localStorage.setItem("profilePhoto", parentData.photoURL || "");
+      
+
       // ✅ SESSION SAVE
       localStorage.setItem("role", "parent");
       localStorage.setItem("adminUid", adminUid);

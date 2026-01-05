@@ -60,12 +60,21 @@ const AdminLogin = () => {
       // 🔑 SUPER ADMIN UID (same pattern as teacher)
       const superAdminUid = docSnap.ref.parent.parent.id;
 
+      const adminData = docSnap.data();
+
+// ⭐ save profile photo + name
+localStorage.setItem("profilePhoto", adminData.photoURL || "");
+localStorage.setItem("adminName", adminData.name || "Admin");
+
+
       /* ✅ SESSION */
       localStorage.setItem("role", "admin");
       localStorage.setItem("adminUid", superAdminUid);
       localStorage.setItem("adminId", admin.adminId);
       localStorage.setItem("adminName", admin.name);
       localStorage.setItem("email", admin.email);
+
+      
 
       navigate("/dashboard");
     } catch (err) {

@@ -39,6 +39,10 @@ const Register = () => {
         createdAt: serverTimestamp()
       });
 
+          // ⭐ SAVE LOGIN CONTEXT ⭐
+    localStorage.setItem("role", "master");
+    localStorage.setItem("adminUid", user.uid);
+
       navigate("/dashboard", {
         state: { email: user.email, isGoogle: true }
       });
@@ -73,6 +77,9 @@ const Register = () => {
         role: "master",
         createdAt: serverTimestamp()
       });
+          // ⭐ SAVE LOGIN CONTEXT ⭐
+    localStorage.setItem("role", "master");
+    localStorage.setItem("adminUid", user.uid);
 
       navigate("/dashboard", {
         state: { email, password, username, isGoogle: false }
