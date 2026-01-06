@@ -33,6 +33,8 @@
   import ShowTodaysTeacherAbsent from "./ShowTodaysTeacherAbsent";
   import Home from "./Home";
   import ApplicationList from "./ApplicationList";
+  import Account from "./Accounts";
+
 
 
   /* ================= SLIDER ================= */
@@ -215,6 +217,9 @@
             <li onClick={() => setActivePage("home")}>
               <FaHome /> Home
             </li>
+            <li onClick={() => setActivePage("home")}>
+              <FaHome /> Accounts
+            </li>
 
 
             {role === "master" && (
@@ -244,6 +249,7 @@
               role === "admin"
             ) && (
               <>
+
                 <li
                   className="account-main"
                   onClick={() => setAccountMenuOpen(!accountMenuOpen)}
@@ -261,10 +267,17 @@
                     <li onClick={() => {setActivePage("student");setAccountMenuOpen(false);}}>Student</li>
                   </ul>
                 )}
+                 <li onClick={() => setActivePage("Accounts")}>
+            <FaBookOpen /> Accounts
+            </li>
+              
+                
 
                 <li onClick={() => setActivePage("timetable")}>
                 <FaCalendarAlt />Timetable
                 </li>
+                
+                
               
           
           {role === "admin" && (
@@ -299,6 +312,7 @@
             <li onClick={() => setActivePage("courses")}>
             <FaBookOpen /> Courses
             </li>
+           
             {role === "master" && (
               <li onClick={() => setActivePage("applications")}>
                 <FaWpforms /> Applications
@@ -470,6 +484,11 @@
               {activePage === "profile" && (
     <Profile />
   )}
+  {role === "master" && activePage === "Accounts" && (
+  <Account adminUid={adminUid} />
+)}
+
+  
 
 
           </div>
