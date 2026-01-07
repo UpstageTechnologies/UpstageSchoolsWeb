@@ -19,6 +19,8 @@ import ShowTodaysTeacherAbsent from "./features/dashboard/ShowTodaysTeacherAbsen
 import ApplicationForm from "./useTheme/pages/ApplicationForm";
 import ApplicationList from "./features/dashboard/ApplicationList";
 import  Accounts from "./features/dashboard/Accounts"
+import FeesPage from "./features/dashboard/accounts/FeesPage";
+
 function App() {
   return (
     <Router>
@@ -42,6 +44,7 @@ function App() {
         <Route path="/application" element={<ApplicationForm />} />
         <Route path="/admin/applications" element={<ApplicationList />} />
         <Route path="Accounts" element={<Accounts/>}/>
+        <Route path="FeesPage" element={<FeesPage />} />
 
       </Routes>
     </Router>

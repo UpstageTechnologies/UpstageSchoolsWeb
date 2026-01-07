@@ -15,7 +15,7 @@
     FaCog,FaUserCheck,
     FaSignOutAlt,
     FaChevronDown,FaBookOpen,
-    FaChevronUp,FaCalendarAlt,FaClipboardCheck,FaWpforms
+    FaChevronUp,FaCalendarAlt,FaClipboardCheck,FaWpforms,FaMoneyBillWave
   } from "react-icons/fa";
 
   import schoolLogo from "../../assets/school-logo.png";
@@ -223,9 +223,7 @@ import ProfitPage from "./accounts/ProfitPage";
             <li onClick={() => setActivePage("home")}>
               <FaHome /> Home
             </li>
-            <li onClick={() => setActivePage("home")}>
-              <FaHome /> Accounts
-            </li>
+
 
 
             {role === "master" && (
@@ -273,30 +271,15 @@ import ProfitPage from "./accounts/ProfitPage";
                     <li onClick={() => {setActivePage("student");setAccountMenuOpen(false);}}>Student</li>
                   </ul>
                 )}
-                 <li
-  className="account-main"
-  onClick={() => setAccountsSubMenuOpen(!accountsSubMenuOpen)}
+<li
+  
+  onClick={() => {
+    setActivePage("expenses");     
+    setAccountsSubMenuOpen(false);
+  }}
 >
-  <FaBookOpen /> Accounts
-  {accountsSubMenuOpen ? <FaChevronUp /> : <FaChevronDown />}
+<FaMoneyBillWave/>Accounts
 </li>
-
-{accountsSubMenuOpen && (
-  <ul className="account-submenu">
-    <li onClick={() => { setActivePage("fees"); setAccountsSubMenuOpen(false); }}>
-      Fees
-    </li>
-
-    <li onClick={() => { setActivePage("expenses"); setAccountsSubMenuOpen(false); }}>
-      Expenses
-    </li>
-
-    <li onClick={() => { setActivePage("profit"); setAccountsSubMenuOpen(false); }}>
-      Profit
-    </li>
-  </ul>
-)}
-
               
                 
 
@@ -466,11 +449,13 @@ import ProfitPage from "./accounts/ProfitPage";
 )}
 
 {isAdminOrSubAdmin && activePage === "expenses" && (
-  <ExpensesPage adminUid={adminUid} />
+  <ExpensesPage adminUid={adminUid}
+  setActivePage={setActivePage}/>
 )}
 
 {isAdminOrSubAdmin && activePage === "profit" && (
   <ProfitPage adminUid={adminUid} />
+ 
 )}
 
 {/* rest of the pages go here… */}

@@ -1,232 +1,472 @@
-/* ================== GLOBAL LAYOUT ================== */
 
 .accounts-wrapper {
-    padding: 18px 14px;
-    max-width: 980px;
-    margin: auto;
-  }
+  padding: 18px 14px;
+  max-width: 980px;
+  margin: auto;
+}
+.stats-grid {
   
-  .page-title {
-    font-size: 26px;
-    font-weight: 700;
-    margin-bottom: 18px;
-  }
-  
-  .section-card {
-    background: #fff;
-    border-radius: 18px;
-    padding: 18px;
-    margin-bottom: 16px;
-    box-shadow: 0 12px 28px rgba(0,0,0,.08);
-    transition: .25s ease;
-  }
-  
-  .section-card.pop:hover {
-    transform: translateY(-4px) scale(1.01);
-  }
-  
-  .section-title {
-    font-weight: 700;
-    margin-bottom: 10px;
-  }
-  
-  /* ================== FORMS ================== */
-  
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+ 
+  margin-bottom: 16px;  
+}
+
+.info-card1{
+  background: linear-gradient(135deg, #9feef1, #52c2ff);
+  border-radius: 18px;
+  padding: 16px 18px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  color: #033;
+}
+
+.info-card2{
+  background: linear-gradient(135deg, #e9d7e8, #c69ad3);
+  border-radius: 18px;
+  padding: 16px 18px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  color: #2c0d2b;
+}
+
+.info-card3{
+  background: linear-gradient(135deg, #b0f4d3, #4ed18e);
+  border-radius: 18px;
+  padding: 16px 18px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  color: #06391e;
+}
+
+
+
+.info-card .label {
+  font-size: 14px;
+  opacity: 0.7;
+  margin-bottom: 6px;
+}
+
+.info-card .value {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.page-title {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+.section-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 12px 28px rgba(0,0,0,.08);
+  transition: .25s ease;
+}
+
+
+
+.section-title {
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+/* ================== FORMS ================== */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 10px;
+}
+
+input,
+select {
+  padding: 9px 10px;
+  border-radius: 10px;
+  border: 1px solid #dcdcdc;
+}
+
+/* remove ugly mobile select styling */
+select {
+  appearance: none;
+}
+
+/* ================== BUTTONS ================== */
+
+.primary-btn {
+  margin-top: 10px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+}
+
+.primary-btn.glow:hover {
+  box-shadow: 0 10px 22px rgba(26,115,232,.35);
+}
+
+/* ================== ANIMATION ================== */
+
+.fade-in {
+  animation: fade .45s ease;
+}
+
+@keyframes fade {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ================== DASH LAYOUT ================== */
+
+.dash-layout {
+  display: flex;
+  min-height: 100vh;
+  font-family: Inter, system-ui, Arial;
+  background: #f5f7fb;
+}
+
+/* ---------- SIDEBAR ---------- */
+
+.dash-sidebar {
+  width: 240px;
+  background: #111213;
+  border-right: 1px solid #e5e7eb;
+  padding: 16px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.menu-btn {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+}
+
+.menu-btn:hover {
+  background: #1e293b;
+}
+
+/* ---------- MAIN ---------- */
+
+.dash-main {
+  flex: 1;
+  padding: 30px;
+}
+
+/* ================== TABLE ================== */
+
+.nice-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.nice-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.nice-table thead tr { background: #f6f7fc; }
+
+.nice-table th,
+.nice-table td {
+  padding: 14px 16px;
+}
+
+.nice-table tbody tr + tr td {
+  border-top: 1px solid #f0f0f0;
+}
+
+/* ================== RESPONSIVE ================== */
+
+/* TABLET */
+@media (max-width: 1024px) {
   .form-grid {
-    display: grid;
-    grid-template-columns: repeat(4,1fr);
-    gap: 10px;
+    grid-template-columns: repeat(3,1fr);
   }
-  
-  input, select {
-    padding: 9px 10px;
-    border-radius: 10px;
-    border: 1px solid #dcdcdc;
+}
+
+/* SMALL MOBILE */
+@media (max-width: 480px) {
+
+  .form-grid {
+    grid-template-columns: 1fr;
   }
-  
-  /* ================== BUTTONS ================== */
-  
-  .primary-btn {
-    margin-top: 10px;
-    padding: 10px 18px;
-    border-radius: 10px;
-    background: #1a73e8;
-    color: #fff;
-    border: none;
+
+  .page-title {
+    font-size: 20px;
   }
-  
-  .primary-btn.glow:hover {
-    box-shadow: 0 10px 22px rgba(26,115,232,.35);
+
+  .info-box {
+    font-size: 14p-x;
   }
-  
-  /* ================== ANIMATION ================== */
-  
-  .fade-in {
-    animation: fade .45s ease;
-  }
-  
-  @keyframes fade {
-    from { opacity: 0; transform: translateY(6px); }
-    to   { opacity: 1; transform: none; }
-  }
-  
-  /* ================== DASH LAYOUT ================== */
-  
-  .dash-layout {
-    display: flex;
-    min-height: 100vh;
-    font-family: Inter, system-ui, Arial;
-    background: #f5f7fb;
-  }
-  
-  /* ---------- SIDEBAR ---------- */
-  
-  .dash-sidebar {
-    width: 240px;
-    background: #111213;
-    border-right: 1px solid #e5e7eb;
-    padding: 16px 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .menu-btn {
-    padding: 10px 12px;
-    border-radius: 10px;
-    border: 1px solid transparent;
-    background: transparent;
-    cursor: pointer;
-  }
-  
-  .menu-btn:hover {
-    background: #1e293b;
-  }
-  
-  /* ---------- MAIN ---------- */
-  
-  .dash-main {
-    flex: 1;
-    padding: 30px;
-  }
-  
-  /* ================== TABLE ================== */
-  
-  .nice-table-wrapper {
-    width: 100%;
-    overflow-x: auto;
-    border-radius: 14px;
-    background: #ffffff;
-  }
-  
-  .nice-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-  }
-  
-  .nice-table thead tr { background: #f6f7fc; }
-  
-  .nice-table th,
-  .nice-table td {
-    padding: 14px 16px;
-  }
-  
-  .nice-table tbody tr + tr td {
-    border-top: 1px solid #f0f0f0;
-  }
-  
-  /* ================== RESPONSIVE ================== */
-  
-  /* TABLET */
-  @media (max-width: 1024px) {
-    .form-grid {
-      grid-template-columns: repeat(3,1fr);
-    }
-  }
-  
-  
-  /* SMALL MOBILE */
-  @media (max-width: 480px) {
-  
-    .form-grid {
-      grid-template-columns: 1fr;
-    }
-  
-    .page-title {
-      font-size: 20px;
-    }
-  
-    .info-box {
-      font-size: 14px;
-    }
-  }
-  /* ===== FIX: Sidebar overlapping content on mobile ===== */
+}
+
+/* ===== FIX: Sidebar overlapping content on mobile ===== */
 
 @media (max-width: 768px) {
 
-    .dash-sidebar {
-      position: fixed;
-      left: 0;
-      top: 0;
-      height: 100vh;
-      width: 64px;
-      z-index: 10;
-    }
-  
-    .dash-main {
-      margin-left: 64px;   /* push content right */
-    }
-  
-    .accounts-wrapper {
-      padding-left: 6px;
-      padding-right: 6px;
-    }
-  
-    .nice-table-wrapper {
-      overflow-x: auto;
-    }
+  .dash-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: 64px;
+    z-index: 10;
   }
-  /* ================= MOBILE CARD MODE FOR ALL TABLES ================= */
+
+  .dash-main {
+    margin-left: 64px;
+  }
+
+  .accounts-wrapper {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .nice-table-wrapper {
+    overflow-x: auto;
+  }
+}
+
+/* ================= MOBILE CARD MODE FOR ALL TABLES ================= */
 
 @media (max-width: 620px) {
 
-    /* hide headings */
-    .nice-table thead {
-      display: none;
-    }
-  
-    .nice-table,
-    .nice-table tbody,
-    .nice-table tr {
-      display: block;
-      width: 100%;
-    }
-  
-    .nice-table tr {
-      margin-bottom: 10px;
-      padding: 10px;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-  
-    .nice-table td {
-      display: flex;
-      justify-content: space-between;
-      border: none;
-      padding: 6px 4px;
-      font-size: 13px;
-    }
-  
-    .nice-table td::before {
-      content: attr(data-label);
-      font-weight: 600;
-      color: #555;
-    }
-  
-    .nice-table tbody tr + tr td {
-      border-top: none;
-    }
+  .nice-table thead {
+    display: none;
+  }
+
+  .nice-table,
+  .nice-table tbody,
+  .nice-table tr {
+    display: block;
+    width: 100%;
+  }
+
+  .nice-table tr {
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  .nice-table td {
+    display: flex;
+    justify-content: space-between;
+    border: none;
+    padding: 6px 4px;
+    font-size: 13px;
+  }
+
+  .nice-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #555;
+  }
+
+  .nice-table tbody tr + tr td {
+    border-top: none;
+  }
+}
+
+.tab-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.tab-btn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+}
+
+.tab-btn.active {
+  background: #4e73df;
+  color: white;
+  border-color: #4e73df;
+}
+
+.date-heading td {
+  font-size: 15px;
+  background: #eef0ff;
+}
+
+/* ================== ENTRIES UI ENHANCE ================== */
+
+.entries-card {
+  border: 1px dashed #d7def8;
+  background: linear-gradient(180deg,#ffffff,#f8faff);
+  padding: 16px;
+  border-radius: 18px;
+}
+
+.form-section-title {
+  margin: 12px 0 6px;
+  font-weight: 700;
+  color: #4e5ae8;
+  font-size: 14px;
+}
+
+.form-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-item label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.entries-card input,
+.entries-card select {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #d7dce9;
+  background: #fdfdff;
+  transition: .2s ease;
+}
+
+.entries-card input:focus,
+.entries-card select:focus {
+  outline: none;
+  border-color: #4e73df;
+  box-shadow: 0 0 0 2px rgba(78,115,223,.18);
+  background: #fff;
+}
+
+.entries-card input[readonly] {
+  background: #f3f5ff;
+  color: #555;
+}
+
+.entries-card .primary-btn {
+  width: 100%;
+  margin-top: 6px;
+}
+
+.entries-card .form-grid {
+  margin-top: 10px;
+}
+
+/* Two-column responsive rows (student/parent etc.) */
+.form-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 620px) {
+  .form-two {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- PERFECT MOBILE LAYOUT FOR ENTRIES --- */
+@media (max-width: 620px) {
+
+  .entries-card {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .entries-card .form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+  }
+
+  .entries-card input,
+  .entries-card select {
+    width: 100%;
+    font-size: 14px;
+  }
+
+  .entries-card > input[type="date"],
+  .entries-card > select {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+  .summary-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
   }
   
+  .info-box {
+    background: #fff;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 5px 12px rgba(0,0,0,0.07);
+  }
+  
+  .accounts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  
+  .accounts-card {
+    background: #f9fafb;
+    border-radius: 18px;
+    padding: 18px;
+    cursor: pointer;
+    transition: 0.25s;
+  }
+  
+  .accounts-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 18px rgba(0,0,0,0.08);
+  }
+  .summary-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  
+  .info-box {
+    background: #fff;
+    border-radius: 18px;
+    padding: 16px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.06);
+  }
+  
+ 
+}
+/* ================= END MEDIA QUERIES ================= */
+
+
+/* ====== ACCOUNTS DASHBOARD BOXES (GLOBAL) ====== */
+
+.accounts-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.accounts-card {
+  background: #f9fafb;
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 10px 18px rgba(0,0,0,.08);
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.accounts-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 24px rgba(0,0,0,.1);
+}
+
