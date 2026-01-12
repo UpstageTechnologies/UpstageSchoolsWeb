@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaPlus, FaSearch, FaEdit, FaTrash } from "react-icons/fa";
+import { FaPlus, FaSearch, FaEdit, FaTrash, FaEye } from "react-icons/fa";
 import "../dashboard_styles/Teacher.css";
 import {
   collection,
@@ -265,6 +265,12 @@ const Student = ({ requirePremium }) => {
                 <td data-label="Section">{s.section}</td>
 
                 <td className="action-cell">
+                <button
+    className="view-btn"
+    onClick={() => setViewStudent(s)}
+  >
+   <FaEye /> View
+  </button>
   
 
   <button
@@ -284,12 +290,7 @@ const Student = ({ requirePremium }) => {
   >
     <FaTrash /> Delete
   </button>
-  <button
-    className="view-btn"
-    onClick={() => setViewStudent(s)}
-  >
-    View
-  </button>
+  
 </td>
 
               </tr>

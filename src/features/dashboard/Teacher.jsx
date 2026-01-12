@@ -354,6 +354,22 @@ if (!/^\d{10}$/.test(phoneClean)) {
                 </td>
 
                 <td>
+                <button
+  className="view-btn"
+  onClick={() => {
+    localStorage.setItem("viewAs", "teacher");
+    localStorage.setItem("viewTeacherId", t.id);
+    localStorage.setItem("viewTeacherName", t.name);
+
+    // 🔥 dashboard page switch
+    window.dispatchEvent(
+      new CustomEvent("open-teacher-dashboard")
+    );
+  }}
+>
+<FaEye /> View
+</button>
+
   <button
     className="edit-btn"
     onClick={() =>
@@ -374,22 +390,7 @@ if (!/^\d{10}$/.test(phoneClean)) {
   >
     <FaTrash /> Delete
   </button>
-  <button
-  className="view-btn"
-  onClick={() => {
-    localStorage.setItem("viewAs", "teacher");
-    localStorage.setItem("viewTeacherId", t.id);
-    localStorage.setItem("viewTeacherName", t.name);
-
-    // 🔥 dashboard page switch
-    window.dispatchEvent(
-      new CustomEvent("open-teacher-dashboard")
-    );
-  }}
->
-  👁 View
-</button>
-
+  
 </td>
 
 

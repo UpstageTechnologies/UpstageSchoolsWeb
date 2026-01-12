@@ -3,10 +3,15 @@ import { collection, addDoc, onSnapshot } from "firebase/firestore";
 import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
 
-export default function Inventory({ adminUid ,setActivePage ,requirePremium }) {
+
+
+export default function Inventory({ adminUid, setActivePage, plan, showUpgrade }) {
+
 
   /* ================= STATES ================= */
   const [feesMaster, setFeesMaster] = useState([]);
+  const [feesLoaded, setFeesLoaded] = useState(false);
+
 
   const [entryType, setEntryType] = useState(""); // fees | salary
   const [activeSummary, setActiveSummary] = useState("fees"); // fees | salary
@@ -15,6 +20,8 @@ export default function Inventory({ adminUid ,setActivePage ,requirePremium }) {
   const [feeName, setFeeName] = useState("");
   const [salaryName, setSalaryName] = useState("");
   const [feeAmount, setFeeAmount] = useState("");
+  const totalEntries = feesMaster.length;
+
 
   const [date, setDate] = useState(() => {
     const today = new Date();
@@ -31,18 +38,46 @@ export default function Inventory({ adminUid ,setActivePage ,requirePremium }) {
     "FeesMaster"
   );
 
-  const safeRequirePremium = requirePremium || ((cb) => cb());
+  const safeRequirePremium = (cb, type) => {
+    if (!feesLoaded) {
+      cb();
+      return;
+    }
+  
+    const feesCount = feesMaster.filter(i => i.type === "fees").length;
+    const salaryCount = feesMaster.filter(i => i.type === "salary").length;
+  
+    if (plan === "basic") {
+      if (type === "fees" && feesCount >= 1) {
+        showUpgrade();
+        return;
+      }
+  
+      if (type === "salary" && salaryCount >= 1) {
+        showUpgrade();
+        return;
+      }
+    }
+  
+    cb();
+  };
+  
+  
+  
+  
 
   /* ================= LOAD DATA ================= */
   useEffect(() => {
     if (!adminUid) return;
-
+  
     const unsub = onSnapshot(feesRef, snap => {
       setFeesMaster(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setFeesLoaded(true);        // 👈 ADD THIS
     });
-
+  
     return () => unsub();
   }, [adminUid]);
+  
 
   /* ================= SAVE ================= */
   const saveFee = async () => {
@@ -83,6 +118,8 @@ export default function Inventory({ adminUid ,setActivePage ,requirePremium }) {
     setSalaryName("");
     setFeeAmount("");
   };
+  
+  
 
   /* ================= FILTER DATA ================= */
   const feesData = feesMaster.filter(i => i.type === "fees");
@@ -150,7 +187,10 @@ export default function Inventory({ adminUid ,setActivePage ,requirePremium }) {
               style={{ width: 120 }}
             />
 
-            <button onClick={() => safeRequirePremium(saveFee)}>Save</button>
+<button onClick={() => safeRequirePremium(saveFee, "fees")}>
+  Save
+</button>
+
           </div>
         )}
 
@@ -176,7 +216,13 @@ export default function Inventory({ adminUid ,setActivePage ,requirePremium }) {
               style={{ width: 120 }}
             />
 
-            <button onClick={saveFee}>Save</button>
+<button onClick={() => safeRequirePremium(saveFee, "salary")}>
+
+  Save
+</button>
+          
+
+
           </div>
         )}
       </div>

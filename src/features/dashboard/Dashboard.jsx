@@ -24,6 +24,7 @@ import React, { useEffect, useState } from "react";
   import Student from "./Student";
   import Admin from "./Admin";
   import OfficeStaff from "./OfficeStaff";
+  import { onSnapshot } from "firebase/firestore";
 
   import StudentDetails from "./StudentDetails";
   import AdminTimetable from "./AdminTimetable";
@@ -64,6 +65,8 @@ import UpgradePopup from "../../components/UpgradePopup";
     const [school, setSchool] = useState("");
     const [plan, setPlan] = useState("basic");
     const [planExpiry, setPlanExpiry] = useState(null);
+    const [upgradeDisabled, setUpgradeDisabled] = useState(false);
+
 
     const [menuOpen, setMenuOpen] = useState(false);
     const [accountMenuOpen, setAccountMenuOpen] = useState(false);
@@ -107,6 +110,19 @@ import UpgradePopup from "../../components/UpgradePopup";
     
     
     /* ================= AUTH + ROLE ================= */
+    useEffect(() => {
+      const off = () => setUpgradeDisabled(true);
+      const on = () => setUpgradeDisabled(false);
+    
+      window.addEventListener("disable-upgrade-popup", off);
+      window.addEventListener("enable-upgrade-popup", on);
+    
+      return () => {
+        window.removeEventListener("disable-upgrade-popup", off);
+        window.removeEventListener("enable-upgrade-popup", on);
+      };
+    }, []);
+    
     useEffect(() => {
       const storedRole = localStorage.getItem("role");
 
@@ -183,36 +199,50 @@ const requirePremium = (page) => {
       return () => unsubscribe && unsubscribe();
     }, [navigate]);
 
+    
+
+useEffect(() => {
+  const masterUid =
+    localStorage.getItem("adminUid") || auth.currentUser?.uid;
+
+  if (!masterUid) return;
+
+  const ref = doc(db, "users", masterUid);
+
+  const unsub = onSnapshot(ref, (snap) => {
+    if (snap.exists()) {
+      const d = snap.data();
+
+      setLogo(d.schoolLogo || "");
+      setSchool(d.schoolName || "School");
+
+      localStorage.setItem("schoolLogo", d.schoolLogo || "");
+      localStorage.setItem("schoolName", d.schoolName || "");
+    }
+  });
+
+  return () => unsub();
+}, []);
+
     useEffect(() => {
-      async function loadSchoolLogo() {
-      // masterUid is ALWAYS master admin uid
-
-      const masterUid = localStorage.getItem("masterUid");
-
+      const handler = () => {
+        setSchool(localStorage.getItem("schoolName") || "School");
+        setLogo(localStorage.getItem("schoolLogo") || "");
+      };
     
-        if (!masterUid) return;
+      window.addEventListener("profile-updated", handler);
     
-        const snap = await getDoc(doc(db, "users", masterUid));
-    
-        if (snap.exists()) {
-          const d = snap.data();
-    
-          setLogo(d.schoolLogo || "");
-          setSchool(d.schoolName || "School Name");
-    
-          // cache for reloads
-          localStorage.setItem("schoolLogo", d.schoolLogo || "");
-          localStorage.setItem("schoolName", d.schoolName || "");
-        }
-      }
-    
-      loadSchoolLogo();
+      return () => window.removeEventListener("profile-updated", handler);
     }, []);
+    
+
     
 
     useEffect(() => {
       async function loadSchool() {
     
+
+        
         // ⭐ ALWAYS read from localStorage first
         const masterUid =
           localStorage.getItem("adminUid") || auth.currentUser?.uid;
@@ -575,18 +605,27 @@ const viewTeacherId = localStorage.getItem("viewTeacherId");
 
 {(isAdminOrSubAdmin || isOfficeStaff) &&
  (activePage === "profit" || activePage.startsWith("bill_")) && (
-  <ProfitPage
-    adminUid={adminUid}
-    setActivePage={setActivePage}
-    activePage={activePage}
-    requirePremium={requirePremium} 
-  />
+<ProfitPage
+  adminUid={adminUid}
+  setActivePage={setActivePage}
+  activePage={activePage}
+  plan={plan}
+  showUpgrade={() => setShowUpgrade(true)}
+/>
+
 )}
 
 
 {isAdminOrSubAdmin && activePage === "inventory" && (
-  <Inventory adminUid={adminUid} setActivePage={setActivePage} requirePremium={requirePremium}  />
+ <Inventory
+ adminUid={adminUid}
+ setActivePage={setActivePage}
+ plan={plan}
+ showUpgrade={() => setShowUpgrade(true)}
+/>
+
 )}
+
 
 {/* rest of the pages go here… */}
 
@@ -674,12 +713,13 @@ const viewTeacherId = localStorage.getItem("viewTeacherId");
 
           </div>
         </div>
-        {showUpgrade && (
+        {showUpgrade && !upgradeDisabled && (
   <UpgradePopup
     onClose={() => setShowUpgrade(false)}
     onUpgrade={() => navigate("/payment")}
   />
 )}
+
 
       </div>
       </>

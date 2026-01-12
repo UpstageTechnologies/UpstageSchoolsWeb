@@ -252,6 +252,12 @@ if (!/^\d{10}$/.test(phoneClean)) {
         <td data-label="Experience">{a.experience || "-"}</td>
 
         <td className="action-cell">
+        <button
+    className="view-btn"
+    onClick={() => setViewStudent(s)}
+  >
+   <FaEye /> View
+  </button>
           <button
             className="edit-btn"
             onClick={() => {
@@ -272,6 +278,7 @@ if (!/^\d{10}$/.test(phoneClean)) {
               setShowModal(true);
             }}
           >
+
             <FaEdit /> Edit
           </button>
 

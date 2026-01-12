@@ -11,7 +11,8 @@ import BillPage from "./BillPage";
 
 
 
-export default function ProfitPage({ adminUid, setActivePage, activePage = "",requirePremium }) {
+
+export default function ProfitPage({ adminUid, setActivePage, activePage = "",plan, showUpgrade }) {
 
 
   const role = localStorage.getItem("role");
@@ -20,6 +21,12 @@ const isOfficeStaff = role === "office_staff";
 
   const [incomeList, setIncomeList] = useState([]);
   const [expenseList, setExpenseList] = useState([]);
+  const [incomeLoaded, setIncomeLoaded] = useState(false);
+const [expenseLoaded, setExpenseLoaded] = useState(false);
+
+const loaded = incomeLoaded && expenseLoaded;
+
+
   
 
   const [entryType, setEntryType] = useState("");
@@ -35,6 +42,8 @@ const isOfficeStaff = role === "office_staff";
   // INCOME
   const [incomeMode, setIncomeMode] = useState("");
   const [studentMode, setStudentMode] = useState("");
+  
+
 
   // source
   const [srcName, setSrcName] = useState("");
@@ -122,28 +131,28 @@ const parentsRef = collection(db, "users", adminUid, "parents");
 
 
 
-  useEffect(()=>{
+  useEffect(() => {
+  if (!adminUid) return;
 
-    if(!adminUid) return;
+  onSnapshot(incomesRef, s => {
+    setIncomeList(s.docs.map(d => ({ id: d.id, ...d.data() })));
+    setIncomeLoaded(true);
+  });
   
-    onSnapshot(incomesRef, s =>
-      setIncomeList(s.docs.map(d=>({id:d.id,...d.data()})))
-    );
-  
-    onSnapshot(expensesRef, s =>
-      setExpenseList(s.docs.map(d=>({id:d.id,...d.data()})))
-    );
-  
-    onSnapshot(studentsRef, s =>
-      setStudents(s.docs.map(d=>({id:d.id,...d.data()})))
-    );
-  
+  onSnapshot(expensesRef, s => {
+    setExpenseList(s.docs.map(d => ({ id: d.id, ...d.data() })));
+    setExpenseLoaded(true);
+  });
 
-    onSnapshot(feesRef, s =>
-      setFeesMaster(s.docs.map(d=>({id:d.id,...d.data()})))
-    );
-  
-  },[adminUid]);
+  onSnapshot(studentsRef, s =>
+    setStudents(s.docs.map(d => ({ id: d.id, ...d.data() })))
+  );
+
+  onSnapshot(feesRef, s =>
+    setFeesMaster(s.docs.map(d => ({ id: d.id, ...d.data() })))
+  );
+}, [adminUid]);
+
   
   const filteredStudents = students.filter(s =>
     String(s.class) === String(oldClass) &&
@@ -168,8 +177,34 @@ const parentsRef = collection(db, "users", adminUid, "parents");
 
     setSrcName(""); setSrcAmt("");
   };
+ 
+  
+ const safeRequirePremium = (cb, type) => {
+  if (!loaded) return;   // ⛔ block until data is ready
 
+  if (plan !== "basic") {
+    cb();
+    return;
+  }
 
+  const incomeCount = incomeList.filter(i => i.date === entryDate).length;
+  const expenseCount = expenseList.filter(e => e.date === entryDate).length;
+
+  if (type === "income" && incomeCount >= 1) {
+    showUpgrade();
+    return;
+  }
+
+  if (type === "expense" && expenseCount >= 1) {
+    showUpgrade();
+    return;
+  }
+
+  cb();
+};
+
+  
+  
 /* ---------- INCOME: NEW ADMISSION ---------- */
 const saveNewAdmission = async () => {
   if (!newName || !newParent || !newClass || !newPayType || !entryDate)
@@ -383,7 +418,7 @@ if (activePage && activePage.startsWith("bill_")) {
       billStudentId={activePage.split("_")[1]}
       billDate={activePage.split("_")[2]}
       setActivePage={setActivePage}
-      requirePremium={requirePremium}
+     
     />
   );
 }
@@ -508,7 +543,8 @@ if (activePage && activePage.startsWith("bill_")) {
           value={srcAmt}
           onChange={e => setSrcAmt(e.target.value)}
         />
-        <button className="primary-btn glow" onClick={() => requirePremium(saveSourceIncome)}>
+       <button onClick={() => safeRequirePremium(saveSourceIncome, "income")}>
+
           Save
         </button>
       </div>
@@ -566,7 +602,9 @@ if (activePage && activePage.startsWith("bill_")) {
           />
         )}
 
-        <button className="primary-btn glow" onClick={() => requirePremium(saveNewAdmission)}>
+<button onClick={() => safeRequirePremium(saveNewAdmission, "income")}>
+
+
           Save
         </button>
       </div>
@@ -655,7 +693,9 @@ if (activePage && activePage.startsWith("bill_")) {
       />
     )}
 
-    <button className="primary-btn glow" onClick={() => requirePremium(saveOldAdmission)}>
+<button onClick={() => safeRequirePremium(saveOldAdmission, "income")}>
+
+
       Save
     </button>
 
@@ -734,7 +774,9 @@ if (activePage && activePage.startsWith("bill_")) {
                     onChange={e=>setManualSalary(e.target.value)}
                   />
 
-                  <button className="primary-btn glow" onClick={() => requirePremium(saveSalary)}>Save Salary</button>
+<button onClick={() => safeRequirePremium(saveSalary, "expense")}>
+
+Save Salary</button>
                 </div>
               </>
             )}
@@ -744,7 +786,9 @@ if (activePage && activePage.startsWith("bill_")) {
               <div className="form-grid">
                 <input placeholder="Expense name" value={exName} onChange={e=>setExName(e.target.value)} />
                 <input type="number" placeholder="Amount" value={exAmt} onChange={e=>setExAmt(e.target.value)} />
-                <button className="primary-btn glow" onClick={() => requirePremium(saveExpense)}>Save Expense</button>
+                <button onClick={() => safeRequirePremium(saveExpense, "expense")}>
+
+Save Expense</button>
               </div>
             )}
           </>
@@ -761,7 +805,9 @@ if (activePage && activePage.startsWith("bill_")) {
 
             <input placeholder="Fee Name" value={feeName} onChange={e=>setFeeName(e.target.value)} />
             <input type="number" placeholder="Amount" value={feeAmount} onChange={e=>setFeeAmount(e.target.value)} />
-            <button className="primary-btn glow" onClick={() => requirePremium(saveFee)}>Save Fee</button>
+            <button onClick={() => safeRequirePremium(saveFee, "income")}>
+
+Save Fee</button>
           </div>
         )} 
 

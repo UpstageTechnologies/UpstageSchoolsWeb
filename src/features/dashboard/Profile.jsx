@@ -2,341 +2,320 @@ import { useEffect, useState } from "react";
 import { auth, db } from "../../services/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import "../dashboard_styles/Profile.css";
-import { FaUserCircle,FaPlusCircle, FaTrashAlt } from "react-icons/fa";
-import { updateEmail } from "firebase/auth";
+import { FaCamera, FaUserCircle } from "react-icons/fa";
 import { verifyBeforeUpdateEmail } from "firebase/auth";
+import Cropper from "react-easy-crop";
+import { onSnapshot } from "firebase/firestore";
 
 
 export default function Profile() {
+  const role = localStorage.getItem("role");
+
   const [data, setData] = useState(null);
   const [adminUid, setAdminUid] = useState(null);
 
-  const role = localStorage.getItem("role");
-
-  // editing state
   const [editing, setEditing] = useState(false);
-
-  // school fields
   const [schoolName, setSchoolName] = useState("");
   const [schoolLogo, setSchoolLogo] = useState("");
   const [editName, setEditName] = useState("");
-const [editEmail, setEditEmail] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [loading, setLoading] = useState(true);
 
+  const [activeTab, setActiveTab] = useState("me");
 
-async function saveProfile() {
-  try {
-    const user = auth.currentUser;
+  const [cropOpen, setCropOpen] = useState(false);
+  const [imageSrc, setImageSrc] = useState(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedPixels, setCroppedPixels] = useState(null);
 
-    if (!user) {
-      alert("User not logged in");
-      return;
-    }
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
-    // 🔐 If email changed → send verification link
-    if (editEmail !== user.email) {
-      await verifyBeforeUpdateEmail(user, editEmail);
-      alert("Verification email sent to " + editEmail + ". Open mail and confirm.");
-      return; // do NOT update Firestore until verified
-    }
-
-    // 🔥 After email verified → update Firestore
-    let ref;
-    if (role === "master") {
-      ref = doc(db, "users", adminUid);
-    } else if (role === "admin") {
-      ref = doc(db, "users", adminUid, "admins", localStorage.getItem("adminId"));
-    } else if (role === "teacher") {
-      ref = doc(db, "users", adminUid, "teachers", localStorage.getItem("teacherDocId"));
-    } else if (role === "parent") {
-      ref = doc(db, "users", adminUid, "parents", localStorage.getItem("parentDocId"));
-    }
-
-    await updateDoc(ref, {
-      name: editName,
-      username: editName,
-      email: editEmail,
-      photoURL: data.photoURL || "",
-      ...(role === "master" && { schoolName, schoolLogo })
-    });
-
-    localStorage.setItem("username", editName);
-    localStorage.setItem("email", editEmail);
-
-    alert("Profile updated 🎉");
-    setEditing(false);
-
-  } catch (err) {
-    console.error(err);
-
-    if (err.code === "auth/requires-recent-login") {
-      alert("Logout & login again, then change email.");
-    } else {
-      alert(err.message);
-    }
-  }
-}
-
-
-  /* -------- GET MASTER UID -------- */
   useEffect(() => {
-    let uid = null;
-
-    if (role === "master") uid = auth.currentUser?.uid;
-    else uid = localStorage.getItem("adminUid");
-
-    if (uid) setAdminUid(uid);
+    const uid =
+      role === "master"
+        ? auth.currentUser?.uid
+        : localStorage.getItem("adminUid");
+    setAdminUid(uid);
   }, [role]);
-
-  /* -------- LOAD SCHOOL INFO -------- */
   useEffect(() => {
-    async function loadSchool() {
-      const masterUid =
-        localStorage.getItem("adminUid") || auth.currentUser?.uid;
-
-      if (!masterUid) return;
-
-      const snap = await getDoc(doc(db, "users", masterUid));
-
-      if (snap.exists()) {
-        const d = snap.data();
-        setSchoolName(d.schoolName || "");
-        setSchoolLogo(d.schoolLogo || "");
-      }
+    if (cropOpen) {
+      document.body.classList.add("crop-open");
+    } else {
+      document.body.classList.remove("crop-open");
     }
-
-    loadSchool();
-  }, []);
-
-  /* -------- LOAD USER PROFILE -------- */
-  useEffect(() => {
-    async function load() {
-      if (!adminUid || !role) return;
-
-      let ref;
-
-      if (role === "master") {
-        ref = doc(db, "users", adminUid);
-      } 
-      else if (role === "admin") {
-        ref = doc(
-          db,
-          "users",
-          adminUid,
-          "admins",
-          localStorage.getItem("adminId")
-        );
-      } 
-      else if (role === "teacher") {
-        ref = doc(
-          db,
-          "users",
-          adminUid,
-          "teachers",
-          localStorage.getItem("teacherDocId")   // ⭐ real doc id
-        );
-      } 
-      else if (role === "parent") {
-        ref = doc(
-          db,
-          "users",
-          adminUid,
-          "parents",
-          localStorage.getItem("parentDocId")   // ⭐ real doc id
-        );
-      }
-
-      const snap = await getDoc(ref);
-      const d = snap.exists() ? snap.data() : {};
-
-      setData(d);
-      setEditName(d.username || d.name || "");
-setEditEmail(d.email || "");
-
-    }
-
-    load();
-  }, [adminUid, role]);
-
-  /* -------- SAVE -------- */
+  }, [cropOpen]);
   
 
+  useEffect(() => {
+    if (!adminUid) return;
+  
+    let ref = doc(db, "users", adminUid);
+    if (role === "admin") ref = doc(db, "users", adminUid, "admins", localStorage.getItem("adminId"));
+    if (role === "teacher") ref = doc(db, "users", adminUid, "teachers", localStorage.getItem("teacherDocId"));
+    if (role === "parent") ref = doc(db, "users", adminUid, "parents", localStorage.getItem("parentDocId"));
+  
+    const unsub = onSnapshot(ref, (snap) => {
+      if (snap.exists()) {
+        const d = snap.data();
+  
+        setData(d);
+        setEditName(d?.name || "");
+        setEditEmail(d?.email || "");
+        setSchoolName(d?.schoolName || "");
+        setSchoolLogo(d?.schoolLogo || "");
+  
+        // 🔥 sync navbar
+        localStorage.setItem("profilePhoto", d.photoURL || "");
+        localStorage.setItem("adminName", d.name || d.username || "");
+        localStorage.setItem("email", d.email || "");
+  
+        window.dispatchEvent(new Event("profile-updated"));
+        setLoading(false);
+      }
+    });
+  
+    return () => unsub();
+  }, [adminUid, role]);
+  
 
-  if (!data) return <p>Loading…</p>;
+  const handleApplyCrop = async () => {
+    if (!croppedPixels || !imageSrc) return;
+  
+    const canvas = document.createElement("canvas");
+    const img = new Image();
+    img.src = imageSrc;
+    await new Promise(r => (img.onload = r));
+  
+    canvas.width = croppedPixels.width;
+    canvas.height = croppedPixels.height;
+    const ctx = canvas.getContext("2d");
+  
+    ctx.drawImage(
+      img,
+      croppedPixels.x,
+      croppedPixels.y,
+      croppedPixels.width,
+      croppedPixels.height,
+      0,
+      0,
+      croppedPixels.width,
+      croppedPixels.height
+    );
+  
+    const base64 = canvas.toDataURL("image/jpeg");
+  
+    if (activeTab === "me") {
+      setData(p => ({ ...p, photoURL: base64 }));
+    } else {
+      setSchoolLogo(base64);
+    }
+  
+    setCropOpen(false);
+  };
+  
 
-  /* -------- TEACHER CLASS + SECTION -------- */
-  const firstClass =
-    data?.assignedClasses?.length
-      ? data.assignedClasses[0].class
-      : "—";
+  const saveProfile = async () => {
+    try {
+      const user = auth.currentUser;
+      if (!user) return alert("Not logged in");
+  
+      setSaving(true);
+      setSaveSuccess(false);
+  
+      // Email change
+      if (editEmail !== user.email) {
+        await verifyBeforeUpdateEmail(user, editEmail);
+        setSaving(false);
+        alert("Verification mail sent");
+        return;
+      }
+  
+      let ref;
+      if (role === "master") ref = doc(db, "users", adminUid);
+      if (role === "admin") ref = doc(db, "users", adminUid, "admins", localStorage.getItem("adminId"));
+      if (role === "teacher") ref = doc(db, "users", adminUid, "teachers", localStorage.getItem("teacherDocId"));
+      if (role === "parent") ref = doc(db, "users", adminUid, "parents", localStorage.getItem("parentDocId"));
+  
+      const updatedData = {
+        name: editName,
+        username: editName,
+        email: editEmail,
+        photoURL: data.photoURL || "",
+        ...(role === "master" && { schoolName, schoolLogo })
+      };
+  
+      await updateDoc(ref, updatedData);
+  
+      // 🔥 instant navbar + sidebar sync
+      localStorage.setItem("profilePhoto", updatedData.photoURL || "");
+      localStorage.setItem("adminName", editName);
+      localStorage.setItem("email", editEmail);
+  
+      if (role === "master") {
+        localStorage.setItem("schoolName", schoolName || "");
+        localStorage.setItem("schoolLogo", schoolLogo || "");
+      }
+  
+      window.dispatchEvent(new Event("profile-updated"));
+  
+      setSaving(false);
+      setSaveSuccess(true);
+  
+      setTimeout(() => {
+        setSaveSuccess(false);
+        setEditing(false);
+      }, 1200);
+  
+    } catch (e) {
+      setSaving(false);
+      alert(e.message);
+    }
+  };
+  
 
-  const firstSection =
-    data?.assignedClasses?.length
-      ? data.assignedClasses[0].section
-      : "—";
+  if (loading) return <div className="profile-loading"></div>;
 
   return (
-    <div className="profile-page">
-      <div className="profile-card">
+    <div className="profile-root">
+      <div className="profile-shell">
 
-        {/* PROFILE / SCHOOL IMAGE */}
-        <div className="profile-avatar">
-  {data.photoURL ? (
-    <img
-      src={data.photoURL}
-      alt="Profile"
-      className="profile-logo"
-    />
-  ) : (
-    <FaUserCircle className="default-user-icon" />
-  )}
-</div>
+        {/* Tabs */}
+        <div className="profile-tabs">
+          <button className={activeTab === "me" ? "tab-btn active" : "tab-btn"} onClick={() => setActiveTab("me")}>
+            👤 Me
+          </button>
+          <button className={activeTab === "school" ? "tab-btn active" : "tab-btn"} onClick={() => setActiveTab("school")} disabled={role !== "master"}>
+            🏫 School
+          </button>
+        </div>
 
-
-        <h2>{schoolName || "School Name"}</h2>
-
-        <hr />
-
-        <div className="profile-details">
-
-        <div className="row">
-  <span className="label">Name</span>
-  <span className="value">
-    {editing ? (
-      <input
-        value={editName}
-        onChange={e => setEditName(e.target.value)}
-        placeholder="Enter name"
-      />
-    ) : (
-      editName || "—"
-    )}
-  </span>
-</div>
-
-<div className="row">
-  <span className="label">Email</span>
-  <span className="value">
-    {editing ? (
-      <input
-        value={editEmail}
-        onChange={e => setEditEmail(e.target.value)}
-        placeholder="Enter email"
-      />
-    ) : (
-      editEmail || "—"
-    )}
-  </span>
-</div>
-
-
-{role === "teacher" && (
-  <>
-    <div className="row">
-      <span className="label">Class</span>
-      <span className="value">{firstClass}</span>
-    </div>
-
-    <div className="row">
-      <span className="label">Section</span>
-      <span className="value">{firstSection}</span>
-    </div>
-  </>
+        {/* Hero */}
+        <div className="profile-hero">
+          <div className="avatar-container">
+            <div className="avatar-ring">
+            {activeTab === "me" ? (
+  data?.photoURL ? <img src={data.photoURL} /> : <FaUserCircle />
+) : (
+  schoolLogo ? <img src={schoolLogo} /> : <FaUserCircle />
 )}
 
-</div>
-<br/>
+            </div>
 
-        {/* EDIT MODE */}
-        
-        {role === "master" && (
-  !editing ? (
-    <button className="edit-btn" onClick={() => setEditing(true)}>
-      Edit Profile
-    </button>
-  ) : (
-    <div className="edit-box">
-      {/* PROFILE PHOTO PICKER */}
-      <div className="edit-row">
-        <span>Profile Photo ≤ 300 KB</span>
+            {editing && (
+              <label className="avatar-fab">
+                <FaCamera />
+                <input type="file" hidden accept="image/*" onChange={(e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    setImageSrc(reader.result);
+    setCropOpen(true);
+  };
+  reader.readAsDataURL(file);
+}}
+ />
+              </label>
+            )}
+          </div>
 
-        <div className="icon-actions">
-          <label className="icon-btn add">
-            <FaPlusCircle />
-            <input
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
+          {activeTab === "me" ? (
+  <div className="hero-text">
+    <h1>{editName || "Your Name"}</h1>
+    <p>{editEmail}</p>
+  </div>
+) : (
+  <div className="hero-text">
+    <h1>{schoolName || "School Name"}</h1>
+    <p className="muted">School Profile</p>
+  </div>
+)}
 
-                const reader = new FileReader();
-                reader.onloadend = () =>
-                  setData(prev => ({ ...prev, photoURL: reader.result }));
-                reader.readAsDataURL(file);
-              }}
-            />
-          </label>
-
-          {data.photoURL && (
-            <button onClick={() => setData(prev => ({ ...prev, photoURL: "" }))}>
-              <FaTrashAlt />
-            </button>
-          )}
         </div>
+
+        {/* Crop */}
+        {cropOpen && (
+  <div className="crop-modal">
+    <div className="crop-box">
+
+      <div className="cropper-wrapper">
+        <Cropper
+          image={imageSrc}
+          crop={crop}
+          zoom={zoom}
+          aspect={1}
+          cropShape="round"
+          onCropChange={setCrop}
+          onZoomChange={setZoom}
+          onCropComplete={(_, pixels) => setCroppedPixels(pixels)}
+        />
       </div>
 
-      {/* MASTER SETTINGS */}
-      <>
-        <input
-          placeholder="School Name"
-          value={schoolName}
-          onChange={(e) => setSchoolName(e.target.value)}
-        />
+      <input
+        className="zoom-slider"
+        type="range"
+        min={1}
+        max={3}
+        step={0.1}
+        value={zoom}
+        onChange={(e) => setZoom(e.target.value)}
+      />
 
-        <div className="edit-row">
-          <span>School Logo ≤ 500 KB</span>
+      <div className="crop-actions">
+        <button className="btn-secondary" onClick={() => setCropOpen(false)}>
+          Cancel
+        </button>
+        <button className="btn-primary" onClick={handleApplyCrop}>
+          Apply
+        </button>
+      </div>
 
-          <div className="icon-actions">
-            <label className="icon-btn add">
-              <FaPlusCircle />
-              <input
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
+    </div>
+  </div>
+)}
 
-                  const reader = new FileReader();
-                  reader.onloadend = () => setSchoolLogo(reader.result);
-                  reader.readAsDataURL(file);
-                }}
-              />
-            </label>
 
-            {schoolLogo && (
-              <button onClick={() => setSchoolLogo("")}>
-                <FaTrashAlt />
-              </button>
+        {/* Card */}
+        <div className="profile-card">
+          {activeTab === "me" ? (
+            <>
+              <div className="profile-row">
+                <label>Name</label>
+                <input disabled={!editing} value={editName} onChange={e => setEditName(e.target.value)} />
+              </div>
+              <div className="profile-row">
+                <label>Email</label>
+                <input disabled={!editing} value={editEmail} onChange={e => setEditEmail(e.target.value)} />
+              </div>
+            </>
+          ) : (
+            role === "master" && (
+              <>
+                <div className="profile-row">
+                  <label>School Name</label>
+                  <input disabled={!editing} value={schoolName} onChange={e => setSchoolName(e.target.value)} />
+                </div>
+
+                
+              </>
+            )
+          )}
+
+          <div className="profile-actions">
+            {!editing ? (
+              <button className="btn-primary" onClick={() => setEditing(true)}>Edit</button>
+            ) : (
+              <>
+                <button className="btn-secondary" onClick={() => setEditing(false)}>Cancel</button>
+                <button className="btn-primary" onClick={saveProfile}>
+                  {saving ? "Saving..." : saveSuccess ? "Saved ✓" : "Save"}
+                </button>
+              </>
             )}
           </div>
         </div>
-      </>
-
-      <div className="btn-row">
-        <button className="save-btn" onClick={saveProfile}>
-          Save
-        </button>
-
-        <button  onClick={() => setEditing(false)} >
-          Cancel
-        </button>
-      </div>
-    </div>
-  )
-)}
-
       </div>
     </div>
   );
