@@ -28,8 +28,8 @@ html, body {
   height: calc(100vh - 60px);
   width: clamp(160px, 22vw, 220px);
   min-width: 250px;
-  background: #1f1f1f;
-  color: #fff;
+  background: #f9f8f8;
+  color: #040404;
   padding: 20px;
   transition: all 0.35s ease;
   z-index: 100;
@@ -47,13 +47,14 @@ html, body {
   display: flex;
   align-items: center;
   gap: 10px;
-  cursor: pointer;
+  cursor: pointer;  
   transition: all 0.25s ease;
 }
 
 .sidebar ul li:hover {
-  background: #333;
-  transform: translateX(6px);
+  background:#52c3f7;
+  color:#f6f9fa;
+  
   border-radius: 6px;
 }
 

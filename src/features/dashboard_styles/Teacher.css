@@ -91,7 +91,7 @@
   padding:14px 16px;
   font-size:13px;
   font-weight:600;
-  color:#6b7280;
+  color:#1a3ad9;
   border-bottom:1px solid #e5e7eb;
 }
 
@@ -100,7 +100,7 @@
   border-bottom:1px solid #f0f0f0;
 }
 .teacher-table tbody tr:hover{
-  background:#fafbff;
+  background:#fafbff;  
 }
 
 /* Cells */
@@ -275,4 +275,8 @@ input:-webkit-autofill{
 /* keep bottom row border */
 .teacher-table tr{
   border-bottom:1px solid #e5e7eb;
+}
+
+.rejected-table tbody tr:hover{
+  background:#fee2e2;
 }
