@@ -4,15 +4,28 @@ import { auth, db } from "../../services/firebase";
 import "../dashboard_styles/AdminTimetable.css";
 import SchoolCalendar from "../../components/SchoolCalendar";
 import { addDoc, collection, Timestamp } from "firebase/firestore";
-import UpgradePopup from "../../components/UpgradePopup";
+import UpgradePopup from "../../components/UpgradePopup"
+import lkgImg from "../../assets/lkg.jpg";       // use std.jpg for LKG
+import ukgImg from "../../assets/ukg.jpg";
+import playImg from "../../assets/playgroup.jpg";
+import stdImg from "../../assets/std.jpg";
+;
 
 
-// 👉 Classes BEFORE class-1 added here
 const CLASSES = [
   "LKG",
-  "UKG", "Play Group",
+  "UKG",
+  "Play Group",
   ...Array.from({ length: 12 }, (_, i) => i + 1)
 ];
+
+const classImages = {
+  "LKG": lkgImg,
+  "UKG": ukgImg,
+  "Play Group": playImg,
+};
+
+
 
 const SECTIONS = ["A", "B", "C", "D"];
 const PERIODS = [1, 2, 3, 4, 5, 6];
@@ -143,20 +156,28 @@ const hasPremiumAccess = isPremiumPlan;
   )}
       <h2 className="tt-title">Admin Timetable</h2>
 
-      {!selectedClass && (
-        <div className="class-grid">
-          {CLASSES.map(c => (
-        <div
+{!selectedClass && (
+  <div className="class-grid">
+    {CLASSES.map(c => (
+      <div
         key={c}
         className="class-card"
         onClick={() => setSelectedClass(c)}
+        style={{
+          backgroundImage:
+            typeof c === "number"
+              ? `url(${stdImg})`
+              : `url(${classImages[c]})`,
+        }}
       >
-        {typeof c === "number" ? `${c} Std` : c}
-      </div>
-      
-          ))}
+        <div className="class-overlay">
+          {typeof c === "number" ? `${c} Std` : c}
         </div>
-      )}
+      </div>
+    ))}
+  </div>
+)}
+
 
       {selectedClass && !selectedSection && (
         <>

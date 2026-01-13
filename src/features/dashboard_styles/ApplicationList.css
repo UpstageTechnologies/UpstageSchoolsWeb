@@ -197,4 +197,23 @@
     outline: none;
     background: transparent;
   }
-  
+  .section-title{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:18px;
+  font-weight:700;
+  margin-top:30px;
+}
+
+.selected-icon{
+  color:#22c55e;   /* green */
+  font-size:20px;
+}
+
+.rejected-icon{ 
+  color:#ef4444;   /* red */
+  font-size:20px;
+}
+
+

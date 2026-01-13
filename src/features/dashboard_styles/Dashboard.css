@@ -28,6 +28,7 @@ html, body {
   height: calc(100vh - 60px);
   width: clamp(160px, 22vw, 220px);
   min-width: 260px;
+  min-width: 0px;
   background: #ffffff;;
   color:#000000;
   padding: 20px;
