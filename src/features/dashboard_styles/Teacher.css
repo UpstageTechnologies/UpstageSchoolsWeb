@@ -9,6 +9,7 @@
   background:#fff;
   padding:24px;
   min-height:100vh;
+   overflow-x:auto; 
 }
 
 /* ================= HEADER ================= */
