@@ -301,6 +301,7 @@ const viewTeacherId = localStorage.getItem("viewTeacherId");
       <><BackConfirm />
       <div className="dashboard-container">
         {/* ================= SIDEBAR ================= */}
+        
         <div className={`sidebar ${menuOpen ? "sidebar-open" : "sidebar-close"}`}>
         <ul>
   {/* ================= OFFICE STAFF ================= */}

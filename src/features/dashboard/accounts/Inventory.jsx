@@ -263,10 +263,7 @@ setTeacherSearch("");
 
 
 {entryType === "fees" && (
-  <div className="entries-box form-grid">
-
-    <input type="date" value={date} onChange={e=>setDate(e.target.value)}/>
-    <input value="Fees" disabled/>
+  <div className="fees-grid">
 
     <div className="student-dropdown">
       <input
@@ -317,7 +314,7 @@ setTeacherSearch("");
 
 
 {entryType === "salary" && (
-  <div className="entries-box salary-grid">
+  <div className="salary-grid">
 
    
 
@@ -426,7 +423,7 @@ setTeacherSearch("");
     {/* ===== Row 3 ===== */}
     <button
       className="save-btn"
-      style={{ gridColumn: "1 / -1" }}
+      
       onClick={saveFee}
     >
       Save

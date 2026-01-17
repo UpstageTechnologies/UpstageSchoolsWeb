@@ -303,3 +303,78 @@
     color:#555;
   }
 }
+/* ===== FEES GRID (Separate from entries-box) ===== */
+.fees-grid{
+  display:grid;
+  grid-template-columns: repeat(4,1fr);
+  gap:6px;
+  margin-top:6px;
+}
+
+/* Mobile */
+@media(max-width:900px){
+  .fees-grid{
+    grid-template-columns: repeat(2,1fr);
+  }
+}
+
+@media(max-width:480px){
+  .fees-grid{
+    grid-template-columns:1fr;
+  }
+}
+/* Fix class dropdown height inside fees grid */
+.fees-grid .student-dropdown input{
+  height:44px !important;
+  padding:0 14px !important;
+  border-radius:12px !important;
+  border:2px solid var(--purple) !important;
+  background:white !important;
+  font-weight:600;
+  box-sizing:border-box;
+}
+
+/* Make wrapper not affect layout */
+.fees-grid .student-dropdown{
+  display:flex;
+  align-items:center;
+}
+/* ===== SALARY GRID (Separate clean layout) ===== */
+.salary-grid{
+  display:grid;
+  grid-template-columns: repeat(4,1fr);
+  gap:10px;
+  margin-top:6px;
+}
+
+/* Mobile */
+@media(max-width:900px){
+  .salary-grid{
+    grid-template-columns: repeat(2,1fr);
+  }
+}
+
+@media(max-width:480px){
+  .salary-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+/* Make dropdown wrappers behave like inputs */
+.salary-grid .student-dropdown{
+  display:flex;
+  align-items:center;
+}
+
+.salary-grid .student-dropdown input{
+  height:44px !important;
+  padding:0 14px !important;
+  border-radius:12px !important;
+  border:2px solid var(--purple) !important;
+  box-sizing:border-box;
+}
+.salary-grid{
+  display:grid;
+  grid-template-columns: repeat(4,1fr);
+  gap:10px;
+}
