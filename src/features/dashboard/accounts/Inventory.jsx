@@ -138,7 +138,8 @@ const filteredPositions = (positions[salaryCategory] || []).filter(p =>
 
       await addDoc(feesRef, {
         type: "fees",
-        className: feeClass,
+        className: String(feeClass).trim(),
+
         name: feeName,
         amount: Number(feeAmount),
         date,
@@ -445,13 +446,13 @@ setTeacherSearch("");
       {activeSummary === "fees" && (
         <table className="nice-table">
           <thead><tr><th>Class</th><th>Fee</th><th>Amount</th></tr></thead>
-          <tbody>
+          <tbody> 
             {Object.entries(groupedFees).map(([cls, items]) =>
               items.map((i, idx) => (
                 <tr key={i.id}>
                   {idx === 0 && <td rowSpan={items.length}>{cls}</td>}
-                  <td>{i.name}</td>
-                  <td>₹{i.amount}</td>
+                  <td data-label="Fee Name">{i.name}</td>
+                  <td data-label="Amount">₹{i.amount}</td>
                 </tr>
               ))
             )}
@@ -465,9 +466,9 @@ setTeacherSearch("");
           <tbody>
             {salaryData.map(i => (
               <tr key={i.id}>
-                <td>{i.name}</td>
-                <td>₹{i.amount}</td>
-                <td>{i.date}</td>
+                <td data-label="Name">{i.name}</td>
+                <td data-label="Amount">₹{i.amount}</td>
+                <td date-label="Date">{i.date}</td>
               </tr>
             ))}
           </tbody>

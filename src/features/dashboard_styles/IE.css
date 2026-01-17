@@ -17,7 +17,7 @@
 .entries-box{
   display:grid;
   grid-template-columns: repeat(4, 1fr);
-  gap:16px;
+  gap:6px;
 }
 
 /* remove row breaking */
@@ -209,7 +209,7 @@
     display: flex;
     flex-direction: column;   /* one card per row */
     gap: 12px;
-    width: 270px;
+
   }
 
   .today-card{
@@ -243,5 +243,63 @@
 
   .today-card h2{
     font-size: 17px !important;
+  }
+}
+/* 🔥 Remove hidden spacing from grid children */
+.entries-box > *{
+  margin:0 !important;
+  align-self:center;
+}
+
+/* Prevent inputs from creating extra line space */
+.entries-box input,
+.entries-box select,
+.popup-input,
+.save-btn{
+  margin:0 !important;
+  line-height:1;
+}
+
+/* Kill vertical whitespace from dropdown wrappers */
+.popup-select,
+.student-dropdown{
+  margin:0 !important;
+}
+
+/* Fix table pushing layout */
+.nice-table-wrapper{
+  margin-top:10px !important;
+}
+
+/* Prevent empty grid tracks from stretching */
+.entries-box{
+  grid-auto-rows: 44px;
+}
+/* ===== INVENTORY TABLE MOBILE HEADER HIDE ===== */
+@media (max-width: 620px){
+
+  .nice-table thead{
+    display:none;
+  }
+
+  .nice-table tr{
+    display:block;
+    margin-bottom:10px;
+    border-radius:10px;
+    background:#fff;
+    box-shadow:0 4px 10px rgba(0,0,0,0.05);
+    padding:6px 8px;
+  }
+
+  .nice-table td{
+    display:flex;
+    justify-content:space-between;
+    padding:6px 4px;
+    font-size:13px;
+  }
+
+  .nice-table td::before{
+    font-weight:600;
+    color:#555;
   }
 }

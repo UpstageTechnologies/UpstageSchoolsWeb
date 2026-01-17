@@ -32,6 +32,14 @@ const [showSalaryPosition, setShowSalaryPosition] = useState(false);
 // salary
 const [salaryRole, setSalaryRole] = useState("");          
 const [salaryPosition, setSalaryPosition] = useState("");
+const [selectedFees, setSelectedFees] = useState([]);
+const [showFeesDropdown, setShowFeesDropdown] = useState(false);
+
+const [entryType, setEntryType] = useState("");
+const [feesMaster, setFeesMaster] = useState([]);
+const [showIncomeType, setShowIncomeType] = useState(false);
+const [incomeType, setIncomeType] = useState("");
+
 
 
 // ===== Searchable dropdown =====
@@ -65,6 +73,21 @@ const [showSalaryPositionDD, setShowSalaryPositionDD] = useState(false);
 const [teachers, setTeachers] = useState([]);
 const [teacherSearch, setTeacherSearch] = useState("");
 const [showTeacherDropdown, setShowTeacherDropdown] = useState(false);
+
+
+
+
+const getClassFees = (cls) => {
+  if (!cls) return [];
+  return feesMaster.filter(
+    f =>
+      f.type === "fees" &&
+      String(f.className).trim() === String(cls).trim()
+  );
+};
+
+
+
 
 useEffect(() => {
   if (!adminUid) return;
@@ -100,10 +123,6 @@ const loaded = incomeLoaded && expenseLoaded;
 
   
 
-  const [entryType, setEntryType] = useState("");
-  const [feesMaster, setFeesMaster] = useState([]);
-  const [showIncomeType, setShowIncomeType] = useState(false);
-const [incomeType, setIncomeType] = useState("");
 
 
 
@@ -172,10 +191,26 @@ const [incomeType, setIncomeType] = useState("");
   const [oldPayType, setOldPayType] = useState("");
   const [oldPayAmount, setOldPayAmount] = useState("");
   const paymentTypes = ["Full", "Partial", "Term 1", "Term 2", "Term 3"];
-
 const [paymentType, setPaymentType] = useState("");
 const [paymentSearch, setPaymentSearch] = useState("");
 const [showPaymentDD, setShowPaymentDD] = useState(false);
+
+
+const classFees = feesMaster.filter(
+  f => f.type === "fees" && f.className === (studentMode === "new" ? newClass : oldClass)
+);
+useEffect(() => {
+  if (!newClass) return;
+  const total = selectedFees.reduce((t,f)=>t+f.amount,0);
+  setNewTotal(total);
+}, [selectedFees, newClass]);
+
+useEffect(() => {
+  if (!oldClass) return;
+  const total = selectedFees.reduce((t,f)=>t+f.amount,0);
+  setOldTotal(total);
+}, [selectedFees, oldClass]);
+
 
 const filteredPaymentTypes = paymentTypes.filter(p =>
   p.toLowerCase().includes(paymentSearch.toLowerCase())
@@ -437,7 +472,11 @@ const generatedParentId = `P-${Date.now()}`;
       paidAmount: final,
       paymentStage: "Admission",
       date: entryDate,
-      createdAt: new Date()
+      createdAt: new Date(),
+      feeId: selectedFees[0]?.id || null,
+feeName: selectedFees[0]?.name || "",
+feeAmount: selectedFees[0]?.amount || 0,
+
     });
   
     /* ================= RESET ================= */
@@ -466,11 +505,17 @@ const generatedParentId = `P-${Date.now()}`;
   };
 
   const saveOldAdmission = async () => {
+
+    
     const stu = students.find(s => s.id === oldStudent);
     if (!stu || !oldPayType || !entryDate) return alert("Fill all fields");
   
-    const total = getClassTotal(stu.class);
-    const paidSoFar = getStudentPaid(stu.id);
+    const fee = selectedFees[0];
+    if (!fee) return alert("Select a fee");
+    
+    const total = fee.amount;
+    const paidSoFar = getFeePaid(stu.id, fee.id);
+    
   
     let discount = 0;
   
@@ -501,6 +546,10 @@ const generatedParentId = `P-${Date.now()}`;
       studentId: stu.id,
       studentName: stu.studentName,
       className: stu.class,
+      feeId: selectedFees[0]?.id || null,
+feeName: selectedFees[0]?.name || "",
+feeAmount: selectedFees[0]?.amount || 0,
+
   
       totalFees: total,
       discountApplied: discount,
@@ -516,7 +565,8 @@ const generatedParentId = `P-${Date.now()}`;
       date: entryDate,
       createdAt: new Date()
     });
-  
+
+  setSelectedFees([]); 
     setOldClass("");
     setOldStudent("");
     setOldParent("");
@@ -580,6 +630,18 @@ const todayProfit = todayIncome - todayExpense;
     setSalaryRole("");setSalaryPosition("");setSelName("");setManualSalary("");
   };
   
+// how much paid for a specific fee
+const getFeePaid = (studentId, feeId) =>
+  incomeList
+    .filter(i => i.studentId === studentId && i.feeId === feeId)
+    .reduce((t, i) => t + Number(i.paidAmount || 0), 0);
+
+// balance for that fee only
+const getFeeBalance = (studentId, fee) => {
+  const total = Number(fee.amount || 0);
+  const paid = getFeePaid(studentId, fee.id);
+  return total - paid;
+};
 
   /* ---------- FEE MASTER ---------- */
   const saveFee = async ()=>{
@@ -796,6 +858,7 @@ if (activePage && activePage.startsWith("bill_")) {
               setShowStudentType(false);
             
               // 🔥 RESET old admission states
+              setSelectedFees([]); 
               setOldPayType("");
               setOldPayAmount("");
               setOldClass("");
@@ -865,8 +928,53 @@ if (activePage && activePage.startsWith("bill_")) {
             <option key={c}>{c}</option>
           ))}
         </select>
+        {/* ===== SELECT FEES FROM INVENTORY ===== */}
+<div className="student-dropdown">
+  <input
+    placeholder="Select Fees"
+    value={
+      selectedFees.length
+        ? selectedFees[0]?.name || ""
+        : ""
+    }
+    readOnly
+    onClick={()=>setShowFeesDropdown(!showFeesDropdown)}
+  />
 
-        <input readOnly value={newTotal ? `Total ₹${newTotal}` : ""} />
+  {showFeesDropdown && (
+    <div className="student-dropdown-list">
+      {getClassFees(newClass || oldClass).map(fee => {
+        const already = selectedFees.some(x=>x.id===fee.id);
+
+        return (
+          <div
+            key={fee.id}
+            className="student-option"
+            style={{background: already ? "#eef7ff" : ""}}
+            onClick={()=>{
+              setSelectedFees([fee]);     // only one selection
+              setShowFeesDropdown(false); // auto close dropdown
+            }}
+            
+          >
+            {fee.name} — ₹{fee.amount}
+          </div>
+        );
+      })}
+    </div>
+  )}
+</div>
+
+
+
+{selectedFees[0] && (
+  <input readOnly value={`Fee Total ₹${selectedFees[0].amount}`} />
+)}
+
+{oldStudent && selectedFees[0] && (
+  <input readOnly value={`Balance ₹${getFeeBalance(oldStudent, selectedFees[0])}`} />
+)}
+
 
         <div className="student-dropdown">
           
@@ -1003,8 +1111,53 @@ if (activePage && activePage.startsWith("bill_")) {
 )}
     </div>
     
-    <input readOnly value={oldParent ? `Parent: ${oldParent}` : ""} />
-    <input readOnly value={oldTotal ? `Total ₹${oldTotal}` : ""} />
+    <input readOnly value={oldParent ? `Parent: ${oldParent}` : ""} 
+    placeholder="Parenr Name"/>
+    {/* ===== SELECT FEES FROM INVENTORY ===== */}
+<div className="student-dropdown">
+  <input
+    placeholder="Select Fees"
+    value={
+      selectedFees.length
+        ? selectedFees[0]?.name || ""
+
+        : ""
+    }
+    readOnly
+    onClick={()=>setShowFeesDropdown(!showFeesDropdown)}
+  />
+
+  {showFeesDropdown && (
+    <div className="student-dropdown-list">
+      {getClassFees(newClass || oldClass).map(fee => {
+        const already = selectedFees.some(x=>x.id===fee.id);
+
+        return (
+          <div
+            key={fee.id}
+            className="student-option"
+            style={{background: already ? "#eef7ff" : ""}}
+            onClick={()=>{
+              setSelectedFees([fee]);     // only one selection
+              setShowFeesDropdown(false); // auto close dropdown
+            }}
+            
+          >
+            {fee.name} — ₹{fee.amount}
+          </div>
+        );
+      })}
+    </div>
+  )}
+</div>
+{selectedFees[0] && (
+  <input readOnly value={`Fee Total ₹${selectedFees[0].amount}`} />
+)}
+
+{oldStudent && selectedFees[0] && (
+  <input readOnly value={`Balance ₹${getFeeBalance(oldStudent, selectedFees[0])}`} />
+)}
+
 
     <div className="student-dropdown">
   <input
