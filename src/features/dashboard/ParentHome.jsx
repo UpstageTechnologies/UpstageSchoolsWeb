@@ -128,51 +128,51 @@ export default function ParentHome({ adminUid, parentId }) {
           </div>
         </div>
 
-        <div className="summary2-wrapper">
+        <div className="summary-wrapper">
           <div className="summary-title">This Month Attendance</div>
 
-          <div className="summary2-cards">
+          <div className="summary-cards">
 
-            <div className="summary2-card total-card">
-              <div className="summary2-top">{stats.totalDays}</div>
-              <div className="summary2-fill fill-green" style={{ height: "100%" }} />
-              <div className="summary2-content">
+            <div className="summary-card total-card">
+              <div className="summary-top">{stats.totalDays}</div>
+              <div className="summary-fill fill-green" style={{ height: "100%" }} />
+              <div className="summary-content">
                 <i className="fa fa-calendar"></i>
                 <span>Total</span>
               </div>
             </div>
 
-            <div className="summary2-card">
-              <div className="summary2-top">{stats.present}</div>
+            <div className="summary-card">
+              <div className="summary-top">{stats.present}</div>
               <div
-                className="summary2-fill fill-blue"
+                className="summary-fill fill-blue"
                 style={{ height: `${percent(stats.present, stats.totalDays)}%` }}
               />
-              <div className="summary2-content">
+              <div className="summary-content">
                 <i className="fa fa-user-check"></i>
                 <span>Present</span>
               </div>
             </div>
 
-            <div className="summary2-card">
-              <div className="summary2-top">{stats.late}</div>
+            <div className="summary-card">
+              <div className="summary-top">{stats.late}</div>
               <div
-                className="summary2-fill fill-yellow"
+                className="summary-fill fill-yellow"
                 style={{ height: `${percent(stats.late, stats.totalDays)}%` }}
               />
-              <div className="summary2-content">
+              <div className="summary-content">
                 <i className="fa fa-clock"></i>
                 <span>Late</span>
               </div>
             </div>
 
-            <div className="summary2-card">
-              <div className="summary2-top">{stats.absent}</div>
+            <div className="summary-card">
+              <div className="summary-top">{stats.absent}</div>
               <div
-                className="summary2-fill fill-red"
+                className="summary-fill fill-red"
                 style={{ height: `${percent(stats.absent, stats.totalDays)}%` }}
               />
-              <div className="summary2-content">
+              <div className="summary-content">
                 <i className="fa fa-user-times"></i>
                 <span>Absent</span>
               </div>

@@ -393,15 +393,52 @@ useEffect(() => {
     if (!newName || !newParent || !newClass || !newPayType || !entryDate)
       return alert("Fill all fields");
   
-    const total = getClassTotal(newClass);
+      const fee = selectedFees[0];
+      if (!fee) return alert("Select fee");
+      
+      // 🚫 Prevent duplicate Admission for same fee
+// 🚫 Prevent duplicate Admission for same fee
+const alreadyPaid = incomeList.some(
+  i =>
+    i.feeId === fee.id &&
+    i.className === newClass &&
+    i.paymentStage === "Admission" &&
+    i.studentName.toLowerCase() === newName.toLowerCase()
+);
+
+if (alreadyPaid) {
+  alert("Admission already paid for this fee");
+  return;
+}
+
+      
+      // ✅ fee amount only
+      const total = fee.amount;
+      const discountAmount = newPayType === "full" ? total * 0.05 : 0;
+      const payableAmount = total - discountAmount;
+      
+      
+      
   
-    let final = 0;
-    if (newPayType === "full") {
-      final = total - total * 0.05;
-    } else {
-      if (!newPayAmount) return alert("Enter amount");
-      final = Number(newPayAmount);
-    }
+      let final = 0;
+      if (newPayType === "full") {
+        final = payableAmount;
+      
+      } else if (newPayType.startsWith("term")) {
+        final = Number(newPayAmount);
+      
+      } else {
+        if (!newPayAmount) return alert("Enter amount");
+        final = Number(newPayAmount);
+      }
+      if (final > payableAmount) {
+        alert("Cannot pay more than balance");
+        return;
+      }
+      
+      
+      const balanceAfter = payableAmount - final;
+      
   // 🔹 generate readable Parent ID
 const generatedParentId = `P-${Date.now()}`;
     /* ================= CREATE PARENT ================= */
@@ -467,17 +504,25 @@ const generatedParentId = `P-${Date.now()}`;
       parentId: parentDocRef.id,
       parentName: newParent,
       className: newClass,
+    
+      feeId: fee.id,
+      feeName: fee.name,
+      feeAmount: total,
+    
       totalFees: total,
-      paymentType: newPayType,
+      discountApplied: discountAmount,
+      payableAmount: payableAmount,
+    
       paidAmount: final,
-      paymentStage: "Admission",
+      balanceBefore: payableAmount,
+      balanceAfter: balanceAfter,
+    
+      paymentType: newPayType,
+      paymentStage: newPayType.startsWith("term") ? "Term" : "Admission",
       date: entryDate,
-      createdAt: new Date(),
-      feeId: selectedFees[0]?.id || null,
-feeName: selectedFees[0]?.name || "",
-feeAmount: selectedFees[0]?.amount || 0,
-
+      createdAt: new Date()
     });
+    
   
     /* ================= RESET ================= */
     setNewName("");
@@ -514,7 +559,18 @@ feeAmount: selectedFees[0]?.amount || 0,
     if (!fee) return alert("Select a fee");
     
     const total = fee.amount;
+
+    // 👇 get correct payable balance (includes discount)
+    const balance = getFeeBalance(stu.id, fee);
+    
+    // 🚫 BLOCK if balance already 0
+    if (balance <= 0) {
+      alert("This fee is already fully paid for this student");
+      return;
+    }
+    
     const paidSoFar = getFeePaid(stu.id, fee.id);
+    
     
   
     let discount = 0;
@@ -524,17 +580,43 @@ feeAmount: selectedFees[0]?.amount || 0,
       discount = total * 0.05;
     }
   
-    const payable = total - discount;              // 👈 after discount
-    const balanceBefore = payable - paidSoFar;     // 👈 true balance
+    const payable = total - discount;
+
+    const balanceBefore = payable - paidSoFar;
+
+        // 👈 true balance
+
+
+
+
   
     let final = 0;
   
-    if (oldPayType === "full") {
-      final = balanceBefore;                       // only remaining
+    const termPaidCount = getTermPaidCount(stu.id, fee.id);
+
+    const remainingBalance = balanceBefore;
+    const termAmount = Math.ceil(remainingBalance / (3 - termPaidCount));
+    
+    
+    if (oldPayType.startsWith("term")) {
+    
+      if (termPaidCount >= 3) {
+        alert("All 3 terms already paid");
+        return;
+      }
+    
+      final = termAmount;
+    
+    } else if (oldPayType === "full") {
+    
+      final = balanceBefore;
+    
     } else {
+    
       if (!oldPayAmount) return alert("Enter amount");
       final = Number(oldPayAmount);
     }
+    
   
     if (final > balanceBefore) {
       return alert("Cannot pay more than balance");
@@ -638,10 +720,30 @@ const getFeePaid = (studentId, feeId) =>
 
 // balance for that fee only
 const getFeeBalance = (studentId, fee) => {
-  const total = Number(fee.amount || 0);
-  const paid = getFeePaid(studentId, fee.id);
-  return total - paid;
+  const payments = incomeList.filter(
+    i => i.studentId === studentId && i.feeId === fee.id
+  );
+
+  if (!payments.length) return fee.amount;
+
+  // Find payable from any admission entry (not first)
+  const admission = payments.find(
+    p => p.paymentStage === "Admission" && p.feeId === fee.id
+  );
+  
+  const payable = admission
+  ? admission.payableAmount
+  : payments[0].payableAmount || fee.amount;
+
+  const paid = payments.reduce(
+    (t, p) => t + Number(p.paidAmount || 0),
+    0
+  );
+
+  return Math.max(0, payable - paid);   // 🚫 never go negative
 };
+
+
 
   /* ---------- FEE MASTER ---------- */
   const saveFee = async ()=>{
@@ -662,6 +764,55 @@ const getFeeBalance = (studentId, fee) => {
   const totalExpense= expenseList.reduce((t,x)=>t+(x.amount||0),0);
   const profit = totalIncome-totalExpense;
   // 🔥 SHOW ONLY BILL PAGE
+
+  
+// how many terms already paid
+const getTermPaidCount = (studentId, feeId) =>
+  incomeList.filter(
+    i =>
+      i.studentId === studentId &&
+      i.feeId === feeId &&
+      i.paymentStage === "Term"
+  ).length;
+
+  const getTermAmountUI = (studentId, fee) => {
+    if (!studentId || !fee) return 0;
+  
+    const balance = getFeeBalance(studentId, fee);
+    const termPaid = getTermPaidCount(studentId, fee.id);
+  
+    const remainingTerms = 3 - termPaid;
+    if (remainingTerms <= 0) return 0;
+  
+    return Math.ceil(balance / remainingTerms);
+  };
+  
+  const getNewTermAmount = (fee) => {
+    if (!fee) return 0;
+  
+    const total = fee.amount;
+    const termAmount = Math.ceil(total / 3);
+    return termAmount;
+  };
+  useEffect(() => {
+    if (!oldPayType.startsWith("term") || !selectedFees[0] || !oldStudent) return;
+  
+    const fee = selectedFees[0];
+    const termAmt = getTermAmountUI(oldStudent, fee);
+  
+    setOldPayAmount(termAmt);
+  }, [oldPayType, oldStudent, selectedFees]);
+  
+  useEffect(() => {
+    if (!newPayType.startsWith("term") || !selectedFees[0]) return;
+  
+    const fee = selectedFees[0];
+  
+    const termAmt = Math.ceil(fee.amount / 3);
+    setNewPayAmount(termAmt);
+  
+  }, [newPayType, selectedFees]);
+  // 🔥 ALWAYS KEEP AFTER ALL HOOKS
 if (activePage && activePage.startsWith("bill_")) {
   return (
     <BillPage
@@ -669,7 +820,6 @@ if (activePage && activePage.startsWith("bill_")) {
       billStudentId={activePage.split("_")[1]}
       billDate={activePage.split("_")[2]}
       setActivePage={setActivePage}
-     
     />
   );
 }
@@ -971,9 +1121,6 @@ if (activePage && activePage.startsWith("bill_")) {
   <input readOnly value={`Fee Total ₹${selectedFees[0].amount}`} />
 )}
 
-{oldStudent && selectedFees[0] && (
-  <input readOnly value={`Balance ₹${getFeeBalance(oldStudent, selectedFees[0])}`} />
-)}
 
 
         <div className="student-dropdown">
@@ -997,10 +1144,21 @@ if (activePage && activePage.startsWith("bill_")) {
           className="student-option"
           onClick={() => {
             setPaymentType(type);
-            setNewPayType(type.toLowerCase().replace(" ", "")); 
+            const lower = type.toLowerCase().replace(" ", "");
+            setNewPayType(lower);
+          
+            // 🔥 AUTO TERM AMOUNT
+            if (lower.startsWith("term")) {
+              const fee = selectedFees[0];
+              if (fee) {
+                setNewPayAmount(getNewTermAmount(fee));
+              }
+            }
+          
             setPaymentSearch("");
             setShowPaymentDD(false);
           }}
+          
           
         >
           {type}
@@ -1014,11 +1172,15 @@ if (activePage && activePage.startsWith("bill_")) {
   )}
 </div>
 
-{isFullPayment && (
-  <input readOnly value={`Payable ₹${newTotal - discount}`} />
+{isFullPayment && selectedFees[0] && (
+  <input
+    readOnly
+    value={`Payable ₹${selectedFees[0].amount - discount}`}
+  />
 )}
 
-{["partial","term1","term2","term3"].includes(newPayType) && (
+
+{newPayType === "partial" && (
   <input
     type="number"
     placeholder="Enter Amount"
@@ -1027,10 +1189,20 @@ if (activePage && activePage.startsWith("bill_")) {
   />
 )}
 
+{newPayType.startsWith("term") && (
+  <input
+    readOnly
+    value={`Payable ₹${newPayAmount}`}
+  />
+)}
+
+
 
         <button className="save-btn" onClick={() => safeRequirePremium(saveNewAdmission, "income")}>
           Save
         </button>
+
+
       </div>
     )}
 
@@ -1154,9 +1326,6 @@ if (activePage && activePage.startsWith("bill_")) {
   <input readOnly value={`Fee Total ₹${selectedFees[0].amount}`} />
 )}
 
-{oldStudent && selectedFees[0] && (
-  <input readOnly value={`Balance ₹${getFeeBalance(oldStudent, selectedFees[0])}`} />
-)}
 
 
     <div className="student-dropdown">
@@ -1173,18 +1342,24 @@ if (activePage && activePage.startsWith("bill_")) {
 
   {showPaymentDD && (
     <div className="student-dropdown-list">
-      {["Full","Partial"].filter(p =>
-        p.toLowerCase().includes(paymentSearch.toLowerCase())
-      ).map(type => (
+{["Full","Partial","Term 1","Term 2","Term 3"]
+  .filter(p =>
+    p.toLowerCase().includes(paymentSearch.toLowerCase())
+  )
+  .map(type => (
+
         <div
           key={type}
           className="student-option"
           onClick={() => {
+            const lower = type.toLowerCase().replace(" ", "");
+          
             setPaymentType(type);
-            setOldPayType(type.toLowerCase());
+            setOldPayType(lower);
             setPaymentSearch("");
             setShowPaymentDD(false);
           }}
+          
         >
           {type}
         </div>
@@ -1194,9 +1369,22 @@ if (activePage && activePage.startsWith("bill_")) {
 </div>
 
 
-    {oldPayType === "full" && (
-      <input readOnly value={`Payable ₹${(oldTotal - oldTotal * 0.05).toFixed(0)}`} />
-    )}
+{oldStudent && selectedFees[0] && oldPayType !== "partial" && (
+  <input
+    readOnly
+    value={`Payable ₹${
+      oldPayType === "full" &&
+      getFeePaid(oldStudent, selectedFees[0].id) === 0
+        ? Math.ceil(selectedFees[0].amount * 0.95)
+        : oldPayType.startsWith("term")
+        ? getTermAmountUI(oldStudent, selectedFees[0])
+        : getFeeBalance(oldStudent, selectedFees[0])
+    }`}
+  />
+)}
+
+
+
 
     {oldPayType === "partial" && (
       <input
@@ -1210,17 +1398,12 @@ if (activePage && activePage.startsWith("bill_")) {
     <button className="save-btn" onClick={() => safeRequirePremium(saveOldAdmission, "income")}>
       Save
     </button>
-    {oldStudent && (() => {
-  const balance = getStudentBalance(oldStudent, oldClass);
-  const term = Math.ceil(balance / 3);
 
-  return (
-    <>
-      <input readOnly value={`Balance ₹${balance}`} />
-    
-    </>
-  );
-})()}
+    {oldStudent && selectedFees[0] && (
+  <div className="balance-text">
+    Balance ₹{getFeeBalance(oldStudent, selectedFees[0])}
+  </div>
+)}
 
 
 
@@ -1490,7 +1673,14 @@ Save Fee</button>
     
     
     // sort by date (latest first)
-    all.sort((a, b) => (a.date > b.date ? -1 : 1));
+    // SORT: Date (latest first) → then Description A-Z
+all.sort((a, b) => {
+  if (a.date !== b.date) {
+    return a.date > b.date ? -1 : 1;   // latest date first
+  }
+  return a.source.localeCompare(b.source); // A-Z inside same date
+});
+
     
     let lastDate = null;
     let dateIncomeTotal = 0;

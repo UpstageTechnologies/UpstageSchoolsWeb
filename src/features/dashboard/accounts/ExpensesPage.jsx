@@ -12,19 +12,10 @@ export default function ExpensesPage({ adminUid, setActivePage }) {
   const today = new Date().toISOString().split("T")[0];
   const role = localStorage.getItem("role");
   const isOfficeStaff = role === "office_staff";
-  const normalizeDate = (d) => {
-    if (!d) return null;
-  
-    // Firestore Timestamp
-    if (d.toDate) {
-      return d.toDate().toISOString().slice(0, 10);
-    }
-  
-    // Already string
-    return d;
-  };
+
   
 
+  
   /* 🔥 FIREBASE */
   useEffect(() => {
     if (!adminUid) return;
@@ -41,6 +32,14 @@ export default function ExpensesPage({ adminUid, setActivePage }) {
       snap => setExpenseList(snap.docs.map(d => d.data()))
     );
   }, [adminUid]);
+  
+  const getPercent = (value, total) => {
+    if (!total || total <= 0) return 0;
+    return Math.min((value / total) * 100, 100);
+  };
+  
+  // base = highest absolute value (like attendance total)
+
   
 // FEES = student income only
 const totalFees = incomeList
@@ -59,14 +58,29 @@ const totalIncome = totalFees + otherIncome;
 const totalExpense = expenseList.reduce(
   (s, e) => s + Number(e.amount || 0), 0
 );
-
-// PROFIT
 const profit = totalIncome - totalExpense;
 
+const totalBase = Math.max(
+  totalFees,
+  totalIncome,
+  totalExpense,
+  Math.abs(profit),
+  1
+);
 
+const pillData = [
+  { label: "Fees Income", value: totalFees, color: "fill-purple", icon: "fa-graduation-cap" },
+  { label: "Total Income", value: totalIncome, color: "fill-blue", icon: "fa-arrow-up" },
+  { label: "Total Expense", value: totalExpense, color: "fill-red", icon: "fa-arrow-down" },
+  { label: "Total Profit", value: profit, color: "fill-green", icon: "fa-chart-line" }
+];
 
+const maxValue = Math.max(...pillData.map(p => Math.abs(p.value)), 1);
 
-
+const getFillPercent = (value) => {
+  if (!value) return 5;              // tiny visible base
+  return Math.min((Math.abs(value) / maxValue) * 100, 100);
+};
 
   /// Today Income (fees + source)
 const todayIncome = incomeList
@@ -116,12 +130,12 @@ const todayProfit = todayIncome - todayExpense;
     <>
       {!isOfficeStaff && (
         <>
-  <div className="summary-scroll">
-  <div className="summary-layout">
+  <div className="summary2-scroll">
+  <div className="summary2-layout">
 
 
 {/* ---------- LEFT SIDE : MONTHLY PROFIT FLOW ---------- */}
-<div className="summary-left">
+<div className="summary2-left">
 
   {/* Top small stats */}
   <div className="attendance-panel">
@@ -170,54 +184,30 @@ const todayProfit = todayIncome - todayExpense;
 {/* ---------- RIGHT SIDE : TOTAL PILLS ---------- */}
 <div className="summary2-wrapper">
 
-  <div className="summary-title">Overall Accounts</div>
+  <div className="summary2-title">Overall Accounts</div>
 
   <div className="summary2-cards">
-    {/* Fees Income */}
-<div className="summary2-card">
-  <div className="summary2-top">
-    ₹{totalFees.toLocaleString("en-IN")}
-  </div>
-  <div className="summary2-fill fill-purple" />
-  <div className="summary2-content">
-    <i className="fa fa-graduation-cap"></i>
-    <span>Fees Income</span>
-  </div>
+  {pillData.map((p, i) => (
+    <div className="summary2-card" key={i}>
+      <div className="summary2-top-fixed">
+        ₹{p.value.toLocaleString("en-IN")}
+      </div>
+
+      {/* Fill proportional EXACTLY like attendance */}
+      <div
+        className={`summary2-fill ${p.color}`}
+        style={{ height: `${getPercent(Math.abs(p.value), totalBase)}%` }}
+      />
+
+      <div className="summary2-content">
+        <i className={`fa ${p.icon}`}></i>
+        <span>{p.label}</span>
+      </div>
+    </div>
+  ))}
 </div>
 
 
-    {/* Income */}
-    <div className="summary2-card">
-      <div className="summary2-top">₹{totalIncome.toLocaleString("en-IN")}</div>
-      <div className="summary2-fill fill-blue" />
-      <div className="summary2-content">
-        <i className="fa fa-arrow-up"></i>
-        <span>Total Income</span>
-      </div>
-    </div>
-
-    {/* Expense */}
-    <div className="summary2-card">
-      <div className="summary2-top">₹{totalExpense.toLocaleString("en-IN")}</div>
-      <div className="summary2-fill fill-red" />
-
-      <div className="summary2-content">
-        <i className="fa fa-arrow-down"></i>
-        <span>Total Expense</span>
-      </div>
-    </div>
-
-    {/* Profit */}
-    <div className="summary2-card">
-      <div className="summary2-top">₹{profit.toLocaleString("en-IN")}</div>
-      <div className="summary2-fill fill-green" />
-      <div className="summary2-content">
-        <i className="fa fa-chart-line"></i>
-        <span>Total Profit</span>
-      </div>
-    </div>
-
-  </div>
 </div>
 
 </div>

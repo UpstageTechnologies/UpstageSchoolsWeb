@@ -842,5 +842,26 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   color: #aedaf7;
 }
 
+.balance-text{
+  margin-top: 6px;
+  padding: 8px 12px;
+  background: #eef6ff;
+  border: 1px solid #cfe2ff;
+  border-radius: 6px;
+  font-weight: 600;
+  color: #2140df;
+}
 
+/* Inventory Fees Summary - Center Class Column */
+.nice-table th:first-child,
+.nice-table td:first-child {
+  text-align: center !important;
+}
 
+/* Accounts table - right align money columns */
+.nice-table1 th:nth-child(2),
+.nice-table1 th:nth-child(3),
+.nice-table1 td:nth-child(2),
+.nice-table1 td:nth-child(3) {
+  text-align: right !important;
+}

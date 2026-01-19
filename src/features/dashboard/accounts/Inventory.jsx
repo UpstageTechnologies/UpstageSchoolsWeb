@@ -444,15 +444,16 @@ setTeacherSearch("");
         <table className="nice-table">
           <thead><tr><th>Class</th><th>Fee</th><th>Amount</th></tr></thead>
           <tbody> 
-            {Object.entries(groupedFees).map(([cls, items]) =>
-              items.map((i, idx) => (
-                <tr key={i.id}>
-                  {idx === 0 && <td rowSpan={items.length}>{cls}</td>}
-                  <td data-label="Fee Name">{i.name}</td>
-                  <td data-label="Amount">₹{i.amount}</td>
-                </tr>
-              ))
-            )}
+          {Object.entries(groupedFees).map(([cls, items]) =>
+  items.map(i => (
+    <tr key={i.id}>
+      <td data-label="Class">{cls}</td>
+      <td data-label="Fee Name">{i.name}</td>
+      <td data-label="Amount">₹{i.amount}</td>
+    </tr>
+  ))
+)}
+
           </tbody>
         </table>
       )}

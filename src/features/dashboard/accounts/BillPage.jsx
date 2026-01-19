@@ -3,22 +3,25 @@ import { doc, getDoc, collection, query, where, getDocs } from "firebase/firesto
 import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
 
+
 export default function BillPage({ adminUid, billStudentId, billDate, setActivePage }) {
 
   const [student, setStudent] = useState(null);
   const [payment, setPayment] = useState(null);
   const [allPayments, setAllPayments] = useState([]);
 
+  const schoolLogo = localStorage.getItem("schoolLogo");
+
   useEffect(() => {
     const load = async () => {
 
-      // Load student
       const stuSnap = await getDoc(
         doc(db, "users", adminUid, "students", billStudentId)
       );
+      if (!stuSnap.exists()) return;
       setStudent({ id: billStudentId, ...stuSnap.data() });
+      
 
-      // Load all payments of this student
       const q = query(
         collection(db, "users", adminUid, "Account", "accounts", "Income"),
         where("studentId", "==", billStudentId)
@@ -29,40 +32,80 @@ export default function BillPage({ adminUid, billStudentId, billDate, setActiveP
       snap.forEach(d => list.push(d.data()));
       setAllPayments(list);
 
-      // current receipt
-      const today = list.find(p => p.date === billDate);
-      setPayment(today);
+      const todayPayments = list.filter(p => p.date === billDate);
+
+      // last saved payment only
+      const lastPayment = todayPayments[todayPayments.length - 1];
+      
+      setPayment(lastPayment);
+      
     };
 
     if (adminUid && billStudentId && billDate) load();
   }, [adminUid, billStudentId, billDate]);
-  
 
   if (!student || !payment) return <div>Loading...</div>;
 
-  /* ---------------- CORRECT CALCULATION ---------------- */
+  /* 🟢 FEE-WISE TOTAL CALCULATION */
 
-  // first admission payment
-  const firstPayment = allPayments.find(p => p.paymentStage === "Admission");
+  const feeWise = {};
 
-  const first = allPayments.find(p => p.totalFees);
+  allPayments.forEach(p => {
+    if (!p.feeId) return;
 
-const total = first?.totalFees || 0;
-const discount = first?.discountApplied || 0;
-const payable = total - discount;
+    if (!feeWise[p.feeId]) {
+      feeWise[p.feeId] = {
+        name: p.feeName || "Fee",
+        total: p.totalFees || 0,
+        discount: p.discountApplied || 0,
+        paid: 0
+      };
+    }
 
-const paid = allPayments.reduce(
-  (t, p) => t + (p.paidAmount || 0),
-  0
-);
+    feeWise[p.feeId].paid += Number(p.paidAmount || 0);
+  });
 
-const balance = payable - paid;
+  const totalPayable = Object.values(feeWise).reduce(
+    (t, f) => t + (f.total - f.discount),
+    0
+  );
 
+  const totalPaid = Object.values(feeWise).reduce(
+    (t, f) => t + f.paid,
+    0
+  );
 
-  /* ---------------------------------------------------- */
+  const balance = Math.max(0, totalPayable - totalPaid);
+
+  /* -------------------------------- */
+  const formatStage = (p) => {
+    const fee = p.feeName || "Fees";
+  
+    if (!p.paymentType) return fee;
+  
+    if (p.paymentType.startsWith("term")) {
+      const termNo = p.paymentType.replace("term", "");
+      return `${fee} - Term ${termNo}`;
+    }
+  
+    if (p.paymentType === "full") {
+      return `${fee} - Full Payment`;
+    }
+  
+    if (p.paymentType === "partial") {
+      return `${fee} - Partial Payment`;
+    }
+  
+    return `${fee}`;
+  };
+  const todayTotal = allPayments
+  .filter(p => p.date === billDate)
+  .reduce((t, p) => t + Number(p.paidAmount || 0), 0);
+
 
   return (
     <div className="bill-page">
+
       <span
         style={{ color: "#2140df", cursor: "pointer", fontWeight: 600 }}
         onClick={() => setActivePage("accounts")}
@@ -72,10 +115,25 @@ const balance = payable - paid;
 
       <div className="bill-card invoice">
 
-        <div className="invoice-header">
-          <h1>{localStorage.getItem("schoolName") || "RRR School"}</h1>
-          <p>Fee Receipt</p>
-        </div>
+      <div className="invoice-header" style={{ display: "flex", alignItems: "center", gap: 12 ,alignContent:"center",textAlign:"center",justifyContent:"center"}}>
+
+{schoolLogo ? (
+  <img
+    src={schoolLogo}
+    alt="logo"
+    style={{ width: 55, height: 55, objectFit: "contain",marginBottom: 10 }}
+  />
+) : null}
+
+<div>
+  <h1 style={{ margin: 0 }}>
+    {localStorage.getItem("schoolName") || "School"}
+  </h1>
+  <p style={{ margin: 0 }}>Fee Receipt</p>
+</div>
+
+</div>
+
 
         <hr />
 
@@ -85,8 +143,6 @@ const balance = payable - paid;
             <b>Class:</b> {student.class}<br />
             <b>Parent:</b> {student.parentName}
           </div>
-
-       
 
           <div style={{ textAlign: "right" }}>
             <b>Date:</b> {billDate}<br />
@@ -108,12 +164,17 @@ const balance = payable - paid;
           </thead>
 
           <tbody>
-            {allPayments
-              .sort((a, b) => a.date.localeCompare(b.date))
-              .map((p, i) => (
+          {allPayments
+  .filter(p => p.date)   // remove broken rows 🔥
+  .sort((a, b) => String(a.date).localeCompare(String(b.date)))
+  .map((p, i) => (
+
                 <tr key={i} style={{ background: p.date === billDate ? "#e8f0ff" : "" }}>
                   <td>{p.date}</td>
-                  <td>{p.paymentStage || "Fee"}</td>
+
+                  <td>{formatStage(p)}</td>
+
+
                   <td>₹{p.paidAmount}</td>
                   <td>₹{p.discountApplied || 0}</td>
                   <td>₹{p.balanceAfter ?? ""}</td>
@@ -125,10 +186,14 @@ const balance = payable - paid;
         <hr />
 
         <div className="invoice-summary">
-          <div><b>Payment Type:</b> {payment.paymentType || payment.type}</div>
-          <div><b>Payment Stage:</b> {payment.paymentStage}</div>
+          <div><b>Payment Type:</b> {payment.paymentType}</div>
+          <div><b>Payment Stage:</b> {payment.feeName }</div>
+          <div><b>Total Paid:</b> ₹{totalPaid}</div>
+          <div><b>Remaining Balance:</b> ₹{balance}</div>
+
           <div className="invoice-amount">
-            Amount Received Today: ₹{payment.paidAmount}
+          Amount Received Today: ₹{todayTotal}
+
           </div>
         </div>
 
@@ -139,7 +204,9 @@ const balance = payable - paid;
         </p>
 
         <div className="invoice-actions">
-          <button onClick={() => window.print()}>🖨️ Print / Save PDF</button>
+          <button onClick={() => window.print()}>
+            🖨 Print / Save PDF
+          </button>
         </div>
 
       </div>

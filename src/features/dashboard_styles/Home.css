@@ -91,7 +91,7 @@
 .month.green  { background:#7bcf00; }
 
 /* ========== RIGHT BOX (PILLS) ========== */
-.summary2-wrapper {
+.summary-wrapper {
   flex: 1.2;
   background: white;
   padding: 25px;
@@ -105,7 +105,7 @@
 }
 
 /* Pill */
-.summary2-card {
+.summary-card {
   position: relative;
   width: 95px;
   height: 260px;
@@ -115,7 +115,7 @@
 }
 
 /* top number */
-.summary2-top {
+.summary-top {
   height: 35%;
   display: flex;
   align-items: center;
@@ -128,7 +128,7 @@
 }
 
 /* fill */
-.summary2-fill {
+.summary-fill {
   position: absolute;
   bottom: 0;
   width: 100%;
@@ -141,7 +141,7 @@
 .fill-green  { background: #4caf50; }
 
 /* icon + label */
-.summary2-content {
+.summary-content {
   position: absolute;
   bottom: 35px;
   width: 100%;
@@ -154,7 +154,7 @@
   font-weight: 600;
 }
 
-.summary2-content i {
+.summary-content i {
   font-size: 28px;
 }
 
@@ -202,7 +202,7 @@
     flex-direction: column;
   }
 
-  .summary2-wrapper {
+  .summary-wrapper {
     justify-content: space-around;
   }
 
@@ -225,7 +225,7 @@
 }
 
 /* Pills row */
-.summary2-cards {
+.summary-cards {
   width: 100%;
   display: flex;
   justify-content: center;     /* center pills */
@@ -316,7 +316,7 @@
   }
 
   .summary-left,
-  .summary2-wrapper {
+  .summary-wrapper {
     padding: 14px;
     border-radius: 14px;
   }
@@ -371,31 +371,31 @@
     margin-bottom: 8px;
   }
 
-  .summary2-cards {
+  .summary-cards {
     overflow-x: auto;
     justify-content: flex-start;
     gap: 14px;
     padding-bottom: 10px;
   }
 
-  .summary2-card {
+  .summary-card {
     min-width: 90px;
     height: 200px;
     border-radius: 20px;
     flex-shrink: 0;
   }
 
-  .summary2-top {
+  .summary-top {
     font-size: 22px;
   }
 
-  .summary2-content {
+  .summary-content {
     bottom: 22px;
     gap: 6px;
     font-size: 12px;
   }
 
-  .summary2-content i {
+  .summary-content i {
     font-size: 18px;
   }
 
@@ -440,16 +440,16 @@
     font-size: 12px;
   }
 
-  .summary2-card {
+  .summary-card {
     min-width: 85px;
     height: 185px;
   }
 
-  .summary2-top {
+  .summary-top {
     font-size: 20px;
   }
 
-  .summary2-content {
+  .summary-content {
     font-size: 11px;
   }
 }
@@ -474,7 +474,7 @@
   color: white;
 }
 
-.total-card .summary2-content span {
+.total-card .summary-content span {
   font-size: 14px;
   opacity: 0.8;
 }
@@ -616,12 +616,12 @@
   letter-spacing: 0.5px;
   box-shadow: 0 4px 10px rgba(58,157,245,.35);
 }
-.summary2-card.clickable {
+.summary-card.clickable {
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.summary2-card.clickable:hover {
+.summary-card.clickable:hover {
   transform: translateY(-6px);
   box-shadow: 0 12px 24px rgba(0,0,0,0.15);
 }

@@ -394,7 +394,7 @@ if (role === "parent") {
         </div>
 
         {/* -------- RIGHT SIDE (SUMMARY PILLS) -------- */}
-        <div className="summary2-wrapper">
+        <div className="summary-wrapper">
           <div className="summary-title">
     Today’s Attendance
   </div>
@@ -420,20 +420,20 @@ if (role === "parent") {
 
 
 
-        <div className="summary2-cards">
+        <div className="summary-cards">
 
           {/* TOTAL */}
-  <div className="summary2-card total-card">
-    <div className="summary2-top">
+  <div className="summary-card total-card">
+    <div className="summary-top">
       {viewMode === "student" ? totalStudents : totalTeachers}
     </div>
 
     <div
-      className="summary2-fill fill-green"
+      className="summary-fill fill-green"
       style={{ height: "100%" }}
     />
 
-    <div className="summary2-content">
+    <div className="summary-content">
       <i className="fa fa-users"></i>
       <span>Total</span>
     </div>
@@ -441,29 +441,29 @@ if (role === "parent") {
 
 
     {/* Attendance */}
-    <div className="summary2-card">
+    <div className="summary-card">
       
-      <div className="summary2-top">{activeStats.present}</div>
+      <div className="summary-top">{activeStats.present}</div>
 <div
-  className="summary2-fill fill-blue"
+  className="summary-fill fill-blue"
   style={{ height: `${getPercent(activeStats.present, totalBase)}%` }}
 />
 
-      <div className="summary2-content">
+      <div className="summary-content">
         <i className="fa fa-user-check"></i>
         <span>Prasent</span>
       </div>
     </div>
 
     {/* Late */}
-    <div className="summary2-card">
-      <div className="summary2-top">{activeStats.late}</div>
+    <div className="summary-card">
+      <div className="summary-top">{activeStats.late}</div>
 <div
-  className="summary2-fill fill-yellow"
+  className="summary-fill fill-yellow"
   style={{ height: `${getPercent(activeStats.late, totalBase)}%` }}
 />
 
-      <div className="summary2-content">
+      <div className="summary-content">
         <i className="fa fa-clock"></i>
         <span>Late</span>
       </div>
@@ -471,7 +471,7 @@ if (role === "parent") {
 
     {/* Absent */}
 <div
-  className="summary2-card clickable"
+  className="summary-card clickable"
   onClick={() => {
     if (viewMode === "student") {
       setActivePage("todays-absent");
@@ -481,12 +481,12 @@ if (role === "parent") {
   }}
 
 >
-  <div className="summary2-top">{activeStats.absent}</div>
+  <div className="summary-top">{activeStats.absent}</div>
   <div
-    className="summary2-fill fill-red"
+    className="summary-fill fill-red"
     style={{ height: `${getPercent(activeStats.absent, totalBase)}%` }}
   />
-  <div className="summary2-content">
+  <div className="summary-content">
     <i className="fa fa-user-times"></i>
     <span>Absent</span>
   </div>
