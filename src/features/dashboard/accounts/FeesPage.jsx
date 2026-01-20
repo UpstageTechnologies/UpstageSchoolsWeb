@@ -119,6 +119,13 @@ return Math.max(0, payable - paid);
       >
         ← Back
       </span>
+      <button style={{marginLeft:"30%"}}
+    className="report-btn"
+    onClick={() => {setShowReport(true);setFilteredReport([]);}}
+    
+  >
+    📄 Report
+  </button>
   
 
   
@@ -242,13 +249,7 @@ return Math.max(0, payable - paid);
   Term 3
 </button>
 
-            <button style={{marginLeft:"30%"}}
-    className="report-btn"
-    onClick={() => {setShowReport(true);setFilteredReport([]);}}
-    
-  >
-    📄 Report
-  </button>
+
           </div>
 
           {/* 🆕 NEW ADMISSION */}
@@ -260,7 +261,7 @@ return Math.max(0, payable - paid);
                 <table className="nice-table">
                   <thead>
                     <tr>
-                      <th>Student</th>
+                      <th >Student</th>
                       <th>Parent</th>
                       <th>Class</th>
                       <th>Paid</th>
@@ -273,10 +274,10 @@ return Math.max(0, payable - paid);
 
                       .map(i => (
                         <tr key={i.id}>
-                          <td>{i.studentName}</td>
-                          <td>{i.parentName}</td>
-                          <td>{i.className}</td>
-                          <td>₹{i.paidAmount}</td>
+                          <td data-label="Student">{i.studentName}</td>
+                          <td data-label="Parent">{i.parentName}</td>
+                          <td data-label="Class">{i.className}</td>
+                          <td data-label="Paid">₹{i.paidAmount}</td>
                           <td>{i.date}</td>
                         </tr>
                       ))}
@@ -307,9 +308,9 @@ return Math.max(0, payable - paid);
 
                       .map(i => (
                         <tr key={i.id}>
-                          <td>{i.studentName}</td>
-                          <td>{i.className}</td>
-                          <td>₹{i.paidAmount}</td>
+                          <td data-label="Student">{i.studentName}</td>
+                          <td data-label="Class">{i.className}</td>
+                          <td data-label="Paid">₹{i.paidAmount}</td>
                           <td>{i.date}</td>
                         </tr>
                       ))}
@@ -341,9 +342,9 @@ return Math.max(0, payable - paid);
 
                       .map(i => (
                         <tr key={i.id}>
-                          <td>{i.studentName}</td>
-                          <td>{i.className}</td>
-                          <td>₹{i.paidAmount}</td>
+                          <td data-label="Student">{i.studentName}</td>
+                          <td data-label="Class">{i.className}</td>
+                          <td data-label="Paid">₹{i.paidAmount}</td>
                           <td>
                             ₹0
                           </td>
@@ -378,9 +379,9 @@ return Math.max(0, payable - paid);
 
                       .map(i => (
                         <tr key={i.id}>
-                          <td>{i.studentName}</td>
-                          <td>{i.className}</td>
-                          <td>₹{i.paidAmount}</td>
+                          <td data-label="Student">{i.studentName}</td>
+                          <td data-label="Class">{i.className}</td>
+                          <td data-label="Paid">₹{i.paidAmount}</td>
                           <td>
                           ₹{getFeeBalance(i.studentId, i.feeId)}
 
@@ -412,9 +413,9 @@ return Math.max(0, payable - paid);
           .filter(i => i.paymentType === "term1")
           .map(i => (
             <tr key={i.id}>
-              <td>{i.studentName}</td>
-              <td>{i.className}</td>
-              <td>₹{i.paidAmount}</td>
+              <td data-label="Student">{i.studentName}</td>
+              <td data-label="Class">{i.className}</td>
+              <td data-label="Paid">₹{i.paidAmount}</td>
               <td>₹{getFeeBalance(i.studentId, i.feeId)}</td>
 
               <td>{i.date}</td>
@@ -443,9 +444,9 @@ return Math.max(0, payable - paid);
           .filter(i => i.paymentType === "term2")
           .map(i => (
             <tr key={i.id}>
-              <td>{i.studentName}</td>
-              <td>{i.className}</td>
-              <td>₹{i.paidAmount}</td>
+              <td data-label="Student">{i.studentName}</td>
+              <td data-label="Class">{i.className}</td>
+              <td data-label="Paid">₹{i.paidAmount}</td>
               <td>₹{getFeeBalance(i.studentId, i.feeId)}</td>
 
               <td>{i.date}</td>
@@ -474,9 +475,9 @@ return Math.max(0, payable - paid);
           .filter(i => i.paymentType === "term3")
           .map(i => (
             <tr key={i.id}>
-              <td>{i.studentName}</td>
-              <td>{i.className}</td>
-              <td>₹{i.paidAmount}</td>
+              <td data-label="Student">{i.studentName}</td>
+              <td data-label="Class">{i.className}</td>
+              <td data-label="Paid">₹{i.paidAmount}</td>
               <td>₹{getFeeBalance(i.studentId, i.feeId)}</td>
 
               <td>{i.date}</td>
@@ -508,10 +509,10 @@ return Math.max(0, payable - paid);
               <tbody>
                 {expenseList.map(e => (
                   <tr key={e.id}>
-                    <td>{e.type}</td>
-                    <td>{e.name}</td>
-                    <td>₹{e.amount}</td>
-                    <td>{e.date}</td>
+                    <td data-label="Type">{e.type}</td>
+                    <td data-label="Name">{e.name}</td>
+                    <td data-label="Amount">₹{e.amount}</td>
+                    <td >{e.date}</td>
                   </tr>
                 ))}
               </tbody>

@@ -32,6 +32,11 @@ const [showPosition, setShowPosition] = useState(false);
 const [entrySearch, setEntrySearch] = useState("");
 const [showEntryDropdown, setShowEntryDropdown] = useState(false);
 
+const [incomeList, setIncomeList] = useState([]);
+const [expenseList, setExpenseList] = useState([]);
+const [feesList, setFeesList] = useState([]);
+
+
 const entryTypes = ["Fees", "Salary"];
 
 const filteredEntryTypes = entryTypes.filter(t =>
