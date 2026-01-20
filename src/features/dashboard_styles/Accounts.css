@@ -852,16 +852,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   color: #2140df;
 }
 
-/* Inventory Fees Summary Alignment */
-.nice-table th:nth-child(2),
-.nice-table td:nth-child(2) {
-  text-align: left !important;
-}
 
-.nice-table th:nth-child(3),
-.nice-table td:nth-child(3) {
-  text-align: right !important;
-}
 
 /* Accounts table - right align money columns */
 .nice-table1 th:nth-child(2),

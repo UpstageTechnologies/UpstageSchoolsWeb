@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { collection, addDoc, onSnapshot ,query} from "firebase/firestore";
+import { collection, addDoc, onSnapshot ,query,deleteDoc, doc, updateDoc} from "firebase/firestore";
 import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
 import "../../dashboard_styles/studentSearch.css";
-
-
+import {  FaEdit, FaTrash} from "react-icons/fa";
 
 export default function Inventory({ adminUid, setActivePage, plan, showUpgrade }) {
 
@@ -35,6 +34,9 @@ const [showEntryDropdown, setShowEntryDropdown] = useState(false);
 const [incomeList, setIncomeList] = useState([]);
 const [expenseList, setExpenseList] = useState([]);
 const [feesList, setFeesList] = useState([]);
+
+const [editId, setEditId] = useState(null);
+
 
 
 const entryTypes = ["Fees", "Salary"];
@@ -78,8 +80,6 @@ const filteredPositions = (positions[salaryCategory] || []).filter(p =>
   
   const [salaryPosition, setSalaryPosition] = useState("");
 
-
-  const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
 
   /* ================= FIRESTORE ================= */
   const feesRef = collection(db, "users", adminUid, "Account", "accounts", "FeesMaster");
@@ -136,7 +136,7 @@ const filteredPositions = (positions[salaryCategory] || []).filter(p =>
 
   /* ================= SAVE ================= */
   const saveFee = async () => {
-    if (!entryType || !feeAmount || !date) return alert("Fill all fields");
+    if (!entryType || !feeAmount ) return alert("Fill all fields");
 
     if (entryType === "fees") {
       if (!feeClass || !feeName) return alert("Select class & fee name");
@@ -147,7 +147,6 @@ const filteredPositions = (positions[salaryCategory] || []).filter(p =>
 
         name: feeName,
         amount: Number(feeAmount),
-        date,
         createdAt: new Date()
       });
     }
@@ -163,7 +162,6 @@ const filteredPositions = (positions[salaryCategory] || []).filter(p =>
         teacherId: selectedTeacher.id,
         name: selectedTeacher.name,
         amount: Number(feeAmount),
-        date,
         createdAt: new Date()
       });
     }
@@ -209,6 +207,131 @@ setTeacherSearch("");
     return acc;
   }, {});
 
+  const deleteFee = async (id) => {
+    if (!window.confirm("Delete this item?")) return;
+  
+    await deleteDoc(
+      doc(db, "users", adminUid, "Account", "accounts", "FeesMaster", id)
+    );
+  };
+
+  const startEdit = (item) => {
+    setEditId(item.id);
+    setFeeClass(item.className || "");
+    setFeeName(item.name || "");
+    setFeeAmount(item.amount || "");
+    setEntryType(item.type);
+  };
+  
+  const classOrder = [
+    "PreKG","LKG","UKG",
+    "1","2","3","4","5","6","7","8","9","10","11","12"
+  ];
+  const sortedGroupedFees = Object.entries(groupedFees)
+  .sort(
+    ([a], [b]) =>
+      classOrder.indexOf(a) - classOrder.indexOf(b)
+  );
+  
+  const updateFee = async () => {
+    if (!editId) return;
+  
+    if (!feeClass || !feeName || !feeAmount) {
+      return alert("Fill all fields");
+    }
+  
+    try {
+      await updateDoc(
+        doc(db, "users", adminUid, "Account", "accounts", "FeesMaster", editId),
+        {
+          className: String(feeClass).trim(),
+          name: feeName,
+          amount: Number(feeAmount),
+          updatedAt: new Date()
+        }
+      );
+  
+      // reset form after update
+      setEditId(null);
+      setFeeClass("");
+      setFeeName("");
+      setFeeAmount("");
+      setEntryType("");
+  
+    } catch (err) {
+      console.error("Update failed:", err);
+      alert("Update failed");
+    }
+  };
+  const editSalary = (item) => {
+    setEditId(item.id);
+    setEntryType("salary");
+  
+    setSalaryCategory(item.category || "");
+    setSalaryPosition(item.position || "");
+    setFeeAmount(item.amount || "");
+  
+    setSelectedTeacher({
+      id: item.teacherId,
+      name: item.name
+    });
+  };
+  const updateSalary = async () => {
+    if (!editId) return;
+  
+    if (!salaryCategory || !salaryPosition || !selectedTeacher || !feeAmount) {
+      return alert("Fill all salary fields");
+    }
+  
+    try {
+      await updateDoc(
+        doc(db, "users", adminUid, "Account", "accounts", "FeesMaster", editId),
+        {
+          type: "salary",
+          category: salaryCategory,
+          position: salaryPosition,
+          teacherId: selectedTeacher.id,
+          name: selectedTeacher.name,
+          amount: Number(feeAmount),
+          updatedAt: new Date()
+        }
+      );
+  
+      resetSalaryForm();
+    } catch (err) {
+      console.error(err);
+      alert("Salary update failed");
+    }
+  };
+  const deleteSalary = async (id) => {
+    if (!window.confirm("Delete this salary entry?")) return;
+  
+    await deleteDoc(
+      doc(db, "users", adminUid, "Account", "accounts", "FeesMaster", id)
+    );
+  };
+  const handleSalarySubmit = () => {
+    if (editId) {
+      updateSalary();
+    } else {
+      saveFee(); // existing save salary logic
+    }
+  };
+        
+  const resetSalaryForm = () => {
+    setEditId(null);
+    setEntryType("");
+  
+    setSalaryCategory("");
+    setSalaryPosition("");
+    setSelectedTeacher(null);
+    setFeeAmount("");
+  
+    setCategorySearch("");
+    setPositionSearch("");
+    setTeacherSearch("");
+  };
+  
   /* ================= UI ================= */
   return (
     <div className="accounts-wrapper fade-in">
@@ -223,11 +346,7 @@ setTeacherSearch("");
         <h3 className="section-title">Add Item</h3>
 
         <div className="entries-box">
-  <input
-    type="date"
-    value={date}
-    onChange={e => setDate(e.target.value)}
-  />
+
 
   <div className="student-dropdown">
     <input
@@ -310,9 +429,10 @@ setTeacherSearch("");
       onChange={e=>setFeeAmount(e.target.value)}
     />
 
-    <button className="save-btn" onClick={saveFee}>
-      Save
-    </button>
+<button className="save-btn" onClick={editId ? updateFee : saveFee}>
+  {editId ? "Update" : "Save"}
+</button>
+
 
   </div>
 )}
@@ -426,13 +546,10 @@ setTeacherSearch("");
 
     
     {/* ===== Row 3 ===== */}
-    <button
-      className="save-btn"
-      
-      onClick={saveFee}
-    >
-      Save
-    </button>
+    <button className="save-btn" onClick={handleSalarySubmit}>
+  {editId ? "Update Salary" : "Save Salary"}
+</button>
+
   </div>
 )}
 
@@ -447,36 +564,68 @@ setTeacherSearch("");
 
       {activeSummary === "fees" && (
         <table className="nice-table">
-          <thead><tr><th>Class</th><th>Fee</th><th>Amount</th></tr></thead>
+          <thead><tr><th>Class</th><th>Fee</th><th>Amount</th><th>Action</th></tr></thead>
           <tbody> 
-          {Object.entries(groupedFees).map(([cls, items]) =>
+          {sortedGroupedFees.map(([cls, items]) =>
   items.map(i => (
     <tr key={i.id}>
       <td data-label="Class">{cls}</td>
-      <td data-label="Fee Name">{i.name}</td>
+      <td data-label="Fee">{i.name}</td>
       <td data-label="Amount">₹{i.amount}</td>
+      <td className="action-cell" >
+        <button className="edit-btn" onClick={() => startEdit(i)}> <FaEdit /> Edit</button>
+        <button className="delete-btn" onClick={() => deleteFee(i.id)}><FaTrash /> Delete</button>
+      </td>
     </tr>
   ))
 )}
 
+
           </tbody>
         </table>
       )}
 
-      {activeSummary === "salary" && (
-        <table className="nice-table">
-          <thead><tr><th>Name</th><th>Amount</th><th>Date</th></tr></thead>
-          <tbody>
-            {salaryData.map(i => (
-              <tr key={i.id}>
-                <td data-label="Name">{i.name}</td>
-                <td data-label="Amount">₹{i.amount}</td>
-                <td date-label="Date">{i.date}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+{activeSummary === "salary" && (
+  <table className="nice-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Amount</th>
+        <th>Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {salaryData.map(item => (
+        <tr key={item.id}>
+          <td data-label="Name">{item.name}</td>
+          <td data-label="Amount">₹{item.amount}</td>
+          <td data-label="Date">
+            {item.createdAt?.toDate().toLocaleDateString()}
+          </td>
+
+          <td className="action-cell">
+            <button
+              className="edit-btn"
+              onClick={() => editSalary(item)}
+            >
+              <FaEdit /> Edit
+            </button>
+
+            <button
+              className="delete-btn"
+              onClick={() => deleteSalary(item.id)}
+            >
+              <FaTrash /> Delete
+            </button>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+)}
+
 
     </div>
   );

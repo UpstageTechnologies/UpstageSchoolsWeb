@@ -378,3 +378,20 @@
   grid-template-columns: repeat(4,1fr);
   gap:10px;
 }
+/* Inventory Fees Summary Alignment */
+.nice-table th:nth-child(2),
+.nice-table td:nth-child(2) {
+  text-align: left !important;
+}
+
+.nice-table th:nth-child(3),
+.nice-table td:nth-child(3) {
+  text-align: right !important;
+}
+/* ACTION COLUMN */
+.action-cell{
+  display: flex;          /* inline buttons */
+  gap: 12px;              /* 👈 space between Edit & Delete */
+  align-items: center;
+  justify-content: center;
+}
