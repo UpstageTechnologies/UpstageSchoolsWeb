@@ -68,8 +68,9 @@ import UpgradePopup from "../../components/UpgradePopup";
     const [upgradeDisabled, setUpgradeDisabled] = useState(false);
 
 
-    const [menuOpen, setMenuOpen] = useState(false);
-    const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+    const [sidebarState, setSidebarState] = useState("open"); 
+    // "open" | "close" | "hidden"
+        const [accountMenuOpen, setAccountMenuOpen] = useState(false);
     const [activePage, setActivePage] = useState("home");
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [homeStats, setHomeStats] = useState(null);
@@ -300,7 +301,14 @@ const viewTeacherId = localStorage.getItem("viewTeacherId");
       }
     }, [role]);
     
-
+    const toggleSidebar = () => {
+      setSidebarState(prev => {
+        if (prev === "open") return "close";
+        if (prev === "close") return "hidden";
+        return "open";
+      });
+    };
+    
     const adminUid = user?.uid || localStorage.getItem("adminUid");
 
     return (
@@ -308,7 +316,8 @@ const viewTeacherId = localStorage.getItem("viewTeacherId");
       <div className="dashboard-container">
         {/* ================= SIDEBAR ================= */}
         
-        <div className={`sidebar ${menuOpen ? "sidebar-open" : "sidebar-close"}`}>
+        <div className={`sidebar sidebar-${sidebarState}`}>
+
         <ul>
   {/* ================= OFFICE STAFF ================= */}
   {isOfficeStaff && (
@@ -456,12 +465,10 @@ const viewTeacherId = localStorage.getItem("viewTeacherId");
         <div className="main-content">
           <nav className="navbar">
             <div className="nav-left">
-              <div
-                className="menu-toggle"
-                onClick={() => setMenuOpen(!menuOpen)}
-              >
-                ☰
-              </div>
+            <div className="menu-toggle" onClick={toggleSidebar}>
+  ☰
+</div>
+
               {(logo || localStorage.getItem("schoolLogo")) ? (
   <img
     src={logo || localStorage.getItem("schoolLogo")}

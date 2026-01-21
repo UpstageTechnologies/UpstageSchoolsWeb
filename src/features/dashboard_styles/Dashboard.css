@@ -455,12 +455,7 @@ background: linear-gradient(135deg, #3a9df5, #5fb3ff);  color:#ffffff;
     max-width:calc(100vw - 64px);
   }
 
-  /* When sidebar OPEN → content should not shift */
-  .sidebar.sidebar-open ~ .main-content{
-    margin-left:0;
-    width:100vw;
-    max-width:100vw;
-  }
+
 }
 /* ================= NAVBAR RESPONSIVE TEXT ================= */
 
@@ -518,43 +513,28 @@ background: linear-gradient(135deg, #3a9df5, #5fb3ff);  color:#ffffff;
 }
 
 
-/* =========================================================
-   <= 1100px : DISABLE SIDEBAR OPEN, ALLOW SIDEBAR CLOSE
-========================================================= */
-@media (max-width: 1100px) {
-
-  /* ❌ disable OPEN state */
-  .sidebar.sidebar-open {
-    display: none !important;
-  }
-
-  /* ✅ allow CLOSED (icon) sidebar */
-  .sidebar.sidebar-close {
-    display: block;
-    width: 64px;
-    min-width: 64px;
-    padding: 16px 8px;
-  }
-
-  /* ✅ main content uses remaining space */
-  .sidebar.sidebar-close ~ .main-content {
-    margin-left: 64px !important;
-    width: calc(100vw - 64px) !important;
-    max-width: calc(100vw - 64px) !important;
-  }
-
-  /* when sidebar is OPEN (hidden) */
-  .sidebar.sidebar-open ~ .main-content {
-    margin-left: 0 !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
-  }
-   /* remove sidebar space */
-   .main-content {
-    margin-left: 0 !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
-  }
+ 
+/* ================= SIDEBAR HIDDEN ================= */
+.sidebar-hidden {
+  display: none;
 }
 
- 
+/* main content full width when hidden */
+.sidebar-hidden ~ .main-content {
+  margin-left: 0 !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+}
+@media (min-width: 481px) and (max-width: 768px) {
+
+  .sidebar.sidebar-open{
+    width: clamp(160px, 22vw, 220px) !important;
+    min-width: 160px !important;
+  }
+
+  .sidebar.sidebar-open ~ .main-content{
+    margin-left: clamp(160px, 22vw, 220px) !important;
+    width: calc(100vw - clamp(160px, 22vw, 220px)) !important;
+    max-width: calc(100vw - clamp(160px, 22vw, 220px)) !important;
+  }
+}

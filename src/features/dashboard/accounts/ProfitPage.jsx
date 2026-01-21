@@ -831,6 +831,13 @@ const getTermPaidCount = (studentId, feeId) =>
     setNewPayAmount(termAmt);
   
   }, [newPayType, selectedFees]);
+
+  useEffect(() => {
+    setTeacherSearch("");
+    setSelName("");
+    setShowTeacherDropdown(false);
+  }, [salaryRole, salaryPosition]);
+  
   // 🔥 ALWAYS KEEP AFTER ALL HOOKS
 if (activePage && activePage.startsWith("bill_")) {
   return (
@@ -842,11 +849,6 @@ if (activePage && activePage.startsWith("bill_")) {
     />
   );
 }
-useEffect(() => {
-  setTeacherSearch("");
-  setSelName("");
-  setShowTeacherDropdown(false);
-}, [salaryRole, salaryPosition]);
 
 const deleteEntry = async (row) => {
   if (!window.confirm("Delete this entry?")) return;
