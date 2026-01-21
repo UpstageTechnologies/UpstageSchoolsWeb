@@ -257,7 +257,7 @@ const OfficeStaff = () => {
             )
             .map(s => (
               <tr key={s.id}>
-                <td>
+                <td data-label="Photo">
                   {s.photoURL ? (
                     <img src={s.photoURL} alt="" style={{
                       width: 40,
@@ -280,11 +280,11 @@ const OfficeStaff = () => {
                   )}
                 </td>
 
-                <td>{s.name}</td>
-                <td>{s.staffId}</td>
-                <td>{s.department}</td>
-                <td>{s.role}</td>
-                <td>{s.phone}</td>
+                <td data-label="Name">{s.name}</td>
+                <td data-label="Staff Id">{s.staffId}</td>
+                <td data-label="Department">{s.department}</td>
+                <td data-label="Role">{s.role}</td>
+                <td data-label="Phone">{s.phone}</td>
 
                 <td>
                 <button

@@ -251,7 +251,7 @@ if (!/^\d{10}$/.test(phoneClean)) {
         <td data-label="Qualification">{a.qualification || "-"}</td>
         <td data-label="Experience">{a.experience || "-"}</td>
 
-        <td className="action-cell">
+        <td >
         <button
     className="view-btn"
     onClick={() => setViewStudent(s)}

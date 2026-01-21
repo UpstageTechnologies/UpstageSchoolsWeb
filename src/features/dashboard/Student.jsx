@@ -264,7 +264,7 @@ const Student = ({ requirePremium }) => {
                 <td data-label="Class">{s.class}</td>
                 <td data-label="Section">{s.section}</td>
 
-                <td className="action-cell">
+                <td >
                 <button
     className="view-btn"
     onClick={() => setViewStudent(s)}

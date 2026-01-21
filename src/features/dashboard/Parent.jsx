@@ -478,7 +478,7 @@ if (editId) {
         <td data-label="Phone">{p.phone}</td>
         <td data-label="Address">{p.address}</td>
 
-        <td className="action-cell">
+        <td >
 
 {/* 👁 VIEW AS PARENT */}
 <button

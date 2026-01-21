@@ -31,6 +31,12 @@ export default function Profile() {
 
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [phone, setPhone] = useState("");
+const [address, setAddress] = useState("");
+const [schoolEmail, setSchoolEmail] = useState("");
+const [schoolAddress, setSchoolAddress] = useState("");
+const [gstNumber, setGstNumber] = useState("");
+
 
   useEffect(() => {
     const uid =
@@ -59,22 +65,31 @@ export default function Profile() {
     const unsub = onSnapshot(ref, (snap) => {
       if (snap.exists()) {
         const d = snap.data();
-  
+    
         setData(d);
         setEditName(d?.name || "");
         setEditEmail(d?.email || "");
         setSchoolName(d?.schoolName || "");
         setSchoolLogo(d?.schoolLogo || "");
-  
-        // 🔥 sync navbar
+    
+        // ✅ ADD THESE HERE
+        setPhone(d?.phone || "");
+        setAddress(d?.address || "");
+    
+        setSchoolEmail(d?.schoolEmail || "");
+        setSchoolAddress(d?.schoolAddress || "");
+        setGstNumber(d?.gstNumber || "");
+    
+        // navbar sync
         localStorage.setItem("profilePhoto", d.photoURL || "");
         localStorage.setItem("adminName", d.name || d.username || "");
         localStorage.setItem("email", d.email || "");
-  
+    
         window.dispatchEvent(new Event("profile-updated"));
         setLoading(false);
       }
     });
+    
   
     return () => unsub();
   }, [adminUid, role]);
@@ -142,9 +157,19 @@ export default function Profile() {
         name: editName,
         username: editName,
         email: editEmail,
+        phone,
+        address,
         photoURL: data.photoURL || "",
-        ...(role === "master" && { schoolName, schoolLogo })
+      
+        ...(role === "master" && {
+          schoolName,
+          schoolLogo,
+          schoolEmail,
+          schoolAddress,
+          gstNumber
+        })
       };
+      
   
       await updateDoc(ref, updatedData);
   
@@ -173,8 +198,22 @@ export default function Profile() {
       alert(e.message);
     }
   };
+  const resetFormFromData = () => {
+    if (!data) return;
   
-
+    setEditName(data.name || "");
+    setEditEmail(data.email || "");
+    setPhone(data.phone || "");
+    setAddress(data.address || "");
+  
+    setSchoolName(data.schoolName || "");
+    setSchoolEmail(data.schoolEmail || "");
+    setSchoolAddress(data.schoolAddress || "");
+    setGstNumber(data.gstNumber || "");
+    setSchoolLogo(data.schoolLogo || "");
+  };
+  
+  
   if (loading) return <div className="profile-loading"></div>;
 
   return (
@@ -289,6 +328,17 @@ export default function Profile() {
                 <label>Email</label>
                 <input disabled={!editing} value={editEmail} onChange={e => setEditEmail(e.target.value)} />
               </div>
+              <div className="profile-row">
+      <label>Phone Number</label>
+      <input disabled={!editing} value={phone}
+        onChange={e => setPhone(e.target.value)} />
+    </div>
+
+    <div className="profile-row">
+      <label>Address</label>
+      <textarea disabled={!editing} value={address}
+        onChange={e => setAddress(e.target.value)} />
+    </div>
             </>
           ) : (
             role === "master" && (
@@ -297,7 +347,23 @@ export default function Profile() {
                   <label>School Name</label>
                   <input disabled={!editing} value={schoolName} onChange={e => setSchoolName(e.target.value)} />
                 </div>
+                <div className="profile-row">
+      <label>School Email</label>
+      <input disabled={!editing} value={schoolEmail}
+        onChange={e => setSchoolEmail(e.target.value)} />
+    </div>
 
+    <div className="profile-row">
+      <label>GST Number</label>
+      <input disabled={!editing} value={gstNumber}
+        onChange={e => setGstNumber(e.target.value)} />
+    </div>
+
+    <div className="profile-row">
+      <label>School Address</label>
+      <textarea disabled={!editing} value={schoolAddress}
+        onChange={e => setSchoolAddress(e.target.value)} />
+    </div>
                 
               </>
             )
@@ -308,7 +374,16 @@ export default function Profile() {
               <button className="btn-primary" onClick={() => setEditing(true)}>Edit</button>
             ) : (
               <>
-                <button className="btn-secondary" onClick={() => setEditing(false)}>Cancel</button>
+                <button
+                 className="btn-secondary"
+                 onClick={() => {
+                  resetFormFromData(); // 🔥 reset values
+                  setEditing(false);  // exit edit mode
+                }}
+                >
+                 Cancel
+                 </button>
+
                 <button className="btn-primary" onClick={saveProfile}>
                   {saving ? "Saving..." : saveSuccess ? "Saved ✓" : "Save"}
                 </button>

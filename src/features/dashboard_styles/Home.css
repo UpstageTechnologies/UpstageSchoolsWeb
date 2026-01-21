@@ -11,7 +11,7 @@
   background: white;
   padding: 20px;
   border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(0,0,0,.05);
+  
   margin-bottom: 25px;
 }
 
@@ -52,7 +52,7 @@
   background: white;
   padding: 25px;
   border-radius: 20px;
-  box-shadow: 0 8px 20px rgba(0,0,0,.05);
+  
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -96,7 +96,7 @@
   background: white;
   padding: 25px;
   border-radius: 20px;
-  box-shadow: 0 8px 20px rgba(0,0,0,.05);
+  
   display: flex;
   justify-content: space-between;
   gap: 25px;
@@ -170,7 +170,7 @@
   padding: 18px;
   border-radius: 16px;
   color: #fff;
-  box-shadow: 0 14px 22px rgba(0,0,0,.12);
+  
   transition: transform .25s ease, box-shadow .25s ease;
 }
 
@@ -179,7 +179,7 @@
 
 .home-card:hover {
   transform: translateY(-6px) scale(1.02);
-  box-shadow: 0 18px 30px rgba(0,0,0,.18);
+
 }
 
 .home-card h1 {
@@ -265,7 +265,7 @@
   text-align: center;
   color: white;
   font-weight: 700;
-  box-shadow: 0 10px 20px rgba(0,0,0,.12);
+  
 }
 
 .flow-item:nth-child(2) { left: 0; }
@@ -561,7 +561,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 6px 14px rgba(0,0,0,.05);
+  
 }
 
 .top-card i {
@@ -614,7 +614,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  box-shadow: 0 4px 10px rgba(58,157,245,.35);
+  
 }
 .summary-card.clickable {
   cursor: pointer;
@@ -787,13 +787,4 @@
   .top-card small {
     font-size: 11px;
   }
-}
-/* 🔥 REMOVE SHADOW FROM ALL CARDS */
-.student-header,
-.summary-left,
-.summary-wrapper,
-.top-card,
-.summary-card,
-.home-card {
-  box-shadow: none !important;
 }

@@ -11,7 +11,7 @@
 /* ================= ROOT ================= */
 .profile-root{
   min-height:100vh;
-  background:linear-gradient(135deg,#eef2ff,#f9fafb);
+  background:#f7feff;   
   padding:24px;
   display:flex;
   justify-content:center;
@@ -28,7 +28,7 @@
   background:#fff;
   padding:6px;
   border-radius:14px;
-  box-shadow:0 6px 18px rgba(0,0,0,0.05);
+  
   margin-bottom:16px;
 }
 
@@ -54,7 +54,7 @@
   border-radius:22px;
   padding:28px 20px 20px;
   text-align:center;
-  box-shadow:0 10px 28px rgba(0,0,0,0.06);
+
 }
 
 .hero-text{
@@ -90,7 +90,7 @@
   display:flex;
   align-items:center;
   justify-content:center;
-  box-shadow:0 6px 18px rgba(124,58,237,.25);
+ 
 }
 
 .avatar-ring img{
@@ -118,7 +118,7 @@
   align-items:center;
   justify-content:center;
   cursor:pointer;
-  box-shadow:0 6px 14px rgba(124,58,237,.35);
+
 }
 
 /* ================= CARD ================= */
@@ -127,7 +127,7 @@
   border-radius:22px;
   padding:24px;
   margin-top:16px;
-  box-shadow:0 12px 32px rgba(0,0,0,0.08);
+
 }
 
 /* ================= FIELDS ================= */
@@ -144,12 +144,16 @@
   font-weight:600;
 }
 
-.profile-row input{
+.profile-row input,
+.profile-row textarea{
   padding:12px 14px;
   border-radius:12px;
   border:1px solid var(--border);
   font-size:15px;
+  font-family:inherit;
+  background:#fff;
 }
+
 
 /* ================= ACTIONS ================= */
 .profile-actions{
@@ -242,4 +246,22 @@
   .profile-shell{
     max-width:100%;
   }
+}
+.profile-row textarea{
+  min-height:90px;
+  resize:vertical;
+}
+.profile-row input:focus,
+.profile-row textarea:focus{
+  outline:none;
+  border-color:var(--primary);
+}
+.profile-row input:disabled,
+.profile-row textarea:disabled{
+  background:#f1f5f9;
+  cursor:not-allowed;
+}
+.profile-row input::placeholder,
+.profile-row textarea::placeholder{
+  color:var(--muted);
 }
