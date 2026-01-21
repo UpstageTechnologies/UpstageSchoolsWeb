@@ -1044,3 +1044,32 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     background: #eef4ff !important;
   }
 }
+/* ================= FIX SALARY PLACEHOLDER SIZE (MOBILE) ================= */
+
+/* Force salary dropdown inputs to behave exactly like fees */
+.salary-grid .student-dropdown input {
+  width: 100% !important;
+  height: 44px !important;
+  padding: 0 14px !important;
+  border-radius: 12px !important;
+  border: 2px solid var(--purple) !important;
+  background: #fff !important;
+  font-weight: 600 !important;
+  box-sizing: border-box !important;
+}
+
+/* Prevent inner grid shrink on mobile */
+@media (max-width: 480px) {
+  .salary-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .salary-grid .student-dropdown {
+    width: 100% !important;
+  }
+
+  .salary-grid input,
+  .salary-grid .student-dropdown input {
+    min-width: 100% !important;
+  }
+}
