@@ -215,6 +215,7 @@ const todayProfit = todayIncome - todayExpense;
 </>
       )}
       {/* ===== TODAY SUMMARY ===== */}
+      {!isOfficeStaff && (
 <div className="today-summary">
 
 <div className="today-card blue">
@@ -233,6 +234,7 @@ const todayProfit = todayIncome - todayExpense;
 </div>
 
 </div>
+      )}
 
 
       {/* NAV */}

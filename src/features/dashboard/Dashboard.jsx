@@ -44,12 +44,7 @@ import Inventory from "./accounts/Inventory";
 import UpgradePopup from "../../components/UpgradePopup";
 import TeacherHome from "./TeacherHome";
 import ParentHome from "./ParentHome";
-
-
-
-
-
-
+import SchoolCalendar from "../../components/SchoolCalendar";
 
 
   /* ================= SLIDER ================= */
@@ -538,6 +533,13 @@ useEffect(() => {
           <FaWpforms /> Applications
         </li>
       )}
+      <button
+  className={activePage === "calendar" ? "active" : ""}
+  onClick={() => setActivePage("calendar")}
+>
+  📅 Calendar
+</button>
+
                     {/* 🎁 TRIAL BANNER */}
   {sidebarState === "open" && trialAccess && trialExpiresAt && (
     <div
@@ -686,6 +688,17 @@ useEffect(() => {
           </nav>
 
           <div className="dashboard-content">
+
+            {/* 📅 FULL PAGE CALENDAR */}
+{activePage === "calendar" && (
+  <div className="calendar-fullpage">
+    <SchoolCalendar
+      adminUid={adminUid}
+      role={role}
+    />
+  </div>
+)}
+
             {/* 👩‍🏫 TEACHER HOME */}
 {role === "teacher" && activePage === "teacher-home" && (
   <TeacherHome
@@ -714,13 +727,7 @@ useEffect(() => {
 
 
 )}
-{/* 👩‍🏫 TEACHER HOME */}
-{role === "teacher" && activePage === "teacher-home" && (
-  <TeacherHome
-    adminUid={localStorage.getItem("adminUid")}
-    teacherId={localStorage.getItem("teacherDocId")}
-  />
-)}
+
 
 
 
@@ -860,6 +867,7 @@ useEffect(() => {
     onUpgrade={() => navigate("/payment")}
   />
 )}
+
 
 
       </div>

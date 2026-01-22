@@ -875,24 +875,33 @@ const deleteEntry = async (row) => {
 };
 
 
+useEffect(() => {
+  if (isOfficeStaff) {
+    setEntryType("income");     // default
+    setIncomeMode("source");   // or student if you want
+  }
+}, [isOfficeStaff]);
 
 
   return (
     
     
     <>
-       <span
-        style={{ color: "#2140df", cursor: "pointer", fontWeight: 600 }}
-        onClick={() => setActivePage("accounts")}
-      >
-        ← Back
-      </span>
+{!isOfficeStaff && (
+  <span
+    style={{ color: "#2140df", cursor: "pointer", fontWeight: 600 }}
+    onClick={() => setActivePage("accounts")}
+  >
+    ← Back
+  </span>
+)}
+
       
       
 
       
       <h2 className="page-title">Accounts Dashboard</h2>
-
+      {!isOfficeStaff && (
       <div className="today-summary">
 
       <div
@@ -925,6 +934,7 @@ const deleteEntry = async (row) => {
   </div>
 
 </div>
+      )}
 
     
 
@@ -983,6 +993,7 @@ const deleteEntry = async (row) => {
     </div>
   )}
 </div>
+
 
 
        {/* ================= INCOME ================= */}

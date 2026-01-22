@@ -335,3 +335,17 @@
     flex: 1 1 100%;       
   }
 }
+.calendar-fullpage {
+  width: 100%;
+  min-height: 100vh;   /* 🔥 full viewport */
+  padding: 20px;
+  background: #f9fbff;
+  overflow-y: auto;
+}
+
+.sc-calendar {
+  width: 100%;
+  max-width: 1400px;   /* 🔥 wider also */
+  margin: 0 auto;
+}
+
