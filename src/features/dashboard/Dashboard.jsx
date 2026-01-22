@@ -776,8 +776,11 @@ useEffect(() => {
   setActivePage={setActivePage}
   activePage={activePage}
   plan={plan}
+  trialAccess={trialAccess}
+  trialExpiresAt={trialExpiresAt}
   showUpgrade={() => setShowUpgrade(true)}
 />
+
 
 )}
 

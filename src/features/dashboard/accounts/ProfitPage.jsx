@@ -13,7 +13,15 @@ import {  FaTrash } from "react-icons/fa";
 
 
 
-export default function ProfitPage({ adminUid, setActivePage, activePage = "",plan, showUpgrade }) {
+export default function ProfitPage({
+  adminUid,
+  setActivePage,
+  activePage = "",
+  plan,
+  trialAccess,
+  trialExpiresAt,
+  showUpgrade
+}) {
 
 
   const role = localStorage.getItem("role");
@@ -361,39 +369,55 @@ useEffect(() => {
     setSrcName(""); setSrcAmt("");
   };
  
-  
   const safeRequirePremium = (cb, type) => {
     if (!loaded && !isOfficeStaff) return;
-
   
-    // 🔥 Office staff can always enter
+    // Office staff → always allowed
     if (isOfficeStaff) {
       cb();
       return;
     }
   
-    // Paid admins
-    if (plan !== "basic") {
-      cb();
-      return;
-    }
+    const now = new Date();
   
-    // Basic plan limits
-    const incomeCount = incomeList.filter(i => i.date === entryDate).length;
-    const expenseCount = expenseList.filter(e => e.date === entryDate).length;
+    const hasAccess =
+      plan === "premium" ||
+      plan === "lifetime" ||
+      (
+        plan === "basic" &&
+        trialAccess === true &&
+        trialExpiresAt &&
+        trialExpiresAt.toDate() > now
+      );
   
-    if (type === "income" && incomeCount >= 1) {
+    if (!hasAccess) {
       showUpgrade();
       return;
     }
   
-    if (type === "expense" && expenseCount >= 1) {
-      showUpgrade();
-      return;
+    // 🚫 Apply limits ONLY when BASIC & NO TRIAL
+    if (
+      plan === "basic" &&
+      !(trialAccess && trialExpiresAt && trialExpiresAt.toDate() > now)
+    ) {
+      const incomeCount = incomeList.filter(i => i.date === entryDate).length;
+      const expenseCount = expenseList.filter(e => e.date === entryDate).length;
+  
+      if (type === "income" && incomeCount >= 1) {
+        showUpgrade();
+        return;
+      }
+  
+      if (type === "expense" && expenseCount >= 1) {
+        showUpgrade();
+        return;
+      }
     }
   
     cb();
   };
+  
+  
   
   
   const saveNewAdmission = async () => {
@@ -838,7 +862,14 @@ const getTermPaidCount = (studentId, feeId) =>
     setShowTeacherDropdown(false);
   }, [salaryRole, salaryPosition]);
   
+  useEffect(() => {
+    if (isOfficeStaff) {
+      setEntryType("income");     // default
+      setIncomeMode("source");   // or student if you want
+    }
+  }, [isOfficeStaff]);
   // 🔥 ALWAYS KEEP AFTER ALL HOOKS
+// ✅ AFTER ALL useEffect / useState / hooks
 if (activePage && activePage.startsWith("bill_")) {
   return (
     <BillPage
@@ -849,6 +880,7 @@ if (activePage && activePage.startsWith("bill_")) {
     />
   );
 }
+
 
 const deleteEntry = async (row) => {
   if (!window.confirm("Delete this entry?")) return;
@@ -875,12 +907,7 @@ const deleteEntry = async (row) => {
 };
 
 
-useEffect(() => {
-  if (isOfficeStaff) {
-    setEntryType("income");     // default
-    setIncomeMode("source");   // or student if you want
-  }
-}, [isOfficeStaff]);
+
 
 
   return (
