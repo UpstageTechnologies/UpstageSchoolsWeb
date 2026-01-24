@@ -11,6 +11,7 @@ export default function FeesPage({ adminUid, mode, setActivePage }) {
   const [showReport, setShowReport] = useState(false);
 const [reportType, setReportType] = useState("month"); 
 const [printMode, setPrintMode] = useState(false);
+const [reportData, setReportData] = useState([]);
 
 
 const [fromDate, setFromDate] = useState("");
@@ -23,9 +24,95 @@ const [pendingFee, setPendingFee] = useState(null);
 
 const [feesMaster, setFeesMaster] = useState([]);
 const [students, setStudents] = useState([]);
+const [showGeneratedReport, setShowGeneratedReport] = useState(false);
+const [reportFilter, setReportFilter] = useState("all"); 
+// all | full | partial | term1 | term2 | term3 | pending
+
+const [reportPendingClass, setReportPendingClass] = useState("");
+const [reportPendingFee, setReportPendingFee] = useState(null);
+
+const normalizePaymentType = (i) => {
+  if (!i.paymentType) return "";
+
+  return i.paymentType
+    .toLowerCase()
+    .replace(/\s+/g, "");
+};
+
 
 const generateReport = () => {
-  setPrintMode(true);
+  let data = filterIncomeByDate().map(i => ({
+    ...i,
+    paymentType: normalizePaymentType(i)
+  }));
+
+  if (reportFilter === "new") {
+    data = data.filter(i => i.isNew === true);
+  }
+  else if (reportFilter !== "all" && reportFilter !== "pending") {
+    data = data.filter(i => i.paymentType === reportFilter);
+  }
+
+  if (reportFilter === "pending") {
+    if (!reportPendingClass || !reportPendingFee) {
+      alert("Please select class and fees");
+      return;
+    }
+
+    data = students
+      .filter(s => s.class === reportPendingClass)
+      .map(s => {
+        const balance = getBalance(s.id, reportPendingFee);
+        if (balance <= 0) return null;
+
+        return {
+          id: s.id,
+          studentName: s.studentName,
+          className: reportPendingClass,
+          balance,
+          paidAmount: getPaidAmount(s.id, reportPendingFee.id),
+          paymentType: "pending"
+        };
+      })
+      .filter(Boolean);
+  }
+
+  setReportData(data);
+  setShowGeneratedReport(true);
+};
+
+
+
+
+
+const filterIncomeByDate = () => {
+  const today = new Date();
+  const todayStr = today.toISOString().split("T")[0];
+
+  let filtered = [...incomeList];
+
+  if (reportType === "day") {
+    filtered = filtered.filter(i => i.date === todayStr);
+  }
+
+  if (reportType === "month") {
+    const month = todayStr.slice(0, 7);
+    filtered = filtered.filter(i => i.date?.startsWith(month));
+  }
+
+  if (reportType === "year") {
+    const year = todayStr.slice(0, 4);
+    filtered = filtered.filter(i => i.date?.startsWith(year));
+  }
+
+  if (reportType === "custom") {
+    if (!fromDate || !toDate) return [];
+    filtered = filtered.filter(
+      i => i.date >= fromDate && i.date <= toDate
+    );
+  }
+
+  return filtered;
 };
 
 
@@ -202,6 +289,7 @@ const getBalance = (studentId, fee) => {
 {showReport && (
   <div className="report-box">
     <h3>{mode === "income" ? "Income Report" : "Expense Report"}</h3>
+    
 
     <select
       value={reportType}
@@ -219,9 +307,37 @@ const getBalance = (studentId, fee) => {
         <input type="date" value={toDate} onChange={e=>setToDate(e.target.value)} />
       </>
     )}
+    <select
+  value={reportFilter}
+  onChange={(e) => {
+    setReportFilter(e.target.value);
+
+    if (e.target.value === "pending") {
+      setShowPendingPopup(true); // same popup
+    }
+  }}
+>
+  <option value="all">All</option>
+  <option value="new">New Admission</option>
+  <option value="full">Full Payment</option>
+  <option value="partial">Partial Payment</option>
+  <option value="term1">Term 1</option>
+  <option value="term2">Term 2</option>
+  <option value="term3">Term 3</option>
+  <option value="pending">Pending Payment</option>
+</select>
+
 
     <button onClick={generateReport} style={{marginLeft:12}}>Generate</button>
-    <button onClick={()=>setShowReport(false)} style={{marginLeft:12}}>Close</button>
+    <button onClick={() => {
+  setShowReport(false);
+  setShowGeneratedReport(false);
+  setReportData([]);
+}}>
+  Close
+</button>
+
+
     <button   onClick={() => {
     window.print();
     setPrintMode(false);
@@ -237,6 +353,67 @@ const getBalance = (studentId, fee) => {
       <h2 className="page-title">
         {mode === "income" ? "Income Details" : "Expenses Details"}
       </h2>
+      {showGeneratedReport && (
+  <div className="section-card pop print-area">
+    <h3 className="section-title">
+      Income Report – {reportFilter.toUpperCase()}
+    </h3>
+
+    <table className="nice-table">
+    <thead>
+  <tr>
+    <th>Student</th>
+    <th>Class</th>
+    <th>Payment Type</th>
+    <th>Paid</th>
+    <th>Balance</th>
+    <th>Date</th>
+  </tr>
+</thead>
+
+
+
+<tbody>
+  {reportData.length === 0 ? (
+    <tr>
+      <td colSpan="6" style={{ textAlign: "center" }}>
+        No data found
+      </td>
+    </tr>
+  ) : (
+    reportData.map(i => {
+      const balance =
+        i.paymentType === "pending"
+          ? i.balance
+          : getFeeBalance(i.studentId, i.feeId);
+
+      return (
+        <tr key={i.id}>
+          <td>{i.studentName}</td>
+          <td>{i.className}</td>
+
+          <td style={{ textTransform: "capitalize" }}>
+            {i.paymentType}
+          </td>
+
+          <td>₹{i.paidAmount || 0}</td>
+
+          <td style={{ color: balance > 0 ? "red" : "green" }}>
+            ₹{balance}
+          </td>
+
+          <td>{i.date || "-"}</td>
+        </tr>
+      );
+    })
+  )}
+</tbody>
+
+    </table>
+  </div>
+)}
+
+
 
       {/* ================= INCOME ================= */}
       {mode === "income" && (
@@ -351,15 +528,20 @@ const getBalance = (studentId, fee) => {
       </select>
 
       <div style={{ marginTop: 12 }}>
-        <button
-          onClick={() => {
-            if (!pendingClass || !pendingFee) return;
-            setIncomeTab("pending");
-            setShowPendingPopup(false);
-          }}
-        >
-          OK
-        </button>
+      <button
+  onClick={() => {
+    if (!pendingClass || !pendingFee) return;
+
+    // 🔥 REPORT pending values set pannrom
+    setReportPendingClass(pendingClass);
+    setReportPendingFee(pendingFee);
+
+    setShowPendingPopup(false);
+  }}
+>
+  OK
+</button>
+
 
         <button onClick={() => setShowPendingPopup(false)}>
           Cancel
@@ -369,7 +551,7 @@ const getBalance = (studentId, fee) => {
   </div>
 )}
 {incomeTab === "pending" && pendingClass && pendingFee && (
-  <div className="section-card pop print-area">
+  <div className="section-card pop ">
     <h3 className="section-title">
       Pending Balance – Class {pendingClass}
     </h3>
@@ -409,8 +591,9 @@ const getBalance = (studentId, fee) => {
 
 
           {/* 🆕 NEW ADMISSION */}
-          {incomeTab === "new" && (
-             <div className={`section-card pop ${isPrintActive("new") ? "print-area" : ""}`}>
+          {incomeTab === "new" &&  (
+  <div className="section-card pop ">
+
               <h3 className="section-title">New Admission Payments</h3>
 
               <div className="nice-table-wrapper">
@@ -425,7 +608,7 @@ const getBalance = (studentId, fee) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {applyDateFilter(incomeList)
+                    {incomeList
   .filter(i => i.isNew === true)
 
 
@@ -446,7 +629,8 @@ const getBalance = (studentId, fee) => {
 
           {/* 👨‍🎓 OLD ADMISSION */}
           {incomeTab === "old" && (
-  <div className={`section-card pop ${isPrintActive("old") ? "print-area" : ""}`}>
+  <div className="section-card pop">
+
 
               <h3 className="section-title">Old Admission Payments</h3>
 
@@ -461,7 +645,7 @@ const getBalance = (studentId, fee) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {applyDateFilter(incomeList)
+                  {incomeList
                       .filter(i => i.isNew === false)
 
                       .map(i => (
@@ -480,7 +664,8 @@ const getBalance = (studentId, fee) => {
 
           {/* ✅ FULL PAYMENT */}
           {incomeTab === "full" && (
-  <div className={`section-card pop ${isPrintActive("full") ? "print-area" : ""}`}>
+  <div className="section-card pop">
+
 
               <h3 className="section-title">Full Payment Students</h3>
 
@@ -496,7 +681,7 @@ const getBalance = (studentId, fee) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {applyDateFilter(incomeList)
+                  {incomeList
                       .filter(i => i.paymentType === "full")
 
                       .map(i => (
@@ -518,7 +703,8 @@ const getBalance = (studentId, fee) => {
 
           {/* 🟡 PARTIAL PAYMENT */}
           {incomeTab === "partial" && (
-  <div className={`section-card pop ${isPrintActive("partial") ? "print-area" : ""}`}>
+ <div className="section-card pop">
+
 
               <h3 className="section-title">Partial Payment Students</h3>
 
@@ -534,7 +720,7 @@ const getBalance = (studentId, fee) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {applyDateFilter(incomeList)
+                  {incomeList
                       .filter(i => i.paymentType === "partial")
 
                       .map(i => (
@@ -555,7 +741,8 @@ const getBalance = (studentId, fee) => {
             </div>
           )}
 {incomeTab === "term1" && (
-  <div className={`section-card pop ${isPrintActive("term1") ? "print-area" : ""}`}>
+  <div className="section-card pop">
+
 
     <h3 className="section-title">Term 1 Payments</h3>
 
@@ -587,7 +774,8 @@ const getBalance = (studentId, fee) => {
   </div>
 )}
 {incomeTab === "term2" && (
-  <div className={`section-card pop ${isPrintActive("term2") ? "print-area" : ""}`}>
+  <div className="section-card pop">
+
 
     <h3 className="section-title">Term 1 Payments</h3>
 
@@ -602,7 +790,7 @@ const getBalance = (studentId, fee) => {
         </tr>
       </thead>
       <tbody>
-        {applyDateFilter(incomeList)
+      {incomeList
           .filter(i => i.paymentType === "term2")
           .map(i => (
             <tr key={i.id}>
@@ -619,7 +807,8 @@ const getBalance = (studentId, fee) => {
   </div>
 )}
 {incomeTab === "term3" && (
-  <div className={`section-card pop ${isPrintActive("term3") ? "print-area" : ""}`}>
+  <div className="section-card pop">
+
 
     <h3 className="section-title">Term 1 Payments</h3>
 
@@ -634,7 +823,7 @@ const getBalance = (studentId, fee) => {
         </tr>
       </thead>
       <tbody>
-        {applyDateFilter(incomeList)
+      {incomeList
           .filter(i => i.paymentType === "term3")
           .map(i => (
             <tr key={i.id}>
