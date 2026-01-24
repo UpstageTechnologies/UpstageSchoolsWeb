@@ -74,7 +74,7 @@ const TeacherLogin = () => {
   return (
     <>
       
-      <div class="login-page">
+      <div className="login-page">
       <div className="wrapper">
       <nav className="nav-bar">
         

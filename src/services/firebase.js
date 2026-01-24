@@ -14,7 +14,7 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig,"schooltrain-main");
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
