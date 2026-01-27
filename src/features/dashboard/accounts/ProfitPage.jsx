@@ -8,11 +8,6 @@ import OfficeStaff from "../OfficeStaff";
 import BillPage from "./BillPage";   
 import "../../dashboard_styles/IE.css";
 import {  FaTrash } from "react-icons/fa";
-
-
-
-
-
 export default function ProfitPage({
   adminUid,
   setActivePage,
@@ -22,8 +17,6 @@ export default function ProfitPage({
   trialExpiresAt,
   showUpgrade
 }) {
-
-
   const role = localStorage.getItem("role");
 const isOfficeStaff = role === "office_staff";
 
@@ -37,20 +30,18 @@ const [showClassDropdown, setShowClassDropdown] = useState(false);
 const [showExpenseType, setShowExpenseType] = useState(false);
 const [showSalaryRole, setShowSalaryRole] = useState(false);
 const [showSalaryPosition, setShowSalaryPosition] = useState(false);
-// salary
 const [salaryRole, setSalaryRole] = useState("");          
 const [salaryPosition, setSalaryPosition] = useState("");
 const [selectedFees, setSelectedFees] = useState([]);
 const [showFeesDropdown, setShowFeesDropdown] = useState(false);
+const [newClassSearch, setNewClassSearch] = useState("");
+const [showNewClassDropdown, setShowNewClassDropdown] = useState(false);
+
 
 const [entryType, setEntryType] = useState("");
 const [feesMaster, setFeesMaster] = useState([]);
 const [showIncomeType, setShowIncomeType] = useState(false);
 const [incomeType, setIncomeType] = useState("");
-
-
-
-
 const getSalaryFromInventory = (role, position, teacherName) => {
   return feesMaster.find(
     f =>
@@ -74,6 +65,17 @@ const positions = {
 
 const [categorySearch, setCategorySearch] = useState("");
 const [positionSearch, setPositionSearch] = useState("");
+const [classes, setClasses] = useState([]);
+useEffect(() => {
+  if (!adminUid) return;
+
+  const ref = collection(db, "users", adminUid, "Classes");
+
+  return onSnapshot(ref, snap => {
+    setClasses(snap.docs.map(d => d.data().name));
+  });
+
+}, [adminUid]);
 
 const filteredCategories = categories.filter(c =>
   c.toLowerCase().includes(categorySearch.toLowerCase())
@@ -97,7 +99,7 @@ const [teacherSearch, setTeacherSearch] = useState("");
 const [showTeacherDropdown, setShowTeacherDropdown] = useState(false);
 const [staffSearch, setStaffSearch] = useState("");
 const [showStaffDropdown, setShowStaffDropdown] = useState(false);
-const [showStaffType, setShowStaffType] = useState(false);
+
 
 
 
@@ -206,8 +208,13 @@ const loaded = incomeLoaded && expenseLoaded;
 
 
   const isFullPayment = newPayType === "full";
+  const feeDiscountPercent = selectedFees[0]?.discount || 0;
 
-  const discount = isFullPayment ? newTotal * 0.05 : 0;
+  const discount =
+    newPayType === "full"
+      ? (selectedFees[0]?.amount || 0) * (feeDiscountPercent / 100)
+      : 0;
+  
   
 
 
@@ -246,13 +253,7 @@ const filteredPaymentTypes = paymentTypes.filter(p =>
 
   // EXPENSE
   const [expenseMode, setExpenseMode] = useState("");
-  // 🔥 STAFF MODE (NEW / OLD)
-const [staffMode, setStaffMode] = useState(""); 
-// "new" | "old"
-
-// New staff details
-const [newStaffName, setNewStaffName] = useState("");
-const [newStaffPhone, setNewStaffPhone] = useState("");
+ 
 
 
   
@@ -478,7 +479,13 @@ if (alreadyPaid) {
       
       // ✅ fee amount only
       const total = fee.amount;
-      const discountAmount = newPayType === "full" ? total * 0.05 : 0;
+      const feeDiscountPercent = fee.discount || 0;
+
+      const discountAmount =
+        newPayType === "full"
+          ? total * (feeDiscountPercent / 100)
+          : 0;
+      
       const payableAmount = total - discountAmount;
       
       
@@ -640,12 +647,10 @@ const generatedParentId = `P-${Date.now()}`;
     
   
     let discount = 0;
-  
-    // 5% discount ONLY if first payment and FULL
     if (paidSoFar === 0 && oldPayType === "full") {
-      discount = total * 0.05;
+      discount = total * ((fee.discount || 0) / 100);
     }
-  
+    
     const payable = total - discount;
 
     const balanceBefore = payable - paidSoFar;
@@ -749,13 +754,6 @@ const todayExpense = expenseList
   .reduce((t, e) => t + Number(e.amount || 0), 0);
 
 const todayProfit = todayIncome - todayExpense;
-
-
-  
-  
-
-
-  /* ---------- EXPENSE: OTHERS ---------- */
   const navigate = useNavigate();
 
   const saveExpense = async ()=>{
@@ -771,93 +769,31 @@ const todayProfit = todayIncome - todayExpense;
 
     setExName(""); setExAmt("");
   };
+/* ---------- EXPENSE: SALARY ---------- */
+const saveSalary = async () => {
 
-  /* ---------- EXPENSE: SALARY ---------- */
-  const saveSalary = async () => {
+  if (!salaryRole || !salaryPosition || !selName || !manualSalary || !entryDate) {
+    alert("Select category, position, name & date");
+    return;
+  }
 
-    if (!salaryRole || !salaryPosition || !entryDate) {
-      alert("Fill category, position & date");
-      return;
-    }
-  
-    // ================= OLD STAFF =================
-    if (staffMode === "old") {
-      if (!selName || !manualSalary) {
-        alert("Select staff & salary");
-        return;
-      }
-  
-      await addDoc(expensesRef, {
-        type: "salary",
-        role: salaryRole,
-        position: salaryPosition,
-        name: selName,
-        amount: Number(manualSalary),
-        date: entryDate,
-        createdAt: new Date()
-      });
-    }
-  
-    // ================= NEW STAFF =================
-    if (staffMode === "new") {
-      if (!newStaffName || !newStaffPhone || !manualSalary) {
-        alert("Fill new staff details");
-        return;
-      }
-    
-      // 🔹 STEP A: CREATE STAFF
-      const staffDocRef = await addDoc(
-        collection(db, "users", adminUid, "teachers"),
-        {
-          name: newStaffName,
-          phone: newStaffPhone,
-          category: salaryRole,
-          nonTeachingRole:
-            salaryRole === "Non Teaching Staff" ? salaryPosition : "",
-          teacherId: `ST-${Date.now()}`,
-          assignedClasses: [],  
-          createdAt: new Date()
-        }
-      );
-    
-      // 🔹 STEP B: SAVE EXPENSE (monthly payment)
-      await addDoc(expensesRef, {
-        type: "salary",
-        role: salaryRole,
-        position: salaryPosition,
-        name: newStaffName,
-        staffId: staffDocRef.id,
-        amount: Number(manualSalary),
-        date: entryDate,
-        createdAt: new Date()
-      });
-    
-      // 🔹 STEP C: SAVE SALARY IN INVENTORY (FeesMaster)
-      await addDoc(
-        collection(db, "users", adminUid, "Account", "accounts", "FeesMaster"),
-        {
-          type: "salary",
-          category: salaryRole,
-          position: salaryPosition,
-          name: newStaffName,
-          teacherId: staffDocRef.id,
-          amount: Number(manualSalary),
-          createdAt: new Date()
-        }
-      );
-    }
-    
-    
-  
-    // 🔄 RESET
-    setStaffMode("");
-    setNewStaffName("");
-    setNewStaffPhone("");
-    setSalaryRole("");
-    setSalaryPosition("");
-    setSelName("");
-    setManualSalary("");
-  };
+  await addDoc(expensesRef, {
+    type: "salary",
+    role: salaryRole,
+    position: salaryPosition,
+    name: selName,
+    amount: Number(manualSalary),
+    date: entryDate,
+    createdAt: new Date()
+  });
+
+  // 🔄 RESET
+  setSalaryRole("");
+  setSalaryPosition("");
+  setSelName("");
+  setManualSalary("");
+};
+
   
   
 // how much paid for a specific fee
@@ -1010,14 +946,6 @@ const deleteEntry = async (row) => {
     alert("Failed to delete entry");
   }
 };
-
-useEffect(() => {
-  setSelName("");
-  setManualSalary("");
-  setNewStaffName("");
-  setNewStaffPhone("");
-}, [staffMode]);
-
 
 
 
@@ -1271,23 +1199,53 @@ useEffect(() => {
   placeholder="Parent Name"
   value={newParent}
   onChange={e => setNewParent(e.target.value)}
-/>
+/>{/* CLASS DROPDOWN (NEW ADMISSION) */}
+<div className="student-dropdown">
 
+  <input
+    placeholder="Select Class"
+    value={newClass || newClassSearch}
+    onChange={e => {
+      setNewClassSearch(e.target.value);
+      setNewClass("");
+      setShowNewClassDropdown(true);
+    }}
+    onFocus={() => setShowNewClassDropdown(true)}
+  />
 
+  {showNewClassDropdown && (
+    <div className="student-dropdown-list">
 
+      {classes
+        .filter(c =>
+          c.toLowerCase().includes(newClassSearch.toLowerCase())
+        )
+        .map(cls => (
+          <div
+            key={cls}
+            className="student-option"
+            onClick={() => {
+              setNewClass(cls);
+              setNewClassSearch("");
+              setShowNewClassDropdown(false);
+              setNewTotal(getClassTotal(cls));
+            }}
+          >
+            Class {cls}
+          </div>
+        ))}
 
-        <select
-          value={newClass}
-          onChange={e => {
-            setNewClass(e.target.value);
-            setNewTotal(getClassTotal(e.target.value));
-          }}
-        >
-          <option value="">Class</option>
-          {["PreKG","LKG","UKG","1","2","3","4","5","6","7","8","9","10","11","12"].map(c => (
-            <option key={c}>{c}</option>
-          ))}
-        </select>
+      {classes.length === 0 && (
+        <div className="student-option muted">
+          No classes found
+        </div>
+      )}
+
+    </div>
+  )}
+
+</div>
+
         {/* ===== SELECT FEES FROM INVENTORY ===== */}
 <div className="student-dropdown">
   <input
@@ -1298,14 +1256,11 @@ useEffect(() => {
         : ""
     }
     readOnly
-    onClick={()=>setShowFeesDropdown(!showFeesDropdown)}
-  />
-
+    onClick={()=>setShowFeesDropdown(!showFeesDropdown)}/>
   {showFeesDropdown && (
     <div className="student-dropdown-list">
       {getClassFees(newClass || oldClass).map(fee => {
         const already = selectedFees.some(x=>x.id===fee.id);
-
         return (
           <div
             key={fee.id}
@@ -1314,9 +1269,7 @@ useEffect(() => {
             onClick={()=>{
               setSelectedFees([fee]);     // only one selection
               setShowFeesDropdown(false); // auto close dropdown
-            }}
-            
-          >
+            }}>
             {fee.name} — ₹{fee.amount}
           </div>
         );
@@ -1324,16 +1277,9 @@ useEffect(() => {
     </div>
   )}
 </div>
-
-
-
 {selectedFees[0] && (
   <input readOnly value={`Fee Total ₹${selectedFees[0].amount}`} />
-)}
-
-
-
-        <div className="student-dropdown">
+)} <div className="student-dropdown">
           
   <input
     placeholder="Select Payment Type"
@@ -1432,7 +1378,7 @@ useEffect(() => {
 
 {showClassDropdown && (
   <div className="student-dropdown-list">
-    {["PreKG","LKG","UKG","1","2","3","4","5","6","7","8","9","10","11","12"].map(cls => (
+    {classes.map(cls => (
       <div
         key={cls}
         className="student-option"
@@ -1587,7 +1533,12 @@ useEffect(() => {
     readOnly
     value={`Payable ₹${
       getFeePaid(oldStudent, selectedFees[0].id) === 0
-        ? Math.ceil(selectedFees[0].amount * 0.95)
+        ? Math.ceil(
+          selectedFees[0].amount -
+          selectedFees[0].amount *
+            ((selectedFees[0].discount || 0) / 100)
+        )
+        
         : getFeeBalance(oldStudent, selectedFees[0])
     }`}
   />
@@ -1681,63 +1632,6 @@ useEffect(() => {
   {expenseMode === "salary" && (
   <>
     <div className="entry-row">
-
-      {/* ===== STAFF TYPE (NEW / OLD) ===== */}
-      <div className="popup-select">
-  <div
-    className="popup-input"
-    onClick={() => setShowStaffType(!showStaffType)}
-  >
-    {staffMode
-      ? staffMode === "new"
-        ? "New Staff"
-        : "Old Staff"
-      : "Staff Type"}
-    <span>▾</span>
-  </div>
-
-  {showStaffType && (
-    <div className="popup-menu">
-      <div
-        onClick={() => {
-          setStaffMode("new");
-          setShowStaffType(false);   // 🔥 CLOSE
-        }}
-      >
-        New Staff
-      </div>
-
-      <div
-        onClick={() => {
-          setStaffMode("old");
-          setShowStaffType(false);   // 🔥 CLOSE
-        }}
-      >
-        Old Staff
-      </div>
-    </div>
-  )}
-</div>
-
-
-      {/* ===== NEW STAFF BASIC DETAILS ===== */}
-{staffMode === "new" && (
-  <>
-    <input
-      placeholder="Staff Name"
-      value={newStaffName}
-      onChange={e => setNewStaffName(e.target.value)}
-    />
-
-    <input
-      placeholder="Phone Number"
-      value={newStaffPhone}
-      onChange={e => setNewStaffPhone(e.target.value)}
-    />
-  </>
-)}
-
-  {/* CATEGORY */}
 <div className="student-dropdown">
   <input
     placeholder="Select Category"
@@ -1813,13 +1707,9 @@ useEffect(() => {
     </div>
   )}
 </div>
+{salaryRole === "Teaching Staff" &&
+ salaryPosition === "Teacher" && (
 
-
-
-      {/* Name */}
-      {staffMode === "old" &&
-  salaryRole === "Teaching Staff" &&
-  salaryPosition === "Teacher" && (
     <div className="student-dropdown">
       <input
         placeholder="Select Teacher"
@@ -1860,9 +1750,9 @@ useEffect(() => {
       )}
     </div>
 )}
-{staffMode === "old" &&
-  salaryRole === "Non Teaching Staff" &&
-  salaryPosition && (
+{salaryRole === "Non Teaching Staff" &&
+ salaryPosition && (
+
     <div className="student-dropdown">
       <input
         placeholder="Select Name"
@@ -1902,19 +1792,12 @@ useEffect(() => {
       )}
     </div>
 )}
-
-
-
-
-
-
-      {/* Salary */}
       <input
   type="number"
   placeholder="Salary"
   value={manualSalary}
   onChange={e => setManualSalary(e.target.value)}
-  readOnly={staffMode === "old"}   // 🔥 IMPORTANT LINE
+  readOnly
 />
 
     </div>
@@ -1931,9 +1814,6 @@ useEffect(() => {
     </div>
   </>
 )}
-
-
-  {/* ========== OTHERS ========== */}
   {expenseMode==="others" && (
     <div className="entry-row">
       <input placeholder="Expense name" value={exName} onChange={e=>setExName(e.target.value)} />
@@ -1945,17 +1825,17 @@ useEffect(() => {
   )}
 </>
 )}
-
-
-
-        {/* SET FEES */}
         {entryType==="fees" && (
           <div className="form-grid">
-            <select value={feeClass} onChange={e=>setFeeClass(e.target.value)}>
-              <option value="">Class</option>
-              {["PreKG","LKG","UKG","1","2","3","4","5","6","7","8","9","10","11","12"]
-                .map(c=><option key={c}>{c}</option>)}
-            </select>
+            <select value={feeClass} onChange={e => setFeeClass(e.target.value)}>
+    <option value="">Class</option>
+
+    {classes.map(c => (
+      <option key={c} value={c}>
+        {c}
+      </option>
+    ))}
+  </select>
 
             <input placeholder="Fee Name" value={feeName} onChange={e=>setFeeName(e.target.value)} />
             <input type="number" placeholder="Amount" value={feeAmount} onChange={e=>setFeeAmount(e.target.value)} />
@@ -2011,12 +1891,6 @@ Save Fee</button>
         studentId: null
       }))
   ];
-  
-  
-    
-    
-    // sort by date (latest first)
-    // SORT: Date (latest first) → then Description A-Z
 all.sort((a, b) => {
   if (a.date !== b.date) {
     return a.date > b.date ? -1 : 1;   // latest date first
@@ -2118,8 +1992,6 @@ all.sort((a, b) => {
     });
   })()}
 </tbody>
-
-
           </table>
           <div className="pagination-bar">
   <div className="tab-buttons">

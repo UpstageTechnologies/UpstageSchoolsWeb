@@ -8,6 +8,7 @@ import React, { useEffect, useState } from "react";
   import Approvals from "./Approvals";
   import Courses from "./Courses";
   import Profile from "./Profile";
+  import Settings from "./accounts/Settings";
   import {
     FaUserCircle,
     FaUserGraduate,
@@ -453,7 +454,7 @@ useEffect(() => {
                 </li>
               )}
               <li onClick={() => { setActivePage("teacher"); setAccountMenuOpen(false); }}className={activePage === "teacher" ? "active" : ""}>
-                Teacher
+                Teachers
               </li>
               <li onClick={() => { setActivePage("parent"); setAccountMenuOpen(false); }}className={activePage === "parent" ? "active" : ""}>
                 Parent
@@ -462,7 +463,7 @@ useEffect(() => {
                 Student
               </li>
               <li onClick={() => { setActivePage("office_staff"); setAccountMenuOpen(false); }}className={activePage === "office_staff" ? "active" : ""}>
-                Staff
+                Non Teachers
               </li>
             </ul>
           )}
@@ -578,7 +579,6 @@ useEffect(() => {
     </>
   )}
 </ul>
-
         </div>
 
         {/* ================= MAIN ================= */}
@@ -878,6 +878,10 @@ useEffect(() => {
               {activePage === "profile" && (
     <Profile />
   )}
+  {activePage === "settings" && (
+  <Settings adminUid={adminUid} />
+)}
+
   
 
   

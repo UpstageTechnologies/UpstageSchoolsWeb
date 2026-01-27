@@ -1,23 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../../services/firebase";
-
 import "../../dashboard_styles/ac.css";
-
-
 export default function ExpensesPage({ adminUid, setActivePage }) {
 
   const [incomeList, setIncomeList] = useState([]);
   const [expenseList, setExpenseList] = useState([]);
+  
 
   const today = new Date().toISOString().split("T")[0];
   const role = localStorage.getItem("role");
   const isOfficeStaff = role === "office_staff";
-
-  
-
-  
-  /* 🔥 FIREBASE */
   useEffect(() => {
     if (!adminUid) return;
     return onSnapshot(
@@ -38,24 +31,13 @@ export default function ExpensesPage({ adminUid, setActivePage }) {
     if (!total || total <= 0) return 0;
     return Math.min((value / total) * 100, 100);
   };
-  
-  // base = highest absolute value (like attendance total)
-
-  
-// FEES = student income only
 const totalFees = incomeList
   .filter(i => i.studentId)
   .reduce((s, i) => s + Number(i.paidAmount || 0), 0);
-
-// OTHER income (Source)
 const otherIncome = incomeList
   .filter(i => !i.studentId)
   .reduce((s, i) => s + Number(i.paidAmount || 0), 0);
-
-// TOTAL income
 const totalIncome = totalFees + otherIncome;
-
-// TOTAL expense
 const totalExpense = expenseList.reduce(
   (s, e) => s + Number(e.amount || 0), 0
 );
@@ -98,7 +80,6 @@ const todayProfit = todayIncome - todayExpense;
 
 
   const max = Math.max(totalIncome, totalExpense, Math.abs(profit), 1);
-
   const monthlyProfit = (() => {
     const map = {};
   
@@ -108,30 +89,53 @@ const todayProfit = todayIncome - todayExpense;
       map[m] = map[m] || { income: 0, expense: 0 };
       map[m].income += Number(i.paidAmount || 0);
     });
-    
-    
-    
-    
   
     expenseList.forEach(e => {
       if (!e.date) return;
-      const m = e.date.slice(0, 7);
+      const m = e.date.slice(0,7);
       map[m] = map[m] || { income: 0, expense: 0 };
       map[m].expense += Number(e.amount || 0);
     });
   
-    return Object.keys(map).sort().map(m => ({
+    const arr = Object.keys(map).sort().map(m => ({
       month: m,
       profit: map[m].income - map[m].expense
     }));
-  })();
   
-
+    return arr;
+  })(); const maxProfitValue = Math.max(
+    ...monthlyProfit.map(m => Math.abs(m.profit)),
+    1
+  ) * 1.2;  
+  const getY = (profit) => {
+    const mid = 60;   // center line
+    const range = 45;
+  
+    if (profit === 0) return mid;
+  
+    const ratio = Math.min(Math.abs(profit) / maxProfitValue, 1);
+  
+    if (profit > 0) {
+      return mid - ratio * range;   // profit goes UP
+    } else {
+      return mid + ratio * range;   // loss goes DOWN
+    }
+  };
+  const POINT_GAP = 160; 
+  const chartWidth = monthlyProfit.length * POINT_GAP;
   return (
     <>
+    
       {!isOfficeStaff && (
         <>
+        
+        
   <div className="summary2-scroll">
+    {/* SETTINGS ICON */}
+    <div className="settings-icon" onClick={() => setActivePage("settings")}>
+  <i className="fa fa-cog"></i>
+</div> 
+
   <div className="summary2-layout">
 
 
@@ -153,37 +157,64 @@ const todayProfit = todayIncome - todayExpense;
 
   {/* Monthly Profit Flow */}
   <div className="monthly-flow2">
+  <svg
+  className="trend-line"
+  viewBox={`0 0 ${chartWidth} 120`}
+  width={chartWidth}
+  preserveAspectRatio="none"
+><line
+  x1="0"
+  y1="60"
+  x2={chartWidth}
+  y2="60"
+  stroke="#ddd"
+  strokeWidth="2"
+/>
 
-    <svg className="trend-line" viewBox="0 0 600 120" preserveAspectRatio="none">
-      <path
-        d="M 0 80 L 200 40 L 400 70 L 600 30"
-        fill="none"
-        stroke="#8ab6f9"
-        strokeWidth="4"
-        strokeLinecap="round"
-      />
-    </svg>
 
-    {monthlyProfit.map((m, i) => (
-      <div
-        key={i}
-        className={`flow-item ${m.profit >= 0 ? "green" : "orange"}`}
-        style={{
-          left: `${i * 35}%`,
-          top: i % 2 === 0 ? "60px" : "15px"
-        }}
-      >
-        <small>{m.month}</small>
-        <b>₹{m.profit.toLocaleString("en-IN")}</b>
-      </div>
-    ))}
+<path
+  d={
+    monthlyProfit
+      .map((m, i) => {
+        const x = i * POINT_GAP;
 
+        const y = getY(m.profit);
+        return `${i === 0 ? "M" : "L"} ${x} ${y}`;
+      })
+      .join(" ")
+  }
+  fill="none"
+  stroke="#8ab6f9"
+  strokeWidth="4"
+  strokeLinecap="round"
+/>
+
+
+</svg>
+
+
+{monthlyProfit.map((m, i) => {
+const y = getY(m.profit);
+
+
+  return (
+    <div
+      key={i}
+      className={`flow-item ${m.profit >= 0 ? "green" : "orange"}`}
+      style={{
+        left: `${i * POINT_GAP}px`,
+        top: `${y}px`
+      }}
+    >
+      <small>{m.month}</small>
+      <b>₹{m.profit.toLocaleString("en-IN")}</b>
+    </div>
+  );
+})}
   </div>
 </div>
-
-
-{/* ---------- RIGHT SIDE : TOTAL PILLS ---------- */}
 <div className="summary2-wrapper">
+  
 
   <div className="summary2-title">Overall Accounts</div>
 

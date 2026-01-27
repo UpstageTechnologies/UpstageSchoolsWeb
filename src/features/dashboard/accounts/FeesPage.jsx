@@ -665,218 +665,60 @@ const getBalance = (studentId, fee) => {
               </div>
             </div>
           )}
-
-          {/* ✅ FULL PAYMENT */}
-          {incomeTab === "full" && (
-  <div className="section-card pop">
-
-
-              <h3 className="section-title">Full Payment Students</h3>
-
-              <div className="nice-table-wrapper">
-                <table className="nice-table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Class</th>
-                      <th>Paid</th>
-                      <th>Balance</th>
-                      <th>Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                  {incomeList
-                      .filter(i => i.paymentType === "full")
-
-                      .map(i => (
-                        <tr key={i.id}>
-                          <td data-label="Student">{i.studentName}</td>
-                          <td data-label="Class">{i.className}</td>
-                          <td data-label="Paid">₹{i.paidAmount}</td>
-                          <td>
-                            ₹0
-                          </td>
-                          <td>{i.date}</td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* 🟡 PARTIAL PAYMENT */}
-          {incomeTab === "partial" && (
- <div className="section-card pop">
-
-
-              <h3 className="section-title">Partial Payment Students</h3>
-
-              <div className="nice-table-wrapper">
-                <table className="nice-table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Class</th>
-                      <th>Paid</th>
-                      <th>Balance</th>
-                      <th>Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                  {incomeList
-                      .filter(i => i.paymentType === "partial")
-
-                      .map(i => (
-                        <tr key={i.id}>
-                          <td data-label="Student">{i.studentName}</td>
-                          <td data-label="Class">{i.className}</td>
-                          <td data-label="Paid">₹{i.paidAmount}</td>
-                          <td>
-                          ₹{getFeeBalance(i.studentId, i.feeId)}
-
-                          </td>
-                          <td>{i.date}</td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-{incomeTab === "term1" && (
-  <div className="section-card pop">
-
-
-    <h3 className="section-title">Term 1 Payments</h3>
-
-    <table className="nice-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Class</th>
-          <th>Paid</th>
-          <th>Balance</th>
-          <th>Date</th>
-        </tr>
-      </thead>
-      <tbody>
-        {applyDateFilter(incomeList)
-          .filter(i => i.paymentType === "term1")
-          .map(i => (
-            <tr key={i.id}>
-              <td data-label="Student">{i.studentName}</td>
-              <td data-label="Class">{i.className}</td>
-              <td data-label="Paid">₹{i.paidAmount}</td>
-              <td>₹{getFeeBalance(i.studentId, i.feeId)}</td>
-
-              <td>{i.date}</td>
-            </tr>
-          ))}
-      </tbody>
-    </table>
-  </div>
+{incomeTab==="full"&&(
+<div className="section-card pop"><h3 className="section-title">Full Payment Students</h3>
+<div className="nice-table-wrapper"><table className="nice-table">
+<thead><tr><th>Name</th><th>Class</th><th>Paid</th><th>Balance</th><th>Date</th></tr></thead>
+<tbody>{incomeList.filter(i=>i.paymentType==="full").map(i=>(
+<tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td>₹0</td><td>{i.date}</td></tr>
+))}</tbody>
+</table></div></div>
 )}
-{incomeTab === "term2" && (
-  <div className="section-card pop">
-
-
-    <h3 className="section-title">Term 1 Payments</h3>
-
-    <table className="nice-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Class</th>
-          <th>Paid</th>
-          <th>Balance</th>
-          <th>Date</th>
-        </tr>
-      </thead>
-      <tbody>
-      {incomeList
-          .filter(i => i.paymentType === "term2")
-          .map(i => (
-            <tr key={i.id}>
-              <td data-label="Student">{i.studentName}</td>
-              <td data-label="Class">{i.className}</td>
-              <td data-label="Paid">₹{i.paidAmount}</td>
-              <td>₹{getFeeBalance(i.studentId, i.feeId)}</td>
-
-              <td>{i.date}</td>
-            </tr>
-          ))}
-      </tbody>
-    </table>
-  </div>
-)}
-{incomeTab === "term3" && (
-  <div className="section-card pop">
-
-
-    <h3 className="section-title">Term 1 Payments</h3>
-
-    <table className="nice-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Class</th>
-          <th>Paid</th>
-          <th>Balance</th>
-          <th>Date</th>
-        </tr>
-      </thead>
-      <tbody>
-      {incomeList
-          .filter(i => i.paymentType === "term3")
-          .map(i => (
-            <tr key={i.id}>
-              <td data-label="Student">{i.studentName}</td>
-              <td data-label="Class">{i.className}</td>
-              <td data-label="Paid">₹{i.paidAmount}</td>
-              <td>₹{getFeeBalance(i.studentId, i.feeId)}</td>
-
-              <td>{i.date}</td>
-            </tr>
-          ))}
-      </tbody>
-    </table>
-  </div>
+          {incomeTab==="partial"&&(
+<div className="section-card pop"><h3 className="section-title">Partial Payment Students</h3>
+<div className="nice-table-wrapper"><table className="nice-table">
+<thead><tr><th>Name</th><th>Class</th><th>Paid</th><th>Balance</th><th>Date</th></tr></thead>
+<tbody>{incomeList.filter(i=>i.paymentType==="partial").map(i=>(
+<tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td>₹{getFeeBalance(i.studentId,i.feeId)}</td><td>{i.date}</td></tr>
+))}</tbody>
+</table></div></div>
 )}
 
-        </>
-      )}
-
-      {/* ================= EXPENSE ================= */}
-      {mode === "expenses" && (
-        <div className="section-card pop">
-          <h3 className="section-title">Expenses Details</h3>
-
-          <div className="nice-table-wrapper">
-            <table className="nice-table">
-              <thead>
-                <tr>
-                  <th>Type</th>
-                  <th>Name</th>
-                  <th>Amount</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {expenseList.map(e => (
-                  <tr key={e.id}>
-                    <td data-label="Type">{e.type}</td>
-                    <td data-label="Name">{e.name}</td>
-                    <td data-label="Amount">₹{e.amount}</td>
-                    <td >{e.date}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-    </div>
+{incomeTab==="term1"&&(
+<div className="section-card pop"><h3 className="section-title">Term 1 Payments</h3>
+<table className="nice-table">
+<thead><tr><th>Name</th><th>Class</th><th>Paid</th><th>Balance</th><th>Date</th></tr></thead>
+<tbody>{applyDateFilter(incomeList).filter(i=>i.paymentType==="term1").map(i=>(
+<tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td>₹{getFeeBalance(i.studentId,i.feeId)}</td><td>{i.date}</td></tr>
+))}</tbody>
+</table></div>
+)}
+{incomeTab==="term2"&&(
+<div className="section-card pop"><h3 className="section-title">Term 1 Payments</h3>
+<table className="nice-table">
+<thead><tr><th>Name</th><th>Class</th><th>Paid</th><th>Balance</th><th>Date</th></tr></thead>
+<tbody>{incomeList.filter(i=>i.paymentType==="term2").map(i=>(
+<tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td>₹{getFeeBalance(i.studentId,i.feeId)}</td><td>{i.date}</td></tr>
+))}</tbody>
+</table></div>
+)}
+{incomeTab==="term3"&&(
+<div className="section-card pop"><h3 className="section-title">Term 1 Payments</h3>
+<table className="nice-table">
+<thead><tr><th>Name</th><th>Class</th><th>Paid</th><th>Balance</th><th>Date</th></tr></thead>
+<tbody>{incomeList.filter(i=>i.paymentType==="term3").map(i=>(
+<tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td>₹{getFeeBalance(i.studentId,i.feeId)}</td><td>{i.date}</td></tr>
+))}</tbody>
+</table></div>
+)}</>)}
+      {mode==="expenses"&&(
+<div className="section-card pop"><h3 className="section-title">Expenses Details</h3>
+<div className="nice-table-wrapper"><table className="nice-table">
+<thead><tr><th>Type</th><th>Name</th><th>Amount</th><th>Date</th></tr></thead>
+<tbody>{expenseList.map(e=>(
+<tr key={e.id}><td data-label="Type">{e.type}</td><td data-label="Name">{e.name}</td><td data-label="Amount">₹{e.amount}</td><td>{e.date}</td></tr>
+))}</tbody>
+</table></div></div>
+)}</div>
   );
 }

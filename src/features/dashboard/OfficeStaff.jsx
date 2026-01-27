@@ -121,21 +121,17 @@ const OfficeStaff = () => {
       alert("❌ Another staff uses this ID");
       return;
     }
-
-    /* 🔴 SUB ADMIN → APPROVAL */
     if (roleType === "admin") {
       await addDoc(
-        collection(db, "users", adminUid, "approval_requests"),
+        collection(db, "users", adminUid, "office_staffs"),
         {
-          module: "office_staff",
-          action: editId ? "update" : "create",
-          targetId: editId || null,
-          payload: { ...form, password },
-          status: "pending",
-          createdBy: localStorage.getItem("adminId"),
+          ...form,
+          staffId: staffIdTrimmed,
+          password,
           createdAt: Timestamp.now()
         }
       );
+      
 
       alert("⏳ Sent for approval");
       resetForm();
@@ -160,13 +156,15 @@ const OfficeStaff = () => {
       await addDoc(
         collection(db, "users", adminUid, "office_staffs"),
         {
-          ...form,
-          staffId: staffIdTrimmed,
-          password,
-          role: "office_staff",
-          createdAt: Timestamp.now()
+          name: newStaffName,
+          phone: newStaffPhone,
+          department: "Office",
+          role: salaryPosition,
+          staffId: "OFF" + Date.now(),
+          createdAt: new Date()
         }
       );
+      
     }
 
     resetForm();
@@ -213,8 +211,6 @@ const OfficeStaff = () => {
       photoURL: ""
     });
   };
-
-  /* ================= UI ================= */
   return (
     <div className="teacher-page">
       <div className="teacher-header">
@@ -393,5 +389,4 @@ const OfficeStaff = () => {
     </div>
   );
 };
-
 export default OfficeStaff;

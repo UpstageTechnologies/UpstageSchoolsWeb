@@ -5,110 +5,83 @@ import "../../dashboard_styles/Accounts.css";
 import "../../dashboard_styles/studentSearch.css";
 import {  FaEdit, FaTrash} from "react-icons/fa";
 
+
 export default function Inventory({ adminUid, setActivePage, plan, showUpgrade }) {
-
-  
-
-  /* ================= STATES ================= */
   const [feesMaster, setFeesMaster] = useState([]);
   const [feesLoaded, setFeesLoaded] = useState(false);
   const [showEntryType, setShowEntryType] = useState(false);
-
-
+const [staffMode, setStaffMode] = useState("");
+const [officeStaffs, setOfficeStaffs] = useState([]);
+const [staffCategories, setStaffCategories] = useState([]);
+const [newStaffName, setNewStaffName] = useState("");
+const [newStaffPhone, setNewStaffPhone] = useState("");
+const [showStaffType, setShowStaffType] = useState(false);
   const [teachers, setTeachers] = useState([]);
   const [teacherSearch, setTeacherSearch] = useState("");
   const [showTeacherDropdown, setShowTeacherDropdown] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState(null);
-
   const [showClassDropdown, setShowClassDropdown] = useState(false);
   const [classSearch, setClassSearch] = useState("");
-  const classes = ["PreKG","LKG","UKG","1","2","3","4","5","6","7","8","9","10","11","12"];
+  const [classes, setClasses] = useState([]);
   const [categorySearch, setCategorySearch] = useState("");
 const [positionSearch, setPositionSearch] = useState("");
 const [salaryCategory, setSalaryCategory] = useState("");
-
 const [showCategory, setShowCategory] = useState(false);
 const [showPosition, setShowPosition] = useState(false);
-
 const [entrySearch, setEntrySearch] = useState("");
 const [showEntryDropdown, setShowEntryDropdown] = useState(false);
-
 const [incomeList, setIncomeList] = useState([]);
 const [expenseList, setExpenseList] = useState([]);
 const [feesList, setFeesList] = useState([]);
-
-
 const [editId, setEditId] = useState(null);
-
 const [staffSearch, setStaffSearch] = useState("");
 const [showStaffDropdown, setShowStaffDropdown] = useState(false);
-
-
-
-
 const entryTypes = ["Fees", "Salary"];
 
 const filteredEntryTypes = entryTypes.filter(t =>
   t.toLowerCase().includes(entrySearch.toLowerCase())
-);
-
-const categories = [
+);const [categories, setCategories] = useState([
   "Teaching Staff",
   "Non Teaching Staff"
-];
+]);
 
-const positions = {
+const [positions, setPositions] = useState({
   "Teaching Staff": ["Teacher"],
   "Non Teaching Staff": ["Helper", "ECA Staff"]
-};
-
-
-
-
+});
 const filteredCategories = categories.filter(c =>
-  c.toLowerCase().includes(categorySearch.toLowerCase())
-);
-
+  c.toLowerCase().includes(categorySearch.toLowerCase()));
 const filteredPositions = (positions[salaryCategory] || []).filter(p =>
   p.toLowerCase().includes(positionSearch.toLowerCase())
 );
-
-  const filteredClasses = classes.filter(c =>
-    c.toLowerCase().includes(classSearch.toLowerCase())
-  );
-  
-
-
-
-  
-
   const [entryType, setEntryType] = useState(""); // fees | salary
   const [activeSummary, setActiveSummary] = useState("fees");
 
   const [feeClass, setFeeClass] = useState("");
   const [feeName, setFeeName] = useState("");
   const [feeAmount, setFeeAmount] = useState("");
+  const [discount, setDiscount] = useState("");
+const [discountSearch, setDiscountSearch] = useState("");
+const [showDiscountDropdown, setShowDiscountDropdown] = useState(false);
+const [discountOptions, setDiscountOptions] = useState([
+  "0",
+  "5",
+  "10",
+  "15",
+  "20"
+]);
 
-  
   const [salaryPosition, setSalaryPosition] = useState("");
-
-
-  /* ================= FIRESTORE ================= */
   const feesRef = collection(db, "users", adminUid, "Account", "accounts", "FeesMaster");
   const teachersRef = collection(db, "users", adminUid, "teachers");
-
-  /* ================= LOAD ================= */
   useEffect(() => {
     if (!adminUid) return;
-  
     const incomeRef = collection(db, "users", adminUid, "Account", "accounts", "Income");
     const expenseRef = collection(db, "users", adminUid, "Account", "accounts", "Expenses");
     const feesRef = collection(db, "users", adminUid, "FeesCollection");
-  
     const unsubIncome = onSnapshot(query(incomeRef), snap => {
       setIncomeList(snap.docs.map(d => d.data()));
     });
-  
     const unsubExpense = onSnapshot(query(expenseRef), snap => {
       setExpenseList(snap.docs.map(d => d.data()));
     });
@@ -123,7 +96,18 @@ const filteredPositions = (positions[salaryCategory] || []).filter(p =>
       unsubFees();
     };
   }, [adminUid]);
+  useEffect(() => {
+    if (!adminUid) return;
   
+    const ref = collection(db, "users", adminUid, "office_staffs");
+  
+    return onSnapshot(ref, snap => {
+      setOfficeStaffs(
+        snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      );      
+    });
+  
+  }, [adminUid]);
   useEffect(() => {
     if (!adminUid) return;
 
@@ -147,9 +131,6 @@ const filteredPositions = (positions[salaryCategory] || []).filter(p =>
   .filter(t =>
     t.name?.toLowerCase().includes(teacherSearch.toLowerCase())
   );
-
-
-  /* ================= SAVE ================= */
   const saveFee = async () => {
     if (!entryType || !feeAmount ) return alert("Fill all fields");
 
@@ -159,28 +140,74 @@ const filteredPositions = (positions[salaryCategory] || []).filter(p =>
       await addDoc(feesRef, {
         type: "fees",
         className: String(feeClass).trim(),
-
         name: feeName,
         amount: Number(feeAmount),
+        discount: Number(discount || 0),
         createdAt: new Date()
-      });
+      });      
     }
-
     if (entryType === "salary") {
-      if (!salaryCategory || !salaryPosition || !selectedTeacher)
-        return alert("Select Category, Position & Teacher");
 
-      await addDoc(feesRef, {
-        type: "salary",
-        category: salaryCategory,
-        position: salaryPosition,
-        teacherId: selectedTeacher.id,
-        name: selectedTeacher.name,
-        amount: Number(feeAmount),
-        createdAt: new Date()
-      });
+      // ✅ OLD STAFF
+      if (staffMode === "old") {
+        if (!salaryCategory || !salaryPosition || !selectedTeacher)
+          return alert("Select staff");
+    
+        await addDoc(feesRef, {
+          type: "salary",
+          category: salaryCategory,
+          position: salaryPosition,
+          teacherId: selectedTeacher.id,
+          name: selectedTeacher.name,
+          amount: Number(feeAmount),
+          createdAt: new Date()
+        });
+      }if (staffMode === "new") {
+        if (!salaryCategory || !salaryPosition)
+          return alert("Select category & position");
+      
+        if (!newStaffName || !newStaffPhone)
+          return alert("Enter staff details");
+      
+    // if Teaching Staff
+if (salaryCategory === "Teaching Staff") {
+  await addDoc(
+    collection(db, "users", adminUid, "teachers"),
+    {
+      name: newStaffName,
+      phone: newStaffPhone,
+      category: "Teaching Staff",
+      createdAt: new Date()
     }
+  );
+}
 
+// if Non Teaching Staff
+if (salaryCategory === "Non Teaching Staff") {
+  await addDoc(
+    collection(db, "users", adminUid, "office_staffs"),
+    {
+      name: newStaffName,
+      phone: newStaffPhone,
+      department: "Office",
+      role: salaryPosition,   // Helper / ECA Staff
+      staffId: "OFF" + Date.now(),
+      createdAt: new Date()
+    }
+  );
+}
+await addDoc(feesRef,{
+  type:"salary",
+  category: salaryCategory,
+  position: salaryPosition,
+  name: newStaffName,
+  amount:Number(feeAmount),
+  createdAt:new Date()
+});
+
+      }
+    }
+    
     setEntryType("");
 setFeeClass("");
 setClassSearch("");
@@ -192,6 +219,9 @@ setSalaryPosition("");
 setPositionSearch("");
 setSelectedTeacher(null);
 setTeacherSearch("");
+setStaffMode("");
+setNewStaffName("");
+setNewStaffPhone("");
 
   };
   const changeEntryType = (type) => {
@@ -229,25 +259,30 @@ setTeacherSearch("");
       doc(db, "users", adminUid, "Account", "accounts", "FeesMaster", id)
     );
   };
-
   const startEdit = (item) => {
     setEditId(item.id);
     setFeeClass(item.className || "");
+    setClassSearch("");      // 👈 this line important
     setFeeName(item.name || "");
     setFeeAmount(item.amount || "");
     setEntryType(item.type);
   };
   
+  
   const classOrder = [
     "PreKG","LKG","UKG",
     "1","2","3","4","5","6","7","8","9","10","11","12"
   ];
+  const filteredClasses = classes
+  .sort((a, b) => classOrder.indexOf(a) - classOrder.indexOf(b))
+  .filter(c =>
+    c.toLowerCase().includes(classSearch.toLowerCase())
+  );
   const sortedGroupedFees = Object.entries(groupedFees)
   .sort(
     ([a], [b]) =>
       classOrder.indexOf(a) - classOrder.indexOf(b)
   );
-  
   const updateFee = async () => {
     if (!editId) return;
   
@@ -363,19 +398,21 @@ setTeacherSearch("");
     setShowTeacherDropdown(false);
     setShowStaffDropdown(false);
   }, [salaryCategory, salaryPosition]);
+  useEffect(() => {
+    if (!adminUid) return;
   
-
-  const filteredNonTeachingStaff = teachers
-  .filter(
-    t =>
-      t.category === "Non Teaching Staff" &&
-      t.nonTeachingRole === salaryPosition
-  )
-  .filter(t =>
-    t.name?.toLowerCase().includes(staffSearch.toLowerCase())
+    const ref = collection(db, "users", adminUid, "Classes");
+  
+    return onSnapshot(ref, snap => {
+      setClasses(snap.docs.map(d => d.data().name));
+    });
+  
+  }, [adminUid]);  
+  const filteredNonTeachingStaff = officeStaffs
+  .filter(s => s.role === salaryPosition)
+  .filter(s =>
+    s.name?.toLowerCase().includes(staffSearch.toLowerCase())
   );
-
-  /* ================= UI ================= */
   return (
     <div className="accounts-wrapper fade-in">
 
@@ -459,12 +496,64 @@ setTeacherSearch("");
       )}
     </div>
 
-    <input
-      placeholder="Fee Name"
-      value={feeName}
-      onChange={e=>setFeeName(e.target.value)}
-    />
+    <div className="student-dropdown">
+  <input
+    placeholder="Fee Name"
+    value={feeName}
+    onChange={e=>setFeeName(e.target.value)}
+  />
+</div>
 
+<div className="student-dropdown">
+  <input
+    placeholder="Discount %"
+    value={discount || discountSearch}
+    onChange={e=>{
+      setDiscountSearch(e.target.value);
+      setDiscount("");
+      setShowDiscountDropdown(true);
+    }}
+    onFocus={()=>setShowDiscountDropdown(true)}
+  />
+
+  {showDiscountDropdown && (
+    <div className="student-dropdown-list">
+
+      {discountOptions
+        .filter(d =>
+          d.includes(discountSearch)
+        )
+        .map(d => (
+          <div
+            key={d}
+            className="student-option"
+            onClick={()=>{
+              setDiscount(d);
+              setDiscountSearch("");
+              setShowDiscountDropdown(false);
+            }}
+          >
+            {d} %
+          </div>
+        ))}
+
+      {discountSearch && (
+        <div
+          className="student-option"
+          style={{color:"#2140df"}}
+          onClick={()=>{
+            setDiscountOptions([...discountOptions, discountSearch]);
+            setDiscount(discountSearch);
+            setDiscountSearch("");
+            setShowDiscountDropdown(false);
+          }}
+        >
+          ➕ Add "{discountSearch}%"
+        </div>
+      )}
+    </div>
+  )}
+</div>
     <input
       type="number"
       placeholder="Amount"
@@ -482,11 +571,64 @@ setTeacherSearch("");
 
 
 {entryType === "salary" && (
+  
   <div className="salary-grid">
+    {/* Staff Type */}
+<div className="student-dropdown">
+  <input
+    placeholder="Staff Type"
+    value={
+      staffMode === "new"
+        ? "New Staff"
+        : staffMode === "old"
+        ? "Old Staff"
+        : ""
+    }
+    readOnly
+    onClick={() => setShowStaffType(true)}
+  />
 
-   
+  {showStaffType && (
+    <div className="student-dropdown-list">
+      <div
+        className="student-option"
+        onClick={() => {
+          setStaffMode("new");
+          setShowStaffType(false);
+        }}
+      >
+        New Staff
+      </div>
 
-    {/* Category */}
+      <div
+        className="student-option"
+        onClick={() => {
+          setStaffMode("old");
+          setShowStaffType(false);
+        }}
+      >
+        Old Staff
+      </div>
+    </div>
+  )}
+</div>
+{/* ✅ NEW STAFF INPUTS */}
+{staffMode === "new" && (
+  <>
+    <input
+      placeholder="Staff Name"
+      value={newStaffName}
+      onChange={e => setNewStaffName(e.target.value)}
+    />
+
+    <input
+      placeholder="Phone Number"
+      value={newStaffPhone}
+      onChange={e => setNewStaffPhone(e.target.value)}
+    />
+  </>
+)}
+
     <div className="student-dropdown">
       <input
         placeholder="Select Category"
@@ -498,23 +640,28 @@ setTeacherSearch("");
         }}
         onFocus={()=>setShowCategory(true)}
       />
-      {showCategory && (
-        <div className="student-dropdown-list">
-          {filteredCategories.map(cat=>(
-            <div
-              key={cat}
-              className="student-option"
-              onClick={()=>{
-                setSalaryCategory(cat);
-                setCategorySearch("");
-                setShowCategory(false);
-              }}
-            >
-              {cat}
-            </div>
-          ))}
-        </div>
-      )}
+     {showCategory && (
+  <div className="student-dropdown-list">
+
+    {filteredCategories.map(cat => (
+      <div
+        key={cat}
+        className="student-option"
+        onClick={()=>{
+          setSalaryCategory(cat);
+          setCategorySearch("");
+          setShowCategory(false);
+          
+        }}
+      >
+        {cat}
+      </div>
+    ))}
+
+
+  </div>
+)}
+
     </div>
 
     {/* Position */}
@@ -529,29 +676,52 @@ setTeacherSearch("");
         }}
         onFocus={()=>setShowPosition(true)}
       />
-      {showPosition && (
-        <div className="student-dropdown-list">
-          {filteredPositions.map(pos=>(
-            <div
-              key={pos}
-              className="student-option"
-              onClick={()=>{
-                setSalaryPosition(pos);
-                setPositionSearch("");
-                setShowPosition(false);
-              }}
-            >
-              {pos}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+     {showPosition && (
+  <div className="student-dropdown-list">
 
-    {/* ===== Row 2 ===== */}
-    {/* Teacher */}
-    {salaryCategory?.trim() === "Teaching Staff" &&
+    {filteredPositions.map(pos => (
+      <div
+        key={pos}
+        className="student-option"
+        onClick={()=>{
+          setSalaryPosition(pos);
+          setPositionSearch("");
+          setShowPosition(false);
+        }}
+      >
+        {pos}
+      </div>
+    ))}
+
+    {positionSearch && (
+      <div
+        className="student-option"
+        style={{color:"#2140df"}}
+        onClick={()=>{
+          setPositions({
+            ...positions,
+            [salaryCategory]: [
+              ...(positions[salaryCategory] || []),
+              positionSearch
+            ]
+          });
+
+          setSalaryPosition(positionSearch);
+          setPositionSearch("");
+          setShowPosition(false);
+        }}
+      >
+        ➕ Add "{positionSearch}"
+      </div>
+    )}
+
+  </div>
+)}
+    </div>
+    {staffMode === "old" &&
+ salaryCategory?.trim() === "Teaching Staff" &&
  salaryPosition?.trim() === "Teacher" && (
+
 
   <div className="student-dropdown">
     <input
@@ -591,52 +761,33 @@ setTeacherSearch("");
     )}
   </div>
 )}
-{/* ===== Non Teaching Staff Name ===== */}
-{salaryCategory === "Non Teaching Staff" &&
+{staffMode === "old" &&
+ salaryCategory === "Non Teaching Staff" &&
  salaryPosition && (
 
   <div className="student-dropdown">
-    <input
-      placeholder="Select Name"
-      value={selectedTeacher?.name || staffSearch}
-      onChange={e => {
-        setStaffSearch(e.target.value);
-        setSelectedTeacher(null);
-        setShowStaffDropdown(true);
-      }}
-      onFocus={() => setShowStaffDropdown(true)}
-    />
+    <input placeholder="Select Name" value={selectedTeacher?.name || staffSearch} onChange={e => {
+      setStaffSearch(e.target.value); setSelectedTeacher(null); setShowStaffDropdown(true);
+    }} onFocus={() => setShowStaffDropdown(true)} />
 
     {showStaffDropdown && (
       <div className="student-dropdown-list">
         {filteredNonTeachingStaff.map(staff => (
-          <div
-            key={staff.id}
-            className="student-option"
-            onClick={() => {
-              setSelectedTeacher({
-                id: staff.id,
-                name: staff.name
-              });
-              setStaffSearch("");
-              setShowStaffDropdown(false);
-            }}
-          >
+          <div key={staff.id} className="student-option" onClick={() => {
+            setSelectedTeacher({ id: staff.id, name: staff.name });
+            setStaffSearch(""); setShowStaffDropdown(false);
+          }}>
             {staff.name}
           </div>
         ))}
 
         {filteredNonTeachingStaff.length === 0 && (
-          <div className="student-option muted">
-            No staff found
-          </div>
+          <div className="student-option muted">No staff found</div>
         )}
       </div>
     )}
   </div>
 )}
-
-
 
     {/* Amount */}
     <input
@@ -666,7 +817,8 @@ setTeacherSearch("");
 
       {activeSummary === "fees" && (
         <table className="nice-table">
-          <thead><tr><th>Class</th><th>Fee</th><th>Amount</th><th>Action</th></tr></thead>
+          <thead><tr><th>Class</th><th>Fee</th><th>Amount</th><th>Discount</th>
+<th>Action</th></tr></thead>
           <tbody> 
           {sortedGroupedFees.map(([cls, items]) =>
   items.map(i => (
@@ -674,6 +826,7 @@ setTeacherSearch("");
       <td data-label="Class">{cls}</td>
       <td data-label="Fee">{i.name}</td>
       <td data-label="Amount">₹{i.amount}</td>
+<td data-label="Discount">{i.discount || 0}%</td>
       <td className="action-cell" >
         <button className="edit-btn" onClick={() => startEdit(i)}> <FaEdit /> Edit</button>
         <button className="delete-btn" onClick={() => deleteFee(i.id)}><FaTrash /> Delete</button>
@@ -681,8 +834,6 @@ setTeacherSearch("");
     </tr>
   ))
 )}
-
-
           </tbody>
         </table>
       )}
@@ -693,6 +844,7 @@ setTeacherSearch("");
       <tr>
         <th>Name</th>
         <th>Amount</th>
+        <th>Discount</th>
         <th>Date</th>
         <th>Action</th>
       </tr>
@@ -727,8 +879,6 @@ setTeacherSearch("");
     </tbody>
   </table>
 )}
-
-
     </div>
   );
 }
