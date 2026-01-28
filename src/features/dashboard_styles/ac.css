@@ -61,7 +61,6 @@
     background:white;
     padding:25px;
     border-radius:20px;
-    
     display:flex;
     flex-direction:column;
     gap:25px;
@@ -71,18 +70,18 @@
     display:flex;
     justify-content:space-between;
     align-items:center;
+    margin-bottom: 27;
   }
   .attendance-panel h1{font-size:32px;}
   
   .monthly-flow2 {
     position: relative;
     width: 100%;
-    height: 120px;
-    overflow-x: auto;        /* 👈 horizontal scroll */
+    height: 170px;
+    overflow-x: auto;   
     overflow-y: hidden;
     white-space: nowrap;
-    padding-bottom: 10px;
-  }
+    }
   
   .trend-line{
     position:absolute;

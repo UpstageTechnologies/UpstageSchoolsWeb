@@ -268,8 +268,6 @@ const y = getY(m.profit);
 </div>
       )}
 
-
-      {/* NAV */}
       <div className="accounts-grid">
         <div className="accounts-card" onClick={() => setActivePage("profit")}>📒 Journal Entry</div>
         <div className="accounts-card" onClick={() => setActivePage("inventory")}>📦 Inventory</div>

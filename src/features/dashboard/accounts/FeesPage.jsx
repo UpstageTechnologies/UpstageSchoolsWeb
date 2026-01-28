@@ -2,32 +2,30 @@ import React, { useEffect, useState } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
-
 export default function FeesPage({ adminUid, mode, setActivePage }) {
-
-
-  const [incomeList, setIncomeList] = useState([]);
-  const [expenseList, setExpenseList] = useState([]);
-  const [showReport, setShowReport] = useState(false);
+const [incomeList, setIncomeList] = useState([]);
+const [expenseList, setExpenseList] = useState([]);
+const [showReport, setShowReport] = useState(false);
 const [reportType, setReportType] = useState("month"); 
 const [printMode, setPrintMode] = useState(false);
 const [reportData, setReportData] = useState([]);
-
-
+const [selectedFeeFilter, setSelectedFeeFilter] = useState("");
 const [fromDate, setFromDate] = useState("");
 const [toDate, setToDate] = useState("");
 const [showTermDropdown, setShowTermDropdown] = useState(false);
-
+const [feeCategory, setFeeCategory] = useState("Tuition");
+const [searchStudent, setSearchStudent] = useState("");
+const [filterClass, setFilterClass] = useState("All");
 const [showPendingPopup, setShowPendingPopup] = useState(false);
 const [pendingClass, setPendingClass] = useState("");
 const [pendingFee, setPendingFee] = useState(null);
-
 const [feesMaster, setFeesMaster] = useState([]);
 const [students, setStudents] = useState([]);
 const [showGeneratedReport, setShowGeneratedReport] = useState(false);
 const [reportFilter, setReportFilter] = useState("all"); 
-// all | full | partial | term1 | term2 | term3 | pending
-
+const [classes, setClasses] = useState([]);
+const [classSearchText, setClassSearchText] = useState("");
+const [showClassFilterDropdown, setShowClassFilterDropdown] = useState(false);
 const [reportPendingClass, setReportPendingClass] = useState("");
 const [reportPendingFee, setReportPendingFee] = useState(null);
 
@@ -38,8 +36,6 @@ const normalizePaymentType = (i) => {
     .toLowerCase()
     .replace(/\s+/g, "");
 };
-
-
 const generateReport = () => {
   let data = filterIncomeByDate().map(i => ({
     ...i,
@@ -52,13 +48,11 @@ const generateReport = () => {
   else if (reportFilter !== "all" && reportFilter !== "pending") {
     data = data.filter(i => i.paymentType === reportFilter);
   }
-
   if (reportFilter === "pending") {
     if (!reportPendingClass || !reportPendingFee) {
       alert("Please select class and fees");
       return;
     }
-
     data = students
       .filter(s => s.class === reportPendingClass)
       .map(s => {
@@ -76,83 +70,57 @@ const generateReport = () => {
       })
       .filter(Boolean);
   }
-
   setReportData(data);
   setShowGeneratedReport(true);
 };
-
-
-
-
-
 const filterIncomeByDate = () => {
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0];
-
   let filtered = [...incomeList];
-
   if (reportType === "day") {
     filtered = filtered.filter(i => i.date === todayStr);
   }
-
   if (reportType === "month") {
     const month = todayStr.slice(0, 7);
     filtered = filtered.filter(i => i.date?.startsWith(month));
   }
-
   if (reportType === "year") {
     const year = todayStr.slice(0, 4);
     filtered = filtered.filter(i => i.date?.startsWith(year));
   }
-
   if (reportType === "custom") {
     if (!fromDate || !toDate) return [];
     filtered = filtered.filter(
       i => i.date >= fromDate && i.date <= toDate
     );
   }
-
   return filtered;
 };
-
-
 const applyDateFilter = (list) => {
   if (!printMode) return list;
-
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0];
-
   if (reportType === "day") {
     return list.filter(i => i.date === todayStr);
   }
-
   if (reportType === "month") {
     const month = todayStr.slice(0, 7);
     return list.filter(i => i.date?.startsWith(month));
   }
-
   if (reportType === "year") {
     const year = todayStr.slice(0, 4);
     return list.filter(i => i.date?.startsWith(year));
   }
-
   if (reportType === "custom") {
     if (!fromDate || !toDate) return list;
     return list.filter(
       i => i.date >= fromDate && i.date <= toDate
     );
   }
-
   return list;
 };
-
-
-
-
-  // 🔥 income sub-tab
   const [incomeTab, setIncomeTab] = useState("new"); 
-  // new | old | full | partial
-
+  const [feesMasterTab, setFeesMasterTab] = useState(false);
   const incomeRef = collection(
     db,
     "users",
@@ -161,7 +129,6 @@ const applyDateFilter = (list) => {
     "accounts",
     "Income"
   );
-
   const expenseRef = collection(
     db,
     "users",
@@ -178,23 +145,16 @@ const applyDateFilter = (list) => {
     "accounts",
     "FeesMaster"
   );
-  
-  const studentsRef = collection(
-    db,
-    "users",
-    adminUid,
-    "students"
-  );
-  
-
-  useEffect(() => {
+  const studentsRef = collection(db, "users", adminUid, "students");
+const unsubStudents = onSnapshot(studentsRef, snap => {
+  setStudents(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+});
+useEffect(() => {
     if (!adminUid) return;
-  
     let unsubIncome = () => {};
     let unsubExpense = () => {};
     let unsubFees = () => {};
     let unsubStudents = () => {};
-  
     if (mode === "income") {
       unsubIncome = onSnapshot(incomeRef, snap => {
         setIncomeList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
@@ -214,18 +174,22 @@ const applyDateFilter = (list) => {
     unsubStudents = onSnapshot(studentsRef, snap => {
       setStudents(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
-  
+    const classesRef = collection(db, "users", adminUid, "Classes");
+const unsubClasses = onSnapshot(classesRef, snap => {
+  setClasses(snap.docs.map(d => ({
+    id: d.id,
+    name: d.data().name
+  })));
+});
     return () => {
       unsubIncome();
       unsubExpense();
       unsubFees();
       unsubStudents();
+      unsubClasses();
     };
   }, [adminUid, mode]);
-  
-  const isPrintActive = (tab) => incomeTab === tab;
-
-  // how much already paid for this fee
+  const isPrintActive = (tab) => incomeTab === tab
 const getFeePaid = (studentId, feeId) =>
 incomeList
   .filter(i => i.studentId === studentId && i.feeId === feeId)
@@ -263,8 +227,25 @@ const getBalance = (studentId, fee) => {
   return Math.max(0, payable - paid);
 };
 
+const getPendingTerms = (studentId, feeId) => {
+  const termPayments = incomeList.filter(
+    i =>
+      i.studentId === studentId &&
+      i.feeId === feeId &&
+      i.paymentType?.startsWith("term")
+  );
 
+  const paidTerms = termPayments.map(p => p.paymentType); 
+  const allTerms = ["term1", "term2", "term3"];
 
+  const pending = allTerms.filter(t => !paidTerms.includes(t));
+
+  if (pending.length === 3) return "Not Paid";
+
+  return pending
+    .map(t => t.replace("term", "Term "))
+    .join(" & ") + " Not Paid";
+};
   return (
     <div className="accounts-wrapper fade-in">
 
@@ -278,19 +259,13 @@ const getBalance = (studentId, fee) => {
       <button style={{marginLeft:"30%"}}
     className="report-btn"
     onClick={() => setShowReport(true)}
-    
   >
     📄 Report
   </button>
-  
-
-  
 </div>
 {showReport && (
   <div className="report-box">
     <h3>{mode === "income" ? "Income Report" : "Expense Report"}</h3>
-    
-
     <select
       value={reportType}
       onChange={e => setReportType(e.target.value)}
@@ -300,23 +275,19 @@ const getBalance = (studentId, fee) => {
       <option value="day">Daily</option>
       <option value="custom">Custom</option>
     </select>
-
-    {reportType === "custom" && (
+{reportType === "custom" && (
       <>
         <input type="date" value={fromDate} onChange={e=>setFromDate(e.target.value)} />
         <input type="date" value={toDate} onChange={e=>setToDate(e.target.value)} />
-      </>
-    )}
+      </> )}
     <select
   value={reportFilter}
   onChange={(e) => {
     setReportFilter(e.target.value);
-
     if (e.target.value === "pending") {
       setShowPendingPopup(true); // same popup
     }
-  }}
->
+  }}>
   <option value="all">All</option>
   <option value="new">New Admission</option>
   <option value="full">Full Payment</option>
@@ -326,8 +297,6 @@ const getBalance = (studentId, fee) => {
   <option value="term3">Term 3</option>
   <option value="pending">Pending Payment</option>
 </select>
-
-
     <button onClick={generateReport} style={{marginLeft:12}}>Generate</button>
     <button onClick={() => {
   setShowReport(false);
@@ -401,8 +370,7 @@ const getBalance = (studentId, fee) => {
 
             <td
               data-label="Balance"
-              style={{ color: balance > 0 ? "red" : "green" }}
-            >
+              style={{ color: balance > 0 ? "red" : "green" }}>
               ₹{balance}
             </td>
 
@@ -416,13 +384,8 @@ const getBalance = (studentId, fee) => {
 
   </div>
 )}
-
-
-
-      {/* ================= INCOME ================= */}
       {mode === "income" && (
         <>
-          {/* 🔘 INCOME BUTTONS */}
          <div className="tab-buttons">
 
   <button
@@ -455,49 +418,178 @@ const getBalance = (studentId, fee) => {
 
   {/* 🔽 TERMS DROPDOWN */}
   <div className="term-dropdown-wrapper">
-    <button
-      className={`tab-btn ${
-        incomeTab.startsWith("term") ? "active" : ""
-      }`}
-      onClick={() => setShowTermDropdown(!showTermDropdown)}
-    >
-      Terms ▾
-    </button>
+  <button
+    className={`tab-btn ${
+      incomeTab.startsWith("term") ? "active" : ""
+    }`}
+    onClick={() => setShowTermDropdown(!showTermDropdown)}
+  >
+    Terms ▾
+  </button>
 
-    {showTermDropdown && (
-      <div className="term-dropdown">
-        <div onClick={() => { setIncomeTab("term1"); setShowTermDropdown(false); }}>
-          Term 1
+  {showTermDropdown && (
+    <div className="term-dropdown">
+      <div onClick={() => { setIncomeTab("term1"); setShowTermDropdown(false); }}>
+        Term 1
+      </div>
+      <div onClick={() => { setIncomeTab("term2"); setShowTermDropdown(false); }}>
+        Term 2
+      </div>
+      <div onClick={() => { setIncomeTab("term3"); setShowTermDropdown(false); }}>
+        Term 3
+      </div>
+    </div>
+  )}
+</div>
+
+<button
+  style={{marginRight:8,marginLeft:8}}
+  className={incomeTab === "feesmaster" ? "tab-btn active" : "tab-btn"}
+  onClick={() => setIncomeTab("feesmaster")}
+>
+  Over View
+</button>
+
+  
+  
+</div>
+{incomeTab === "feesmaster" && (
+<div className="section-card pop">
+
+  <div className="feesmaster-topbar">
+
+  <h3 className="section-title">
+    {feeCategory} Fees Collection Details
+  </h3>
+
+  <select
+    value={feeCategory}
+    onChange={(e)=>setFeeCategory(e.target.value)}
+  >
+    <option value="Tuition">Tuition</option>
+    <option value="Other">Other</option>
+  </select>
+
+  <div className="student-dropdown">
+    <input
+      placeholder="Select Class"
+      value={filterClass === "All" ? classSearchText : filterClass}
+      onChange={(e) => {
+        setClassSearchText(e.target.value);
+        setFilterClass("All");
+        setShowClassFilterDropdown(true);
+      }}
+      onFocus={() => setShowClassFilterDropdown(true)}
+    />
+    {showClassFilterDropdown && (
+      <div className="student-dropdown-list">
+        <div
+          className="student-option"
+          onClick={() => {
+            setFilterClass("All");
+            setClassSearchText("");
+            setShowClassFilterDropdown(false);
+          }}>
+          All Classes
         </div>
-        <div onClick={() => { setIncomeTab("term2"); setShowTermDropdown(false); }}>
-          Term 2
-        </div>
-        <div onClick={() => { setIncomeTab("term3"); setShowTermDropdown(false); }}>
-          Term 3
-        </div>
+
+        {classes.map(c => (
+          <div
+            key={c.id}
+            className="student-option"
+            onClick={() => {
+              setFilterClass(c.name);
+              setClassSearchText("");
+              setShowClassFilterDropdown(false);
+            }}
+          >
+            Class {c.name}
+          </div>
+        ))}
       </div>
     )}
   </div>
-  <button
-  className={incomeTab === "pending" ? "tab-btn active" : "tab-btn"}
-  onClick={() => {
-    setIncomeTab("pending");
-    setShowPendingPopup(true);
-  }}
->
-  Pending Payment
-</button>
+   <input
+  style={{ marginLeft: 12 }}
 
+    type="text"
+    placeholder="Search student..."
+    value={searchStudent}
+    onChange={(e)=>setSearchStudent(e.target.value)}
+  />
+</div>  
+<table className="nice-table">
+<thead>
+<tr>
+  <th>Student</th>
+  <th>Class</th>
+  <th>Fee Name</th>
+  <th>Paid</th>
+  <th>Balance</th>
+  <th>Status</th>
+</tr>
+</thead>
+<tbody>
+{students
+  .filter(s =>
+    s.studentName
+      ?.toLowerCase()
+      .includes(searchStudent.toLowerCase())
+  )
+  .map(student => (
 
+    feesMaster
+      .filter(fee =>
+        fee.type === "fees" &&
+        fee.feeType === feeCategory &&
+        fee.className === student.class &&
+        (filterClass === "All" || student.class === filterClass)
+      )
+      .map(fee => {
 
+        const paid = getPaidAmount(student.id, fee.id);
+const balance = getBalance(student.id, fee);
 
+if (balance <= 0) return null;
+
+let status = "Not Paid";
+
+if (paid === 0 && balance > 0) {
+  status = "Fully Not Paid";
+}
+else if (paid > 0 && balance > 0) {
+  status = getPendingTerms(student.id, fee.id);
+}
+        
+      
+      return (
+        <tr key={`${student.id}_${fee.id}`}>
+          <td>{student.studentName}</td>
+          <td>{student.class}</td>
+          <td>{fee.name}</td>
+          <td>₹{paid}</td>
+          <td>₹{balance}</td>
+
+          <td style={{
+            color:
+              status === "Full" ? "green" :
+              status === "Partial" ? "orange" :
+              "red"
+          }}>
+            {status}
+          </td>
+        </tr>
+      );
+    })
+))}
+</tbody>
+</table>
 </div>
+)}
 {showPendingPopup && (
   <div className="modal-backdrop">
     <div className="modal-box">
       <h3>Pending Payment</h3>
-
-      {/* Class */}
       <select
         value={pendingClass}
         onChange={e => {
@@ -506,13 +598,12 @@ const getBalance = (studentId, fee) => {
         }}
       >
         <option value="">Select Class</option>
-        {["PreKG","LKG","UKG","1","2","3","4","5","6","7","8","9","10","11","12"]
-          .map(c => (
-            <option key={c} value={c}>Class {c}</option>
-        ))}
+        {classes.map(c => (
+  <option key={c} value={c}>
+    Class {c}
+  </option>
+))}
       </select>
-
-      {/* Fees */}
       <select
         value={pendingFee?.id || ""}
         disabled={!pendingClass}
@@ -530,13 +621,10 @@ const getBalance = (studentId, fee) => {
             </option>
         ))}
       </select>
-
       <div style={{ marginTop: 12 }}>
       <button
   onClick={() => {
     if (!pendingClass || !pendingFee) return;
-
-    // 🔥 REPORT pending values set pannrom
     setReportPendingClass(pendingClass);
     setReportPendingFee(pendingFee);
 
@@ -545,8 +633,6 @@ const getBalance = (studentId, fee) => {
 >
   OK
 </button>
-
-
         <button onClick={() => setShowPendingPopup(false)}>
           Cancel
         </button>
@@ -559,11 +645,9 @@ const getBalance = (studentId, fee) => {
     <h3 className="section-title">
       Pending Balance – Class {pendingClass}
     </h3>
-
     <p>
       Fees: <b>{pendingFee.name}</b>
     </p>
-
     <table className="nice-table">
       <thead>
         <tr>
@@ -591,15 +675,9 @@ const getBalance = (studentId, fee) => {
     </table>
   </div>
 )}
-
-
-
-          {/* 🆕 NEW ADMISSION */}
-          {incomeTab === "new" &&  (
+{incomeTab === "new" &&  (
   <div className="section-card pop ">
-
               <h3 className="section-title">New Admission Payments</h3>
-
               <div className="nice-table-wrapper">
                 <table className="nice-table">
                   <thead>
@@ -614,8 +692,6 @@ const getBalance = (studentId, fee) => {
                   <tbody>
                     {incomeList
   .filter(i => i.isNew === true)
-
-
                       .map(i => (
                         <tr key={i.id}>
                           <td data-label="Student">{i.studentName}</td>
@@ -630,14 +706,9 @@ const getBalance = (studentId, fee) => {
               </div>
             </div>
           )}
-
-          {/* 👨‍🎓 OLD ADMISSION */}
           {incomeTab === "old" && (
   <div className="section-card pop">
-
-
-              <h3 className="section-title">Old Admission Payments</h3>
-
+<h3 className="section-title">Old Admission Payments</h3>
               <div className="nice-table-wrapper">
                 <table className="nice-table">
                   <thead>
@@ -674,7 +745,7 @@ const getBalance = (studentId, fee) => {
 ))}</tbody>
 </table></div></div>
 )}
-          {incomeTab==="partial"&&(
+{incomeTab==="partial"&&(
 <div className="section-card pop"><h3 className="section-title">Partial Payment Students</h3>
 <div className="nice-table-wrapper"><table className="nice-table">
 <thead><tr><th>Name</th><th>Class</th><th>Paid</th><th>Balance</th><th>Date</th></tr></thead>
@@ -683,7 +754,6 @@ const getBalance = (studentId, fee) => {
 ))}</tbody>
 </table></div></div>
 )}
-
 {incomeTab==="term1"&&(
 <div className="section-card pop"><h3 className="section-title">Term 1 Payments</h3>
 <table className="nice-table">
@@ -718,7 +788,8 @@ const getBalance = (studentId, fee) => {
 <tbody>{expenseList.map(e=>(
 <tr key={e.id}><td data-label="Type">{e.type}</td><td data-label="Name">{e.name}</td><td data-label="Amount">₹{e.amount}</td><td>{e.date}</td></tr>
 ))}</tbody>
-</table></div></div>
+</table>
+</div></div>
 )}</div>
   );
 }

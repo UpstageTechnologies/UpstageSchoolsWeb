@@ -4,8 +4,6 @@ import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
 import "../../dashboard_styles/studentSearch.css";
 import {  FaEdit, FaTrash} from "react-icons/fa";
-
-
 export default function Inventory({ adminUid, setActivePage, plan, showUpgrade }) {
   const [feesMaster, setFeesMaster] = useState([]);
   const [feesLoaded, setFeesLoaded] = useState(false);
@@ -32,6 +30,11 @@ const [entrySearch, setEntrySearch] = useState("");
 const [showEntryDropdown, setShowEntryDropdown] = useState(false);
 const [incomeList, setIncomeList] = useState([]);
 const [expenseList, setExpenseList] = useState([]);
+const [feeType, setFeeType] = useState("");   // Tuition | Other
+const [showFeeTypeDropdown, setShowFeeTypeDropdown] = useState(false);
+
+const feeTypeOptions = ["Tuition", "Other"];
+
 const [feesList, setFeesList] = useState([]);
 const [editId, setEditId] = useState(null);
 const [staffSearch, setStaffSearch] = useState("");
@@ -63,14 +66,7 @@ const filteredPositions = (positions[salaryCategory] || []).filter(p =>
   const [discount, setDiscount] = useState("");
 const [discountSearch, setDiscountSearch] = useState("");
 const [showDiscountDropdown, setShowDiscountDropdown] = useState(false);
-const [discountOptions, setDiscountOptions] = useState([
-  "0",
-  "5",
-  "10",
-  "15",
-  "20"
-]);
-
+const [discountOptions, setDiscountOptions] = useState([ "0","5", "10","15", "20"]);
   const [salaryPosition, setSalaryPosition] = useState("");
   const feesRef = collection(db, "users", adminUid, "Account", "accounts", "FeesMaster");
   const teachersRef = collection(db, "users", adminUid, "teachers");
@@ -139,6 +135,7 @@ const [discountOptions, setDiscountOptions] = useState([
 
       await addDoc(feesRef, {
         type: "fees",
+        feeType: feeType, 
         className: String(feeClass).trim(),
         name: feeName,
         amount: Number(feeAmount),
@@ -239,10 +236,6 @@ setNewStaffPhone("");
     setClassSearch("");
     setEntrySearch("");
   };
-  
-  
-
-  /* ================= DATA ================= */
   const feesData = feesMaster.filter(i => i.type === "fees");
   const salaryData = feesMaster.filter(i => i.type === "salary");
 
@@ -346,7 +339,6 @@ setNewStaffPhone("");
           updatedAt: new Date()
         }
       );
-  
       resetSalaryForm();
     } catch (err) {
       console.error(err);
@@ -495,6 +487,33 @@ setNewStaffPhone("");
         </div>
       )}
     </div>
+    {/* Fee Type Dropdown */}
+<div className="student-dropdown">
+  <input
+    placeholder="Select Fee Type"
+    value={feeType}
+    readOnly
+    onClick={() => setShowFeeTypeDropdown(true)}
+  />
+
+  {showFeeTypeDropdown && (
+    <div className="student-dropdown-list">
+      {feeTypeOptions.map(type => (
+        <div
+          key={type}
+          className="student-option"
+          onClick={() => {
+            setFeeType(type);
+            setShowFeeTypeDropdown(false);
+          }}
+        >
+          {type}
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
 
     <div className="student-dropdown">
   <input
@@ -819,36 +838,67 @@ setNewStaffPhone("");
         <table className="nice-table">
           <thead><tr><th>Class</th><th>Fee</th><th>Amount</th><th>Discount</th>
 <th>Action</th></tr></thead>
-          <tbody> 
-          {sortedGroupedFees.map(([cls, items]) =>
-  items.map(i => (
-    <tr key={i.id}>
-      <td data-label="Class">{cls}</td>
-      <td data-label="Fee">{i.name}</td>
-      <td data-label="Amount">₹{i.amount}</td>
-<td data-label="Discount">{i.discount || 0}%</td>
-      <td className="action-cell" >
-        <button className="edit-btn" onClick={() => startEdit(i)}> <FaEdit /> Edit</button>
-        <button className="delete-btn" onClick={() => deleteFee(i.id)}><FaTrash /> Delete</button>
+         <tbody>
+  {sortedGroupedFees.map(([cls, items]) => (
+    <tr key={cls}>
+
+      <td>{cls}</td>
+
+      <td>
+        {items.map(i => (
+          <div key={i.id}>{i.name}</div>
+        ))}
       </td>
+
+      <td>
+        {items.map(i => (
+          <div key={i.id}>₹{i.amount}</div>
+        ))}
+      </td>
+
+      <td>
+        {items.map(i => (
+          <div key={i.id}>{i.discount || 0}%</div>
+        ))}
+      </td>
+
+      <td>
+        {items.map(i => (
+          <div key={i.id} style={{ marginBottom: 6 }}>
+            <button
+              className="edit-btn"
+              onClick={() => startEdit(i)}
+            >
+              <FaEdit /> Edit
+            </button>
+
+            <button
+              className="delete-btn"
+              onClick={() => deleteFee(i.id)}
+            >
+              <FaTrash /> Delete
+            </button>
+          </div>
+        ))}
+      </td>
+
     </tr>
-  ))
-)}
-          </tbody>
+  ))}
+</tbody>
+
         </table>
       )}
 
 {activeSummary === "salary" && (
   <table className="nice-table">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Amount</th>
-        <th>Discount</th>
-        <th>Date</th>
-        <th>Action</th>
-      </tr>
-    </thead>
+   <thead>
+  <tr>
+    <th>Name</th>
+    <th>Amount</th>
+    <th>Date</th>
+    <th>Action</th>
+  </tr>
+</thead>
 
     <tbody>
       {salaryData.map(item => (

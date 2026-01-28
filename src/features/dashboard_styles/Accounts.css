@@ -1169,3 +1169,128 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     display: none;
   }
 }
+/* Fees Master Top Row Fix */
+.feesmaster-topbar{
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 12px !important;
+  width: 100%;
+}
+
+/* Title */
+.feesmaster-topbar .section-title{
+  margin: 0 !important;
+  white-space: nowrap;
+}
+
+/* Dropdowns & Inputs */
+.feesmaster-topbar select,
+.feesmaster-topbar input{
+  height: 40px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  min-width: 170px;
+}
+
+/* Student Dropdown Container */
+.feesmaster-topbar .student-dropdown{
+  position: relative;
+  min-width: 1px;
+}
+.feesmaster-topbar{
+  flex-wrap: nowrap !important;
+}
+
+.feesmaster-topbar > *{
+  flex-shrink: 0;
+}
+/* Minimize Select Class width */
+.feesmaster-topbar .student-dropdown{
+  min-width: 140px !important;
+  width: 140px !important;
+}
+
+.feesmaster-topbar .student-dropdown input{
+  width: 140px !important;
+}
+/* ===== Fees Master Topbar – Mobile Responsive ===== */
+
+.feesmaster-topbar{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap; /* 🔑 important */
+}
+
+/* Title full width on mobile */
+.feesmaster-topbar .section-title{
+  white-space: nowrap;
+}
+
+/* inputs & select uniform */
+.feesmaster-topbar select,
+.feesmaster-topbar input{
+  height: 40px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 768px){
+
+  .feesmaster-topbar{
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .feesmaster-topbar .section-title{
+    width: 100%;
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+
+  .feesmaster-topbar select,
+  .feesmaster-topbar input,
+  .feesmaster-topbar .student-dropdown{
+    width: 100%;
+  }
+
+  /* remove your inline margin:40 issue */
+  .feesmaster-topbar input[type="text"]{
+    margin: 0 !important;
+  }
+}
+/* ===== FEES MASTER MOBILE RESPONSIVE FIX ===== */
+
+@media (max-width: 600px) {
+
+  .feesmaster-topbar{
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .feesmaster-topbar .section-title{
+    font-size: 18px;
+    white-space: normal;
+  }
+
+  .feesmaster-topbar select,
+  .feesmaster-topbar input{
+    width: 100% !important;
+    min-width: unset !important;
+  }
+
+  .feesmaster-topbar .student-dropdown{
+    width: 100% !important;
+  }
+
+  /* remove that margin:40 */
+  .feesmaster-topbar input[type="text"]{
+    margin: 0 !important;
+  }
+}

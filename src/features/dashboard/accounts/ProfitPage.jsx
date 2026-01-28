@@ -19,8 +19,6 @@ export default function ProfitPage({
 }) {
   const role = localStorage.getItem("role");
 const isOfficeStaff = role === "office_staff";
-
-
   const [incomeList, setIncomeList] = useState([]);
   const [expenseList, setExpenseList] = useState([]);
   const [incomeLoaded, setIncomeLoaded] = useState(false);
@@ -224,7 +222,7 @@ const loaded = incomeLoaded && expenseLoaded;
   const [oldTotal, setOldTotal] = useState(0);
   const [oldPayType, setOldPayType] = useState("");
   const [oldPayAmount, setOldPayAmount] = useState("");
-  const paymentTypes = ["Full", "Partial", "Term 1", "Term 2", "Term 3"];
+  const paymentTypes = ["Full", "Partial", "Monthly", "Term 1", "Term 2", "Term 3"];
 const [paymentType, setPaymentType] = useState("");
 const [paymentSearch, setPaymentSearch] = useState("");
 const [showPaymentDD, setShowPaymentDD] = useState(false);
@@ -367,8 +365,6 @@ useEffect(() => {
   const unsubFees = onSnapshot(feesRef, s => {
     setFeesMaster(s.docs.map(d => ({ id: d.id, ...d.data() })));
   });
-
-  // 🔥 VERY IMPORTANT
   return () => {
     unsubIncome();
     unsubExpense();
@@ -376,17 +372,10 @@ useEffect(() => {
     unsubFees();
   };
 }, [adminUid]);
-
-  
   const filteredStudents = students.filter(s =>
     String(s.class) === String(oldClass) &&
     s.studentName?.toLowerCase().includes(studentSearch.toLowerCase())
   );
-  
-
-  
-
-  /* ---------- INCOME: SOURCE ---------- */
   const saveSourceIncome = async ()=>{
     if(!srcName||!srcAmt||!entryDate) return alert("Fill all source fields");
 
@@ -567,34 +556,43 @@ const generatedParentId = `P-${Date.now()}`;
         ]
       }
     );
-  
-    /* ================= CREATE INCOME ================= */
     await addDoc(incomesRef, {
-      studentId: studentDocRef.id,
-      studentName: newName,
-      parentId: parentDocRef.id,
-      parentName: newParent,
-      className: newClass,
-      isNew: true,
-
+      studentId: stu.id,
+      studentName: stu.studentName,
+      className: stu.class,
+      isNew: false,
     
       feeId: fee.id,
       feeName: fee.name,
       feeAmount: total,
     
       totalFees: total,
-      discountApplied: discountAmount,
-      payableAmount: payableAmount,
+      discountApplied: discount,
+      payableAmount: payable,
     
       paidAmount: final,
-      balanceBefore: payableAmount,
-      balanceAfter: balanceAfter,
+      balanceBefore,
+      balanceAfter,
     
-      paymentType: newPayType,
-      paymentStage: newPayType.startsWith("term") ? "Term" : "Admission",
+      paymentType: oldPayType,
+    
+      paymentStage:
+        oldPayType === "monthly"
+          ? "Monthly"
+          : paidSoFar === 0
+          ? "Admission"
+          : "Term",
+    
       date: entryDate,
-      createdAt: new Date()
+      createdAt: new Date(),
+    
+      // ✅ MONTHLY STORAGE
+      monthsTotal: oldPayType === "monthly" ? monthsTotal : null,
+      monthsPaid: oldPayType === "monthly" ? monthsPaid : null,
+      monthsPending: oldPayType === "monthly" ? monthsPending : null,
+      monthlyAmount: oldPayType === "monthly" ? final : null
     });
+    
     
   
     /* ================= RESET ================= */
@@ -604,6 +602,9 @@ const generatedParentId = `P-${Date.now()}`;
     setNewPayType("");
     setNewPayAmount("");
     setNewTotal(0);
+    setOldPayType("");
+setOldPayAmount("");
+
   };
   
   
@@ -655,14 +656,51 @@ const generatedParentId = `P-${Date.now()}`;
 
     const balanceBefore = payable - paidSoFar;
 
-        // 👈 true balance
-
-
-
-
-  
     let final = 0;
-  
+    // ===== MONTHLY PAYMENT =====
+if (oldPayType === "monthly") {
+
+  const existingPlan = getMonthlyPlan(stu.id, fee.id);
+
+  // FIRST MONTH
+  if (!existingPlan) {
+
+    if (!oldPayAmount) {
+      alert("Enter first month amount");
+      return;
+    }
+
+    const monthlyAmount = Number(oldPayAmount);
+
+    if (monthlyAmount <= 0) {
+      alert("Invalid amount");
+      return;
+    }
+
+    const monthsTotal = Math.ceil(total / monthlyAmount);
+
+    final = monthlyAmount;
+
+    var monthsPaid = 1;
+    var monthsPending = monthsTotal - 1;
+  }
+
+  // NEXT MONTHS
+  else {
+
+    if (existingPlan.monthsPending <= 0) {
+      alert("All months already paid");
+      return;
+    }
+
+    final = existingPlan.monthlyAmount;
+
+    var monthsTotal = existingPlan.monthsTotal;
+    var monthsPaid = existingPlan.monthsPaid + 1;
+    var monthsPending = existingPlan.monthsPending - 1;
+  }
+}
+
     const termPaidCount = getTermPaidCount(stu.id, fee.id);
 
     const fixedTermAmount = Math.ceil(total / 3);
@@ -729,8 +767,8 @@ feeAmount: selectedFees[0]?.amount || 0,
   
       date: entryDate,
       createdAt: new Date()
+      
     });
-
   setSelectedFees([]); 
     setOldClass("");
     setOldStudent("");
@@ -852,6 +890,7 @@ const getFeeBalance = (studentId, fee) => {
   
 // how many terms already paid
 const getTermPaidCount = (studentId, feeId) =>
+
   incomeList.filter(
     i =>
       i.studentId === studentId &&
@@ -874,7 +913,15 @@ const getTermPaidCount = (studentId, feeId) =>
     if (termPaid === 1) return oneTerm;     // Term 2
     return balance;                         // Term 3 (final remaining)
   };
-  
+  const getMonthlyPlan = (studentId, feeId) =>
+  incomeList.find(
+    i =>
+      i.studentId === studentId &&
+      i.feeId === feeId &&
+      i.paymentType === "monthly" &&
+      i.monthsTotal
+  );
+
   
   const getNewTermAmount = (fee) => {
     if (!fee) return 0;
@@ -914,12 +961,10 @@ const getTermPaidCount = (studentId, feeId) =>
   
   useEffect(() => {
     if (isOfficeStaff) {
-      setEntryType("income");     // default
-      setIncomeMode("source");   // or student if you want
+      setEntryType("income");   
+      setIncomeMode("source"); 
     }
   }, [isOfficeStaff]);
-  // 🔥 ALWAYS KEEP AFTER ALL HOOKS
-// ✅ AFTER ALL useEffect / useState / hooks
 
 
 
@@ -1499,7 +1544,8 @@ const deleteEntry = async (row) => {
 
   {showPaymentDD && (
     <div className="student-dropdown-list">
-{["Full","Partial","Term 1","Term 2","Term 3"]
+{["Full","Partial","Monthly","Term 1","Term 2","Term 3"]
+
   .filter(p =>
     p.toLowerCase().includes(paymentSearch.toLowerCase())
   )
@@ -1572,13 +1618,14 @@ const deleteEntry = async (row) => {
     value={oldPayAmount}
     onChange={e => setOldPayAmount(e.target.value)}
   />
+)}{oldPayType === "monthly" && (
+  <input
+    type="number"
+    placeholder="Enter First Month Amount"
+    value={oldPayAmount}
+    onChange={e => setOldPayAmount(e.target.value)}
+  />
 )}
-
-
-
-
-
-
     <button className="save-btn" onClick={() => safeRequirePremium(saveOldAdmission, "income")}>
       Save
     </button>
@@ -1588,25 +1635,9 @@ const deleteEntry = async (row) => {
     Balance ₹{getFeeBalance(oldStudent, selectedFees[0])}
   </div>
 )}
-
-
-
-
-
   </div>
-  
+)}</>
 )}
- 
-
-
-
-  </>
-)}
-
-
-
-
-       {/* ================= EXPENSE ================= */}
 {entryType==="expense" && (
 <>
   {/* Expense Type */}
