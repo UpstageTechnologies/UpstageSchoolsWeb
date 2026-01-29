@@ -316,9 +316,6 @@ const getPendingTerms = (studentId, feeId) => {
 
   </div>
 )}
-
-
-
       <h2 className="page-title">
         {mode === "income" ? "Income Details" : "Expenses Details"}
       </h2>
@@ -510,7 +507,7 @@ const getPendingTerms = (studentId, feeId) => {
     )}
   </div>
    <input
-  style={{ marginLeft: 12 }}
+  style={{ marginLeft: 40 }}
 
     type="text"
     placeholder="Search student..."

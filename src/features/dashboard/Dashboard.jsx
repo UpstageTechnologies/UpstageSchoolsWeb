@@ -9,8 +9,10 @@ import React, { useEffect, useState } from "react";
   import Courses from "./Courses";
   import Profile from "./Profile";
   import Settings from "./accounts/Settings";
+  import { FaSearch } from "react-icons/fa";
+
   import {
-    FaUserCircle,
+    FaUserCircle,FaArrowLeft,
     FaUserGraduate,
     FaHome,
     FaCog,FaUserCheck,
@@ -18,11 +20,7 @@ import React, { useEffect, useState } from "react";
     FaChevronDown,FaBookOpen,FaSchool,
     FaChevronUp,FaCalendarAlt,FaClipboardCheck,FaWpforms,FaMoneyBillWave
   } from "react-icons/fa";
-
   import schoolLogo from "../../assets/sch.jpg";
-  import Teacher from "./Teacher";
-  import Parent from "./Parent";
-  import Student from "./Student";
   import Admin from "./Admin";
   import OfficeStaff from "./OfficeStaff";
   import { onSnapshot } from "firebase/firestore";
@@ -39,24 +37,19 @@ import React, { useEffect, useState } from "react";
   import ApplicationList from "./ApplicationList";
   
 import FeesPage from "./accounts/FeesPage";
-import ExpensesPage from "./accounts/ExpensesPage";
+
 import ProfitPage from "./accounts/ProfitPage";
 import Inventory from "./accounts/Inventory";
+import ExpensesPage from "./accounts/ExpensesPage";
 import UpgradePopup from "../../components/UpgradePopup";
 import TeacherHome from "./TeacherHome";
 import ParentHome from "./ParentHome";
 import SchoolCalendar from "../../components/SchoolCalendar";
+import { lazy, Suspense } from "react";
 
-
-
-  /* ================= SLIDER ================= */
-  const sliderImages = [
-    "/slider/slide1.jpg",
-    "/slider/slide2.jpg",
-    "/slider/slide3.jpg",
-    "/slider/slide4.jpg",
-    "/slider/slide6.jpg"
-  ];
+const Teacher = lazy(() => import("./Teacher"));
+const Parent = lazy(() => import("./Parent"));
+const Student = lazy(() => import("./Student"));
 
   /* ================= END SLIDER ================= */
 
@@ -67,8 +60,6 @@ import SchoolCalendar from "../../components/SchoolCalendar";
     const [plan, setPlan] = useState("basic");
     const [planExpiry, setPlanExpiry] = useState(null);
     const [upgradeDisabled, setUpgradeDisabled] = useState(false);
-
-
     const [sidebarState, setSidebarState] = useState("open"); 
     // "open" | "close" | "hidden"
         const [accountMenuOpen, setAccountMenuOpen] = useState(false);
@@ -78,16 +69,27 @@ import SchoolCalendar from "../../components/SchoolCalendar";
     const [logo, setLogo] = useState(""); 
     const [accountsSubMenuOpen, setAccountsSubMenuOpen] = useState(false);
     const [showUpgrade, setShowUpgrade] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
     const [trialAccess, setTrialAccess] = useState(false);
 const [trialExpiresAt, setTrialExpiresAt] = useState(null);
+const [searchResults, setSearchResults] = useState([]);
+useEffect(() => {
+  if (!searchQuery) {
+    setSearchResults([]);
+    return;
+  }
 
+  const filtered = Object.keys(searchMap).filter(key =>
+    key.includes(searchQuery)
+  );
+
+  setSearchResults(filtered);
+}, [searchQuery]);
+
+const [showMenuOnly, setShowMenuOnly] = useState(false);
 
 
     const isPremium = plan === "premium" || plan === "lifetime"; 
-
-
-      
-
 
     const navigate = useNavigate();
 
@@ -124,10 +126,6 @@ const [trialExpiresAt, setTrialExpiresAt] = useState(null);
     
       callback(); // ✅ allow action
     };
-    
-    
-    
-    /* ================= AUTH + ROLE ================= */
     useEffect(() => {
       const off = () => setUpgradeDisabled(true);
       const on = () => setUpgradeDisabled(false);
@@ -258,10 +256,6 @@ useEffect(() => {
     
       return () => window.removeEventListener("profile-updated", handler);
     }, []);
-    
-
-    
-
     useEffect(() => {
       async function loadSchool() {
     
@@ -302,14 +296,8 @@ useEffect(() => {
   return () =>
     window.removeEventListener("open-teacher-dashboard", handler);
 }, []);
-
-
-    
-    
-
     const handleLogout = async () => {
       const confirmLogout = window.confirm("Do you want to logout?");
-    
       if (!confirmLogout) return; // ❌ NO → stay same page
     
       localStorage.clear();
@@ -347,7 +335,31 @@ useEffect(() => {
     
     const effectiveParentId =
       viewAs === "parent" ? viewParentId : localStorage.getItem("parentDocId");
-    
+      const searchMap = {
+        home: "home",
+        accounts: "accounts",
+        fees: "fees",
+        expenses: "expenses",
+        journal: "profit",
+        teacher: "teacher",
+        student: "student",
+        parent: "parent",
+        timetable: "timetable",
+        attendance: "attendance",
+        courses: "courses",
+        inventory: "inventory",
+        approvals: "approvals",
+        applications: "applications",
+        calendar: "calendar",
+        profile: "profile",
+        settings: "settings",
+        admin:"admin",
+       upgrade: "payment",
+        income: "income",       
+  expenses: "expenses", 
+        
+      };
+      
       useEffect(() => {
         if (
           plan === "basic" &&
@@ -375,26 +387,82 @@ useEffect(() => {
           setActivePage("parent-home");
         }
       }, [role]);
-      
     const adminUid = user?.uid || localStorage.getItem("adminUid");
-
-
+   
     return (
       <><BackConfirm />
       <div className="dashboard-container">
-        {/* ================= SIDEBAR ================= */}
-        
-        <div className={`sidebar sidebar-${sidebarState}`}>
+      <div className={`sidebar sidebar-${sidebarState}`}>
+{/* ===== SIDEBAR PROFILE ===== */}
+<div
+  className="sidebar-profile"
+  onClick={() => setUserMenuOpen(true)}
+>
+  {localStorage.getItem("profilePhoto") ? (
+    <img
+      src={localStorage.getItem("profilePhoto")}
+      className="sidebar-avatar"
+    />
+  ) : (
+    <FaUserCircle size={42} />
+  )}
+
+  {sidebarState === "open" && (
+    <div className="sidebar-username">
+      {localStorage.getItem("adminName") ||
+       localStorage.getItem("teacherName") ||
+       localStorage.getItem("parentName") ||
+       "User"}
+    </div>
+  )}
+</div>
+{/* ===== PROFILE POPUP ===== */}
+{userMenuOpen && (
+  <div
+    className="profile-modal-overlay"
+    onClick={() => setUserMenuOpen(false)}
+  >
+    <div
+      className="profile-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <h3>Account</h3>
+
+      <button
+        onClick={() => {
+          setActivePage("profile");
+          setUserMenuOpen(false);
+        }}
+      >
+        👤 Profile
+      </button>
+
+      <button
+        onClick={() => {
+          setActivePage("settings");
+          setUserMenuOpen(false);
+        }}
+      >
+        ⚙ Settings
+      </button>
+
+      <button
+        className="logout-btn"
+        onClick={handleLogout}
+      >
+        🚪 Logout
+      </button>
+    </div>
+  </div>
+)}
 
         <ul>
-  {/* ================= OFFICE STAFF ================= */}
+          
   {isOfficeStaff && (
     <li className={activePage === "accounts" ? "active" : ""} onClick={() => setActivePage("accounts")}>
       <FaMoneyBillWave /> Accounts
     </li>
   )}
-
-  {/* ================= MASTER / ADMIN ================= */}
   {!isOfficeStaff && (
     <>
 <li
@@ -547,9 +615,6 @@ useEffect(() => {
     <span className="calendar-text">Calendar</span>
   )}
 </li>
-
-
-{/* 🎁 TRIAL BANNER */}
 {sidebarState === "open" && trialAccess && trialExpiresAt && (
   <div
     style={{
@@ -575,21 +640,64 @@ useEffect(() => {
     </span>
   </div>
 )}
-
     </>
   )}
 </ul>
         </div>
-
-        {/* ================= MAIN ================= */}
         <div className="main-content">
           <nav className="navbar">
             <div className="nav-left">
-            <div className="menu-toggle" onClick={toggleSidebar}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+
+{/* Back icon */}
+{["accounts", "income", "expenses", "fees"].includes(activePage) && (
+  <div
+    className="menu-toggle"
+    onClick={() => setActivePage("home")}
+    style={{ cursor: "pointer", fontSize: 20 }}
+  >
+    ←
+  </div>
+)}
+<div
+  className="menu-toggle"
+  onClick={toggleSidebar}
+  style={{ cursor: "pointer", fontSize: 20 }}
+>
   ☰
 </div>
+</div>
+<div className="nav-search" style={{ position: "relative" }}>
+  <FaSearch className="search-icon" />
 
-              {(logo || localStorage.getItem("schoolLogo")) ? (
+  <input
+    placeholder="Search..."
+    value={searchQuery}
+    onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
+  />
+
+  {searchResults.length > 0 && (
+    <div className="search-dropdown">
+      {searchResults.map((item) => (
+        <div
+          key={item}
+          className="search-item"
+          onClick={() => {
+            setActivePage(searchMap[item]);
+            setSearchQuery("");
+            setSearchResults([]);
+          }}
+        >
+          {item.charAt(0).toUpperCase() + item.slice(1)}
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
+
+<div className="nav-school-center">
+  {(logo || localStorage.getItem("schoolLogo")) ? (
   <img
     src={logo || localStorage.getItem("schoolLogo")}
     alt="School"
@@ -600,16 +708,9 @@ useEffect(() => {
     <FaSchool />
   </div>
 )}
-
-
-
   <span className="nav-school-name">
     {school || localStorage.getItem("schoolName") || "School Name"}
-  </span>
-
-
-            </div>
-            {/* 🔴 EXIT PARENT VIEW BUTTON */}
+  </span></div></div>
 {viewAs === "parent" && (
   <button
     onClick={() => {
@@ -631,75 +732,7 @@ useEffect(() => {
     Exit Parent View
   </button>
 )}
-
-
-
-
-        <div
-    className="user-info"
-    onClick={() => setUserMenuOpen(!userMenuOpen)}
-  >
-     {localStorage.getItem("profilePhoto") ? (
-    <img
-      src={localStorage.getItem("profilePhoto")}
-      alt="user"
-      style={{
-        width: 32,
-        height: 32,
-        borderRadius: "50%",
-        objectFit: "cover",
-        marginRight: 8
-      }}
-    />
-  ) : (
-    <FaUserCircle size={28} />
-  )}
-
-  <span className="username">
-    {localStorage.getItem("adminName") ||
-      localStorage.getItem("teacherName") ||
-      localStorage.getItem("parentName") ||
-      user?.displayName ||
-      user?.email ||
-      "User"}
-  </span>
-
-  <FaChevronDown />
-
-
-    {userMenuOpen && (
-      <div className="user-dropdown simple">
-            {/* ⭐ PROFILE */}
-      <div
-        className="dropdown-item"
-        onClick={() => {
-          setActivePage("profile");
-          setUserMenuOpen(false);
-          setAccountMenuOpen(false);
-        }}
-      >
-        <FaUserCircle /> Profile
-      </div>
-      <div
-  className="dropdown-item"
-  onClick={() => {
-    setActivePage("settings");
-    setUserMenuOpen(false);
-    setAccountMenuOpen(false);
-  }}
->
-  <FaCog /> Settings
-</div>
-        <div
-          className="dropdown-item logout"
-          onClick={handleLogout}
-          
-        >
-          <FaSignOutAlt /> Logout
-        </div>
-      </div>
-    )}
-  </div>
+       
 
           </nav>
 
@@ -852,24 +885,20 @@ useEffect(() => {
 )}
 
 
-            {isAdminOrSubAdmin && activePage === "courses" && (
+        {isAdminOrSubAdmin && activePage === "courses" && (
             <Courses />
             )}
            {(role === "teacher" || viewAs === "teacher") &&
   activePage === "teacher-attendance" && (
     <TeacherAttendance teacherId={viewTeacherId} />
 )}
-
-            
 {isAdminOrSubAdmin && activePage === "teacher-absents" && (
   isPremium ? (
     <ShowTodaysTeacherAbsent adminUid={adminUid} setActivePage={setActivePage} />
   ) : (
     <UpgradePopup onClose={() => setActivePage("home")} />
   )
-)}
-
-            {role === "master" && activePage === "applications" && (
+)}{role === "master" && activePage === "applications" && (
               <ApplicationList requirePremium={requirePremium} />
               )}
               {activePage === "profile" && (
@@ -877,14 +906,7 @@ useEffect(() => {
   )}
   {activePage === "settings" && (
   <Settings adminUid={adminUid} />
-)}
-
-  
-
-  
-
-
-          </div>
+)}</div>
         </div>
         {showUpgrade && !upgradeDisabled && (
   <UpgradePopup
@@ -892,9 +914,6 @@ useEffect(() => {
     onUpgrade={() => navigate("/payment")}
   />
 )}
-
-
-
       </div>
       </>
     );
