@@ -3,7 +3,8 @@
 ========================================================= */
 *{box-sizing:border-box;}
 html,body{overflow-x:hidden;}
-.dashboard-container{display:flex;min-height:100vh;width:100vw;background:#f7feff;font-family:'Poppins',sans-serif;color:#000;}
+.dashboard-container{display:flex;min-height:100vh;width:100vw;background:#d0d0d1;
+  ;font-family:'Poppins',sans-serif;color:#000;}
 .sidebar{position:fixed;top:0;left:0;height:100vh;width:clamp(160px,22vw,220px);min-width:100px;background:#ffffff;padding:20px;transition:all 0.35s ease;z-index:300;}
 .sidebar ul{list-style:none;padding:0;margin-top:20px;}
 .sidebar ul li{padding:10px;margin:10px 0;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all 0.25s ease;}
@@ -26,8 +27,6 @@ html,body{overflow-x:hidden;}
   gap:14px;
   width:100%;
 }
-
-
 .menu-toggle{font-size:28px;cursor:pointer;}
 
 .nav-school-logo{width:40px;}
@@ -386,7 +385,8 @@ html,body{overflow-x:hidden;}
   width: calc(100vw - 16px);
 }
   .dashboard-content{
-  background:#f7f9fc;
+    background:#d0d0d1;
+
   border-radius:18px;
   margin:10px;
   box-shadow: 0 12px 28px rgba(0,0,0,0.06);
@@ -726,9 +726,159 @@ html,body{overflow-x:hidden;}
 .sidebar-close .sidebar-username{
   display:none;
 }
-@media (max-width: 360px) {
-  .sidebar {
-    display: none !important;
+/* 📱 Mobile: hide school name, show only logo */
+@media (max-width: 768px) {
+  .nav-school-name {
+    display: none;
   }
 }
+/* Old icon hide */
+.menu-toggle{
+  display:none;
+}
 
+/* Hide old navbar menu icon */
+.menu-toggle{
+  display: none;
+}
+.floating-menu-btn{
+  right:18px;
+  left:auto;
+}
+.search-item:hover {
+  background: #f1f5f9;
+  transition: "0.2s";
+
+}
+@keyframes fadeDown{
+  from{
+    opacity:0;
+    transform:translate(-50%, -6px);
+  }
+  to{
+    opacity:1;
+    transform:translate(-50%, 0);
+  }
+}
+/* SEARCH WITH RIGHT SCHOOL ICON */
+
+.nav-search{
+  position: relative;
+  width: 750px;
+}
+
+.search-icon-left{
+  position:absolute;
+  left:12px;
+  top:50%;
+  transform:translateY(-50%);
+  color:#9ca3af;
+  font-size:14px;
+}
+
+.nav-search input{
+  width:100%;
+  padding:10px 46px 10px 36px; /* right space for icon */
+  border-radius:999px;
+  border:1px solid #e5e7eb;
+  background:#f1f5f9;
+  font-size:14px;
+}
+
+/* Right icon circle */
+.search-school-icon{
+  position:absolute;
+  right:6px;
+  top:50%;
+  transform:translateY(-50%);
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  background:#ffffff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 2px 6px rgba(0,0,0,0.15);
+  cursor:pointer;
+}
+
+.search-school-icon img{
+  width:20px;
+  height:20px;
+  object-fit:cover;
+  border-radius:50%;
+}
+
+.search-school-icon svg{
+  color:#2563eb;
+  font-size:16px;
+}
+
+/* Hover */
+.search-school-icon:hover{
+  transform:translateY(-50%) scale(1.05);
+}
+.nav-school-center{
+  display:none !important;
+}
+
+/* ===== SCHOOL NAME POPUP (INSIDE SEARCH) ===== */
+
+.nav-search{
+  position: relative;
+}
+
+.school-name-popup{
+  position:absolute;
+  top:46px;
+  right:0;
+  background:#ffffff;
+  padding:6px 12px;
+  border-radius:8px;
+  font-size:13px;
+  font-weight:600;
+  white-space:nowrap;
+  box-shadow:0 4px 12px rgba(0,0,0,0.2);
+  z-index:9999;
+}
+
+/* Arrow */
+.school-name-popup::before{
+  content:"";
+  position:absolute;
+  top:-6px;
+  right:12px;
+  border-width:0 6px 6px 6px;
+  border-style:solid;
+  border-color:transparent transparent #ffffff transparent;
+}
+
+/* Mobile fix */
+@media (max-width:768px){
+  .school-name-popup{
+    right:50%;
+    transform:translateX(50%);
+    top:42px;
+    font-size:12px;
+    padding:6px 10px;
+  }
+}
+/* ===== EXTRA SMALL MOBILE (360px) FIX ===== */
+@media (max-width:360px){
+
+  .school-name-popup{
+    top:40px;
+    right:50%;
+    transform:translateX(50%);
+    font-size:11px;
+    padding:5px 8px;
+    max-width:180px;
+    text-align:center;
+  }
+
+  .school-name-popup::before{
+    right:50%;
+    transform:translateX(50%);
+  }
+
+}

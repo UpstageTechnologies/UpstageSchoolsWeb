@@ -23,15 +23,15 @@ const handleViewParent = (p) => {
 };
 
 
-const Parent = ({requirePremium }) => {
+const Parent = ({requirePremium ,globalSearch="" }) => {
   /* ================= BASIC ================= */
   const adminUid =
     auth.currentUser?.uid || localStorage.getItem("adminUid");
 
   const role = localStorage.getItem("role"); // admin | sub_admin
+  const selectedParentId = localStorage.getItem("selectedParentId");
 
   const [parents, setParents] = useState([]);
-  const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState(null);
   const [password, setPassword] = useState("");
@@ -75,7 +75,12 @@ const Parent = ({requirePremium }) => {
   useEffect(() => {
     fetchParents();
   }, [adminUid]);
-
+  useEffect(() => {
+    return () => {
+      localStorage.removeItem("selectedParentId");
+    };
+  }, []);
+  
   /* ================= STUDENT HANDLERS ================= */
   const handleStudentChange = (index, field, value) => {
     const updated = [...students];
@@ -402,14 +407,6 @@ if (editId) {
         <h2>Parents</h2>
 
         <div className="teacher-actions">
-          <div className="search-box">
-            <FaSearch />
-            <input
-              placeholder="Search parent..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-          </div>
 
           <button className="add-btn" onClick={() => setShowModal(true)}>
             <FaPlus />
@@ -433,9 +430,25 @@ if (editId) {
 
         <tbody>
   {parents
-    .filter(p =>
-      JSON.stringify(p).toLowerCase().includes(search.toLowerCase())
-    )
+  .filter(p => {
+
+    // ✅ From global search
+    if (selectedParentId) {
+      return p.id === selectedParentId;
+    }
+
+    // ✅ Normal search
+    return (
+      
+  p.parentName?.toLowerCase().includes(globalSearch.toLowerCase()) ||
+  p.parentId?.toLowerCase().includes(globalSearch.toLowerCase()) ||
+  p.email?.toLowerCase().includes(globalSearch.toLowerCase()) ||
+  p.phone?.includes(globalSearch) ||
+  p.address?.toLowerCase().includes(globalSearch.toLowerCase())
+    );
+  })
+
+
     .map(p => (
       <tr key={p.id} className="mobile-card">
        <td data-label="Photo">

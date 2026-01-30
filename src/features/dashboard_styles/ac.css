@@ -714,7 +714,6 @@
   display:flex;
   flex-direction:column;
 }
-
 .summary2-top-fixed{
   height: 36%;
   display:flex;
@@ -725,8 +724,6 @@
   background:#eaf2fb;
   z-index:5;
 }
-
-
 .summary2-fill{
   position:absolute;
   bottom:0;
@@ -771,12 +768,10 @@
   transition: 0.2s;
   z-index: 50;
 }
-
 .settings-icon i {
   font-size: 16px;
   color: #333;
 }
-
 .settings-icon:hover {
   transform: rotate(25deg);
   background: #e3e7ee;
@@ -784,25 +779,17 @@
 .flow-item.green{
   background:#22c55e;
 }
-
 .flow-item.orange{
   background:#facc15;
   color:#000;
 }
-/* ===== HIDE OVERALL ACCOUNTS & MONTHLY FLOW ON MOBILE ===== */
 @media (max-width: 768px){
-
-  /* Monthly Profit Card */
   .summary2-left{
     display:none !important;
   }
-
-  /* Overall Accounts Pills */
   .summary2-wrapper{
     display:none !important;
   }
-
-  /* Also remove swipe container height */
   .summary2-scroll{
     display:none !important;
   }

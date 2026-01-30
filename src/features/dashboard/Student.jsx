@@ -11,20 +11,19 @@ import {
   updateDoc,query, where
 } from "firebase/firestore";
 import { auth, db } from "../../services/firebase";
-
+const selectedStudentId = localStorage.getItem("selectedStudentId");
 const classes = Array.from({ length: 12 }, (_, i) => i + 1);
 const sections = Array.from({ length: 26 }, (_, i) =>
   String.fromCharCode(65 + i)
 );
 
-const Student = ({ requirePremium }) => {
+const Student = ({ requirePremium , globalSearch = ""}) => {
   const adminUid =
     auth.currentUser?.uid || localStorage.getItem("adminUid");
 
   const role = localStorage.getItem("role");
 
   const [showModal, setShowModal] = useState(false);
-  const [search, setSearch] = useState("");
   const [students, setStudents] = useState([]);
   const [editId, setEditId] = useState(null);
   const [viewStudent, setViewStudent] = useState(null);
@@ -192,15 +191,6 @@ const Student = ({ requirePremium }) => {
         <h2>Students</h2>
 
         <div className="teacher-actions">
-          <div className="search-box">
-            <FaSearch />
-            <input
-              placeholder="Search student..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-          </div>
-
           <button className="add-btn" onClick={() => setShowModal(true)}>
             <FaPlus />
           </button>
@@ -222,10 +212,25 @@ const Student = ({ requirePremium }) => {
 
         <tbody>
           {students
-            .filter(s =>
-              JSON.stringify(s).toLowerCase().includes(search.toLowerCase())
-            )
-            .map(s => (
+  .filter(s => {
+
+    // ✅ If coming from global search click
+    if (selectedStudentId) {
+      return s.id === selectedStudentId;
+    }
+
+    // ✅ Normal table search
+    return (
+      s.studentName?.toLowerCase().includes(globalSearch.toLowerCase()) ||
+      s.studentId?.toLowerCase().includes(globalSearch.toLowerCase()) ||
+      s.parentName?.toLowerCase().includes(globalSearch.toLowerCase()) ||
+      s.parentId?.toLowerCase().includes(globalSearch.toLowerCase()) ||
+      s.class?.toString().includes(globalSearch) ||
+      s.section?.toLowerCase().includes(globalSearch.toLowerCase()) ||
+      s.phone?.includes(globalSearch)
+    );
+  })
+  .map(s => (
               <tr key={s.id} className="mobile-card">
                  <td data-label="Photo">
           {s.photoURL ? (
@@ -271,8 +276,6 @@ const Student = ({ requirePremium }) => {
   >
    <FaEye /> View
   </button>
-  
-
   <button
     className="edit-btn"
     onClick={() => requirePremium(() => {

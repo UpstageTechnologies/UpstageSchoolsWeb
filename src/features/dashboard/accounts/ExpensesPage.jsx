@@ -6,8 +6,6 @@ export default function ExpensesPage({ adminUid, setActivePage }) {
 
   const [incomeList, setIncomeList] = useState([]);
   const [expenseList, setExpenseList] = useState([]);
-  
-
   const today = new Date().toISOString().split("T")[0];
   const role = localStorage.getItem("role");
   const isOfficeStaff = role === "office_staff";
@@ -170,8 +168,6 @@ const todayProfit = todayIncome - todayExpense;
   stroke="#ddd"
   strokeWidth="2"
 />
-
-
 <path
   d={
     monthlyProfit

@@ -22,8 +22,7 @@ import ApplicationList from "./features/dashboard/ApplicationList";
 import  Accounts from "./features/dashboard/Accounts"
 import FeesPage from "./features/dashboard/accounts/FeesPage";
 import UserViewDashboard from "./features/dashboard/UserViewDashboard";
-
-
+import EmptyPage from "./useTheme/pages/EmptyPage";
 function App() {
   return (
     <Router>
@@ -50,6 +49,7 @@ function App() {
         <Route path="Accounts" element={<Accounts/>}/>
         <Route path="FeesPage" element={<FeesPage />} />
         <Route path="/dashboard/view"element={<UserViewDashboard />}/>
+        <Route path="/start" element={<EmptyPage />} />
       </Routes>
     </Router>
   );

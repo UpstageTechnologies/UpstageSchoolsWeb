@@ -8,11 +8,7 @@ export default function Landing() {
   
   return (
     <div className="landing-container">
-      
-      
-        
       <nav className="nav-bar">
-        
           <img src={logo} alt="Company Logo" className="logo" />
           <div className="nav-links">
             <a href="#features">Features</a>
@@ -29,7 +25,8 @@ export default function Landing() {
           </h1>
           <p>Your smart school management assistant.</p>
           <div className="hero-buttons">
-            <Link to="/" className="btn-primary">Get Started</Link>
+          <Link to="/start" className="btn-primary">Get Started</Link>
+
           </div>
         </section>
 

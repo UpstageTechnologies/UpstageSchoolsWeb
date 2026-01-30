@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
-export default function FeesPage({ adminUid, mode, setActivePage }) {
+export default function FeesPage({ adminUid, mode, setActivePage , globalSearch = ""}) {
 const [incomeList, setIncomeList] = useState([]);
 const [expenseList, setExpenseList] = useState([]);
 const [showReport, setShowReport] = useState(false);
@@ -14,7 +14,6 @@ const [fromDate, setFromDate] = useState("");
 const [toDate, setToDate] = useState("");
 const [showTermDropdown, setShowTermDropdown] = useState(false);
 const [feeCategory, setFeeCategory] = useState("Tuition");
-const [searchStudent, setSearchStudent] = useState("");
 const [filterClass, setFilterClass] = useState("All");
 const [showPendingPopup, setShowPendingPopup] = useState(false);
 const [pendingClass, setPendingClass] = useState("");
@@ -442,13 +441,9 @@ const getPendingTerms = (studentId, feeId) => {
 <button
   style={{marginRight:8,marginLeft:8}}
   className={incomeTab === "feesmaster" ? "tab-btn active" : "tab-btn"}
-  onClick={() => setIncomeTab("feesmaster")}
->
+  onClick={() => setIncomeTab("feesmaster")}>
   Over View
 </button>
-
-  
-  
 </div>
 {incomeTab === "feesmaster" && (
 <div className="section-card pop">
@@ -506,14 +501,7 @@ const getPendingTerms = (studentId, feeId) => {
       </div>
     )}
   </div>
-   <input
-  style={{ marginLeft: 40 }}
-
-    type="text"
-    placeholder="Search student..."
-    value={searchStudent}
-    onChange={(e)=>setSearchStudent(e.target.value)}
-  />
+  
 </div>  
 <table className="nice-table">
 <thead>
@@ -531,8 +519,9 @@ const getPendingTerms = (studentId, feeId) => {
   .filter(s =>
     s.studentName
       ?.toLowerCase()
-      .includes(searchStudent.toLowerCase())
+      .includes(globalSearch.toLowerCase())
   )
+  
   .map(student => (
 
     feesMaster
@@ -688,7 +677,11 @@ else if (paid > 0 && balance > 0) {
                   </thead>
                   <tbody>
                     {incomeList
-  .filter(i => i.isNew === true)
+.filter(i => i.isNew === true)
+.filter(i =>
+  i.studentName?.toLowerCase()
+    .includes(globalSearch.toLowerCase())
+)
                       .map(i => (
                         <tr key={i.id}>
                           <td data-label="Student">{i.studentName}</td>
@@ -782,7 +775,11 @@ else if (paid > 0 && balance > 0) {
 <div className="section-card pop"><h3 className="section-title">Expenses Details</h3>
 <div className="nice-table-wrapper"><table className="nice-table">
 <thead><tr><th>Type</th><th>Name</th><th>Amount</th><th>Date</th></tr></thead>
-<tbody>{expenseList.map(e=>(
+<tbody>{expenseList
+.filter(e =>
+  e.name?.toLowerCase().includes(globalSearch.toLowerCase())
+)
+.map(e => (
 <tr key={e.id}><td data-label="Type">{e.type}</td><td data-label="Name">{e.name}</td><td data-label="Amount">₹{e.amount}</td><td>{e.date}</td></tr>
 ))}</tbody>
 </table>

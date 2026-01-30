@@ -5,12 +5,13 @@ import React, { useEffect, useState } from "react";
   import { db } from "../../services/firebase";
   import { useNavigate } from "react-router-dom";
   import "../dashboard_styles/Dashboard.css";
+  import { collection, getDocs } from "firebase/firestore"; 
   import Approvals from "./Approvals";
   import Courses from "./Courses";
   import Profile from "./Profile";
   import Settings from "./accounts/Settings";
   import { FaSearch } from "react-icons/fa";
-
+  import { buildGlobalSearchResults } from "../../utils/globalSearch";
   import {
     FaUserCircle,FaArrowLeft,
     FaUserGraduate,
@@ -50,6 +51,7 @@ import { lazy, Suspense } from "react";
 const Teacher = lazy(() => import("./Teacher"));
 const Parent = lazy(() => import("./Parent"));
 const Student = lazy(() => import("./Student"));
+const isMobile = () => window.innerWidth <= 768;
 
   /* ================= END SLIDER ================= */
 
@@ -61,34 +63,115 @@ const Student = lazy(() => import("./Student"));
     const [planExpiry, setPlanExpiry] = useState(null);
     const [upgradeDisabled, setUpgradeDisabled] = useState(false);
     const [sidebarState, setSidebarState] = useState("open"); 
+    const [showSchoolName, setShowSchoolName] = useState(false);
+
     // "open" | "close" | "hidden"
         const [accountMenuOpen, setAccountMenuOpen] = useState(false);
     const [activePage, setActivePage] = useState("home");
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [homeStats, setHomeStats] = useState(null);
     const [logo, setLogo] = useState(""); 
+    const [adminsList, setAdminsList] = useState([]);
+const [officeStaffList, setOfficeStaffList] = useState([]);
+
     const [accountsSubMenuOpen, setAccountsSubMenuOpen] = useState(false);
+    const [teachersList, setTeachersList] = useState([]);
+const [studentsList, setStudentsList] = useState([]);
+const [parentsList, setParentsList] = useState([]);
+const [globalResults, setGlobalResults] = useState([]);
+const badgeColors = {
+  teacher: "#2563eb",      // blue
+  student: "#90ee90",      // green
+  parent: "rgb(240, 170, 240)",       // purple
+  admin: "#f08080",        // red
+  office_staff: "#ffa07a", // orange
+  page: "#64748b"
+};
+
+
+const highlightText = (text, query) => {
+  if (!query) return text;
+
+  const regex = new RegExp(`(${query})`, "gi");
+
+  return text.split(regex).map((part, i) =>
+    part.toLowerCase() === query.toLowerCase() ? (
+      <mark
+        key={i}
+        style={{
+          background: "#fde68a",
+          color: "#000",
+          padding: "0 2px",
+          borderRadius: 3,
+          fontWeight: "bold"
+        }}
+      >
+        {part}
+      </mark>
+    ) : (
+      <span key={i} style={{ fontWeight: 500 }}>
+        {part}
+      </span>
+    )
+  );
+};
+
+useEffect(() => {
+  if (isMobile()) {
+    setSidebarState("open");
+  }
+}, []);
+
+useEffect(() => {
+  const adminUid =
+    localStorage.getItem("adminUid") || auth.currentUser?.uid;
+
+  if (!adminUid) return;
+  const loadAll = async () => {
+    const tSnap = await getDocs(collection(db, "users", adminUid, "teachers"));
+    const sSnap = await getDocs(collection(db, "users", adminUid, "students"));
+    const pSnap = await getDocs(collection(db, "users", adminUid, "parents"));
+    const aSnap = await getDocs(collection(db, "users", adminUid, "admins"));
+    const oSnap = await getDocs(collection(db, "users", adminUid, "office_staffs"));
+
+    setTeachersList(tSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+    setStudentsList(sSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+    setParentsList(pSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+    setAdminsList(aSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+    setOfficeStaffList(oSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+  };
+
+  loadAll();
+}, []);
+
+
     const [showUpgrade, setShowUpgrade] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [trialAccess, setTrialAccess] = useState(false);
 const [trialExpiresAt, setTrialExpiresAt] = useState(null);
-const [searchResults, setSearchResults] = useState([]);
 useEffect(() => {
   if (!searchQuery) {
-    setSearchResults([]);
+    setGlobalResults([]);
     return;
   }
+  const results = buildGlobalSearchResults({
+    query: searchQuery,
+    teachers: teachersList,
+    students: studentsList,
+    parents: parentsList,
+    admins: adminsList,
+    officeStaffs: officeStaffList,
+    searchMap
+  });
+  
 
-  const filtered = Object.keys(searchMap).filter(key =>
-    key.includes(searchQuery)
-  );
-
-  setSearchResults(filtered);
-}, [searchQuery]);
-
-const [showMenuOnly, setShowMenuOnly] = useState(false);
-
-
+  setGlobalResults(results);
+}, [searchQuery, teachersList, studentsList, parentsList]);
+useEffect(() => {
+  console.log("Teachers:", teachersList);
+  console.log("Students:", studentsList);
+  console.log("Parents:", parentsList);
+}, [teachersList, studentsList, parentsList]);
     const isPremium = plan === "premium" || plan === "lifetime"; 
 
     const navigate = useNavigate();
@@ -218,9 +301,12 @@ setTrialExpiresAt(data.trialExpiresAt || null);
 
       return () => unsubscribe && unsubscribe();
     }, [navigate]);
-
-
-
+    useEffect(() => {
+      if(showSchoolName){
+        const t = setTimeout(() => setShowSchoolName(false), 3000);
+        return () => clearTimeout(t);
+      }
+    }, [showSchoolName]);
     
 
 useEffect(() => {
@@ -245,6 +331,15 @@ useEffect(() => {
 
   return () => unsub();
 }, []);
+const handleMenuClick = (page) => {
+  setActivePage(page);
+
+  // 📱 mobile la page open aagumbodhu icon-only
+  if (isMobile()) {
+    setSidebarState("close");
+  }
+};
+
 
     useEffect(() => {
       const handler = () => {
@@ -256,6 +351,7 @@ useEffect(() => {
     
       return () => window.removeEventListener("profile-updated", handler);
     }, []);
+
     useEffect(() => {
       async function loadSchool() {
     
@@ -390,7 +486,10 @@ useEffect(() => {
     const adminUid = user?.uid || localStorage.getItem("adminUid");
    
     return (
-      <><BackConfirm />
+      <>
+     
+
+      <BackConfirm />
       <div className="dashboard-container">
       <div className={`sidebar sidebar-${sidebarState}`}>
 {/* ===== SIDEBAR PROFILE ===== */}
@@ -430,7 +529,7 @@ useEffect(() => {
 
       <button
         onClick={() => {
-          setActivePage("profile");
+          handleMenuClick("profile");
           setUserMenuOpen(false);
         }}
       >
@@ -439,7 +538,7 @@ useEffect(() => {
 
       <button
         onClick={() => {
-          setActivePage("settings");
+          handleMenuClick("settings");
           setUserMenuOpen(false);
         }}
       >
@@ -459,7 +558,7 @@ useEffect(() => {
         <ul>
           
   {isOfficeStaff && (
-    <li className={activePage === "accounts" ? "active" : ""} onClick={() => setActivePage("accounts")}>
+    <li className={activePage === "accounts" ? "active" : ""} onClick={() => handleMenuClick("accounts")}>
       <FaMoneyBillWave /> Accounts
     </li>
   )}
@@ -469,11 +568,11 @@ useEffect(() => {
   className={activePage === "home" ? "active" : ""}
   onClick={() => {
     if (role === "teacher") {
-      setActivePage("teacher-home");
+      handleMenuClick("teacher-home");
     } else if (role === "parent") {
-      setActivePage("parent-home");
+      handleMenuClick("parent-home");
     } else
-    setActivePage("home");
+    handleMenuClick("home");
   
   }}
 >
@@ -517,35 +616,35 @@ useEffect(() => {
           {accountMenuOpen && (
             <ul className="account-submenu">
               {role === "master" && (
-                <li onClick={() => { setActivePage("admin"); setAccountMenuOpen(false); }} className={activePage === "admin" ? "active" : ""}>
+                <li onClick={() => { handleMenuClick("admin"); setAccountMenuOpen(false); }} className={activePage === "admin" ? "active" : ""}>
                   Admin
                 </li>
               )}
-              <li onClick={() => { setActivePage("teacher"); setAccountMenuOpen(false); }}className={activePage === "teacher" ? "active" : ""}>
+              <li onClick={() => { handleMenuClick("teacher"); setAccountMenuOpen(false); }}className={activePage === "teacher" ? "active" : ""}>
                 Teachers
               </li>
-              <li onClick={() => { setActivePage("parent"); setAccountMenuOpen(false); }}className={activePage === "parent" ? "active" : ""}>
+              <li onClick={() => { handleMenuClick("parent"); setAccountMenuOpen(false); }}className={activePage === "parent" ? "active" : ""}>
                 Parent
               </li>
-              <li onClick={() => { setActivePage("student"); setAccountMenuOpen(false); }}className={activePage === "student" ? "active" : ""}>
+              <li onClick={() => { handleMenuClick("student"); setAccountMenuOpen(false); }}className={activePage === "student" ? "active" : ""}>
                 Student
               </li>
-              <li onClick={() => { setActivePage("office_staff"); setAccountMenuOpen(false); }}className={activePage === "office_staff" ? "active" : ""}>
+              <li onClick={() => { handleMenuClick("office_staff"); setAccountMenuOpen(false); }}className={activePage === "office_staff" ? "active" : ""}>
                 Non Teachers
               </li>
             </ul>
           )}
 
-          <li className={activePage === "accounts" ? "active" : ""} onClick={() => setActivePage("accounts")}>
+          <li className={activePage === "accounts" ? "active" : ""} onClick={() => handleMenuClick("accounts")}>
             <FaMoneyBillWave /> Accounts
           </li>
 
-          <li className={activePage === "timetable" ? "active" : ""}onClick={() => setActivePage("timetable")}>
+          <li className={activePage === "timetable" ? "active" : ""}onClick={() => handleMenuClick("timetable")}>
             <FaCalendarAlt /> Timetable
           </li>
 
           {role === "admin" && (
-            <li className={activePage === "attendance" ? "active" : ""} onClick={() => setActivePage("attendance")}>
+            <li className={activePage === "attendance" ? "active" : ""} onClick={() => handleMenuClick("attendance")}>
               <FaUserCheck /> Teacher Attendance
             </li>
           )}
@@ -554,13 +653,13 @@ useEffect(() => {
                 {(role === "teacher" || role === "parent" || viewAs === "parent") && (
 
               <>
-              <li className={activePage === "studentDetails" ? "active" : ""}onClick={() => setActivePage("studentDetails")}>
+              <li className={activePage === "studentDetails" ? "active" : ""}onClick={() => handleMenuClick("studentDetails")}>
                 <FaUserGraduate /> Student Details
               </li>
-              <li className={activePage === "teacher-timetable" ? "active" : ""} onClick={() => setActivePage("teacher-timetable")}>
+              <li className={activePage === "teacher-timetable" ? "active" : ""} onClick={() => handleMenuClick("teacher-timetable")}>
               <FaCalendarAlt/> Teacher Timetable
             </li>
-            <li className={activePage === "teacher-attendance" ? "active" : ""}onClick={() => setActivePage("teacher-attendance")}>
+            <li className={activePage === "teacher-attendance" ? "active" : ""}onClick={() => handleMenuClick("teacher-attendance")}>
             <FaUserCheck/>Students Attendance
             </li>
             </>
@@ -589,24 +688,24 @@ useEffect(() => {
 
 
       {role === "master" && (
-        <li className={activePage === "approvals" ? "active" : ""} onClick={() => setActivePage("approvals")}>
+        <li className={activePage === "approvals" ? "active" : ""} onClick={() => handleMenuClick("approvals")}>
           <FaClipboardCheck /> Approvals
         </li>
       )}
 
-      <li className={activePage === "courses" ? "active" : ""}onClick={() => setActivePage("courses")}>
+      <li className={activePage === "courses" ? "active" : ""}onClick={() => handleMenuClick("courses")}>
         <FaBookOpen /> Courses
       </li>
 
       {role === "master" && (
-        <li className={activePage === "applications" ? "active" : ""}onClick={() => setActivePage("applications")}>
+        <li className={activePage === "applications" ? "active" : ""}onClick={() => handleMenuClick("applications")}>
           <FaWpforms /> Applications
         </li>
       )}
 
 <li
   className={`calendar-btn ${activePage === "calendar" ? "active" : ""}`}
-  onClick={() => setActivePage("calendar")}
+  onClick={() => handleMenuClick("calendar")}
 >
   <FaCalendarAlt className="calendar-icon" />
 
@@ -649,68 +748,119 @@ useEffect(() => {
             <div className="nav-left">
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
 
-{/* Back icon */}
 {["accounts", "income", "expenses", "fees"].includes(activePage) && (
   <div
     className="menu-toggle"
-    onClick={() => setActivePage("home")}
+    onClick={() => handleMenuClick("home")}
     style={{ cursor: "pointer", fontSize: 20 }}
   >
     ←
   </div>
-)}
-<div
-  className="menu-toggle"
+)}<div
+  className="floating-menu-btn"
   onClick={toggleSidebar}
-  style={{ cursor: "pointer", fontSize: 20 }}
 >
   ☰
 </div>
+
 </div>
-<div className="nav-search" style={{ position: "relative" }}>
-  <FaSearch className="search-icon" />
+<div className="nav-search">
+  <FaSearch className="search-icon-left" />
 
   <input
     placeholder="Search..."
     value={searchQuery}
     onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
   />
-
-  {searchResults.length > 0 && (
-    <div className="search-dropdown">
-      {searchResults.map((item) => (
-        <div
-          key={item}
-          className="search-item"
-          onClick={() => {
-            setActivePage(searchMap[item]);
-            setSearchQuery("");
-            setSearchResults([]);
-          }}
-        >
-          {item.charAt(0).toUpperCase() + item.slice(1)}
-        </div>
-      ))}
-    </div>
-  )}
-</div>
-
-
-<div className="nav-school-center">
-  {(logo || localStorage.getItem("schoolLogo")) ? (
-  <img
-    src={logo || localStorage.getItem("schoolLogo")}
-    alt="School"
-    className="nav-school-logo"
-  />
-) : (
-  <div className="default-school-icon">
-    <FaSchool />
+<div
+  className="search-school-icon"
+  onClick={() => setShowSchoolName(prev => !prev)}
+>
+{showSchoolName && (
+  <div className="school-name-popup">
+    {school || localStorage.getItem("schoolName") || "School Name"}
   </div>
 )}
-  <span className="nav-school-name">
-    {school || localStorage.getItem("schoolName") || "School Name"}
-  </span></div></div>
+
+    {(logo || localStorage.getItem("schoolLogo")) ? (
+      <img
+        src={logo || localStorage.getItem("schoolLogo")}
+        alt="school"
+      />
+    ) : (
+      <FaSchool />
+    )}
+  </div>
+{globalResults.length > 0 && (
+    <div className="search-dropdown">
+  {globalResults.map((item, i) => (
+  <div
+  key={i}
+  className="search-item"
+  onClick={() => {
+
+    if (item.type === "page") {
+      handleMenuClick(item.value);
+    }
+  
+    if (item.type === "teacher") {
+      localStorage.setItem("selectedTeacherId", item.id);
+      handleMenuClick("teacher");
+    }
+  
+    if (item.type === "student") {
+      localStorage.setItem("selectedStudentId", item.id);
+      handleMenuClick("student");
+    }
+  
+    if (item.type === "parent") {
+      localStorage.setItem("selectedParentId", item.id);
+      handleMenuClick("parent");
+    }
+  
+    if (item.type === "admin") {
+      localStorage.setItem("selectedAdminId", item.id);
+      handleMenuClick("admin");
+    }
+  
+    if (item.type === "office_staff") {
+      localStorage.setItem("selectedOfficeStaffId", item.id);
+      handleMenuClick("office_staff");
+    }
+  
+    setSearchQuery("");
+    setGlobalResults([]);
+  }}
+  
+>
+<div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+  
+  {/* Name with highlighted letters */}
+  <span>
+    {highlightText(item.label, searchQuery)}
+  </span><span
+  style={{
+    background: badgeColors[item.type] || "#2563eb",
+    color: "#fff",
+    padding: "3px 10px",
+    borderRadius: 999,
+    fontSize: 11,
+    fontWeight: 700,
+    textTransform: "uppercase"
+  }}
+>
+  {item.type}
+</span>
+
+
+</div>
+
+</div>
+
+))}
+    </div>
+  )}
+</div></div>
 {viewAs === "parent" && (
   <button
     onClick={() => {
@@ -731,10 +881,7 @@ useEffect(() => {
   >
     Exit Parent View
   </button>
-)}
-       
-
-          </nav>
+)}</nav>
 
           <div className="dashboard-content">
 
@@ -766,7 +913,7 @@ useEffect(() => {
 {(role === "master" || role === "admin") && activePage === "home" &&(
   <Home
   adminUid={adminUid}
-  setActivePage={setActivePage}
+  handleMenuClick={handleMenuClick}
   plan={plan}
   viewAs={viewAs}
   viewAdminId={viewAdminId}
@@ -781,14 +928,19 @@ useEffect(() => {
 
 
 {isAdminOrSubAdmin && activePage === "fees" && (
-  <FeesPage adminUid={adminUid} setActivePage={setActivePage}/>
+  <FeesPage 
+  adminUid={adminUid} 
+  setActivePage={setActivePage}
+  globalSearch={searchQuery}
+/>
+
 )}
 {activePage === "income" && (
-  <FeesPage adminUid={adminUid} mode="income" setActivePage={setActivePage}/>
+  <FeesPage adminUid={adminUid} mode="income" globalSearch={searchQuery} setActivePage={setActivePage}/>
 )}
 
 {activePage === "expenses" && (
-  <FeesPage adminUid={adminUid} mode="expenses" setActivePage={setActivePage}/>
+  <FeesPage adminUid={adminUid} mode="expenses" globalSearch={searchQuery} setActivePage={setActivePage}/>
 )}
 
 {(isAdminOrSubAdmin || isOfficeStaff) && activePage === "accounts" && (
@@ -797,11 +949,6 @@ useEffect(() => {
     setActivePage={setActivePage}
   />
 )}
-
-
-
-
-
 {(isAdminOrSubAdmin || isOfficeStaff) &&
  (activePage === "profit" || activePage.startsWith("bill_")) && (
 <ProfitPage
@@ -838,22 +985,20 @@ useEffect(() => {
 
 
             {isAdminOrSubAdmin && activePage === "teacher" && (
-              <Teacher adminUid={adminUid} requirePremium={requirePremium} />
+              <Teacher adminUid={adminUid} globalSearch={searchQuery} requirePremium={requirePremium} />
             )}
 
 {(isAdminOrSubAdmin || viewAs === "parent") && activePage === "parent" && (
-  <Parent adminUid={adminUid} requirePremium={requirePremium} />
+  <Parent adminUid={adminUid}  globalSearch={searchQuery} requirePremium={requirePremium} />
 )}
 
 
             {isAdminOrSubAdmin && activePage === "student" && (
-              <Student adminUid={adminUid} requirePremium={requirePremium} />
+              <Student adminUid={adminUid} globalSearch={searchQuery} requirePremium={requirePremium} />
             )}
               {isAdminOrSubAdmin && activePage === "office_staff" && (
-  <OfficeStaff adminUid={adminUid} requirePremium={requirePremium}/>
+  <OfficeStaff adminUid={adminUid} globalSearch={searchQuery} requirePremium={requirePremium}/>
 )}
-
-
             {(role === "teacher" || role === "parent") &&
               activePage === "studentDetails" && <StudentDetails />}
 
@@ -862,7 +1007,7 @@ useEffect(() => {
             )}
 
 {(role === "master") && activePage === "admin" && (
-  <Admin requirePremium={requirePremium} />
+  <Admin requirePremium={requirePremium} globalSearch={searchQuery}/>
 )}
 
 

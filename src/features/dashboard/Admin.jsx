@@ -20,13 +20,13 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 const role = localStorage.getItem("role");
 const isAdmin = role === "master";
 
-const Admin = ({ requirePremium }) => {
+const Admin = ({ requirePremium , globalSearch = ""}) => {
   const [showModal, setShowModal] = useState(false);
-  const [search, setSearch] = useState("");
   const [admins, setAdmins] = useState([]);
   const [editId, setEditId] = useState(null);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const selectedAdminId = localStorage.getItem("selectedAdminId");
 
   /* ===== ADMIN FORM ===== */
   const [form, setForm] = useState({
@@ -172,8 +172,12 @@ if (!/^\d{10}$/.test(phoneClean)) {
       "_blank"
     );
   };
+  useEffect(() => {
+    return () => {
+      localStorage.removeItem("selectedAdminId");
+    };
+  }, []);
   
-
   return (
     <div className="teacher-page">
       {/* ===== HEADER ===== */}
@@ -182,14 +186,7 @@ if (!/^\d{10}$/.test(phoneClean)) {
         <h2>Admins</h2>
 
         <div className="teacher-actions">
-          <div className="search-box">
-            <FaSearch />
-            <input
-              placeholder="Search admin..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-          </div>
+          
 
           <button className="add-btn" onClick={() => setShowModal(true)}>
             <FaPlus />
@@ -214,10 +211,23 @@ if (!/^\d{10}$/.test(phoneClean)) {
         </thead>
 
         <tbody>
-  {admins
-    .filter(a =>
-      a.name?.toLowerCase().includes(search.toLowerCase())
-    )
+        {admins
+  .filter(a => {
+
+    // ✅ From dashboard search click
+    if (selectedAdminId) {
+      return a.id === selectedAdminId;
+    }
+
+    // ✅ Normal search
+    return (
+      a.name?.toLowerCase().includes(globalSearch.toLowerCase()) ||
+      a.adminId?.toLowerCase().includes(globalSearch.toLowerCase()) ||
+      a.email?.toLowerCase().includes(globalSearch.toLowerCase()) ||
+      a.phone?.includes(globalSearch)
+    );
+  })
+
     .map(a => (
       <tr key={a.id} className="mobile-card">
          <td data-label="Photo">

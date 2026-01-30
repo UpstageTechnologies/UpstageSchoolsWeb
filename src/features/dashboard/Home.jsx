@@ -277,10 +277,6 @@ const parentId = localStorage.getItem("parentDocId");
 
     return (
   <>
-
-
-
-      {/* ================= PERSONAL DETAILS HEADER ================= */}
       {profile && (
         <div className="student-header">
 

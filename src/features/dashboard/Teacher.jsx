@@ -35,15 +35,13 @@ const sections = Array.from({ length: 26 }, (_, i) =>
   String.fromCharCode(65 + i)
 );
 
-const Teacher = ({requirePremium}) => {
+const Teacher = ({requirePremium , globalSearch = ""}) => {
   /* ================= BASIC ================= */
   const adminUid =
     auth.currentUser?.uid || localStorage.getItem("adminUid");
 
   const role = localStorage.getItem("role"); // admin | sub_admin
-
   const [showModal, setShowModal] = useState(false);
-  const [search, setSearch] = useState("");
   const [teachers, setTeachers] = useState([]);
   const [editId, setEditId] = useState(null);
   const [password, setPassword] = useState("");
@@ -70,7 +68,6 @@ const Teacher = ({requirePremium}) => {
     section: "",
     subject: ""
   });
-
   /* ================= FETCH TEACHERS ================= */
   const fetchTeachers = async () => {
     if (!adminUid) return;
@@ -100,7 +97,12 @@ const Teacher = ({requirePremium}) => {
     }));
   };
   
-
+  useEffect(() => {
+    return () => {
+      localStorage.removeItem("selectedTeacherId");
+    };
+  }, []);
+  
   /* ================= ADD CLASS ================= */
   const addAssignedClass = () => {
     if (!classForm.class || !classForm.section || !classForm.subject) {
@@ -268,22 +270,19 @@ if (!/^\d{10}$/.test(phoneClean)) {
     
     setClassForm({ class: "", section: "", subject: "" });
   };
+  const [selectedTeacherId, setSelectedTeacherId] = useState("");
 
-  /* ================= UI ================= */
+useEffect(() => {
+  setSelectedTeacherId(
+    localStorage.getItem("selectedTeacherId")
+  );
+}, []);
   return (
     <div className="teacher-page">
       <div className="teacher-header">
         <h2>Teachers</h2>
 
         <div className="teacher-actions">
-          <div className="search-box">
-            <FaSearch />
-            <input
-              placeholder="Search teacher..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-          </div>
 
           <button className="add-btn" onClick={() => setShowModal(true)}>
             <FaPlus />
@@ -307,9 +306,22 @@ if (!/^\d{10}$/.test(phoneClean)) {
 
         <tbody>
           {teachers
-            .filter(t =>
-              t.name?.toLowerCase().includes(search.toLowerCase())
-            )
+  .filter(t => {
+
+    // ✅ From global dashboard search click
+    if (selectedTeacherId) {
+      return t.id === selectedTeacherId;
+    }
+
+    // ✅ Normal search
+    return (
+      t.name?.toLowerCase().includes(globalSearch.toLowerCase()) ||
+      t.teacherId?.toLowerCase().includes(globalSearch.toLowerCase()) ||
+      t.email?.toLowerCase().includes(globalSearch.toLowerCase()) ||
+      t.phone?.includes(globalSearch)
+    );
+  })
+
             .map(t => (
               <tr key={t.id}>
                  <td data-label="Photo">
@@ -395,16 +407,11 @@ if (!/^\d{10}$/.test(phoneClean)) {
   >
     <FaTrash /> Delete
   </button>
-  
 </td>
-
-
               </tr>
             ))}
         </tbody>
       </table>
-
-      {/* MODAL */}
       {showModal && (
         <div className="modal-overlay " >
           
