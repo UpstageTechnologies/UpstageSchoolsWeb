@@ -129,11 +129,6 @@ const todayProfit = todayIncome - todayExpense;
         
         
   <div className="summary2-scroll">
-    {/* SETTINGS ICON */}
-    <div className="settings-icon" onClick={() => setActivePage("settings")}>
-  <i className="fa fa-cog"></i>
-</div> 
-
   <div className="summary2-layout">
 
 
@@ -162,44 +157,52 @@ const todayProfit = todayIncome - todayExpense;
   preserveAspectRatio="none"
 ><line
   x1="0"
-  y1="60"
+  y1="80"
   x2={chartWidth}
-  y2="60"
+  y2="80"
   stroke="#ddd"
   strokeWidth="2"
-/>
-<path
+/><path
   d={
-    monthlyProfit
-      .map((m, i) => {
-        const x = i * POINT_GAP;
+    monthlyProfit.map((m, i) => {
+      const x = i * POINT_GAP;
+      const y = getY(m.profit);
 
-        const y = getY(m.profit);
-        return `${i === 0 ? "M" : "L"} ${x} ${y}`;
-      })
-      .join(" ")
+      const boxWidth = 110;   // same as CSS
+      const boxHalf = boxWidth / 2;
+
+      if (i === 0) {
+        // Start from BOTTOM CENTER of first box
+        return `M ${x} ${y + 24}`;
+      }
+
+      const prevX = (i - 1) * POINT_GAP;
+      const prevY = getY(monthlyProfit[i - 1].profit);
+
+      return `
+        L ${prevX} ${prevY + 24}
+        L ${prevX} ${y + 24}
+        L ${x} ${y + 24}
+      `;
+    }).join(" ")
   }
   fill="none"
-  stroke="#8ab6f9"
-  strokeWidth="4"
-  strokeLinecap="round"
+  stroke="#6fa8ff"
+  strokeWidth="3"
+  strokeLinecap="square"
+  strokeLinejoin="miter"
 />
 
-
 </svg>
-
-
 {monthlyProfit.map((m, i) => {
 const y = getY(m.profit);
-
-
   return (
     <div
       key={i}
       className={`flow-item ${m.profit >= 0 ? "green" : "orange"}`}
       style={{
-        left: `${i * POINT_GAP}px`,
-        top: `${y}px`
+        left: `${i * POINT_GAP - 45}px`,
+        top: `${y - 5}px`        
       }}
     >
       <small>{m.month}</small>
@@ -210,8 +213,6 @@ const y = getY(m.profit);
   </div>
 </div>
 <div className="summary2-wrapper">
-  
-
   <div className="summary2-title">Overall Accounts</div>
 
   <div className="summary2-cards">

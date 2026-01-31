@@ -200,4 +200,26 @@
       grid-template-columns: 1fr !important;
     }
   }
+  .floating-back-btn{
+    position: fixed;
+    bottom: 30px;
+    left: 100px;
+  
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+  
+    background: white;
+    color: #2140df;
+  
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    font-size: 22px;
+    cursor: pointer;
+  
+    box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+    z-index: 999999;
+  }
   

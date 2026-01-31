@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import OfficeStaff from "../OfficeStaff";
 import BillPage from "./BillPage";   
 import "../../dashboard_styles/IE.css";
-import {  FaTrash } from "react-icons/fa";
+import {  FaArrowLeft, FaTrash } from "react-icons/fa";
 export default function ProfitPage({
   adminUid,
   setActivePage,
@@ -1008,19 +1008,14 @@ const deleteEntry = async (row) => {
       
     
 {!isOfficeStaff && (
-  <span
+  <span 
     style={{ color: "#2140df", cursor: "pointer", fontWeight: 600 }}
     onClick={() => setActivePage("accounts")}
-  >
-    ← Back
+  ><FaArrowLeft/>
+    
   </span>
 )}
-
-      
-      
-
-      
-      <h2 className="page-title">Accounts Dashboard</h2>
+<h2 className="page-title">Accounts Dashboard</h2>
       {!isOfficeStaff && (
       <div className="today-summary">
 
@@ -2064,9 +2059,6 @@ all.sort((a, b) => {
     adminUid={adminUid}
     setActivePage={setActivePage}
   />
-)}
-
-
-      </>
+)}  </>
   );
 }

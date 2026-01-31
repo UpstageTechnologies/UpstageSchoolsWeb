@@ -27,7 +27,7 @@ const [classSearchText, setClassSearchText] = useState("");
 const [showClassFilterDropdown, setShowClassFilterDropdown] = useState(false);
 const [reportPendingClass, setReportPendingClass] = useState("");
 const [reportPendingFee, setReportPendingFee] = useState(null);
-
+const [showOverviewDropdown, setShowOverviewDropdown] = useState(false);
 const normalizePaymentType = (i) => {
   if (!i.paymentType) return "";
 
@@ -436,14 +436,45 @@ const getPendingTerms = (studentId, feeId) => {
       </div>
     </div>
   )}
-</div>
+</div><div className="term-dropdown-wrapper">
 
 <button
-  style={{marginRight:8,marginLeft:8}}
-  className={incomeTab === "feesmaster" ? "tab-btn active" : "tab-btn"}
-  onClick={() => setIncomeTab("feesmaster")}>
-  Over View
+  className={`tab-btn ${
+    incomeTab === "feesmaster" ? "active" : ""
+  }`}
+  onClick={() => setShowOverviewDropdown(!showOverviewDropdown)}
+>
+  Over View ▾
 </button>
+
+{showOverviewDropdown && (
+  <div className="term-dropdown">
+
+    <div
+      onClick={() => {
+        setIncomeTab("feesmaster");
+        setFeeCategory("Tuition");
+        setShowOverviewDropdown(false);
+      }}
+    >
+      Tuition
+    </div>
+
+    <div
+      onClick={() => {
+        setIncomeTab("feesmaster");
+        setFeeCategory("Other");
+        setShowOverviewDropdown(false);
+      }}
+    >
+      Other
+    </div>
+
+  </div>
+)}
+
+</div>
+
 </div>
 {incomeTab === "feesmaster" && (
 <div className="section-card pop">
@@ -453,14 +484,6 @@ const getPendingTerms = (studentId, feeId) => {
   <h3 className="section-title">
     {feeCategory} Fees Collection Details
   </h3>
-
-  <select
-    value={feeCategory}
-    onChange={(e)=>setFeeCategory(e.target.value)}
-  >
-    <option value="Tuition">Tuition</option>
-    <option value="Other">Other</option>
-  </select>
 
   <div className="student-dropdown">
     <input
