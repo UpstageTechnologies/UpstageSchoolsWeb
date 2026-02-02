@@ -23,11 +23,13 @@ import  Accounts from "./features/dashboard/Accounts"
 import FeesPage from "./features/dashboard/accounts/FeesPage";
 import UserViewDashboard from "./features/dashboard/UserViewDashboard";
 import EmptyPage from "./useTheme/pages/EmptyPage";
+import UniversalLogin from "./useTheme/pages/UniversalLogin";
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Landing />} />
+        <Route path="/" element={<EmptyPage />} />
+        <Route path="/UniversalLogin" element={<UniversalLogin />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
@@ -49,7 +51,7 @@ function App() {
         <Route path="Accounts" element={<Accounts/>}/>
         <Route path="FeesPage" element={<FeesPage />} />
         <Route path="/dashboard/view"element={<UserViewDashboard />}/>
-        <Route path="/start" element={<EmptyPage />} />
+        <Route path="/landing" element={<Landing />} />
       </Routes>
     </Router>
   );

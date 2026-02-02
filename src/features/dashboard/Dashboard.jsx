@@ -754,7 +754,14 @@ const handleMenuClick = (page) => {
 </div>
           <nav className="navbar">
             <div className="nav-left">
-       
+            {activePage !== "home" && (
+    <div
+      className="menu-toggle"
+      onClick={() => handleMenuClick("home")}
+    >
+      <FaArrowLeft />
+    </div>
+  )}
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
 </div>
 <div className="nav-search">
@@ -1101,14 +1108,7 @@ const handleMenuClick = (page) => {
 )}
       </div>
 
-      {activePage !== "home" && (
-  <div
-    className="bottom-back-btn"
-    onClick={() => handleMenuClick("home")}
-  >
-    <FaArrowLeft />
-  </div>
-)}
+     
 
       </>
     );

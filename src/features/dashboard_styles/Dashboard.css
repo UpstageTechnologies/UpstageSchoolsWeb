@@ -1,6 +1,4 @@
-/* =========================================================
-   BASE
-========================================================= */
+
 :root{
   --topbar-height: 60px;
 }
@@ -12,48 +10,26 @@ html,body{overflow-x:hidden;}
 .sidebar ul{list-style:none;padding:0;margin-top:20px;}
 .sidebar ul li{padding:10px;margin:10px 0;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all 0.25s ease;}
 .sidebar ul li:hover{background:linear-gradient(135deg,#3a9df5,#5fb3ff);color:#ffffff;transform:scale(1.1);transition:0.2s ease;border-radius:6px;}
-
 .sidebar-open{left:0;}
-
 .sidebar-close{width:70px;min-width:70px;padding:20px 10px;}
-
 .main-content{flex:1;margin-left:clamp(160px,22vw,220px);display:flex;flex-direction:column;transition:margin-left 0.35s ease;}
-
 .sidebar-close~.main-content{margin-left:70px;}
-
 .navbar{position:fixed;min-height: 90px;  top:0;left:clamp(160px,22vw,220px);width:calc(100vw - clamp(160px,22vw,220px));height:60px;padding:10px 20px;background:#fff;border-bottom:1px solid #eee;z-index:150;display:flex;align-items:center;position: relative;}
-
 .sidebar-close~.main-content .navbar{left:70px;width:calc(100vw - 70px);}
-.nav-left{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  width:100%;
-}
+.nav-left{display:flex;align-items:center;gap:14px;width:100%;}
 .menu-toggle{font-size:28px;cursor:pointer;}
-
 .nav-school-logo{width:40px;}
 .nav-school-name{font-size:18px;font-weight:600;}
-
 .user-info{position:relative;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;}
-
 .username{font-size:16px;font-weight:500;}
-
 .user-dropdown{position:absolute;top:45px;right:0;min-width:160px;background:#fff;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,0.15);z-index:999;overflow:hidden;}
-
 .dropdown-item{padding:10px 14px;display:flex;align-items:center;gap:10px;font-size:14px;transition:background 0.2s;}
-
 .dropdown-item:hover{background:#f2f2f2;}
-
 .dropdown-item.logout{color:#d32f2f;font-weight:500;}
 .dashboard-content{padding:90px 25px 25px 25px;}
-
 .navbar{background:rgba(255,255,255,0.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 8px 24px rgba(0,0,0,0.06);border-bottom:1px solid rgba(255,255,255,0.4);}
-
 .sidebar{background:#ffffff;border-radius:18px;box-shadow:0 10px 25px rgba(0,0,0,0.08);top:8px;left:8px;height:calc(100vh - 16px);}
-
 .account-main{display:flex;align-items:center;justify-content:space-between;gap:10px;}
-
 .account-submenu{display:none;}
 
 .sidebar-open .account-submenu{display:block;padding-left:35px;}
@@ -598,312 +574,51 @@ html,body{overflow-x:hidden;}
   color: white;
   font-weight: 700;
   font-size: 17px;
-}
-/* FORCE GRID LAYOUT */
-.quick-row {
-  display: grid !important;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)) !important;
-  gap: 18px !important;
-  margin-bottom: 18px;
-}
-
-/* SQUARE TILE */
-.quick-tile {
-  width: 100% !important;
-  height: 110px !important;
-  background: #f8fafc;
-  border-radius: 16px;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 8px;
-  cursor: pointer;
-  transition: 0.25s ease;
-}
-
-/* HOVER */
-.quick-tile:hover {
- 
-  transform: translateY(-4px);
-}
-
-/* LETTER ICON */
-.tile-icon {
-  width: 42px;
-  height: 42px;
-  background: #3b82f6;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-/* TITLE */
-.quick-tile span {
-  font-size: 13px;
-  font-weight: 600;
-  text-align: center;
-}
-.search-dropdown{
-  position: absolute;
-  top: 80px;          /* 🔥 increase this value */
-  left: 0;
-  right: 0;
-  background: #fff;
-  border-radius: 14px;
-  padding: 20px;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.12);
-  z-index: 999;
-}
-
-.no-search-results{
-  padding: 18px;
-  text-align: center;
-  color: #6b7280;
-  font-size: 14px;
-  font-weight: 500;
-}
-/* Hide hamburger menu on mobile */
-@media (max-width: 500px) {
-  .menu-box {
-    display: none !important;
-  }
-}
-@media (max-width:768px){
-  .sidebar{
-    display:none;
-  }
-
-.sidebar-open,
-.sidebar-close,
-.sidebar-hidden {
-  transform: none !important;
-}
-
-}/* =========================
-   EXTRA SMALL MOBILE FIX
-   (<=360px devices)
-========================= */
-
-@media (max-width:360px){
-
-  /* NAVBAR HEIGHT */
-  .navbar{
-    height:52px !important;
-    padding:6px 10px !important;
-  }
-  
-  /* SEARCH BAR */
-  .nav-search input{
-    height:34px !important;
-    font-size:13px !important;
-    padding:6px 12px 6px 30px !important;
-    border-radius:999px !important;
-  }
-  
-  /* SEARCH ICON */
-  .search-icon-left{
-    left:8px !important;
-    font-size:12px !important;
-  }
-  
-  /* DROPDOWN POSITION */
-  .search-dropdown{
-    top:54px !important;
-    padding:12px !important;
-  }
-  @media (max-width:768px){
-
-  /* Make search icon smaller */
-  .search-icon-left{
-    font-size:12px !important;
-    left:10px !important;
-  }
-
-  /* Reduce input height */
-  .nav-search input{
-    height:36px !important;
-    font-size:13px !important;
-    padding-left:32px !important;
-  }
-
-}
-
-  
-  /* CONTENT TOP GAP */
-  .dashboard-content{
-    padding-top:62px !important;
-  }
-  
-  /* QUICK TILE GRID → 2 PER ROW */
-  .quick-row{
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap:12px !important;
-  }
-  
-  /* QUICK TILE SIZE */
-  .quick-tile{
-    height:92px !important;
-  }
-  
-  /* ICON SIZE */
-  .tile-icon{
-    width:36px !important;
-    height:36px !important;
-    font-size:16px !important;
-  }
-  
-  /* TILE TEXT */
-  .quick-tile span{
-    font-size:12px !important;
-  }
-  
-  /* CALENDAR CONTAINER */
-  .calendar-fullpage{
-    padding:10px !important;
-  }
-  
-  }
-  @media (max-width:360px){
-    .sidebar{
-      display:none !important;
-    }
-  
-    .main-content{
-      margin-left:0 !important;
-      width:100vw !important;
-      max-width:100vw !important;
-    }
-  
-    .navbar{
-      left:8px !important;
-      width:calc(100vw - 16px) !important;
-    }
-  }
-  
-  /* ===============================
-   MOBILE - NO SIDEBAR SPACE
-================================*/
-@media (max-width:768px){
-
-  /* Sidebar fully disabled */
-  .sidebar{
-    display:none !important;
-  }
-
-  /* Content takes full screen */
-  .main-content{
-    margin-left:0 !important;
-    width:100vw !important;
-    max-width:100vw !important;
-  }
-
-  /* Navbar takes full width */
-  .navbar{
-    left:8px !important;
-    width:calc(100vw - 16px) !important;
-  }
-
-}
-/* ================================
-   SCHOOL ICON ALWAYS INSIDE INPUT
-================================ */
-
-.search-school-icon{
-  right:10px !important;
-  width:26px !important;
-  height:26px !important;
-}
-
-.search-school-icon img{
-  width:24px !important;
-  height:24px !important;
-}
-
-/* Create permanent space for icon */
-.nav-search input{
-  padding-right:44px !important;
-}
-@media (max-width:360px){
-
-  .nav-search input{
-    padding-right:44px !important;
-  }
-
-  .search-school-icon{
-    right:8px !important;
-  }
-
-}
-@media (max-width:360px){
-  .dashboard-content{
-    padding-top:72px !important;   /* earlier 62px irunthuchu */
-  }
-}
-@media (max-width:360px){
-  .navbar{
-    height:56px !important;
-    min-height:56px !important;
-    padding:6px 8px !important;
-  }
-}/* ===========================
-   FLOATING BOTTOM BACK BUTTON
-=========================== */
-
-.bottom-back-btn{
-  position:fixed;
-  bottom:22px;
-  left:50%;
-  transform:translateX(-50%);
-
-  width:56px;
-  height:56px;
-  border-radius:50%;
-
-  background:white;
-  color:#000;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  font-size:20px;
-  cursor:pointer;
-
-  box-shadow:0 12px 30px rgba(37,99,235,0.45);
-  z-index:9999;
-
-  transition:0.25s ease;
-}
-
-.bottom-back-btn:hover{
-  transform:translateX(-50%) scale(1.08);
-  background:white;
-}
-@media (max-width:360px){
-  .bottom-back-btn{
-    width:46px;
-    height:46px;
-    font-size:18px;
-    bottom:16px;
-  }
-}
-.bottom-back-btn{
-  animation: slideUp .25s ease;
-}
-
-@keyframes slideUp{
-  from{
-    opacity:0;
-    transform:translate(-50%,20px);
-  }
-  to{
-    opacity:1;
-    transform:translate(-50%,0);
-  }
-}
-
+}.quick-row{display:grid !important;grid-template-columns:repeat(auto-fill,minmax(110px,1fr)) !important;gap:18px !important;margin-bottom:18px;}
+.quick-tile{width:100% !important;height:110px !important;background:#f8fafc;border-radius:16px;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;gap:8px;cursor:pointer;transition:0.25s ease;}
+.quick-tile:hover{transform:translateY(-4px);}
+.tile-icon{width:42px;height:42px;background:#3b82f6;border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;font-size:18px;font-weight:700;}
+.quick-tile span{font-size:13px;font-weight:600;text-align:center;}
+.search-dropdown{position:absolute;top:80px;left:0;right:0;background:#fff;border-radius:14px;padding:20px;box-shadow:0 15px 40px rgba(0,0,0,0.12);z-index:999;}
+.no-search-results{padding:18px;text-align:center;color:#6b7280;font-size:14px;font-weight:500;}
+@media (max-width:500px){.menu-box{display:none !important;}}
+@media (max-width:768px){.sidebar{display:none;}}
+@media (max-width:768px){.sidebar-open,.sidebar-close,.sidebar-hidden{transform:none !important;}}
+@media (max-width:360px){.navbar{height:52px !important;padding:6px 10px !important;}}
+@media (max-width:360px){.nav-search input{height:34px !important;font-size:13px !important;padding:6px 12px 6px 30px !important;border-radius:999px !important;}}
+@media (max-width:360px){.search-icon-left{left:8px !important;font-size:12px !important;}}
+@media (max-width:360px){.search-dropdown{top:54px !important;padding:12px !important;}}
+@media (max-width:768px){.search-icon-left{font-size:12px !important;left:10px !important;}}
+@media (max-width:768px){.nav-search input{height:36px !important;font-size:13px !important;padding-left:32px !important;}}
+@media (max-width:360px){.dashboard-content{padding-top:62px !important;}}
+@media (max-width:360px){.quick-row{grid-template-columns:repeat(2,1fr) !important;gap:12px !important;}}
+@media (max-width:360px){.quick-tile{height:92px !important;}}
+@media (max-width:360px){.tile-icon{width:36px !important;height:36px !important;font-size:16px !important;}}
+@media (max-width:360px){.quick-tile span{font-size:12px !important;}}
+@media (max-width:360px){.calendar-fullpage{padding:10px !important;}}
+@media (max-width:360px){.sidebar{display:none !important;}}
+@media (max-width:360px){.main-content{margin-left:0 !important;width:100vw !important;max-width:100vw !important;}}
+@media (max-width:360px){.navbar{left:8px !important;width:calc(100vw - 16px) !important;}}
+@media (max-width:768px){.sidebar{display:none !important;}}
+@media (max-width:768px){.main-content{margin-left:0 !important;width:100vw !important;max-width:100vw !important;}}
+@media (max-width:768px){.navbar{left:8px !important;width:calc(100vw - 16px) !important;}}
+.search-school-icon{right:10px !important;width:26px !important;height:26px !important;}
+.search-school-icon img{width:24px !important;height:24px !important;}
+.nav-search input{padding-right:44px !important;}
+@media (max-width:360px){.nav-search input{padding-right:44px !important;}}
+@media (max-width:360px){.search-school-icon{right:8px !important;}}
+@media (max-width:360px){.dashboard-content{padding-top:72px !important;}}
+@media (max-width:360px){.navbar{height:56px !important;min-height:56px !important;padding:6px 8px !important;}}
+.bottom-back-btn{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);width:56px;height:56px;border-radius:50%;background:white;color:#000;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;box-shadow:0 12px 30px rgba(37,99,235,0.45);z-index:9999;transition:0.25s ease;}
+.bottom-back-btn:hover{transform:translateX(-50%) scale(1.08);background:white;}
+@media (max-width:360px){.bottom-back-btn{width:46px;height:46px;font-size:18px;bottom:16px;}}
+.bottom-back-btn{animation:slideUp .25s ease;}
+@keyframes slideUp{from{opacity:0;transform:translate(-50%,20px);}to{opacity:1;transform:translate(-50%,0);}}
+@media (max-width:360px){.navbar{background:none !important;box-shadow:none !important;border:none !important;height:60px !important;padding:0 !important;}}
+@media (max-width:360px){.nav-left{position:fixed !important;top:8px !important;left:50% !important;transform:translateX(-50%) !important;width:calc(100vw - 16px) !important;height:46px !important;background:#ffffff !important;border-radius:999px !important;display:flex !important;align-items:center !important;box-shadow:0 10px 22px rgba(0,0,0,0.15) !important;z-index:99999 !important;}}
+@media (max-width:360px){.nav-search{flex:1 !important;height:100% !important;display:flex !important;align-items:center !important;}}
+@media (max-width:360px){.nav-search input{width:100% !important;height:100% !important;background:transparent !important;border:none !important;outline:none !important;box-shadow:none !important;padding-left:40px !important;padding-right:48px !important;font-size:14px !important;}}
+@media (max-width:360px){.menu-toggle{width:46px !important;height:46px !important;display:flex !important;align-items:center !important;justify-content:center !important;font-size:22px !important;}}
+@media (max-width:360px){.search-school-icon{width:28px !important;height:28px !important;right:10px !important;}}
+@media (max-width:360px){.search-dropdown{position:fixed !important;top:64px !important;left:8px !important;right:8px !important;z-index:99999 !important;}}
+@media (max-width:360px){.dashboard-content{padding-top:80px !important;}}

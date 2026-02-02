@@ -2,24 +2,48 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/EmptyPage.css";
 import studentImg from "../../assets/student.jpg";
+import { db } from "../../services/firebase";
+import { collection, getDocs } from "firebase/firestore";
+import { useEffect } from "react";
+import SearchableDropdown from "../../features/search/SearchableDropdown";
+
 
 export default function EmptyPage() {
-
+  const [schools, setSchools] = useState([]);
   const [school, setSchool] = useState("");
+  const roles = ["student", "teacher", "parent", "admin", "staff"];
+
   const [role, setRole] = useState("");
   const navigate = useNavigate();
-
+  
   const handleSubmit = (e) => {
     e.preventDefault();
-    navigate("/login");
+    navigate("/landing");
   };
+  useEffect(() => {
+    const fetchSchools = async () => {
+      const snap = await getDocs(collection(db, "users"));
+      const list = [];
+  
+      snap.forEach(doc => {
+        const data = doc.data();
+        if (data.schoolName) {
+          list.push(data.schoolName);
+        }
+      });
+  
+      setSchools(list);
+    };
+  
+    fetchSchools();
+  }, []);
+  
 
   return (
     <div className="hero-page">
         <div className="hero-wrapper">
       {/* LEFT */}
       <div className="hero-left">
-
         <h1>
           Single Platform For Your <br />
           <span>School Management</span> Needs.
@@ -29,39 +53,31 @@ export default function EmptyPage() {
           Manage attendance, fees, communication and learning —
           all from one powerful platform.
         </p>
-
         <form onSubmit={handleSubmit} className="hero-form">
 
-          <input
-            type="text"
-            placeholder="Enter your school name"
-            value={school}
-            onChange={(e) => setSchool(e.target.value)}
-            required
-          />
+<SearchableDropdown
+  items={schools}
+  value={school}
+  onChange={setSchool}
+  placeholder="Search school"
+/>
 
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            required
-          >
-            <option value="">Select your role</option>
-            <option value="student">Student</option>
-            <option value="teacher">Teacher</option>
-            <option value="parent">Parent</option>
-            <option value="admin">Admin</option>
-            <option value="staff">Office Staff</option>
-          </select>
+<SearchableDropdown
+  items={["student","teacher","parent","admin","staff"]}
+  value={role}
+  onChange={setRole}
+  placeholder="Search role"
+/>
 
-          <button type="submit">Continue →</button>
+<button type="submit">Continue →</button>
 
-        </form>
+</form>
+
 
       </div>
 
       {/* RIGHT */}
       <div className="hero-right">
-
         <div className="image-circle">
           <img src={studentImg} alt="Student" />
         </div>
