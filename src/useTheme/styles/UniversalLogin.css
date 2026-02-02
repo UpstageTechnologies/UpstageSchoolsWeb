@@ -6,164 +6,178 @@
     background:#f4f6ff;
     display:flex;
     justify-content:center;
-    align-items:center;
+    align-items:flex-start;
+    padding-top:120px;
     position:relative;
     overflow:hidden;
-    font-family: "Segoe UI", sans-serif;
+    font-family:"Segoe UI", sans-serif;
   }
   
-  /* ============================
-     PURPLE HEADER CURVE
-  ============================ */
-  .ul-top-bg{
+.ul-top-bg{
     position:absolute;
     top:0;
     left:0;
     width:100%;
     height:42%;
-    background:linear-gradient(135deg,#7c3aed,#5b21b6);
+    background:
+      linear-gradient(
+        rgba(124,58,237,0.9),
+        rgba(91,33,182,0.9)
+      ),
+      url("../../assets/login-person.png");
+    background-size:cover;
+    background-position:center;
     border-bottom-left-radius:60%;
     border-bottom-right-radius:60%;
   }
   
-  /* ============================
-     LOGIN CARD
-  ============================ */
-  .ul-card{
-    width:380px;
+/* ============================
+   LOGIN CARD
+============================ */
+.ul-card{
+    width:420px;
     background:#ffffff;
-    padding:45px 35px 130px;
+    padding:45px 40px 140px;
     border-radius:18px;
-    box-shadow:0 30px 70px rgba(0,0,0,0.25);
+    box-shadow:0 35px 80px rgba(0,0,0,0.25);
     text-align:center;
     position:relative;
     z-index:2;
   }
   
-  /* ============================
-     LOGO + WELCOME
-  ============================ */
-  .ul-logo{
-    margin-top:-120px;
-    color:white;
-    font-size:34px;
-    font-weight:700;
-  }
-  
-  .ul-welcome{
-    color:white;
-    font-size:15px;
-    margin-bottom:35px;
-  }
-  
-  /* ============================
-     TITLES
-  ============================ */
-  .ul-card h2{
-    margin:0;
-    font-size:26px;
-  }
-  
-  .ul-sub{
-    font-size:13px;
-    color:#777;
-    margin-bottom:18px;
-  }
-  
-  /* ============================
-     INPUTS
-  ============================ */
-  .ul-card input{
+/* ============================
+   LOGO + WELCOME
+============================ */
+.ul-logo{
+  margin-top:-120px;
+  color:white;
+  font-size:34px;
+  font-weight:700;
+}
+
+.ul-welcome{
+  color:white;
+  font-size:15px;
+  margin-bottom:35px;
+}
+
+/* ============================
+   TITLES
+============================ */
+.ul-card h2{
+  margin:0;
+  font-size:26px;
+}
+
+.ul-sub{
+  font-size:13px;
+  color:#777;
+  margin-bottom:18px;
+}
+
+/* ============================
+   INPUTS
+============================ */
+.ul-card input{
+  width:100%;
+  padding:12px;
+  margin-bottom:14px;
+  border-radius:8px;
+  border:1px solid #ddd;
+  font-size:14px;
+  outline:none;
+}
+
+.ul-card input:focus{
+  border-color:#7c3aed;
+}
+
+/* ============================
+   PASSWORD FIELD
+============================ */
+.password-wrapper{
+  position:relative;
+}
+
+.password-wrapper span{
+  position:absolute;
+  right:12px;
+  top:50%;
+  transform:translateY(-50%);
+  cursor:pointer;
+  color:#666;
+}
+
+/* ============================
+   FORGOT
+============================ */
+.forgot-text{
+  text-align:right;
+  font-size:12px;
+  color:#7c3aed;
+  cursor:pointer;
+  margin-bottom:18px;
+}
+
+/* ============================
+   LOGIN BUTTON
+============================ */
+.log-btn{
     width:100%;
-    padding:12px;
-    margin-bottom:14px;
-    border-radius:8px;
-    border:1px solid #ddd;
-    font-size:14px;
-    outline:none;
-  }
-  
-  .ul-card input:focus{
-    border-color:#7c3aed;
-  }
-  
-  /* ============================
-     PASSWORD FIELD
-  ============================ */
-  .password-wrapper{
-    position:relative;
-  }
-  
-  .password-wrapper span{
-    position:absolute;
-    right:12px;
-    top:50%;
-    transform:translateY(-50%);
-    cursor:pointer;
-    color:#666;
-  }
-  
-  /* ============================
-     FORGOT
-  ============================ */
-  .forgot-text{
-    text-align:right;
-    font-size:12px;
-    color:#7c3aed;
-    cursor:pointer;
-    margin-bottom:18px;
-  }
-  
-  /* ============================
-     LOGIN BUTTON
-  ============================ */
-  .log-btn{
-    width:100%;
-    padding:12px;
-    background:linear-gradient(135deg,#7c3aed,#5b21b6);
+    padding:14px;
+    background:linear-gradient(180deg,#7c3aed,#5b21b6);
     border:none;
     color:white;
-    font-size:15px;
+    font-size:16px;
     border-radius:8px;
     cursor:pointer;
-    transition:0.3s;
+    box-shadow:0 8px 18px rgba(124,58,237,0.45);
   }
   
-  .log-btn:hover{
-    opacity:0.9;
-    transform:translateY(-1px);
-  }
-  
-  /* ============================
-     AVATAR IMAGE
-  ============================ */
-  .ul-avatar{
+.log-btn:hover{
+  opacity:0.9;
+  transform:translateY(-1px);
+}
+.ul-avatar{
     position:absolute;
-    bottom:-90px;
+    bottom:-110px;   /* card keela kondu varum */
     left:50%;
     transform:translateX(-50%);
+    z-index:3;
   }
-  
   .ul-avatar img{
-    width:160px;
-    filter:drop-shadow(0 15px 20px rgba(0,0,0,0.25));
+    width:150px;
+    height:auto;
+    object-fit:contain;
+    background:transparent;
+    filter:drop-shadow(0 15px 25px rgba(0,0,0,0.3));
   }
   
-  /* ============================
-     MOBILE
-  ============================ */
-  @media(max-width:500px){
-    .ul-card{
-      width:90%;
-      padding:40px 25px 120px;
-    }
+
+/* ============================
+   MOBILE
+============================ */
+@media(max-width:500px){
+  .ul-card{
+    width:90%;
+    padding:40px 25px 120px;
+  }
+
+  .ul-logo{
+    font-size:28px;
+  }
+
+  .ul-avatar img{
+    width:170px;
+  }
+}
+.ul-avatar img{
+    animation: float 3s ease-in-out infinite;
+  }
   
-    .ul-logo{
-      font-size:28px;
-    }
-  
-    .ul-avatar img{
-      width:130px;
-    }
+  @keyframes float{
+    0%{ transform:translateY(0); }
+    50%{ transform:translateY(-8px); }
+    100%{ transform:translateY(0); }
   }
   

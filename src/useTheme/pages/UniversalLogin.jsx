@@ -12,7 +12,7 @@ import {
   signInWithEmailAndPassword,
   sendPasswordResetEmail
 } from "firebase/auth";
-
+import loginPerson from "../../assets/login-person.png";
 import { auth, db } from "../../services/firebase";
 import logo from "../../assets/logo.jpeg";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
@@ -212,10 +212,7 @@ const UniversalLogin = () => {
           
   
         </form>
-  
-        <div className="ul-avatar">
-          <img src={logo} />
-        </div>
+      
   
       </div>
     </div>
