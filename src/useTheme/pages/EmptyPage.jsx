@@ -11,14 +11,23 @@ import SearchableDropdown from "../../features/search/SearchableDropdown";
 export default function EmptyPage() {
   const [schools, setSchools] = useState([]);
   const [school, setSchool] = useState("");
-  const roles = ["student", "teacher", "parent", "admin", "staff"];
+  const roles = [
+    { value: "master", label: "School Owner" },
+    { value: "admin", label: "Admin" },
+    { value: "teacher", label: "Teacher" },
+    { value: "parent", label: "Parent" },
+    { value: "office_staff", label: "Office Staff" }
+  ];
+  
 
   const [role, setRole] = useState("");
   const navigate = useNavigate();
   
   const handleSubmit = (e) => {
     e.preventDefault();
+    localStorage.setItem("selectedRole", role);
     navigate("/landing");
+    
   };
   useEffect(() => {
     const fetchSchools = async () => {
@@ -63,7 +72,8 @@ export default function EmptyPage() {
 />
 
 <SearchableDropdown
-  items={["student","teacher","parent","admin","staff"]}
+  items={["master","admin","teacher","parent","office_staff"]}
+  
   value={role}
   onChange={setRole}
   placeholder="Search role"

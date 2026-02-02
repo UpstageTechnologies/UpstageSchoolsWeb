@@ -124,12 +124,12 @@ const highlightText = (text, query) => {
     )
   );
 };
+const [showSearch, setShowSearch] = useState(false);
 
-//useEffect(() => {
-  //if (isMobile()) {
-    //setSidebarState("open");
-  //}
-//}, []);
+const closeSearch = () => {
+  setShowSearch(false);
+};
+
 useEffect(() => {
   const adminUid =
     localStorage.getItem("adminUid") || auth.currentUser?.uid;
@@ -748,15 +748,16 @@ const handleMenuClick = (page) => {
 </ul>
         </div>
         <div className="main-content">
-       
-<div className="menu-box" onClick={toggleSidebar}>
-  ☰
-</div>
+   
           <nav className="navbar">
             <div className="nav-left">
+            <div className="menu-toggle" onClick={toggleSidebar}>
+  ☰
+</div>
+
             {activePage !== "home" && (
     <div
-      className="menu-toggle"
+      className="mobile-back-btn"
       onClick={() => handleMenuClick("home")}
     >
       <FaArrowLeft />
@@ -797,7 +798,12 @@ const handleMenuClick = (page) => {
   </div>
   {(showQuickPanel || globalResults.length > 0) && (
   <div className="search-dropdown">
-
+    <div className="search-header">
+    <span className="search-back" onClick={closeSearch}>
+      ←
+    </span>
+    <span className="search-title"></span>
+  </div>
     {/* QUICK ICONS */}
     {searchQuery === "" && (
       <>

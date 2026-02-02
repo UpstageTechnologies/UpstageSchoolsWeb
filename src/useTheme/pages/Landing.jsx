@@ -27,10 +27,11 @@ export default function Landing() {
           <div className="hero-buttons">
           <button 
   className="btn-primary"
-  onClick={() => navigate("/landing")}
+  onClick={() => navigate("/UniversalLogin")}
 >
   Get Started
 </button>
+
           </div>
         </section>
 

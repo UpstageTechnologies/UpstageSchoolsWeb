@@ -19,8 +19,10 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "../styles/UniversalLogin.css";
 
 const UniversalLogin = () => {
-
-  const [role, setRole] = useState(""); // teacher, parent, staff, admin, master
+    const [role, setRole] = useState(
+        localStorage.getItem("selectedRole") || ""
+      );
+      
   const [userId, setUserId] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -160,17 +162,12 @@ const UniversalLogin = () => {
         <p className="ul-welcome">Hello 👋 Welcome!</p>
   
         <h2>Login</h2>
+        <p className="ul-sub">
+  {role.toUpperCase()} Login
+</p>
+
         <p className="ul-sub">Please login to admin dashboard</p>
-  
-        {/* ROLE */}
-        <select value={role} onChange={e=>setRole(e.target.value)} required>
-          <option value="">Select Role</option>
-          <option value="master">School Owner</option>
-          <option value="admin">Admin</option>
-          <option value="teacher">Teacher</option>
-          <option value="parent">Parent</option>
-          <option value="office_staff">Office Staff</option>
-        </select>
+    
   
         <form onSubmit={handleLogin}>
   
@@ -212,6 +209,7 @@ const UniversalLogin = () => {
           <button className="log-btn" disabled={loading}>
             {loading ? "Loading..." : "Login"}
           </button>
+          
   
         </form>
   

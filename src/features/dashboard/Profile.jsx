@@ -13,6 +13,8 @@ export default function Profile() {
 
   const [data, setData] = useState(null);
   const [adminUid, setAdminUid] = useState(null);
+  const [firstName, setFirstName] = useState("");
+const [lastName, setLastName] = useState("");
 
   const [editing, setEditing] = useState(false);
   const [schoolName, setSchoolName] = useState("");
@@ -75,7 +77,6 @@ const [gstNumber, setGstNumber] = useState("");
         // ✅ ADD THESE HERE
         setPhone(d?.phone || "");
         setAddress(d?.address || "");
-    
         setSchoolEmail(d?.schoolEmail || "");
         setSchoolAddress(d?.schoolAddress || "");
         setGstNumber(d?.gstNumber || "");
