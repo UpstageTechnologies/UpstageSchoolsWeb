@@ -17,12 +17,10 @@ import { auth, db } from "../../services/firebase";
 import logo from "../../assets/logo.jpeg";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "../styles/UniversalLogin.css";
-
 const UniversalLogin = () => {
     const [role, setRole] = useState(
         localStorage.getItem("selectedRole") || ""
-      );
-      
+      );  
   const [userId, setUserId] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -208,15 +206,8 @@ const UniversalLogin = () => {
   
           <button className="log-btn" disabled={loading}>
             {loading ? "Loading..." : "Login"}
-          </button>
-          
-  
-        </form>
-      
-  
-      </div>
+          </button></form></div>
     </div>
   );  
 };
-
 export default UniversalLogin;

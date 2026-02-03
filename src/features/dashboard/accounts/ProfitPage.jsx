@@ -34,12 +34,34 @@ const [selectedFees, setSelectedFees] = useState([]);
 const [showFeesDropdown, setShowFeesDropdown] = useState(false);
 const [newClassSearch, setNewClassSearch] = useState("");
 const [showNewClassDropdown, setShowNewClassDropdown] = useState(false);
-
-
+const [competitionName, setCompetitionName] = useState("");
+const [competitionAmount, setCompetitionAmount] = useState("");
+const [competitionClass, setCompetitionClass] = useState("");
+const [competitionStudent, setCompetitionStudent] = useState("");
 const [entryType, setEntryType] = useState("");
 const [feesMaster, setFeesMaster] = useState([]);
 const [showIncomeType, setShowIncomeType] = useState(false);
 const [incomeType, setIncomeType] = useState("");
+const [showMiscDropdown, setShowMiscDropdown] = useState(false);
+const [miscSearch, setMiscSearch] = useState("");
+const [miscName, setMiscName] = useState("");       // Sports Day
+const [expenseSubName, setExpenseSubName] = useState(""); // Decoration
+
+const miscNames = [
+  ...new Set([
+    // 🔹 from competition income
+    ...incomeList
+      .filter(i => i.incomeType === "competition")
+      .map(i => i.competitionName),
+
+    // 🔹 from student misc expenses
+    ...expenseList
+      .filter(e => e.type === "student_misc")
+      .map(e => e.name)
+  ])
+].filter(Boolean);
+
+
 const getSalaryFromInventory = (role, position, teacherName) => {
   return feesMaster.find(
     f =>
@@ -82,28 +104,16 @@ const filteredCategories = categories.filter(c =>
 const filteredPositions = (positions[salaryRole] || []).filter(p =>
   p.toLowerCase().includes(positionSearch.toLowerCase())
 );
-
-
-
 const [newStudentSearch, setNewStudentSearch] = useState("");
 const [showNewStudentDropdown, setShowNewStudentDropdown] = useState(false);
 const [selectedNewStudent, setSelectedNewStudent] = useState(null);
 const [showSalaryCategory, setShowSalaryCategory] = useState(false);
 const [showSalaryPositionDD, setShowSalaryPositionDD] = useState(false);
-
-
 const [teachers, setTeachers] = useState([]);
 const [teacherSearch, setTeacherSearch] = useState("");
 const [showTeacherDropdown, setShowTeacherDropdown] = useState(false);
 const [staffSearch, setStaffSearch] = useState("");
 const [showStaffDropdown, setShowStaffDropdown] = useState(false);
-
-
-
-
-
-
-
 const getClassFees = (cls) => {
   if (!cls) return [];
   return feesMaster.filter(
@@ -132,63 +142,24 @@ useEffect(() => {
 
   return () => unsub();   // 🔥 very important
 }, [adminUid]);
-
-
-
-
-
 const [showStudentType, setShowStudentType] = useState(false);
-
-
-
-
-
-
-
 const loaded = incomeLoaded && expenseLoaded;
-
-
-  
-
-
-
-
   const [entryDate, setEntryDate] = useState(() => {
     const today = new Date();
     return today.toISOString().split("T")[0]; // yyyy-mm-dd
   });
-  
-
-  // INCOME
   const [incomeMode, setIncomeMode] = useState("");
   const [studentMode, setStudentMode] = useState("");
 
   const [showEntryType, setShowEntryType] = useState(false);
-
-  
-
-
-  // source
   const [srcName, setSrcName] = useState("");
   const [srcAmt, setSrcAmt] = useState("");
 
-  // students / fees
   const [students, setStudents] = useState([]);
-
-  
-  
-
   const [newName, setNewName] = useState("");
   const [newParent, setNewParent] = useState("");
   const [newClass, setNewClass] = useState("");
   const [newPayType, setNewPayType] = useState("");
-
-  // ================= DERIVED VALUES =================
-
-
-
-
-
   const [newPayAmount, setNewPayAmount] = useState("");
   const [newTotal, setNewTotal] = useState(0);
 
@@ -202,9 +173,6 @@ const loaded = incomeLoaded && expenseLoaded;
       s.studentName?.toLowerCase().includes(newStudentSearch.toLowerCase())
     );
   });
-
-
-
   const isFullPayment = newPayType === "full";
   const feeDiscountPercent = selectedFees[0]?.discount || 0;
 
@@ -212,10 +180,6 @@ const loaded = incomeLoaded && expenseLoaded;
     newPayType === "full"
       ? (selectedFees[0]?.amount || 0) * (feeDiscountPercent / 100)
       : 0;
-  
-  
-
-
   const [oldClass, setOldClass] = useState("");
   const [oldStudent, setOldStudent] = useState("");
   const [oldParent, setOldParent] = useState("");
@@ -247,21 +211,11 @@ useEffect(() => {
 const filteredPaymentTypes = paymentTypes.filter(p =>
   p.toLowerCase().includes(paymentSearch.toLowerCase())
 );
-
-
-  // EXPENSE
   const [expenseMode, setExpenseMode] = useState("");
- 
-
-
-  
-  const [selName, setSelName] = useState("");                // typed person name
+  const [selName, setSelName] = useState(""); 
   const [manualSalary, setManualSalary] = useState("");
-
-  // other expense
   const [exName, setExName] = useState("");
   const [exAmt, setExAmt] = useState("");
-
   const [studentSearch, setStudentSearch] = useState("");
   const [selectedStudentName, setSelectedStudentName] = useState("");
 
@@ -270,12 +224,10 @@ const filteredPaymentTypes = paymentTypes.filter(p =>
       ...incomeList.map(i => i.date),
       ...expenseList.map(e => e.date)
     ])
-  ].sort();   // ascending order
-  
+  ].sort();
   const getClassTotal = (cls) =>
   feesMaster.filter(f => f.className === cls)
     .reduce((t, f) => t + (f.amount || 0), 0);
-
 const getStudentPaid = (studentId) =>
   incomeList
     .filter(i => i.studentId === studentId)
@@ -287,11 +239,6 @@ const getStudentBalance = (studentId, className) => {
   return total - paid;
 };
 
-
-  
-
-
- 
   const currentPageIndex = allDates.indexOf(entryDate);
   const totalPages = allDates.length;
 
@@ -449,9 +396,6 @@ useEffect(() => {
   
       const fee = selectedFees[0];
       if (!fee) return alert("Select fee");
-      
-      // 🚫 Prevent duplicate Admission for same fee
-// 🚫 Prevent duplicate Admission for same fee
 const alreadyPaid = incomeList.some(
   i =>
     i.feeId === fee.id &&
@@ -607,9 +551,6 @@ setOldPayAmount("");
 
   };
   
-  
-  
-
   /* ---------- INCOME: OLD ADMISSION ---------- */
   const selectOldClass = cls=>{
     setOldClass(cls);
@@ -798,7 +739,7 @@ const todayProfit = todayIncome - todayExpense;
     if(!exName||!exAmt||!entryDate) return alert("Fill expense");
 
     await addDoc(expensesRef,{
-      type:"other",
+      type: expenseMode,
       name:exName,
       amount:Number(exAmt),
       date:entryDate,
@@ -806,7 +747,34 @@ const todayProfit = todayIncome - todayExpense;
     });
 
     setExName(""); setExAmt("");
+  };const saveCompetitionIncome = async () => {
+    if (
+      !competitionClass ||
+      !competitionStudent ||
+      !competitionName ||
+      !competitionAmount ||
+      !entryDate
+    ) {
+      alert("Fill all competition fields");
+      return;
+    }
+  
+    await addDoc(incomesRef, {
+      incomeType: "competition",
+      className: competitionClass,
+      studentName: competitionStudent,
+      competitionName,
+      paidAmount: Number(competitionAmount),
+      date: entryDate,
+      createdAt: new Date()
+    });
+  
+    setCompetitionClass("");
+    setCompetitionStudent("");
+    setCompetitionName("");
+    setCompetitionAmount("");
   };
+  
 /* ---------- EXPENSE: SALARY ---------- */
 const saveSalary = async () => {
 
@@ -866,6 +834,27 @@ const getFeeBalance = (studentId, fee) => {
 };
 
 
+const saveStudentMiscExpense = async () => {
+
+  if (!miscName || !expenseSubName || !exAmt || !entryDate) {
+    alert("Fill all fields");
+    return;
+  }
+
+  await addDoc(expensesRef, {
+    type: "student_misc",
+    miscName: miscName,        // Competition / Sports Day
+    name: expenseSubName,      // Decoration / Prize
+    amount: Number(exAmt),
+    className: competitionClass,   // or selected class
+    date: entryDate,
+    createdAt: new Date()
+  });
+
+  setMiscName("");
+  setExpenseSubName("");
+  setExAmt("");
+};
 
   /* ---------- FEE MASTER ---------- */
   const saveFee = async ()=>{
@@ -885,10 +874,6 @@ const getFeeBalance = (studentId, fee) => {
   const totalIncome = incomeList.reduce((t,x)=>t+(x.paidAmount||0),0);
   const totalExpense= expenseList.reduce((t,x)=>t+(x.amount||0),0);
   const profit = totalIncome-totalExpense;
-  // 🔥 SHOW ONLY BILL PAGE
-
-  
-// how many terms already paid
 const getTermPaidCount = (studentId, feeId) =>
 
   incomeList.filter(
@@ -1105,6 +1090,7 @@ const deleteEntry = async (row) => {
       >
         Expense
       </div>
+      
     </div>
   )}
 </div>
@@ -1150,6 +1136,15 @@ const deleteEntry = async (row) => {
             >
               Student
             </div>
+            <div
+      onClick={() => {
+        setIncomeType("Competition");
+        setIncomeMode("competition");
+        setShowIncomeType(false);
+      }}
+    >
+      Competition
+    </div>
           </div>
         )}
       </div>
@@ -1224,7 +1219,7 @@ const deleteEntry = async (row) => {
         </button>
       </div>
     )}
-
+    
     {/* ================= NEW STUDENT ================= */}
     {incomeMode === "student" && studentMode === "new" && (
     <div className="entry-row source">
@@ -1448,8 +1443,6 @@ const deleteEntry = async (row) => {
   }}
   onFocus={() => setShowStudentDropdown(true)}
 />
-
-
 {showStudentDropdown && (
   <div className="student-dropdown-list">
 
@@ -1481,7 +1474,7 @@ const deleteEntry = async (row) => {
     </div>
     
     <input readOnly value={oldParent ? `Parent: ${oldParent}` : ""} 
-    placeholder="Parenr Name"/>
+    placeholder="Parent Name"/>
     {/* ===== SELECT FEES FROM INVENTORY ===== */}
 <div className="student-dropdown">
   <input
@@ -1631,8 +1624,106 @@ const deleteEntry = async (row) => {
   </div>
 )}
   </div>
-)}</>
 )}
+{incomeMode === "competition" && (
+  <div className="entry-row source">
+
+    {/* CLASS */}
+    <div className="student-dropdown">
+      <input
+        placeholder="Select Class"
+        value={competitionClass}
+        readOnly
+        onClick={() => setShowClassDropdown(true)}
+      />
+
+      {showClassDropdown && (
+        <div className="student-dropdown-list">
+          {classes.map(cls => (
+            <div
+              key={cls}
+              className="student-option"
+              onClick={() => {
+                setCompetitionClass(cls);
+                setShowClassDropdown(false);
+                setShowStudentDropdown(true);
+              }}
+            >
+              Class {cls}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+
+    {/* STUDENT */}
+    <div className="student-dropdown">
+      <input
+        placeholder="Select Student"
+        value={competitionStudent || studentSearch}
+        onChange={e => {
+          setStudentSearch(e.target.value);
+          setCompetitionStudent("");
+          setShowStudentDropdown(true);
+        }}
+        onFocus={() => setShowStudentDropdown(true)}
+      />
+
+      {showStudentDropdown && (
+        <div className="student-dropdown-list">
+          {students
+            .filter(s =>
+              s.class === competitionClass &&
+              s.studentName
+                ?.toLowerCase()
+                .includes(studentSearch.toLowerCase())
+            )
+            .map(s => (
+              <div
+                key={s.id}
+                className="student-option"
+                onClick={() => {
+                  setCompetitionStudent(s.studentName);
+                  setStudentSearch("");
+                  setShowStudentDropdown(false);
+                }}
+              >
+                {s.studentName}
+              </div>
+            ))}
+        </div>
+      )}
+    </div>
+
+    {/* COMPETITION NAME */}
+    <input
+      placeholder="Competition Name"
+      value={competitionName}
+      onChange={e => setCompetitionName(e.target.value)}
+    />
+
+    {/* AMOUNT */}
+    <input
+      type="number"
+      placeholder="Amount"
+      value={competitionAmount}
+      onChange={e => setCompetitionAmount(e.target.value)}
+    />
+
+    <button
+      className="save-btn"
+      onClick={() => safeRequirePremium(saveCompetitionIncome,"income")}
+    >
+      Save
+    </button>
+
+  </div>
+)}
+</>
+
+
+)}
+
 {entryType==="expense" && (
 <>
   {/* Expense Type */}
@@ -1650,6 +1741,9 @@ const deleteEntry = async (row) => {
         <div onClick={() => { setExpenseMode("others"); setShowExpenseType(false); }}>
           Others
         </div>
+        <div onClick={() => { setExpenseMode("student_misc"); setShowExpenseType(false); }}>
+  Student Miscellaneous
+</div>
       </div>
     )}
   </div>
@@ -1757,7 +1851,6 @@ const deleteEntry = async (row) => {
                 setSelName(t.name);
                 setTeacherSearch("");
                 setShowTeacherDropdown(false);
-
                 const salaryItem = getSalaryFromInventory(
                   salaryRole,
                   salaryPosition,
@@ -1848,6 +1941,84 @@ const deleteEntry = async (row) => {
       </button>
     </div>
   )}
+  {expenseMode === "student_misc" && (
+  <div className="entry-row">
+
+    {/* 🔽 Miscellaneous Name */}
+    <div className="student-dropdown">
+      <input
+        placeholder="Miscellaneous Name"
+        value={miscName || miscSearch}
+        onChange={e => {
+          setMiscSearch(e.target.value);
+          setMiscName("");
+          setShowMiscDropdown(true);
+        }}
+        onFocus={() => setShowMiscDropdown(true)}
+      />
+
+      {showMiscDropdown && (
+        <div className="student-dropdown-list">
+
+          {miscNames
+            .filter(n =>
+              n?.toLowerCase().includes(miscSearch.toLowerCase())
+            )
+            .map(name => (
+              <div
+                key={name}
+                className="student-option"
+                onClick={() => {
+                  setMiscName(name);
+                  setMiscSearch("");
+                  setShowMiscDropdown(false);
+                }}
+              >
+                {name}
+              </div>
+            ))}
+
+          {miscSearch && (
+            <div
+              className="student-option"
+              style={{ color: "#2563eb" }}
+              onClick={() => {
+                setMiscName(miscSearch);
+                setShowMiscDropdown(false);
+              }}
+            >
+              ➕ Add "{miscSearch}"
+            </div>
+          )}
+
+        </div>
+      )}
+    </div>
+
+    {/* 🔹 Expense Name */}
+    <input
+      placeholder="Expense Name"
+      value={expenseSubName}
+      onChange={e => setExpenseSubName(e.target.value)}
+    />
+
+    {/* 🔢 Amount */}
+    <input
+      type="number"
+      placeholder="Amount"
+      value={exAmt}
+      onChange={e => setExAmt(e.target.value)}
+    />
+
+    <button
+      className="save-btn"
+      onClick={() => safeRequirePremium(saveStudentMiscExpense, "expense")}
+    >
+      Save
+    </button>
+
+  </div>
+)}
 </>
 )}
         {entryType==="fees" && (
@@ -1898,7 +2069,7 @@ Save Fee</button>
         id: i.id,
         type: "income",          // 👈 IMPORTANT
         date: i.date,
-        source: i.studentName || i.name || "Income",
+        source: i.competitionName || i.studentName || i.name || "Income",
         income: isOfficeStaff ? "***" : (i.paidAmount || 0),
         expense: "",
         studentId: i.studentId || null

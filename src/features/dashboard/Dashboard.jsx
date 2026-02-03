@@ -90,9 +90,7 @@ const [parentsList, setParentsList] = useState([]);
 const [globalResults, setGlobalResults] = useState([]);
 const pageResults = globalResults.filter(r => r.type === "page");
 const peopleResults = globalResults.filter(r => r.type !== "page");
-const badgeColors = {
-  teacher: "#add8e6",      // blue
-  student: "#90ee90",      // green
+const badgeColors = {teacher: "#add8e6", student: "#90ee90",      // green
   parent: "rgb(240, 170, 240)",       // purple
   admin: "#f08080",        // red
   office_staff: "#ffa07a", // orange
@@ -804,7 +802,6 @@ const handleMenuClick = (page) => {
     </span>
     <span className="search-title"></span>
   </div>
-    {/* QUICK ICONS */}
     {searchQuery === "" && (
       <>
         <div className="quick-row">
@@ -814,24 +811,16 @@ const handleMenuClick = (page) => {
 <QuickTile title="Timetable" page="timetable" onOpen={handleMenuClick} />
 <QuickTile title="Approvals" page="approvals" onOpen={handleMenuClick} />
 <QuickTile title="Courses" page="courses" onOpen={handleMenuClick} />
-
         </div>
-
         <div className="quick-title">Account Creation</div>
-
         <div className="quick-row">
   <QuickTile title="Admin" page="admin" color="#f08080" onOpen={handleMenuClick} />
   <QuickTile title="Teacher" page="teacher" color="#add8e6" onOpen={handleMenuClick} />
   <QuickTile title="Student" page="student" color="#90ee90" onOpen={handleMenuClick} />
   <QuickTile title="Parent" page="parent" color="rgb(240,170,240)" onOpen={handleMenuClick} />
   <QuickTile title="Staff" page="office_staff" color="#ffa07a" onOpen={handleMenuClick} />
-</div>  
-
-      </>
+</div>   </>
     )}
-    
-
-    {/* PAGES */}
     {pageResults.length > 0 && (
       <>
         <div className="quick-title">Pages</div>
@@ -846,8 +835,6 @@ const handleMenuClick = (page) => {
         </div>
       </>
     )}
-
-    {/* PEOPLE */}
     {peopleResults.length > 0 && (
       <>
         <div className="quick-title">People</div>
@@ -904,9 +891,7 @@ const handleMenuClick = (page) => {
           </div>
         ))}
 
-      </>
-      
-    )}
+      </>)}
 {searchQuery !== "" &&
       pageResults.length === 0 &&
       peopleResults.length === 0 && (
@@ -916,8 +901,6 @@ const handleMenuClick = (page) => {
     )}
   </div>
 )}
-
-
 </div></div>
 {viewAs === "parent" && (
   <button
@@ -941,8 +924,6 @@ const handleMenuClick = (page) => {
   </button>
 )}</nav>
           <div className="dashboard-content">
-
-            {/* 📅 FULL PAGE CALENDAR */}
 {activePage === "calendar" && (
   <div className="calendar-fullpage">
     <SchoolCalendar
@@ -951,8 +932,6 @@ const handleMenuClick = (page) => {
     />
   </div>
 )}
-
-            {/* 👩‍🏫 TEACHER HOME */}
 {role === "teacher" && activePage === "teacher-home" && (
   <TeacherHome
     adminUid={localStorage.getItem("adminUid")}
@@ -965,8 +944,6 @@ const handleMenuClick = (page) => {
     parentId={localStorage.getItem("parentDocId")}
   />
 )}
-
-
 {(role === "master" || role === "admin") && activePage === "home" &&(
   <Home
   adminUid={adminUid}
@@ -977,8 +954,6 @@ const handleMenuClick = (page) => {
   viewTeacherId={viewTeacherId}
   viewParentId={viewParentId}
 />
-
-
 )}
 {isAdminOrSubAdmin && activePage === "fees" && (
   <FeesPage 
@@ -986,7 +961,6 @@ const handleMenuClick = (page) => {
   setActivePage={setActivePage}
   globalSearch={searchQuery}
 />
-
 )}
 {activePage === "income" && (
   <FeesPage adminUid={adminUid} mode="income" globalSearch={searchQuery} setActivePage={setActivePage}/>
@@ -1013,11 +987,7 @@ const handleMenuClick = (page) => {
   trialExpiresAt={trialExpiresAt}
   showUpgrade={() => setShowUpgrade(true)}
 />
-
-
 )}
-
-
 {isAdminOrSubAdmin && activePage === "inventory" && (
  <Inventory
  adminUid={adminUid}
@@ -1025,22 +995,9 @@ const handleMenuClick = (page) => {
  plan={plan}
  showUpgrade={() => setShowUpgrade(true)}
 />
-
 )}
-
-
-{/* rest of the pages go here… */}
-
-
-    
-
-
-
-
             {isAdminOrSubAdmin && activePage === "teacher" && (
-              <Teacher adminUid={adminUid} globalSearch={searchQuery} requirePremium={requirePremium} />
-            )}
-
+              <Teacher adminUid={adminUid} globalSearch={searchQuery} requirePremium={requirePremium} />)}
 {(isAdminOrSubAdmin || viewAs === "parent") && activePage === "parent" && (
   <Parent adminUid={adminUid}  globalSearch={searchQuery} requirePremium={requirePremium} />
 )}
@@ -1111,12 +1068,6 @@ const handleMenuClick = (page) => {
     onClose={() => setShowUpgrade(false)}
     onUpgrade={() => navigate("/payment")}
   />
-)}
-      </div>
-
-     
-
-      </>
-    );
-  };
+)}</div> </>
+    );};
   export default Dashboard;

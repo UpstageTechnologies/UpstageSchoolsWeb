@@ -28,6 +28,7 @@ const [showClassFilterDropdown, setShowClassFilterDropdown] = useState(false);
 const [reportPendingClass, setReportPendingClass] = useState("");
 const [reportPendingFee, setReportPendingFee] = useState(null);
 const [showOverviewDropdown, setShowOverviewDropdown] = useState(false);
+
 const normalizePaymentType = (i) => {
   if (!i.paymentType) return "";
 
@@ -160,7 +161,7 @@ useEffect(() => {
       });
     }
   
-    if (mode === "expenses") {
+    if (mode === "expenses" || mode === "income") {
       unsubExpense = onSnapshot(expenseRef, snap => {
         setExpenseList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
       });
@@ -245,6 +246,57 @@ const getPendingTerms = (studentId, feeId) => {
     .map(t => t.replace("term", "Term "))
     .join(" & ") + " Not Paid";
 };
+const competitionAnalysis = (() => {
+
+  const map = {};
+
+  // 🟢 COLLECT COMPETITION INCOME
+  incomeList
+    .filter(i => i.incomeType === "competition")
+    .forEach(i => {
+
+      const key = `${i.className}__${i.competitionName}`;
+
+      if (!map[key]) {
+        map[key] = {
+          className: i.className,
+          competitionName: i.competitionName,
+          expenseName: "",
+          income: 0,
+          expense: 0
+        };
+      }
+
+      map[key].income += Number(i.paidAmount || 0);
+    });
+
+  // 🔴 COLLECT STUDENT MISC EXPENSE
+  expenseList
+    .filter(e => e.type === "student_misc")
+    .forEach(e => {
+
+      const key = `${e.className}__${e.miscName}`;
+
+      if (!map[key]) {
+        map[key] = {
+          className: e.className,
+          competitionName: e.miscName,
+          expenseName: "",
+          income: 0,
+          expense: 0
+        };
+      }
+
+      map[key].expense += Number(e.amount || 0);
+
+      if (!map[key].expenseName) {
+        map[key].expenseName = e.name;
+      }
+    });
+
+  return Object.values(map);
+})();
+
   return (
     <div className="accounts-wrapper fade-in">
 
@@ -436,47 +488,95 @@ const getPendingTerms = (studentId, feeId) => {
       </div>
     </div>
   )}
-</div><div className="term-dropdown-wrapper">
-
+</div>
 <button
-  className={`tab-btn ${
-    incomeTab === "feesmaster" ? "active" : ""
-  }`}
-  onClick={() => setShowOverviewDropdown(!showOverviewDropdown)}
+  className={incomeTab === "tuition" ? "tab-btn active" : "tab-btn"}
+  onClick={() => {
+    setIncomeTab("tuition");
+    setFeeCategory("Tuition");
+  }}
 >
-  Over View ▾
+  Tuition
 </button>
 
-{showOverviewDropdown && (
-  <div className="term-dropdown">
+<button
+  className={incomeTab === "other" ? "tab-btn active" : "tab-btn"}
+  onClick={() => {
+    setIncomeTab("other");
+    setFeeCategory("Other");
+  }}
+>
+  Other
+</button>
 
-    <div
-      onClick={() => {
-        setIncomeTab("feesmaster");
-        setFeeCategory("Tuition");
-        setShowOverviewDropdown(false);
-      }}
-    >
-      Tuition
-    </div>
+<button
+  className={incomeTab === "expenseAnalysis" ? "tab-btn active" : "tab-btn"}
+  onClick={() => setIncomeTab("expenseAnalysis")}
+>
+  Expense Analysis
+</button>
+</div>
+{incomeTab === "expenseAnalysis" && (
+  <div className="section-card pop">
 
-    <div
-      onClick={() => {
-        setIncomeTab("feesmaster");
-        setFeeCategory("Other");
-        setShowOverviewDropdown(false);
-      }}
-    >
-      Other
-    </div>
+    <h3 className="section-title">Competition Expense Analysis</h3>
+
+    <table className="nice-table">
+      <thead>
+        <tr>
+          <th>Class</th>
+          <th>Competition Name</th>
+          <th>Expense Name</th>
+          <th>Income</th>
+          <th>Expense</th>
+          <th>Balance</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        {competitionAnalysis.length === 0 && (
+          <tr>
+            <td colSpan="6" style={{ textAlign: "center" }}>
+              No competition data
+            </td>
+          </tr>
+        )}
+
+        {competitionAnalysis.map((r, i) => (
+          <tr key={i}>
+
+            <td data-label="Class">{r.className}</td>
+
+            <td data-label="Competition">{r.competitionName}</td>
+
+            <td data-label="ExpenseName">{r.expenseName || "-"}</td>
+
+            <td data-label="Income"style={{ color: "green" }}>
+              ₹{r.income}
+            </td>
+
+            <td data-label="Expenses"style={{ color: "red" }}>
+              ₹{r.expense}
+            </td>
+
+            <td data-label="Balance"style={{ 
+              color: r.income - r.expense >= 0 ? "green" : "red" 
+            }}>
+              ₹{r.income - r.expense}
+            </td>
+
+          </tr>
+        ))}
+
+      </tbody>
+    </table>
 
   </div>
 )}
 
-</div>
+{(incomeTab === "tuition" || incomeTab === "other") && (
 
-</div>
-{incomeTab === "feesmaster" && (
 <div className="section-card pop">
 
   <div className="feesmaster-topbar">
