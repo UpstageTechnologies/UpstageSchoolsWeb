@@ -129,6 +129,19 @@ const todayProfit = todayIncome - todayExpense;
         
         
   <div className="summary2-scroll">
+  <div style={{
+  display: "flex",
+  justifyContent: "flex-end",
+  marginBottom: "12px"
+}}>
+  <button
+    className="report-btn"
+    onClick={() => setActivePage("history")}
+  >
+    🕒 
+  </button>
+</div>
+
   <div className="summary2-layout">
 
 

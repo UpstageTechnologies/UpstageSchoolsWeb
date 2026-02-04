@@ -28,6 +28,14 @@ const [showClassFilterDropdown, setShowClassFilterDropdown] = useState(false);
 const [reportPendingClass, setReportPendingClass] = useState("");
 const [reportPendingFee, setReportPendingFee] = useState(null);
 const [showOverviewDropdown, setShowOverviewDropdown] = useState(false);
+const historyRef = collection(
+  db,
+  "users",
+  adminUid,
+  "Account",
+  "accounts",
+  "History"
+);
 
 const normalizePaymentType = (i) => {
   if (!i.paymentType) return "";
@@ -587,7 +595,7 @@ const competitionAnalysis = (() => {
 
   <div className="student-dropdown">
     <input
-      placeholder="Select Class"
+      placeholder="All Class"
       value={filterClass === "All" ? classSearchText : filterClass}
       onChange={(e) => {
         setClassSearchText(e.target.value);

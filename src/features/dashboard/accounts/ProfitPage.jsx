@@ -36,6 +36,10 @@ const [newClassSearch, setNewClassSearch] = useState("");
 const [showNewClassDropdown, setShowNewClassDropdown] = useState(false);
 const [competitionName, setCompetitionName] = useState("");
 const [competitionAmount, setCompetitionAmount] = useState("");
+const [competitionList, setCompetitionList] = useState([]);
+const [competitionSearch, setCompetitionSearch] = useState("");
+const [showCompetitionDropdown, setShowCompetitionDropdown] = useState(false);
+
 const [competitionClass, setCompetitionClass] = useState("");
 const [competitionStudent, setCompetitionStudent] = useState("");
 const [entryType, setEntryType] = useState("");
@@ -46,6 +50,7 @@ const [showMiscDropdown, setShowMiscDropdown] = useState(false);
 const [miscSearch, setMiscSearch] = useState("");
 const [miscName, setMiscName] = useState("");       // Sports Day
 const [expenseSubName, setExpenseSubName] = useState(""); // Decoration
+
 
 const miscNames = [
   ...new Set([
@@ -71,39 +76,28 @@ const getSalaryFromInventory = (role, position, teacherName) => {
       f.name === teacherName
   );
 };
-
-
 const categories = [
   "Teaching Staff",
   "Non Teaching Staff"
 ];
-
 const positions = {
   "Teaching Staff": ["Teacher"],
   "Non Teaching Staff": ["Helper", "ECA Staff"]
 };
-
 const [categorySearch, setCategorySearch] = useState("");
 const [positionSearch, setPositionSearch] = useState("");
 const [classes, setClasses] = useState([]);
 useEffect(() => {
   if (!adminUid) return;
-
   const ref = collection(db, "users", adminUid, "Classes");
-
   return onSnapshot(ref, snap => {
     setClasses(snap.docs.map(d => d.data().name));
   });
-
 }, [adminUid]);
-
 const filteredCategories = categories.filter(c =>
-  c.toLowerCase().includes(categorySearch.toLowerCase())
-);
-
+  c.toLowerCase().includes(categorySearch.toLowerCase()));
 const filteredPositions = (positions[salaryRole] || []).filter(p =>
-  p.toLowerCase().includes(positionSearch.toLowerCase())
-);
+  p.toLowerCase().includes(positionSearch.toLowerCase()));
 const [newStudentSearch, setNewStudentSearch] = useState("");
 const [showNewStudentDropdown, setShowNewStudentDropdown] = useState(false);
 const [selectedNewStudent, setSelectedNewStudent] = useState(null);
@@ -122,10 +116,6 @@ const getClassFees = (cls) => {
       String(f.className).trim() === String(cls).trim()
   );
 };
-
-
-
-
 useEffect(() => {
   if (!adminUid) return;
 
@@ -150,11 +140,9 @@ const loaded = incomeLoaded && expenseLoaded;
   });
   const [incomeMode, setIncomeMode] = useState("");
   const [studentMode, setStudentMode] = useState("");
-
   const [showEntryType, setShowEntryType] = useState(false);
   const [srcName, setSrcName] = useState("");
   const [srcAmt, setSrcAmt] = useState("");
-
   const [students, setStudents] = useState([]);
   const [newName, setNewName] = useState("");
   const [newParent, setNewParent] = useState("");
@@ -162,7 +150,15 @@ const loaded = incomeLoaded && expenseLoaded;
   const [newPayType, setNewPayType] = useState("");
   const [newPayAmount, setNewPayAmount] = useState("");
   const [newTotal, setNewTotal] = useState(0);
-
+  const historyRef = collection(
+    db,
+    "users",
+    adminUid,
+    "Account",
+    "accounts",
+    "History"
+  );
+  
   const newAdmissionStudents = students.filter(s => {
     const paid = incomeList.some(i =>
       i.studentId === s.id && i.paymentStage === "Admission"
@@ -323,20 +319,57 @@ useEffect(() => {
     String(s.class) === String(oldClass) &&
     s.studentName?.toLowerCase().includes(studentSearch.toLowerCase())
   );
-  const saveSourceIncome = async ()=>{
-    if(!srcName||!srcAmt||!entryDate) return alert("Fill all source fields");
-
-    await addDoc(incomesRef,{
-      source:true,
-      studentName:srcName,
-      paidAmount:Number(srcAmt),
-      date:entryDate,
-      createdAt:new Date()
-    });
-
-    setSrcName(""); setSrcAmt("");
+  const saveSourceIncome = async () => {
+    if (!srcName || !srcAmt || !entryDate)
+      return alert("Fill all source fields");
+  
+    try {
+  
+      // 1️⃣ Save Income
+      await addDoc(incomesRef, {
+        source: true,
+        studentName: srcName,
+        paidAmount: Number(srcAmt),
+        date: entryDate,
+        createdAt: new Date()
+      });
+  
+      // 2️⃣ Save History
+      await addDoc(historyRef, {
+        entryType: "income",     // 🔥 IMPORTANT
+        action: "ADD",
+        module: "INCOME",
+        name: srcName,
+        amount: Number(srcAmt),
+        date: entryDate,
+        createdAt: new Date()
+      });
+  
+      console.log("History saved successfully ✅");
+  
+      setSrcName("");
+      setSrcAmt("");
+  
+    } catch (err) {
+      console.error("History Save Error:", err);
+      alert("Failed to save history");
+    }
   };
- 
+  const competitionRef = collection(
+    db,
+    "users",
+    adminUid,
+    "Account",
+    "accounts",
+    "Competition"
+  );
+  
+  const unsubCompetition = onSnapshot(competitionRef, snap => {
+    setCompetitionList(
+      snap.docs.map(d => ({ id: d.id, ...d.data() }))
+    );
+  });
+  
   const safeRequirePremium = (cb, type) => {
     if (!loaded && !isOfficeStaff) return;
   
@@ -408,22 +441,13 @@ if (alreadyPaid) {
   alert("Admission already paid for this fee");
   return;
 }
-
-      
-      // ✅ fee amount only
       const total = fee.amount;
       const feeDiscountPercent = fee.discount || 0;
-
       const discountAmount =
         newPayType === "full"
           ? total * (feeDiscountPercent / 100)
           : 0;
-      
       const payableAmount = total - discountAmount;
-      
-      
-      
-  
       let final = 0;
       if (newPayType === "full") {
         final = payableAmount;
@@ -439,8 +463,6 @@ if (alreadyPaid) {
         alert("Cannot pay more than balance");
         return;
       }
-      
-      
       const balanceAfter = payableAmount - final;
       
   // 🔹 generate readable Parent ID
@@ -501,45 +523,40 @@ const generatedParentId = `P-${Date.now()}`;
       }
     );
     await addDoc(incomesRef, {
-      studentId: stu.id,
-      studentName: stu.studentName,
-      className: stu.class,
-      isNew: false,
+      studentId: studentDocRef.id,   // ✅ new student id
+      studentName: newName,          // ✅ from input
+      className: newClass,           // ✅ from input
     
       feeId: fee.id,
       feeName: fee.name,
       feeAmount: total,
     
       totalFees: total,
-      discountApplied: discount,
-      payableAmount: payable,
+      discountApplied: discountAmount,
+      payableAmount: payableAmount,
     
       paidAmount: final,
-      balanceBefore,
-      balanceAfter,
+      balanceBefore: payableAmount,      // admission first payment
+      balanceAfter: balanceAfter,
     
-      paymentType: oldPayType,
+      paymentType: newPayType,
     
-      paymentStage:
-        oldPayType === "monthly"
-          ? "Monthly"
-          : paidSoFar === 0
-          ? "Admission"
-          : "Term",
+      paymentStage: "Admission",
     
       date: entryDate,
-      createdAt: new Date(),
-    
-      // ✅ MONTHLY STORAGE
-      monthsTotal: oldPayType === "monthly" ? monthsTotal : null,
-      monthsPaid: oldPayType === "monthly" ? monthsPaid : null,
-      monthsPending: oldPayType === "monthly" ? monthsPending : null,
-      monthlyAmount: oldPayType === "monthly" ? final : null
+      createdAt: new Date()
+    });
+    await addDoc(historyRef,{
+      entryType: "income",
+      action: "ADD",
+      module: "FEES",
+      name: newName + " (" + newClass + ")",
+      amount: Number(final),
+      date: entryDate,
+      createdAt: new Date()
     });
     
-    
-  
-    /* ================= RESET ================= */
+ /* ================= RESET ================= */
     setNewName("");
     setNewParent("");
     setNewClass("");
@@ -693,23 +710,27 @@ if (oldPayType === "monthly") {
       feeId: selectedFees[0]?.id || null,
 feeName: selectedFees[0]?.name || "",
 feeAmount: selectedFees[0]?.amount || 0,
-
-  
       totalFees: total,
       discountApplied: discount,
       payableAmount: payable,
-  
       paidAmount: final,
       balanceBefore,
       balanceAfter,
-  
       paymentType: oldPayType,
       paymentStage: paidSoFar === 0 ? "Admission" : "Term",
-  
       date: entryDate,
       createdAt: new Date()
-      
     });
+    await addDoc(historyRef,{
+      entryType: "income",
+      action: "ADD",
+      module: "FEES",
+      name: stu.studentName + " (" + stu.class + ")",
+      amount: Number(final),
+      date: entryDate,
+      createdAt: new Date()
+    });
+    
   setSelectedFees([]); 
     setOldClass("");
     setOldStudent("");
@@ -720,7 +741,6 @@ feeAmount: selectedFees[0]?.amount || 0,
     setPaymentType("");
 setPaymentSearch("");
 setShowPaymentDD(false);
-
   };
   const selectedDate = entryDate;   // 👈 whatever date user selected
 
@@ -737,7 +757,6 @@ const todayProfit = todayIncome - todayExpense;
 
   const saveExpense = async ()=>{
     if(!exName||!exAmt||!entryDate) return alert("Fill expense");
-
     await addDoc(expensesRef,{
       type: expenseMode,
       name:exName,
@@ -745,7 +764,16 @@ const todayProfit = todayIncome - todayExpense;
       date:entryDate,
       createdAt:new Date()
     });
-
+    await addDoc(historyRef,{
+      entryType: "expense",
+      action:"ADD",
+      module:"EXPENSE",
+      name: exName,
+      amount:Number(exAmt),
+      date:entryDate,
+      createdAt:new Date()
+    });
+    
     setExName(""); setExAmt("");
   };const saveCompetitionIncome = async () => {
     if (
@@ -768,6 +796,17 @@ const todayProfit = todayIncome - todayExpense;
       date: entryDate,
       createdAt: new Date()
     });
+    await addDoc(historyRef,{
+      entryType: "income",
+      action:"ADD",
+      module:"COMPETITION",
+      name: competitionName,
+      amount:Number(competitionAmount),
+      date:entryDate,
+      createdAt:new Date()
+    });
+    
+    
   
     setCompetitionClass("");
     setCompetitionStudent("");
@@ -792,7 +831,16 @@ const saveSalary = async () => {
     date: entryDate,
     createdAt: new Date()
   });
-
+  await addDoc(historyRef,{
+    entryType: "expense",
+    action:"ADD",
+    module:"SALARY",
+    name: selName,
+    amount:Number(manualSalary),
+    date:entryDate,
+    createdAt:new Date()
+  });
+  
   // 🔄 RESET
   setSalaryRole("");
   setSalaryPosition("");
@@ -850,7 +898,16 @@ const saveStudentMiscExpense = async () => {
     date: entryDate,
     createdAt: new Date()
   });
-
+  await addDoc(historyRef,{
+    entryType: "expense",
+    action:"ADD",
+    module:"STUDENT_MISC",
+    name: miscName + " - " + expenseSubName,
+    amount:Number(exAmt),
+    date:entryDate,
+    createdAt:new Date()
+  });
+  
   setMiscName("");
   setExpenseSubName("");
   setExAmt("");
@@ -1515,9 +1572,6 @@ const deleteEntry = async (row) => {
 {selectedFees[0] && (
   <input readOnly value={`Fee Total ₹${selectedFees[0].amount}`} />
 )}
-
-
-
     <div className="student-dropdown">
   <input
     placeholder="Select Payment Type"
@@ -1558,9 +1612,6 @@ const deleteEntry = async (row) => {
     </div>
   )}
 </div>
-
-
-
 {/* FULL PAYMENT */}
 {oldPayType === "full" && oldStudent && selectedFees[0] && (
   <input
@@ -1694,13 +1745,62 @@ const deleteEntry = async (row) => {
         </div>
       )}
     </div>
+{/* COMPETITION NAME */}
+<div className="student-dropdown">
 
-    {/* COMPETITION NAME */}
-    <input
-      placeholder="Competition Name"
-      value={competitionName}
-      onChange={e => setCompetitionName(e.target.value)}
-    />
+  <input
+    placeholder="Competition Name"
+    value={competitionName || competitionSearch}
+    onChange={e => {
+      setCompetitionSearch(e.target.value);
+      setCompetitionName("");
+      setShowCompetitionDropdown(true);
+    }}
+    onFocus={() => setShowCompetitionDropdown(true)}
+  />
+
+  {showCompetitionDropdown && (
+    <div className="student-dropdown-list">
+
+      {competitionList
+        .filter(c =>
+          c.name
+            ?.toLowerCase()
+            .includes(competitionSearch.toLowerCase())
+        )
+        .map(c => (
+          <div
+            key={c.id}
+            className="student-option"
+            onClick={() => {
+              setCompetitionName(c.name);      // ✅ set name
+              setCompetitionAmount(c.amount); // ✅ auto amount
+              setCompetitionSearch("");
+              setShowCompetitionDropdown(false);
+            }}
+          >
+            {c.name} - ₹{c.amount}
+          </div>
+        ))}
+
+      {competitionSearch && (
+        <div
+          className="student-option"
+          style={{ color: "#2563eb" }}
+          onClick={() => {
+            setCompetitionName(competitionSearch);
+            setShowCompetitionDropdown(false);
+          }}
+        >
+          ➕ Add "{competitionSearch}"
+        </div>
+      )}
+
+    </div>
+  )}
+
+</div>
+
 
     {/* AMOUNT */}
     <input
@@ -1720,7 +1820,6 @@ const deleteEntry = async (row) => {
   </div>
 )}
 </>
-
 
 )}
 

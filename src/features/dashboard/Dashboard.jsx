@@ -35,9 +35,8 @@ import React, { useEffect, useState } from "react";
   import ShowTodaysTeacherAbsent from "./ShowTodaysTeacherAbsent";
   import Home from "./Home";
   import ApplicationList from "./ApplicationList";
-  
+  import HistoryPage from "./accounts/HistoryPage";
 import FeesPage from "./accounts/FeesPage";
-
 import ProfitPage from "./accounts/ProfitPage";
 import Inventory from "./accounts/Inventory";
 import ExpensesPage from "./accounts/ExpensesPage";
@@ -45,6 +44,7 @@ import UpgradePopup from "../../components/UpgradePopup";
 import TeacherHome from "./TeacherHome";
 import ParentHome from "./ParentHome";
 import SchoolCalendar from "../../components/SchoolCalendar";
+import Navbar from "../../components/Navbar";
 import { lazy, Suspense } from "react";
 
 const Teacher = lazy(() => import("./Teacher"));
@@ -78,6 +78,7 @@ const QuickTile = ({ title, page, onOpen ,color}) => {
     const [showQuickPanel, setShowQuickPanel] = useState(false);
         const [accountMenuOpen, setAccountMenuOpen] = useState(false);
     const [activePage, setActivePage] = useState("home");
+    const [pageHistory, setPageHistory] = useState(["home"]);
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [homeStats, setHomeStats] = useState(null);
     const [logo, setLogo] = useState(""); 
@@ -265,11 +266,9 @@ const requirePremium = (page) => {
     navigate("/payment");
     return false;
   }
-  setActivePage(page);
+  handleMenuClick(page);
   return true;
 };
-
-      // 🔐 MASTER ADMIN
       const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
         if (!currentUser) {
           navigate("/login", { replace: true });
@@ -343,9 +342,13 @@ useEffect(() => {
   return () => unsub();
 }, []);
 const handleMenuClick = (page) => {
+  setPageHistory(prev => {
+    if (prev[prev.length - 1] === page) return prev;
+    return [...prev, page];
+  });
+
   setActivePage(page);
 };
-
 
 
     useEffect(() => {
@@ -388,17 +391,17 @@ const handleMenuClick = (page) => {
     
       loadSchool();
     }, [role]);
-
     useEffect(() => {
-  const handler = () => {
-    setActivePage("teacher-dashboard");
-  };
-
-  window.addEventListener("open-teacher-dashboard", handler);
-
-  return () =>
-    window.removeEventListener("open-teacher-dashboard", handler);
-}, []);
+      const handler = () => {
+        handleMenuClick("teacher-dashboard");
+      };
+    
+      window.addEventListener("open-teacher-dashboard", handler);
+    
+      return () =>
+        window.removeEventListener("open-teacher-dashboard", handler);
+    }, []);
+    
     const handleLogout = async () => {
       const confirmLogout = window.confirm("Do you want to logout?");
       if (!confirmLogout) return; // ❌ NO → stay same page
@@ -406,13 +409,13 @@ const handleMenuClick = (page) => {
       localStorage.clear();
       await signOut(auth);
       navigate("/logout", { replace: true }); // ✅ YES → home page
-    };
-    
-    useEffect(() => {
+    };useEffect(() => {
       if (role === "office_staff") {
-        setActivePage("accounts"); // 🔥 direct profit page
+        setActivePage("accounts");
+        setPageHistory(["home", "accounts"]);
       }
     }, [role]);
+    
     
     const toggleSidebar = () => {
       setSidebarState(prev => {
@@ -480,16 +483,18 @@ const handleMenuClick = (page) => {
           setTrialAccess(false);
         }
       }, [plan, trialAccess, trialExpiresAt]);
-      
-      
       useEffect(() => {
         if (role === "teacher") {
           setActivePage("teacher-home");
+          setPageHistory(["home", "teacher-home"]);
         }
+      
         if (role === "parent") {
           setActivePage("parent-home");
+          setPageHistory(["home", "parent-home"]);
         }
       }, [role]);
+      
     const adminUid = user?.uid || localStorage.getItem("adminUid");
    
     return (
@@ -747,182 +752,35 @@ const handleMenuClick = (page) => {
         </div>
         <div className="main-content">
    
-          <nav className="navbar">
-            <div className="nav-left">
-            <div className="menu-toggle" onClick={toggleSidebar}>
-  ☰
-</div>
+        <Navbar
+  toggleSidebar={toggleSidebar}
+  activePage={activePage}
+  setPageHistory={setPageHistory}
+  setActivePage={setActivePage}
 
-            {activePage !== "home" && (
-    <div
-      className="mobile-back-btn"
-      onClick={() => handleMenuClick("home")}
-    >
-      <FaArrowLeft />
-    </div>
-  )}
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-</div>
-<div className="nav-search">
-  <FaSearch className="search-icon-left" />
-  <input
-  placeholder="Search..."
-  value={searchQuery}
-  onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
-  onFocus={() => setShowQuickPanel(true)}
-  onBlur={() => {
-    setTimeout(() => setShowQuickPanel(false), 200);
-  }}
+  searchQuery={searchQuery}
+  setSearchQuery={setSearchQuery}
+
+  showQuickPanel={showQuickPanel}
+  setShowQuickPanel={setShowQuickPanel}
+
+  globalResults={globalResults}
+  closeSearch={closeSearch}
+
+  school={school}
+  logo={logo}
+  showSchoolName={showSchoolName}
+  setShowSchoolName={setShowSchoolName}
+
+  handleMenuClick={handleMenuClick}
+
+  pageResults={pageResults}
+  peopleResults={peopleResults}
+  highlightText={highlightText}
+  badgeColors={badgeColors}
+  viewAs={viewAs}
 />
 
-<div
-  className="search-school-icon"
-  onClick={() => setShowSchoolName(prev => !prev)}
->
-{showSchoolName && (
-  <div className="school-name-popup">
-    {school || localStorage.getItem("schoolName") || "School Name"}
-  </div>
-)}
-
-    {(logo || localStorage.getItem("schoolLogo")) ? (
-      <img
-        src={logo || localStorage.getItem("schoolLogo")}
-        alt="school"
-      />
-    ) : (
-      <FaSchool />
-    )}
-  </div>
-  {(showQuickPanel || globalResults.length > 0) && (
-  <div className="search-dropdown">
-    <div className="search-header">
-    <span className="search-back" onClick={closeSearch}>
-      ←
-    </span>
-    <span className="search-title"></span>
-  </div>
-    {searchQuery === "" && (
-      <>
-        <div className="quick-row">
-        <QuickTile title="Calendar" page="calendar" onOpen={handleMenuClick} />
-<QuickTile title="Applications" page="applications" onOpen={handleMenuClick} />
-<QuickTile title="Accounts" page="accounts" onOpen={handleMenuClick} />
-<QuickTile title="Timetable" page="timetable" onOpen={handleMenuClick} />
-<QuickTile title="Approvals" page="approvals" onOpen={handleMenuClick} />
-<QuickTile title="Courses" page="courses" onOpen={handleMenuClick} />
-        </div>
-        <div className="quick-title">Account Creation</div>
-        <div className="quick-row">
-  <QuickTile title="Admin" page="admin" color="#f08080" onOpen={handleMenuClick} />
-  <QuickTile title="Teacher" page="teacher" color="#add8e6" onOpen={handleMenuClick} />
-  <QuickTile title="Student" page="student" color="#90ee90" onOpen={handleMenuClick} />
-  <QuickTile title="Parent" page="parent" color="rgb(240,170,240)" onOpen={handleMenuClick} />
-  <QuickTile title="Staff" page="office_staff" color="#ffa07a" onOpen={handleMenuClick} />
-</div>   </>
-    )}
-    {pageResults.length > 0 && (
-      <>
-        <div className="quick-title">Pages</div>
-        <div className="quick-row">
-          {pageResults.map((item,i)=>(
-            <QuickTile
-              key={i}
-              title={item.label}
-              page={item.value}
-            />
-          ))}
-        </div>
-      </>
-    )}
-    {peopleResults.length > 0 && (
-      <>
-        <div className="quick-title">People</div>
-
-        {peopleResults.map((item,i)=>(
-          <div
-            key={i}
-            className="search-item"
-            onClick={() => {
-
-              if (item.type === "teacher") {
-                localStorage.setItem("selectedTeacherId", item.id);
-                handleMenuClick("teacher");
-              }
-
-              if (item.type === "student") {
-                localStorage.setItem("selectedStudentId", item.id);
-                handleMenuClick("student");
-              }
-
-              if (item.type === "parent") {
-                localStorage.setItem("selectedParentId", item.id);
-                handleMenuClick("parent");
-              }
-
-              if (item.type === "admin") {
-                localStorage.setItem("selectedAdminId", item.id);
-                handleMenuClick("admin");
-              }
-
-              if (item.type === "office_staff") {
-                localStorage.setItem("selectedOfficeStaffId", item.id);
-                handleMenuClick("office_staff");
-              }
-
-              setSearchQuery("");
-              setGlobalResults([]);
-            }}
-          >
-            <span>{highlightText(item.label, searchQuery)}</span>
-
-            <span
-              style={{
-                background: badgeColors[item.type],
-                color:"#fff",
-                padding:"2px 8px",
-                borderRadius:10,
-                fontSize:11,
-                fontWeight:600
-              }}
-            >
-              {item.type}
-            </span>
-          </div>
-        ))}
-
-      </>)}
-{searchQuery !== "" &&
-      pageResults.length === 0 &&
-      peopleResults.length === 0 && (
-        <div className="no-search-results">
-          ❌ No search results found
-        </div>
-    )}
-  </div>
-)}
-</div></div>
-{viewAs === "parent" && (
-  <button
-    onClick={() => {
-      localStorage.removeItem("viewAs");
-      localStorage.removeItem("viewParentId");
-      localStorage.removeItem("parentName");
-      window.location.reload();
-    }}
-    style={{
-      background: "#ef4444",
-      color: "#fff",
-      padding: "6px 12px",
-      borderRadius: 6,
-      border: "none",
-      marginRight: 10,
-      cursor: "pointer"
-    }}
-  >
-    Exit Parent View
-  </button>
-)}</nav>
           <div className="dashboard-content">
 {activePage === "calendar" && (
   <div className="calendar-fullpage">
@@ -968,6 +826,12 @@ const handleMenuClick = (page) => {
 
 {activePage === "expenses" && (
   <FeesPage adminUid={adminUid} mode="expenses" globalSearch={searchQuery} setActivePage={setActivePage}/>
+)}
+{activePage === "history" && (
+  <HistoryPage
+    adminUid={adminUid}
+    setActivePage={setActivePage}
+  />
 )}
 
 {(isAdminOrSubAdmin || isOfficeStaff) && activePage === "accounts" && (
@@ -1035,7 +899,7 @@ const handleMenuClick = (page) => {
   isPremium ? (
     <ShowTodaysAbsent adminUid={adminUid} setActivePage={setActivePage} />
   ) : (
-    <UpgradePopup onClose={() => setActivePage("home")} />
+    <UpgradePopup onClose={() => handleMenuClick("home")}    />
   )
 )}
 
@@ -1051,7 +915,7 @@ const handleMenuClick = (page) => {
   isPremium ? (
     <ShowTodaysTeacherAbsent adminUid={adminUid} setActivePage={setActivePage} />
   ) : (
-    <UpgradePopup onClose={() => setActivePage("home")} />
+    <UpgradePopup onClose={() => handleMenuClick("home")}    />
   )
 )}{role === "master" && activePage === "applications" && (
               <ApplicationList requirePremium={requirePremium} />

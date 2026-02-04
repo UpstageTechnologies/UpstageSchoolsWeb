@@ -15,10 +15,10 @@ html,body{overflow-x:hidden;}
 .sidebar-close{width:70px;min-width:70px;padding:20px 10px;}
 .main-content{flex:1;margin-left:clamp(160px,22vw,220px);display:flex;flex-direction:column;transition:margin-left 0.35s ease;}
 .sidebar-close~.main-content{margin-left:70px;}
-.navbar{position:fixed;min-height: 90px;  top:0;left:clamp(160px,22vw,220px);width:calc(100vw - clamp(160px,22vw,220px));height:60px;padding:10px 20px;background:#fff;border-bottom:1px solid #eee;z-index:150;display:flex;align-items:center;position: relative;}
+
 .sidebar-close~.main-content .navbar{left:70px;width:calc(100vw - 70px);}
 .nav-left{display:flex;align-items:center;gap:14px;width:100%;}
-.menu-toggle{font-size:28px;cursor:pointer;}
+
 .nav-school-logo{width:40px;}
 .nav-school-name{font-size:18px;font-weight:600;}
 .user-info{position:relative;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;}
@@ -28,7 +28,7 @@ html,body{overflow-x:hidden;}
 .dropdown-item:hover{background:#f2f2f2;}
 .dropdown-item.logout{color:#d32f2f;font-weight:500;}
 .dashboard-content{padding:90px 25px 25px 25px;}
-.navbar{background:rgba(255,255,255,0.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 8px 24px rgba(0,0,0,0.06);border-bottom:1px solid rgba(255,255,255,0.4);}
+
 .sidebar{background:#ffffff;border-radius:18px;box-shadow:0 10px 25px rgba(0,0,0,0.08);top:8px;left:8px;height:calc(100vh - 16px);}
 .account-main{display:flex;align-items:center;justify-content:space-between;gap:10px;}
 .account-submenu{display:none;}
@@ -81,27 +81,6 @@ html,body{overflow-x:hidden;}
   }
 }
 
-@media (max-width: 768px) {
- 
-  .slider-container {
-    height: 260px;
-  }
-
-  .user-dropdown {
-    min-width: 120px;
-    top: 32px;
-  }
-
-  .dropdown-item {
-    padding: 6px 10px;
-    font-size: 13px;
-    gap: 6px;
-  }
-
-  .dropdown-item svg {
-    font-size: 14px;
-  }
-}
 
 @media (max-width: 480px) {
  
@@ -147,12 +126,6 @@ html,body{overflow-x:hidden;}
 
 .sidebar-close ul li.active svg{color:white;}
 
-@media (max-width:768px){.dash-layout{display:flex;width:100vw;overflow-x:hidden;}.dash-sidebar{width:64px;flex-shrink:0;}.dash-main{width:calc(100vw - 64px);max-width:calc(100vw - 64px);overflow-x:hidden;}}
-
-@media (max-width:768px){.sidebar{width:64px;min-width:64px;}.sidebar.sidebar-open{width:100vw !important;min-width:100vw !important;background:#fff;}.main-content{margin-left:64px;width:calc(100vw - 64px);max-width:calc(100vw - 64px);}}
-
-@media (max-width:768px){.nav-school-name{font-size:15px;}.username{font-size:14px;}}
-
 @media (max-width:480px){.nav-school-name{font-size:13px;max-width:160px;white-space:normal;overflow:hidden;text-overflow:ellipsis;}.username{font-size:12px;max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.menu-toggle{font-size:24px;}}
 
 @media (max-width:360px){.nav-school-name{font-size:12px;max-width:130px;}.username{font-size:11px;max-width:70px;}.nav-school-logo,.default-school-icon{width:34px;height:34px;}}
@@ -161,13 +134,9 @@ html,body{overflow-x:hidden;}
 
 .sidebar-hidden~.main-content{margin-left:0 !important;width:100vw !important;max-width:100vw !important;}
 
-@media (min-width:481px) and (max-width:768px){.sidebar.sidebar-open{width:clamp(160px,22vw,220px) !important;min-width:160px !important;}.sidebar.sidebar-open~.main-content{margin-left:clamp(160px,22vw,220px) !important;width:calc(100vw - clamp(160px,22vw,220px)) !important;max-width:calc(100vw - clamp(160px,22vw,220px)) !important;}}
-
 .sidebar-hidden~.main-content .navbar{left:0 !important;width:100vw !important;}
 
 .sidebar{background:#ffffff;border-radius:18px;box-shadow:6px 0 20px rgba(0,0,0,0.08);}
-
-.navbar{position:fixed;top:8px;left:calc(clamp(160px,22vw,220px) + 16px);width:calc(100vw - clamp(160px,22vw,220px) - 32px);height:60px;padding:10px 20px;background:rgba(255,255,255,0.9);backdrop-filter:blur(12px);border-radius:18px;box-shadow:0 10px 25px rgba(0,0,0,0.08);display:flex;justify-content:space-between;align-items:center;z-index:50;}
 
 .sidebar-close~.main-content .navbar{left:86px;width:calc(100vw - 102px);}
 
@@ -201,11 +170,8 @@ html,body{overflow-x:hidden;}
 
 .sidebar-close .sidebar-profile{justify-content:center;}
 
-.nav-search{position:relative;}
 
-.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;color:#9ca3af;pointer-events:none;}
-
-.nav-search input{width:100%; height: 52px;padding:8px 12px 8px 36px;border-radius:10px;border:1px solid #e5e7eb;background:#f9fafb;font: size 16px;outline:none;transition:all 0.2s ease;}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:30px;color:#9ca3af;pointer-events:none;}
 
 .nav-search input:hover{background:#ffffff;}
 
@@ -213,32 +179,17 @@ html,body{overflow-x:hidden;}
 
 .nav-search input::placeholder{color:#9ca3af;}
 
-/* ===== NAVBAR SEARCH PERFECT FIX ===== */
-
-.navbar{
-  display:flex !important;
-  justify-content:flex-start !important;
-}
-
 .nav-left{
   flex:1 !important;
  
 }
 
-.nav-search{
-  flex:1 !important;
- 
-  max-width:none !important;
-}
-
 
 .nav-school-center{display:flex;align-items:center;gap:10px;margin:0 auto;}
 
-.nav-school-logo{width:40px;height:40px;object-fit:cover;border-radius:8px;}
+.nav-school-logo{width:55px;height:55px;object-fit:cover;border-radius:8px;}
 
 .nav-school-name{font-size:18px;font-weight:600;white-space:nowrap;}
-
-@media (max-width:768px){.nav-school-logo{width:28px;height:28px;}.nav-school-name{font-size:14px;}}
 
 @media (min-width:1200px){.nav-school-logo{width:46px;height:46px;}.nav-school-name{font-size:20px;}}
 
@@ -302,17 +253,11 @@ html,body{overflow-x:hidden;}
 
 .sidebar-close .sidebar-username{display:none;}
 
-@media (max-width:768px){.nav-school-name{display:none;}}
-
 .floating-menu-btn{right:18px;left:auto;}
 
 .search-item:hover{background:#f1f5f9;transition:"0.2s";}
 
 @keyframes fadeDown{from{opacity:0;transform:translate(-50%,-6px);}to{opacity:1;transform:translate(-50%,0);}}
-
-.search-icon-left{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:14px;}
-
-.nav-search input{width:100%;padding:10px 46px 10px 36px;border-radius:999px;border:1px solid #e5e7eb;background:#f1f5f9;font-size:14px;}
 
 .search-school-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;background:#ffffff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.15);cursor:pointer;}
 .search-school-icon img{
@@ -358,22 +303,6 @@ html,body{overflow-x:hidden;}
 .school-name-popup::before{
   display:none;
 }
-
-/* Mobile Center Popup */
-@media (max-width:768px){
-  .school-name-popup{
-    position:fixed;
-    top:80px;
-    left:50%;
-    transform:translateX(-50%);
-    right:auto;
-
-    max-width:85%;
-    font-size:12px;
-  }
-}
-
-/* Small Mobile */
 @media (max-width:360px){
   .school-name-popup{
     top:75px;
@@ -507,12 +436,6 @@ html,body{overflow-x:hidden;}
   padding-top: 90px;
 }
 
-/* SEARCH SHOULD FILL NAVBAR */
-.nav-search{
-  width:100% !important;
-  max-width:100%;
-  flex:1;
-}
 
 /* NAV LEFT ROW */
 .nav-left{
@@ -530,22 +453,6 @@ html,body{overflow-x:hidden;}
   width:100% !important;
 }
 
-/* SEARCH TAKE FULL SPACE */
-.nav-search{
-  flex:1 !important;
-  width:100% !important;
-  max-width:none !important;
-}
-
-/* REMOVE ANY FIXED WIDTH */
-.nav-search{
-  width:auto !important;
-}
-
-/* INPUT FULL */
-.nav-search input{
-  width:100% !important;
-}
 .quick-tile {
   height: 82px;
   background: #f8fafc;
@@ -583,13 +490,9 @@ html,body{overflow-x:hidden;}
 .search-dropdown{position:absolute;top:80px;left:0;right:0;background:#fff;border-radius:14px;padding:20px;box-shadow:0 15px 40px rgba(0,0,0,0.12);z-index:999;}
 .no-search-results{padding:18px;text-align:center;color:#6b7280;font-size:14px;font-weight:500;}
 @media (max-width:500px){.menu-box{display:none !important;}}
-@media (max-width:768px){.sidebar{display:none;}}
-@media (max-width:768px){.sidebar-open,.sidebar-close,.sidebar-hidden{transform:none !important;}}
 
 @media (max-width:360px){.search-icon-left{left:8px !important;font-size:12px !important;}}
 @media (max-width:360px){.search-dropdown{top:54px !important;padding:12px !important;}}
-@media (max-width:768px){.search-icon-left{font-size:12px !important;left:10px !important;}}
-@media (max-width:768px){.nav-search input{height:36px !important;font-size:13px !important;padding-left:32px !important;}}
 
 @media (max-width:360px){.quick-row{grid-template-columns:repeat(2,1fr) !important;gap:12px !important;}}
 @media (max-width:360px){.quick-tile{height:92px !important;}}
@@ -599,9 +502,6 @@ html,body{overflow-x:hidden;}
 @media (max-width:360px){.sidebar{display:none !important;}}
 @media (max-width:360px){.main-content{margin-left:0 !important;width:100vw !important;max-width:100vw !important;}}
 
-@media (max-width:768px){.sidebar{display:none !important;}}
-@media (max-width:768px){.main-content{margin-left:0 !important;width:100vw !important;max-width:100vw !important;}}
-@media (max-width:768px){.navbar{left:8px !important;width:calc(100vw - 16px) !important;}}
 .search-school-icon{right:10px !important;width:26px !important;height:26px !important;}
 .search-school-icon img{width:24px !important;height:24px !important;}
 .nav-search input{padding-right:44px !important;}
@@ -616,18 +516,6 @@ html,body{overflow-x:hidden;}
 @media (max-width:360px){.search-school-icon{width:28px !important;height:28px !important;right:10px !important;}}
 @media (max-width:360px){.search-dropdown{position:fixed !important;top:64px !important;left:8px !important;right:8px !important;z-index:99999 !important;}}
 
-.menu-toggle{
-  border:1px solid #e5e7eb;
-  border-radius:50%;
-  width:36px;
-  height:36px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:22px;
-  color:#000;
-
-}
 /* REMOVE FLOATING CARD STYLE */
 .menu-box{
   background:transparent !important;
@@ -635,16 +523,6 @@ html,body{overflow-x:hidden;}
   width:auto !important;
   height:auto !important;
   border-radius:0 !important;
-}
-.menu-toggle:hover{
-  background:#f1f5f9;
-  border-radius:50%;
-}
-/* ❌ HIDE MENU ICON IN MOBILE */
-@media (max-width:768px){
-  .menu-toggle{
-    display:none !important;
-  }
 }
 @media (min-width:769px){
   .menu-toggle{
@@ -656,27 +534,6 @@ html,body{overflow-x:hidden;}
   display:none;
 }
 
-/* SHOW BACK ONLY ON MOBILE */
-@media (max-width:768px){
-  .mobile-back-btn{
-    display:flex !important;
-    width:34px;
-    margin-left:6px;
-    height:34px;
-    align-items:center;
-    justify-content:center;
-    font-size:20px;
-    cursor:pointer;
-    color:#111;
-  }
-}
-
-/* HIDE MENU ICON IN MOBILE */
-@media (max-width:768px){
-  .menu-toggle{
-    display:none !important;
-  }
-}
 .mobile-back-btn{
   background:#f1f5f9;
   border-radius:50%;
@@ -757,44 +614,164 @@ html,body{overflow-x:hidden;}
     display:none;
   }
 }
-.navbar{
-  background: transparent !important;
-  box-shadow: none !important;
-  border: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  height: auto !important;
-}
-/* REMOVE WHITE CARD BEHIND NAVBAR AREA */
 .dashboard-content > div:first-child{
   background: transparent !important;
   box-shadow: none !important;
   padding-top: 0 !important;
 }
-/* MENU ICON SAME AS BACK BUTTON */
-.menu-toggle{
-  width:36px;
-  height:36px;
-  border-radius:50%;
-  background:rgba(255,255,255,0.7);
-  backdrop-filter:blur(8px);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:18px;
-  color:#000;
-  cursor:pointer;
-  border:1px solid #e5e7eb;
-  box-shadow:0 4px 12px rgba(0,0,0,0.18);
-  transition:0.2s ease;
-}
-
-/* HOVER EFFECT */
-.menu-toggle:hover{
-  background:#e5e7eb;
-}
-
-/* CLICK EFFECT */
 .menu-toggle:active{
   transform:scale(0.92);
+}
+.navbar{
+  position:fixed;
+  top:12px;
+  left:clamp(260px,22vw,220px);
+  width:calc(100vw - clamp(160px,22vw,260px));
+  height:64px;
+  display:flex;
+  align-items:center;
+  padding:50px 5px 10px 6px;
+  gap:10px;
+  border-radius:999px;
+  background:#f8fafc;              /* light grey bar */
+  box-shadow:none;
+  z-index:200;
+}
+
+.nav-search{
+  position:relative;
+  flex:1;
+  
+}
+
+.nav-search input{
+  width:100%;
+  height:55px;
+  padding:10px 44px 10px 36px;
+  border-radius:999px;
+  border:1px solid #e5e7eb;
+  background:#f1f5f9;
+  font-size:14px;
+}
+
+.search-icon-left{
+  position:absolute;
+  left:12px;
+  top:50%;
+  transform:translateY(-50%);
+  color:#9ca3af;
+}
+@media(max-width:480px){
+  .sidebar{ display:none; }
+  .main-content{
+    margin-left:0;
+    width:100vw;
+  }
+  .navbar{
+    left:8px;
+    width:calc(100vw - 16px);
+  }
+}/* HIDE MENU ICON ONLY ON SMALL MOBILE */
+@media (max-width:768px){
+  .menu-toggle{
+    display:none !important;
+  }
+}  
+.search-school-icon img{
+  width:24px !important;
+  height:24px !important;
+}
+@media (min-width: 768px){
+  .search-school-icon{
+    width:36px !important;
+    height:36px !important;
+  }
+
+  .search-school-icon img{
+    width:34px !important;
+    height:34px !important;
+  }
+}
+.navbar{
+  height:64px;
+  padding: 4px 4px 4px 4px;
+}
+.navbar{
+  background:#f8fafc;
+}
+@media (max-width:480px){
+
+  /* Navbar same as search */
+  .navbar{
+    height:56px;
+    padding:0;
+  }
+
+  /* Wrapper becomes full bar */
+  .nav-search{
+    width:100%;
+    height:100%;
+  }
+
+  /* Input fill navbar */
+  .nav-search input{
+    height:56px;
+    border-radius:999px;
+  }
+}
+@media (max-width:480px){
+  .navbar{
+    padding:0 !important;
+  }
+}
+@media (max-width:480px){
+
+  .navbar{
+    justify-content:center;   /* center children */
+  }
+
+  .nav-search{
+    margin:0 auto;            /* center search */
+  }
+
+}
+@media (max-width:480px){
+  .dashboard-content{
+    padding-top:120px !important;
+  }
+}
+@media (max-width:360px){
+
+  .nav-search{
+    margin-left:auto !important;
+    margin-right:auto !important;
+  }
+
+}
+@media (min-width:300px){
+
+  /* Remove navbar background box */
+  .navbar{
+    background:transparent !important;
+    box-shadow:none !important;
+    height:auto !important;
+  }
+
+}
+@media (max-width:768px){
+
+  /* Kill all navbar padding */
+  .navbar{
+    /* padding:0 !important; */
+    justify-content:center !important;
+    
+  }
+
+  /* Fix search width and center */
+  .nav-search{
+    width:90% !important;
+    margin:0 auto !important;
+    transform:none !important;
+  }
+
 }

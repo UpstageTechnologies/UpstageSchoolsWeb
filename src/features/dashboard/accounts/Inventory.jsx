@@ -16,6 +16,10 @@ const [newStaffPhone, setNewStaffPhone] = useState("");
 const [showStaffType, setShowStaffType] = useState(false);
   const [teachers, setTeachers] = useState([]);
   const [teacherSearch, setTeacherSearch] = useState("");
+  const [competitionClassSearch, setCompetitionClassSearch] = useState("");
+  // ===== COMPETITION STATES =====
+const [competitionClass, setCompetitionClass] = useState("");
+
   const [showTeacherDropdown, setShowTeacherDropdown] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState(null);
   const [showClassDropdown, setShowClassDropdown] = useState(false);
@@ -32,14 +36,26 @@ const [incomeList, setIncomeList] = useState([]);
 const [expenseList, setExpenseList] = useState([]);
 const [feeType, setFeeType] = useState("");   // Tuition | Other
 const [showFeeTypeDropdown, setShowFeeTypeDropdown] = useState(false);
-
+const todayDate = new Date().toISOString().split("T")[0];
 const feeTypeOptions = ["Tuition", "Other"];
-
+const [selectedClass, setSelectedClass] = useState("all");
 const [feesList, setFeesList] = useState([]);
 const [editId, setEditId] = useState(null);
 const [staffSearch, setStaffSearch] = useState("");
 const [showStaffDropdown, setShowStaffDropdown] = useState(false);
-const entryTypes = ["Fees", "Salary"];
+const entryTypes = ["Fees", "Salary", "Competition"];
+const [competitionName, setCompetitionName] = useState("");
+const [competitionAmount, setCompetitionAmount] = useState("");
+const [showCompetitionClassDD, setShowCompetitionClassDD] = useState(false);
+
+const historyRef = collection(
+  db,
+  "users",
+  adminUid,
+  "Account",
+  "accounts",
+  "History"
+);
 
 const filteredEntryTypes = entryTypes.filter(t =>
   t.toLowerCase().includes(entrySearch.toLowerCase())
@@ -74,7 +90,6 @@ const [discountOptions, setDiscountOptions] = useState([ "0","5", "10","15", "20
     if (!adminUid) return;
     const incomeRef = collection(db, "users", adminUid, "Account", "accounts", "Income");
     const expenseRef = collection(db, "users", adminUid, "Account", "accounts", "Expenses");
-    const feesRef = collection(db, "users", adminUid, "FeesCollection");
     const unsubIncome = onSnapshot(query(incomeRef), snap => {
       setIncomeList(snap.docs.map(d => d.data()));
     });
@@ -126,9 +141,41 @@ const [discountOptions, setDiscountOptions] = useState([ "0","5", "10","15", "20
   .filter(t => t.category === "Teaching Staff")
   .filter(t =>
     t.name?.toLowerCase().includes(teacherSearch.toLowerCase())
-  );
+  );const saveCompetition = async () => {
+    if (!competitionName || !competitionAmount) {
+      alert("Enter competition name & amount");
+      return;
+    }
+  
+    await addDoc(
+      collection(db, "users", adminUid, "Account", "accounts", "Competition"),
+      {
+        className: selectedClass,   // all / class name
+        name: competitionName,
+        amount: Number(competitionAmount),
+        createdAt: new Date()
+      }
+    );
+  
+    // 🔥 History Save
+    await addDoc(historyRef, {
+      entryType: "inventory",
+      action: "ADD",
+      module: "COMPETITION",
+      name: competitionName,
+      amount: Number(competitionAmount),
+      date: new Date(),
+      createdAt: new Date()
+    });
+  
+    setCompetitionName("");
+    setCompetitionAmount("");
+    setSelectedClass("all");
+  };
+  
   const saveFee = async () => {
-    if (!entryType || !feeAmount ) return alert("Fill all fields");
+    if (!entryType || !feeAmount || (entryType==="fees" && !feeType))
+    return alert("Fill all fields");
 
     if (entryType === "fees") {
       if (!feeClass || !feeName) return alert("Select class & fee name");
@@ -141,7 +188,18 @@ const [discountOptions, setDiscountOptions] = useState([ "0","5", "10","15", "20
         amount: Number(feeAmount),
         discount: Number(discount || 0),
         createdAt: new Date()
-      });      
+      });   
+      await addDoc(historyRef,{
+        entryType: "inventory",
+        action: "ADD",
+        module:"FEES_MASTER",
+        name: feeName,
+        amount:Number(feeAmount),
+        date: todayDate,
+        createdAt:new Date()
+      });
+      
+         
     }
     if (entryType === "salary") {
 
@@ -159,6 +217,16 @@ const [discountOptions, setDiscountOptions] = useState([ "0","5", "10","15", "20
           amount: Number(feeAmount),
           createdAt: new Date()
         });
+        await addDoc(historyRef,{
+          entryType: "inventory",
+          action:"ADD",
+          module:"SALARY_MASTER",
+          name: selectedTeacher.name,
+          amount:Number(feeAmount),
+          date: todayDate,
+          createdAt:new Date()
+        });
+        
       }if (staffMode === "new") {
         if (!salaryCategory || !salaryPosition)
           return alert("Select category & position");
@@ -201,6 +269,15 @@ await addDoc(feesRef,{
   amount:Number(feeAmount),
   createdAt:new Date()
 });
+await addDoc(historyRef,{
+  entryType: "inventory",
+  action:"ADD",
+  module:"SALARY_MASTER",
+  name: newStaffName,
+  amount:Number(feeAmount),
+  date: todayDate,
+  createdAt:new Date()
+});
 
       }
     }
@@ -210,6 +287,7 @@ setFeeClass("");
 setClassSearch("");
 setFeeName("");
 setFeeAmount("");
+setFeeType("");
 setSalaryCategory("");
 setCategorySearch("");
 setSalaryPosition("");
@@ -238,12 +316,13 @@ setNewStaffPhone("");
   };
   const feesData = feesMaster.filter(i => i.type === "fees");
   const salaryData = feesMaster.filter(i => i.type === "salary");
-
-  const groupedFees = feesData.reduce((acc, item) => {
-    if (!acc[item.className]) acc[item.className] = [];
-    acc[item.className].push(item);
-    return acc;
-  }, {});
+  const competitionData = feesMaster.filter(i => i.type === "competition");
+  const filteredCompetitionClasses = classes.filter(cls =>
+    cls.toLowerCase().includes(
+      competitionClassSearch.toLowerCase()
+    )
+  );
+  
 
   const deleteFee = async (id) => {
     if (!window.confirm("Delete this item?")) return;
@@ -251,7 +330,18 @@ setNewStaffPhone("");
     await deleteDoc(
       doc(db, "users", adminUid, "Account", "accounts", "FeesMaster", id)
     );
+  
+    await addDoc(historyRef,{
+      entryType:"inventory",
+      action:"DELETE",
+      module:"FEES_MASTER",
+      name:"Deleted Fee",
+      amount:0,
+      date: todayDate,
+      createdAt:new Date()
+    });
   };
+  
   const startEdit = (item) => {
     setEditId(item.id);
     setFeeClass(item.className || "");
@@ -271,11 +361,12 @@ setNewStaffPhone("");
   .filter(c =>
     c.toLowerCase().includes(classSearch.toLowerCase())
   );
-  const sortedGroupedFees = Object.entries(groupedFees)
-  .sort(
-    ([a], [b]) =>
-      classOrder.indexOf(a) - classOrder.indexOf(b)
+  const sortedFees = [...feesData].sort(
+    (a, b) =>
+      classOrder.indexOf(a.className) -
+      classOrder.indexOf(b.className)
   );
+  
   const updateFee = async () => {
     if (!editId) return;
   
@@ -425,9 +516,10 @@ setNewStaffPhone("");
       placeholder="Select Type"
       value={
         entryType
-          ? entryType === "fees" ? "Fees" : "Salary"
+          ? entryType.charAt(0).toUpperCase() + entryType.slice(1)
           : entrySearch
-      }
+       }
+
       onChange={e => {
         setEntrySearch(e.target.value);
         setEntryType("");
@@ -586,6 +678,82 @@ setNewStaffPhone("");
 
 
   </div>
+)}{entryType === "competition" && (
+
+  <div className="fees-grid">
+{/* ===== CLASS DROPDOWN (FEES STYLE) ===== */}
+<div className="student-dropdown" style={{ flex:1 }}>
+  <input
+    placeholder="All Class"
+    value={
+      selectedClass === "all"
+        ? competitionClassSearch
+        : selectedClass
+    }
+    onChange={e => {
+      setCompetitionClassSearch(e.target.value);
+      setSelectedClass("all");
+      setShowCompetitionClassDD(true);
+    }}
+    onFocus={() => setShowCompetitionClassDD(true)}
+  />
+
+  {showCompetitionClassDD && (
+    <div className="student-dropdown-list">
+
+      {/* All Classes */}
+      <div
+        className="student-option"
+        onClick={() => {
+          setSelectedClass("all");
+          setCompetitionClassSearch("");
+          setShowCompetitionClassDD(false);
+        }}
+      >
+        All Classes
+      </div>
+
+      {/* Class List */}
+      {filteredCompetitionClasses.map(cls => (
+        <div
+          key={cls}
+          className="student-option"
+          onClick={() => {
+            setSelectedClass(cls);
+            setCompetitionClassSearch("");
+            setShowCompetitionClassDD(false);
+          }}
+        >
+          Class {cls}
+        </div>
+      ))}
+
+    </div>
+  )}
+</div>
+
+{/* ===== NAME ===== */}
+<input
+  style={{ flex:2 }}
+  placeholder="Competition Name"
+  value={competitionName}
+  onChange={e => setCompetitionName(e.target.value)}
+/>
+
+{/* ===== AMOUNT ===== */}
+<input
+  style={{ flex:1 }}
+  type="number"
+  placeholder="Amount"
+  value={competitionAmount}
+  onChange={e => setCompetitionAmount(e.target.value)}
+/>
+
+<button className="save-btn" onClick={saveCompetition}>
+  Save
+</button>
+
+</div>
 )}
 
 
@@ -827,63 +995,67 @@ setNewStaffPhone("");
 
 
       </div>
+      <div className="tab-buttons">
 
-      {/* SUMMARY */}
-      <div style={{ display: "flex", gap: 10, marginTop: 20 ,marginBottom:20 }}>
-        <button onClick={() => setActiveSummary("fees")}>Fees Summary</button>
-        <button onClick={() => setActiveSummary("salary")}>Salary Summary</button>
-      </div>
+<button
+  className={
+    activeSummary === "fees"
+      ? "tab-btn active"
+      : "tab-btn"
+  }
+  onClick={() => setActiveSummary("fees")}
+>
+  Fees Summary
+</button>
+
+<button
+  className={
+    activeSummary === "salary"
+      ? "tab-btn active"
+      : "tab-btn"
+  }
+  onClick={() => setActiveSummary("salary")}
+>
+  Salary Summary
+</button>
+
+<button
+    className={
+      activeSummary === "competition"
+        ? "tab-btn active"
+        : "tab-btn"
+    }
+    onClick={() => setActiveSummary("competition")}
+  >
+    Competition Summary
+  </button>
+
+</div>
+
 
       {activeSummary === "fees" && (
         <table className="nice-table">
           <thead><tr><th>Class</th><th>Fee</th><th>Amount</th><th>Discount</th>
 <th>Action</th></tr></thead>
          <tbody>
-  {sortedGroupedFees.map(([cls, items]) => (
-    <tr key={cls}>
+         {sortedFees.map(i => (
+  <tr key={i.id}>
+    <td>{i.className}</td>
+    <td>{i.name}</td>
+    <td>₹{i.amount}</td>
+    <td>{i.discount || 0}%</td>
+    <td>
+      <button className="edit-btn" onClick={() => startEdit(i)}>
+        <FaEdit /> Edit
+      </button>
 
-      <td>{cls}</td>
+      <button className="delete-btn" onClick={() => deleteFee(i.id)}>
+        <FaTrash /> Delete
+      </button>
+    </td>
+  </tr>
+))}
 
-      <td>
-        {items.map(i => (
-          <div key={i.id}>{i.name}</div>
-        ))}
-      </td>
-
-      <td>
-        {items.map(i => (
-          <div key={i.id}>₹{i.amount}</div>
-        ))}
-      </td>
-
-      <td>
-        {items.map(i => (
-          <div key={i.id}>{i.discount || 0}%</div>
-        ))}
-      </td>
-
-      <td>
-        {items.map(i => (
-          <div key={i.id} style={{ marginBottom: 6 }}>
-            <button
-              className="edit-btn"
-              onClick={() => startEdit(i)}
-            >
-              <FaEdit /> Edit
-            </button>
-
-            <button
-              className="delete-btn"
-              onClick={() => deleteFee(i.id)}
-            >
-              <FaTrash /> Delete
-            </button>
-          </div>
-        ))}
-      </td>
-
-    </tr>
-  ))}
 </tbody>
 
         </table>
@@ -929,6 +1101,28 @@ setNewStaffPhone("");
     </tbody>
   </table>
 )}
+{activeSummary === "competition" && (
+  <table className="nice-table">
+    <thead>
+      <tr>
+        <th>Class</th>
+        <th>Name</th>
+        <th>Amount</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {competitionData.map(c => (
+        <tr key={c.id}>
+          <td>{c.className}</td>
+          <td>{c.name}</td>
+          <td>₹{c.amount}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+)}
+
     </div>
   );
 }
