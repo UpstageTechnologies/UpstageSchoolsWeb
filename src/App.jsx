@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Landing from "./useTheme/pages/Landing";
-import Login from "./useTheme/pages/Login";
+// import Login from "./useTheme/pages/Login";
 import Register from "./useTheme/pages/Register";
 import Dashboard from "./features/dashboard/Dashboard";
 import PaymentSelection from "./features/payment/PaymentSelection";
@@ -30,7 +30,7 @@ function App() {
       <Routes>
         <Route path="/" element={<EmptyPage />} />
         <Route path="/UniversalLogin" element={<UniversalLogin />} />
-        <Route path="/login" element={<Login />} />
+        {/* <Route path="/login" element={<Login />} /> */}
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/payment" element={<PaymentSelection />} /> 

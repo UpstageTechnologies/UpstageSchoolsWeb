@@ -556,7 +556,6 @@ const handleMenuClick = (page) => {
       >
         ⚙ Settings
       </button>
-
       <button
         className="logout-btn"
         onClick={handleLogout}
@@ -831,6 +830,7 @@ const handleMenuClick = (page) => {
   <HistoryPage
     adminUid={adminUid}
     setActivePage={setActivePage}
+    globalSearch={searchQuery}
   />
 )}
 

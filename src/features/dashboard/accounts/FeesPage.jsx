@@ -27,6 +27,11 @@ const [classSearchText, setClassSearchText] = useState("");
 const [showClassFilterDropdown, setShowClassFilterDropdown] = useState(false);
 const [reportPendingClass, setReportPendingClass] = useState("");
 const [reportPendingFee, setReportPendingFee] = useState(null);
+const [analysisClassFilter, setAnalysisClassFilter] = useState("All");
+const [analysisCompetitionFilter, setAnalysisCompetitionFilter] = useState("");
+const [analysisExpenseFilter, setAnalysisExpenseFilter] = useState("");
+
+
 const [showOverviewDropdown, setShowOverviewDropdown] = useState(false);
 const historyRef = collection(
   db,
@@ -304,7 +309,29 @@ const competitionAnalysis = (() => {
 
   return Object.values(map);
 })();
+const filteredExpenseAnalysis = competitionAnalysis.filter(r => {
 
+  if (
+    analysisClassFilter !== "All" &&
+    r.className !== analysisClassFilter
+  ) return false;
+
+  if (
+    analysisCompetitionFilter &&
+    !r.competitionName
+      ?.toLowerCase()
+      .includes(analysisCompetitionFilter.toLowerCase())
+  ) return false;
+
+  if (
+    analysisExpenseFilter &&
+    !r.expenseName
+      ?.toLowerCase()
+      .includes(analysisExpenseFilter.toLowerCase())
+  ) return false;
+
+  return true;
+});
   return (
     <div className="accounts-wrapper fade-in">
 
@@ -528,6 +555,37 @@ const competitionAnalysis = (() => {
   <div className="section-card pop">
 
     <h3 className="section-title">Competition Expense Analysis</h3>
+    {/* ===== FILTER BAR ===== */}
+<div style={{display:"flex", gap:12, marginBottom:12}}>
+
+{/* CLASS */}
+<select
+  value={analysisClassFilter}
+  onChange={e => setAnalysisClassFilter(e.target.value)}
+>
+  <option value="All">All Classes</option>
+  {classes.map(c => (
+    <option key={c.id} value={c.name}>
+      Class {c.name}
+    </option>
+  ))}
+</select>
+
+{/* COMPETITION NAME */}
+<input
+  placeholder="Search Competition"
+  value={analysisCompetitionFilter}
+  onChange={e => setAnalysisCompetitionFilter(e.target.value)}
+/>
+
+{/* EXPENSE NAME */}
+<input
+  placeholder="Search Expense"
+  value={analysisExpenseFilter}
+  onChange={e => setAnalysisExpenseFilter(e.target.value)}
+/>
+
+</div>
 
     <table className="nice-table">
       <thead>
@@ -543,15 +601,16 @@ const competitionAnalysis = (() => {
 
       <tbody>
 
-        {competitionAnalysis.length === 0 && (
+      {filteredExpenseAnalysis.length === 0 && (
+
           <tr>
             <td colSpan="6" style={{ textAlign: "center" }}>
               No competition data
             </td>
           </tr>
         )}
+{filteredExpenseAnalysis.map((r, i) => (
 
-        {competitionAnalysis.map((r, i) => (
           <tr key={i}>
 
             <td data-label="Class">{r.className}</td>

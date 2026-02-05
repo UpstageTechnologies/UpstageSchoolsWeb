@@ -10,14 +10,52 @@ import {
 } from "firebase/firestore";
 import {
   signInWithEmailAndPassword,
-  sendPasswordResetEmail
 } from "firebase/auth";
+import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
+
 import loginPerson from "../../assets/login-person.png";
 import { auth, db } from "../../services/firebase";
 import logo from "../../assets/logo.jpeg";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "../styles/UniversalLogin.css";
+
 const UniversalLogin = () => {
+
+  const provider = new GoogleAuthProvider();
+
+  provider.setCustomParameters({
+    prompt: "select_account"
+  });
+  
+
+const handleGoogleSignIn = async () => {
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) {
+      await signOut(auth);
+      alert("Please register first");
+      navigate("/register");
+      return;
+    }
+
+    // Save session
+    localStorage.setItem("role", "master");
+    localStorage.setItem("adminUid", user.uid);
+    localStorage.setItem("adminName", user.displayName || "");
+    localStorage.setItem("profilePhoto", user.photoURL || "");
+
+    navigate("/dashboard");
+  } catch (error) {
+    alert(error.message);
+  }
+};
+
+
     const [role, setRole] = useState(
         localStorage.getItem("selectedRole") || ""
       );  
@@ -206,7 +244,22 @@ const UniversalLogin = () => {
   
           <button className="log-btn" disabled={loading}>
             {loading ? "Loading..." : "Login"}
-          </button></form></div>
+          </button></form>
+          {role === "master" && (
+  <>
+    <div className="or-line">OR</div>
+
+    <button className="google-btn" onClick={handleGoogleSignIn}>
+      <img
+        src="https://developers.google.com/identity/images/g-logo.png"
+        alt="google"
+      />
+      Sign in with Google
+    </button>
+  </>
+)}
+
+</div>
     </div>
   );  
 };

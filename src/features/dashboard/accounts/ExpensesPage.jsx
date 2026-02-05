@@ -6,6 +6,7 @@ export default function ExpensesPage({ adminUid, setActivePage }) {
 
   const [incomeList, setIncomeList] = useState([]);
   const [expenseList, setExpenseList] = useState([]);
+  
   const today = new Date().toISOString().split("T")[0];
   const role = localStorage.getItem("role");
   const isOfficeStaff = role === "office_staff";
@@ -129,18 +130,6 @@ const todayProfit = todayIncome - todayExpense;
         
         
   <div className="summary2-scroll">
-  <div style={{
-  display: "flex",
-  justifyContent: "flex-end",
-  marginBottom: "12px"
-}}>
-  <button
-    className="report-btn"
-    onClick={() => setActivePage("history")}
-  >
-    🕒 
-  </button>
-</div>
 
   <div className="summary2-layout">
 

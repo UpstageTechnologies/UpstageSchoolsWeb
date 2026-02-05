@@ -118,26 +118,31 @@
   cursor:pointer;
   margin-bottom:18px;
 }
-
-/* ============================
-   LOGIN BUTTON
-============================ */
 .log-btn{
-    width:100%;
-    padding:14px;
-    background:linear-gradient(180deg,#7c3aed,#5b21b6);
-    border:none;
-    color:white;
-    font-size:16px;
-    border-radius:8px;
-    cursor:pointer;
-    box-shadow:0 8px 18px rgba(124,58,237,0.45);
-  }
-  
-.log-btn:hover{
-  opacity:0.9;
-  transform:translateY(-1px);
+  width:100%;
+  padding:14px;
+  background: linear-gradient(270deg,#7c3aed,#5b21b6,#7c3aed);
+  background-size:200% 200%;
+  animation: gradientMove 4s ease infinite;
+  border:none;
+  color:white;
+  font-size:16px;
+  border-radius:10px;
+  cursor:pointer;
+  box-shadow:0 10px 25px rgba(124,58,237,0.5);
+  transition:.3s;
 }
+
+.log-btn:hover{
+  transform:translateY(-2px) scale(1.01);
+}
+
+@keyframes gradientMove{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+
 .ul-avatar{
     position:absolute;
     bottom:-110px;   /* card keela kondu varum */
@@ -179,5 +184,66 @@
     0%{ transform:translateY(0); }
     50%{ transform:translateY(-8px); }
     100%{ transform:translateY(0); }
+  }
+  .or-line{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:20px 0;
+    font-size:13px;
+    color:#999;
+  }
+  
+  .or-line::before,
+  .or-line::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:#ddd;
+  }
+  .google-btn{
+    width:100%;
+    padding:12px;
+    border:none;
+    background:#fff;
+    color: black;
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    cursor:pointer;
+    font-size:14px;
+    box-shadow:0 5px 18px rgba(0,0,0,0.12);
+    transition:.25s;
+  }
+  .google-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 22px rgba(0,0,0,0.18);
+  }
+  
+  .google-btn img{
+    width:18px;
+  }
+  .ul-card{
+    animation: pop 0.7s ease;
+  }
+  
+  @keyframes pop{
+    0%{transform:scale(0.9); opacity:0;}
+    100%{transform:scale(1); opacity:1;}
+  }
+  .ul-card input{
+    transition:0.25s;
+  }
+  
+  .ul-card input:focus{
+    box-shadow:0 0 0 3px rgba(124,58,237,0.15);
+  }
+  .ul-top-bg::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:radial-gradient(circle at center,rgba(255,255,255,0.15),transparent 70%);
   }
   

@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import "../styles/Register.css";
+
 import logo from "../../assets/logo.jpeg";
 import { FcGoogle } from "react-icons/fc";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../../services/firebase";
 import { doc, setDoc ,serverTimestamp } from "firebase/firestore";
+import "../styles/UniversalLogin.css";
 
 
 const Register = () => {
@@ -22,6 +23,10 @@ const Register = () => {
 
   const navigate = useNavigate();
   const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({
+    prompt: "select_account"
+  });
+  
 
   // GOOGLE SIGN-IN
   const handleGoogleSignIn = async () => {
@@ -93,90 +98,80 @@ const Register = () => {
   };
 
   return (
-    <>
-    <div className="login-page">
-      <div className="wrapper">
-      <nav className="nav-bar">
-        
-        <img src={logo} alt="Company Logo" className="logo" />
-        <div className="nav-links">
-          <a href="/">Home</a>
-          <a href="login">Login</a>
-          <Link to="/choose-login" className="start-btn">School Login</Link>
-        </div>
-      </nav>
-      
-      <div className="log" style={{ marginTop: "80px" }}>
-        <h2>Register</h2>
-
-        <form onSubmit={handleRegister}>
-
-          {/* USERNAME */}
-          <input
-            type="text"
-            placeholder="User Name"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-
-        
-
-          {/* EMAIL */}
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-
-{/* PASSWORD */}
-<div className="password-wrapper">
-  <input
-    type={showPass ? "text" : "password"}
-    placeholder="Password"
-    value={password}
-    onChange={(e) => setPassword(e.target.value)}
-    required
-  />
-  <span className="eye-icon" onClick={() => setShowPass(!showPass)}>
-    {showPass ? <FaEyeSlash /> : <FaEye />}
-  </span>
-
-{/* CONFIRM PASSWORD */}
-  <input
-    type={showPass ? "text" : "password"}
-    placeholder="Confirm Password"
-    value={confirmPassword}
-    onChange={(e) => setConfirmPassword(e.target.value)}
-    required
-  />
-  <span className="eye-icon1" onClick={() => setShowPass(!showPass)}>
     
-  </span>
-</div>
-
-
-          {error && <p style={{ color: "red" }}>{error}</p>}
-
-          <button className="register-btn" type="submit" disabled={loading}>
-             {loading ? "Loading..." : "Register"}
+      <div className="ul-page">
+        <div className="ul-top-bg"></div>
+    
+        <div className="ul-card">
+    
+          <h1 className="ul-logo">LOGO</h1>
+          <p className="ul-welcome">Hello 👋 Welcome!</p>
+    
+          <h2>Register</h2>
+          <p className="ul-sub">Create your master account</p>
+    
+          <form onSubmit={handleRegister}>
+    
+            <input
+              type="text"
+              placeholder="User Name"
+              value={username}
+              onChange={(e)=>setUsername(e.target.value)}
+              required
+            />
+    
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e)=>setEmail(e.target.value)}
+              required
+            />
+    
+            <div className="password-wrapper">
+              <input
+                type={showPass ? "text" : "password"}
+                placeholder="Password"
+                value={password}
+                onChange={(e)=>setPassword(e.target.value)}
+                required
+              />
+              <span onClick={()=>setShowPass(!showPass)}>
+                {showPass ? <FaEyeSlash/> : <FaEye/>}
+              </span>
+            </div>
+    
+            <input
+              type={showPass ? "text" : "password"}
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e)=>setConfirmPassword(e.target.value)}
+              required
+            />
+    
+            {error && <p style={{color:"red"}}>{error}</p>}
+    
+            <button className="log-btn" type="submit">
+              {loading ? "Loading..." : "Register"}
             </button>
-
-
-          <button type="button" className="google-btn" onClick={handleGoogleSignIn}>
-            <FcGoogle className="google-icon" /> Sign up with Google
+    
+          </form>
+    
+          <div className="or-line">OR</div>
+    
+          <button className="google-btn" onClick={handleGoogleSignIn}>
+            <FcGoogle />
+            Sign up with Google
           </button>
-        </form>
-
-        <p>
-          Already have an account? <Link to="/Login">Login here</Link>
-        </p>
-      </div></div>
+    
+          <p style={{marginTop:"12px", fontSize:"13px"}}>
+            Already have account? <Link to="/login">Login</Link>
+          </p>
+    
+        </div>
       </div>
-      </>
-  );
+    );
+    
 };
 
 export default Register;

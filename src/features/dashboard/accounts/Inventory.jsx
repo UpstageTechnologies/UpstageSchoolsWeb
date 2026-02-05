@@ -178,13 +178,17 @@ const [discountOptions, setDiscountOptions] = useState([ "0","5", "10","15", "20
     return alert("Fill all fields");
 
     if (entryType === "fees") {
+      const finalFeeName =
+      feeType === "Tuition"
+        ? `Tuition ${discount || 0}%`
+        : feeName;
       if (!feeClass || !feeName) return alert("Select class & fee name");
 
       await addDoc(feesRef, {
         type: "fees",
         feeType: feeType, 
         className: String(feeClass).trim(),
-        name: feeName,
+        name: finalFeeName,
         amount: Number(feeAmount),
         discount: Number(discount || 0),
         createdAt: new Date()
@@ -201,6 +205,8 @@ const [discountOptions, setDiscountOptions] = useState([ "0","5", "10","15", "20
       
          
     }
+ 
+
     if (entryType === "salary") {
 
       // ✅ OLD STAFF
@@ -547,9 +553,6 @@ setNewStaffPhone("");
     )}
   </div>
 </div>
-
-
-
 {entryType === "fees" && (
   <div className="fees-grid">
 
@@ -597,7 +600,14 @@ setNewStaffPhone("");
           onClick={() => {
             setFeeType(type);
             setShowFeeTypeDropdown(false);
+          
+            if (type === "Tuition") {
+              setFeeName("Tuition");   // auto fill
+            } else {
+              setFeeName("");          // allow user typing
+            }
           }}
+          
         >
           {type}
         </div>
@@ -606,14 +616,15 @@ setNewStaffPhone("");
   )}
 </div>
 
-
-    <div className="student-dropdown">
-  <input
-    placeholder="Fee Name"
-    value={feeName}
-    onChange={e=>setFeeName(e.target.value)}
-  />
-</div>
+{feeType !== "Tuition" && (
+  <div className="student-dropdown">
+    <input
+      placeholder="Fee Name"
+      value={feeName}
+      onChange={e=>setFeeName(e.target.value)}
+    />
+  </div>
+)}
 
 <div className="student-dropdown">
   <input

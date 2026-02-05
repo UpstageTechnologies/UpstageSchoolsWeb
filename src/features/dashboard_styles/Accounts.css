@@ -196,5 +196,24 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0) !importan
 @media (max-width:600px){.feesmaster-topbar .student-dropdown{width:100% !important;}}
 @media (max-width:600px){.feesmaster-topbar input[type="text"]{margin:0 !important;}}
 .floating-back-btn{position:fixed;bottom:30px;left:100px;width:55px;height:55px;border-radius:50%;background:white;color:#2140df;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;box-shadow:0 6px 15px rgba(0,0,0,0.3);z-index:999999;}
+/* ===== History Filters Responsive ===== */
 
+.history-filters{
+    display:flex;
+    gap:10px;
+    margin-bottom:15px;
+  }
+  
+  /* Mobile */
+  @media (max-width: 600px){
+    .history-filters{
+      flex-direction: column;   /* 🔥 kella kella */
+    }
+  
+    .history-filters .tab-btn{
+      width:100%;              /* full width */
+      text-align:center;
+    }
+  }
+  
   

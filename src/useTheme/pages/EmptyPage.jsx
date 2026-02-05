@@ -73,20 +73,19 @@ export default function EmptyPage() {
 
 <SearchableDropdown
   items={["master","admin","teacher","parent","office_staff"]}
-  
   value={role}
   onChange={setRole}
   placeholder="Search role"
 />
-
 <button type="submit">Continue →</button>
-
+<button
+  type="button"
+  onClick={() => navigate("/register")}
+>
+  New User →
+</button>
 </form>
-
-
       </div>
-
-      {/* RIGHT */}
       <div className="hero-right">
         <div className="image-circle">
           <img src={studentImg} alt="Student" />

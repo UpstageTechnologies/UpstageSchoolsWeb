@@ -1,0 +1,75 @@
+/* Wrapper handles safe area + sticky behavior */
+.glass-navbar-wrapper {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    padding: env(safe-area-inset-top) 12px 10px;
+    background: transparent;
+  }
+  
+  /* Main glass bar */
+  .glass-navbar {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  
+    padding: 0 14px;
+    border-radius: 18px;
+  
+    /* Fallback background (VERY IMPORTANT) */
+    background: rgba(255, 255, 255, 0.75);
+  
+    /* iOS-style blur */
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+  
+    /* Subtle border like iOS */
+    border: 1px solid rgba(255, 255, 255, 0.4);
+  
+    /* Soft elevation */
+    box-shadow:
+      0 6px 20px rgba(0, 0, 0, 0.08);
+  
+    /* Prevent tap highlight bugs */
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Buttons */
+  .nav-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+  
+    background: rgba(255, 255, 255, 0.6);
+    color: #000;
+    font-size: 18px;
+    font-weight: 500;
+  
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    cursor: pointer;
+  }
+  
+  /* iOS-style press feedback */
+  .nav-btn:active {
+    background: rgba(255, 255, 255, 0.85);
+  }
+  
+  /* Title / Search placeholder */
+  .nav-title {
+    flex: 1;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 600;
+    color: #111;
+  
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  
+    padding: 0 8px;
+  }

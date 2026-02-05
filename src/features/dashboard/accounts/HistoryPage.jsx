@@ -2,10 +2,32 @@ import React, { useEffect, useState } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../../services/firebase";
 
-export default function HistoryPage({ adminUid, setActivePage }) {
+export default function HistoryPage({ adminUid, setActivePage , globalSearch = ""}) {
+
 
   const [historyList, setHistoryList] = useState([]);
+  const [activeFilter, setActiveFilter] = useState("all"); 
+  const filteredHistory = historyList.filter(h => {
 
+    const q = globalSearch.toLowerCase();
+  
+    // 🔥 TYPE FILTER
+    if (activeFilter !== "all") {
+      if (activeFilter === "income" && h.category !== "income") return false;
+      if (activeFilter === "expense" && h.category !== "expense") return false;
+      if (activeFilter === "inventory" && h.category !== "inventory") return false;
+    }
+  
+    // 🔍 SEARCH FILTER
+    return (
+      h.module?.toLowerCase().includes(q) ||
+      h.action?.toLowerCase().includes(q) ||
+      h.name?.toLowerCase().includes(q) ||
+      String(h.amount || "").includes(q)
+    );
+  
+  });
+  
   useEffect(() => {
 
     if (!adminUid) return;
@@ -29,7 +51,6 @@ export default function HistoryPage({ adminUid, setActivePage }) {
               .sort((a,b)=> b.createdAt?.seconds - a.createdAt?.seconds)
           );          
     });
-
     return () => unsub();
 
   }, [adminUid]);
@@ -45,6 +66,7 @@ export default function HistoryPage({ adminUid, setActivePage }) {
     return new Date(d).toLocaleDateString();
   };
   
+  
 
   return (
     <div className="accounts-wrapper">
@@ -58,6 +80,37 @@ export default function HistoryPage({ adminUid, setActivePage }) {
       </span>
 
       <h2 className="page-title">History</h2>
+      <div className="history-filters">
+
+
+  <button
+    className={activeFilter==="all" ? "tab-btn active" : "tab-btn"}
+    onClick={()=>setActiveFilter("all")}
+  >
+    All
+  </button>
+
+  <button
+    className={activeFilter==="income" ? "tab-btn active" : "tab-btn"}
+    onClick={()=>setActiveFilter("income")}
+  >
+    Income
+  </button>
+
+  <button
+    className={activeFilter==="expense" ? "tab-btn active" : "tab-btn"}
+    onClick={()=>setActiveFilter("expense")}
+  >
+    Expense
+  </button>
+
+  <button
+    className={activeFilter==="inventory" ? "tab-btn active" : "tab-btn"}
+    onClick={()=>setActiveFilter("inventory")}
+  >
+    Inventory
+  </button>
+</div>
 
       <div className="section-card pop">
 
@@ -81,13 +134,13 @@ export default function HistoryPage({ adminUid, setActivePage }) {
                 </td>
               </tr>
             )}
-{historyList.map(h => (
+{filteredHistory.map(h => (
   <tr key={h.id}>
-  <td>{h.module}</td>
-    <td>{h.action}</td>
-    <td>{h.name}</td>
-    <td>₹{h.amount}</td>
-    <td>{formatDate(h.date)}</td>
+ <td data-label="Type">{h.module}</td>
+<td data-label="Action">{h.action}</td>
+<td data-label="Name">{h.name}</td>
+<td data-label="Amount">₹{h.amount}</td>
+<td data-label="Date">{formatDate(h.date)}</td>
   </tr>
 ))}
 </tbody></table>
