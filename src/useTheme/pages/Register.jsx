@@ -151,7 +151,7 @@ const Register = () => {
     
             {error && <p style={{color:"red"}}>{error}</p>}
     
-            <button className="log-btn" type="submit">
+            <button style={{marginTop:"20px"}} className="unlog-btn" type="submit">
               {loading ? "Loading..." : "Register"}
             </button>
     

@@ -173,10 +173,6 @@ const TeacherTimetable = () => {
               );
             })}
           </div>
-
-          <p className="back" onClick={() => setSelectedClass(null)}>
-            ← Back to Classes
-          </p>
         </>
       )}
     </div>

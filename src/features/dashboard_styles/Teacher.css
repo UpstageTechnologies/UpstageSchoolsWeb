@@ -549,7 +549,7 @@ input:-webkit-autofill{
   }
 }
 /* ================= MOBILE READABILITY BOOST (480px – 768px) ================= */
-@media (max-width: 768px) and (min-width: 480px) {
+@media (max-width: 1000px) and (min-width: 480px) {
 
   /* Page title */
   .teacher-header h2{
@@ -578,12 +578,34 @@ input:-webkit-autofill{
   .view-btn{
     font-size:13px;
     height:32px;
-    padding:0 12px;
+    padding:0 25px;
   }
 
   /* Modal inputs */
   .modal input,
   .modal select{
     font-size:14px;
+  }
+}/* ================= ACTION BUTTONS SINGLE ROW (468px – 768px) ================= */
+@media (min-width: 360px) and (max-width: 768px){
+
+  /* actions cell */
+  .teacher-table td:last-child{
+    display:flex !important;
+    flex-direction:row !important;   /* 🔥 single row */
+    align-items:center;
+    gap:12px;
+  }
+
+  /* buttons */
+  .edit-btn,
+  .delete-btn,
+  .view-btn{
+    flex:1;                 /* 🔥 equal width */
+    width:auto !important;
+    height:38px;
+    font-size:14px;
+    justify-content:center;
+    padding:0 12px;
   }
 }

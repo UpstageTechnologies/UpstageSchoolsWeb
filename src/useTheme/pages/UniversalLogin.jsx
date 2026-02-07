@@ -242,7 +242,7 @@ const handleGoogleSignIn = async () => {
             </p>
           )}
   
-          <button className="log-btn" disabled={loading}>
+          <button className="unlog-btn" disabled={loading}>
             {loading ? "Loading..." : "Login"}
           </button></form>
           {role === "master" && (

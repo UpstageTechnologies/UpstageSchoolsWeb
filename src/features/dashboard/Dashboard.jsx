@@ -21,6 +21,8 @@ import React, { useEffect, useState } from "react";
     FaChevronDown,FaBookOpen,FaSchool,
     FaChevronUp,FaCalendarAlt,FaClipboardCheck,FaWpforms,FaMoneyBillWave
   } from "react-icons/fa";
+  import { ROLE_ACCESS } from "../../config/roleAccess";
+
   import schoolLogo from "../../assets/sch.jpg";
   import Admin from "./Admin";
   import OfficeStaff from "./OfficeStaff";
@@ -50,21 +52,7 @@ import { lazy, Suspense } from "react";
 const Teacher = lazy(() => import("./Teacher"));
 const Parent = lazy(() => import("./Parent"));
 const Student = lazy(() => import("./Student"));
-const isMobile = () => window.innerWidth <= 768;
-const QuickTile = ({ title, page, onOpen ,color}) => {
-  return (
-    <div
-      className="quick-tile"
-      onClick={() => onOpen(page)}
-    >
-   <div className="tile-icon" style={{ background: color }}>
 
-        {title.charAt(0).toUpperCase()}
-      </div>
-      <span>{title}</span>
-    </div>
-  );
-};
 
   const Dashboard = () => {
     const [user, setUser] = useState(null);
@@ -77,6 +65,8 @@ const QuickTile = ({ title, page, onOpen ,color}) => {
     const [showSchoolName, setShowSchoolName] = useState(false);
     const [showQuickPanel, setShowQuickPanel] = useState(false);
         const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+        const [accountPopupOpen, setAccountPopupOpen] = useState(false);
+     
     const [activePage, setActivePage] = useState("home");
     const [pageHistory, setPageHistory] = useState(["home"]);
     const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -89,8 +79,7 @@ const [officeStaffList, setOfficeStaffList] = useState([]);
 const [studentsList, setStudentsList] = useState([]);
 const [parentsList, setParentsList] = useState([]);
 const [globalResults, setGlobalResults] = useState([]);
-const pageResults = globalResults.filter(r => r.type === "page");
-const peopleResults = globalResults.filter(r => r.type !== "page");
+
 const badgeColors = {teacher: "#add8e6", student: "#90ee90",      // green
   parent: "rgb(240, 170, 240)",       // purple
   admin: "#f08080",        // red
@@ -192,6 +181,18 @@ useEffect(() => {
 
     const isAdminOrSubAdmin = role === "master" || role === "admin";
     const isOfficeStaff = role === "office_staff"; 
+    const roleAccess = ROLE_ACCESS[role] || { pages: [], people: [] };
+    const pageResults = globalResults.filter(
+      r =>
+        r.type === "page" &&
+        roleAccess.pages.includes(r.value)
+    );
+    
+    const peopleResults = globalResults.filter(
+      r =>
+        r.type !== "page" &&
+        roleAccess.people.includes(r.type)
+    );
     const formatDate = (timestamp) => {
       if (!timestamp) return "No Expiry";
       return timestamp.toDate().toLocaleDateString("en-IN", {
@@ -502,13 +503,11 @@ const handleMenuClick = (page) => {
      
 
       <BackConfirm />
-      <div className="dashboard-container">
+      <div className={`dashboard-container ${accountPopupOpen ? "popup-open" : ""}`}>
       <div className={`sidebar sidebar-${sidebarState}`}>
 {/* ===== SIDEBAR PROFILE ===== */}
 <div
-  className="sidebar-profile"
-  onClick={() => setUserMenuOpen(true)}
->
+  className="sidebar-profile">
   {localStorage.getItem("profilePhoto") ? (
     <img
       src={localStorage.getItem("profilePhoto")}
@@ -528,43 +527,7 @@ const handleMenuClick = (page) => {
   )}
 </div>
 {/* ===== PROFILE POPUP ===== */}
-{userMenuOpen && (
-  <div
-    className="profile-modal-overlay"
-    onClick={() => setUserMenuOpen(false)}
-  >
-    <div
-      className="profile-modal"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <h3>Account</h3>
 
-      <button
-        onClick={() => {
-          handleMenuClick("profile");
-          setUserMenuOpen(false);
-        }}
-      >
-        👤 Profile
-      </button>
-
-      <button
-        onClick={() => {
-          handleMenuClick("settings");
-          setUserMenuOpen(false);
-        }}
-      >
-        ⚙ Settings
-      </button>
-      <button
-        className="logout-btn"
-        onClick={handleLogout}
-      >
-        🚪 Logout
-      </button>
-    </div>
-  </div>
-)}
 <ul>
           
   {isOfficeStaff && (
@@ -608,7 +571,7 @@ const handleMenuClick = (page) => {
       )}
 
       {(
-        (role === "master" &&
+        (role === "master"  && 
           (plan === "premium" || plan === "lifetime" || plan === "basic")) ||
         role === "admin"
       ) && (
@@ -762,7 +725,8 @@ const handleMenuClick = (page) => {
 
   showQuickPanel={showQuickPanel}
   setShowQuickPanel={setShowQuickPanel}
-
+  accountPopupOpen={accountPopupOpen}
+  setAccountPopupOpen={setAccountPopupOpen}
   globalResults={globalResults}
   closeSearch={closeSearch}
 
@@ -779,6 +743,70 @@ const handleMenuClick = (page) => {
   badgeColors={badgeColors}
   viewAs={viewAs}
 />
+{accountPopupOpen && (
+  <div
+    className="profile-modal-overlay"
+    onClick={() => setAccountPopupOpen(false)}
+  >
+    <div
+      className="profile-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
+
+      {/* 🔹 SCHOOL NAME */}
+      <div className="popup-school-name">
+        {school || localStorage.getItem("schoolName") || "School Name"}
+      </div>
+
+      {/* 🔹 ROLE */}
+      <div className="popup-role">
+        {(role || localStorage.getItem("role") || "USER").toUpperCase()}
+      </div>
+
+      {/* 🔹 USER NAME (NEW) */}
+      <div className="popup-user-name">
+        {localStorage.getItem("adminName") ||
+         localStorage.getItem("teacherName") ||
+         localStorage.getItem("parentName") ||
+         "User"}
+      </div>
+
+      <div className="popup-divider" />
+
+      {/* buttons */}
+      <button
+        className="popup-btn"
+        onClick={() => {
+          handleMenuClick("profile");
+          setAccountPopupOpen(false);
+        }}
+      >
+        👤 Profile
+      </button>
+
+      <button
+        className="popup-btn"
+        onClick={() => {
+          handleMenuClick("settings");
+          setAccountPopupOpen(false);
+        }}
+      >
+        ⚙ Settings
+      </button>
+
+      <button
+        className="popup-btn logout"
+        onClick={() => {
+          localStorage.clear();
+          window.location.href = "/logout";
+        }}
+      >
+        🚪 Logout
+      </button>
+
+    </div>
+  </div>
+)}
 
           <div className="dashboard-content">
 {activePage === "calendar" && (

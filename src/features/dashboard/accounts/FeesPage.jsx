@@ -336,12 +336,7 @@ const filteredExpenseAnalysis = competitionAnalysis.filter(r => {
     <div className="accounts-wrapper fade-in">
 
   <div className="table-header">
-  <span
-        style={{ color: "#2140df", cursor: "pointer", fontWeight: 600 }}
-        onClick={() => setActivePage("accounts")}
-      >
-        ← Back
-      </span>
+ 
       <button style={{marginLeft:"30%"}}
     className="report-btn"
     onClick={() => setShowReport(true)}

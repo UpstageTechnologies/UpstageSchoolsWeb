@@ -209,7 +209,7 @@ const [discountOptions, setDiscountOptions] = useState([ "0","5", "10","15", "20
 
     if (entryType === "salary") {
 
-      // ✅ OLD STAFF
+      // ✅ OLD STAF
       if (staffMode === "old") {
         if (!salaryCategory || !salaryPosition || !selectedTeacher)
           return alert("Select staff");
@@ -504,13 +504,7 @@ setNewStaffPhone("");
   );
   return (
     <div className="accounts-wrapper fade-in">
-
-      <span onClick={() => setActivePage("accounts")} style={{ color: "#2140df", cursor: "pointer", fontWeight: 600 }}>
-        ← Back
-      </span>
-
       <h2 className="page-title">Inventory</h2>
-
       <div className="section-card entries-card">
         <h3 className="section-title">Add Item</h3>
 

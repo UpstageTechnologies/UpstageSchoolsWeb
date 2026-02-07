@@ -1,5 +1,4 @@
 
-/* REMOVE FLOATING CARD STYLE */
 .menu-box{
   background:transparent !important;
   box-shadow:none !important;
@@ -24,7 +23,7 @@
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:18px;
+  font-size:33px;
   box-shadow:0 2px 6px rgba(0,0,0,0.12);
 }
 
@@ -40,18 +39,18 @@
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:18px;
+  font-size:33px;
   box-shadow:0 4px 12px rgba(0,0,0,0.18);
 }
 .mobile-back-btn{
   border:1px solid #e5e7eb;
   border-radius:50%;
-  width:36px;
-  height:36px;
+  width:43px;
+  height:43px;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:16px;
+  font-size:18px;
   color:#000;
 }
 .mobile-back-btn{
@@ -62,7 +61,7 @@
   background:#e5e7eb;
 }
 .dashboard-content{
-  padding-top: 110px !important;
+  padding-top: 110px !important;  
 }
 .search-header{
   display:flex;
@@ -113,10 +112,12 @@
   height:64px;
   display:flex;
   align-items:center;
-  padding:50px 5px 10px 6px;
-  gap:10px;
+
+  gap:6px;                 /* 🔥 space minimize */
+  padding:10px 12px 10px 6px;
+
   border-radius:999px;
-  background:#f8fafc;              
+  background:#f8fafc;
   box-shadow:none;
   z-index:200;
 }
@@ -124,7 +125,6 @@
 .nav-search{
   position:relative;
   flex:1;
-  
 }
 
 .nav-search input{
@@ -178,62 +178,11 @@
     height:34px !important;
   }
 }
-.navbar{
-  height:64px;
-  padding: 4px 4px 4px 4px;
-}
+
 .navbar{
   background:#f8fafc;
 }
-@media (max-width:480px){
 
-  /* Navbar same as search */
-  .navbar{
-    height:56px;
-    padding:0;
-  }
-
-  /* Wrapper becomes full bar */
-  .nav-search{
-    width:100%;
-    height:100%;
-  }
-
-  /* Input fill navbar */
-  .nav-search input{
-    height:56px;
-    border-radius:999px;
-  }
-}
-@media (max-width:480px){
-  .navbar{
-    padding:0 !important;
-  }
-}
-@media (max-width:480px){
-
-  .navbar{
-    justify-content:center;   /* center children */
-  }
-
-  .nav-search{
-    margin:0 auto;            /* center search */
-  }
-
-}
-@media (max-width:480px){
-  .dashboard-content{
-    padding-top:120px !important;
-  }
-}
-@media (max-width:360px){
-
-  .nav-search{
-    margin-left:auto !important;
-    margin-right:auto !important;
-  }
-
-}
 @media (min-width:300px){
 
   /* Remove navbar background box */
@@ -329,4 +278,98 @@
     padding: 14px !important;
   }
 
+}
+.menu-toggle{
+  margin-right:-2px;
+}
+
+@media (min-width:769px){
+  .menu-toggle{
+    margin-left:6px;    /* navbar left breathing */
+    margin-right:6px;   /* space before search */
+  }
+}
+@media (max-width:768px){
+  .mobile-profile-avatar{
+    position:absolute;
+    left:8px;                 /* 🔥 LEFT SIDE */
+    top:50%;
+    transform:translateY(-50%);
+    display:flex !important;
+    align-items:center;
+    justify-content:center;
+    z-index:10;
+  }
+
+  .mobile-profile-avatar img{
+    width:28px;
+    height:28px;
+    border-radius:50%;
+    object-fit:cover;
+  }
+}
+@media (max-width:480px){
+  .navbar{
+    justify-content:center;
+  }
+
+  .nav-search{
+    width:100%;
+    max-width:600px;  
+    padding: 20px; /* tablet */
+    margin:0 auto;
+  }
+}
+
+@media (max-width:480px){
+  .nav-search{
+    max-width:100%;    /* small mobile */
+    padding:5px 15px 5px 5px; 
+  }
+}
+/* MOBILE ONLY – pull clock & school icon inside */
+@media (max-width: 480px){
+  .search-history-icon,
+  .search-school-icon{
+    transform: translateY(-50%) translateX(-10px) !important;
+  }
+}
+/* 🔥 MOBILE ICON FIX */
+@media (max-width: 768px){
+
+  /* Clock icon */
+  .search-history-icon{
+    width:34px !important;
+    height:34px !important;
+    right:52px !important;      /* 👈 corner-lendhu ulla */
+    background:#000;
+  }
+
+  .mobile-back-btn{
+    width: 38px;
+    height: 38px;
+  }
+
+  .search-history-icon svg{
+    font-size:16px !important;
+  }
+
+  /* School logo container */
+  .search-school-icon{
+    width:34px !important;
+    height:34px !important;
+    right:12px !important;      /* 👈 romba corner pogama */
+  }
+
+  /* School logo image */
+  .search-school-icon img{
+    width:30px !important;
+    height:30px !important;
+    object-fit:cover;
+  }
+
+  /* Input padding adjust so icons overlap aagadhu */
+  .nav-search input{
+    padding-right:92px !important;
+  }
 }

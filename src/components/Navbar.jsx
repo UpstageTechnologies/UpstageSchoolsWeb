@@ -7,7 +7,7 @@ import {
   FaBars
 } from "react-icons/fa";
 import "../features/dashboard_styles/navbar.css";
-
+import { ROLE_ACCESS } from "../config/roleAccess";
 
 const Navbar = ({
   toggleSidebar,
@@ -36,8 +36,34 @@ const Navbar = ({
   highlightText,
   badgeColors,
 
+  accountPopupOpen,
+  setAccountPopupOpen,
   viewAs
 }) => {
+  const role =
+  viewAs ??
+  localStorage.getItem("viewAs") ??
+  localStorage.getItem("role");
+
+const roleAccess = ROLE_ACCESS[role] || { pages: [] };
+const QUICK_TILES = [
+  { title: "Calendar", page: "calendar" },
+  { title: "Applications", page: "applications" },
+  { title: "Accounts", page: "accounts" },
+  { title: "Timetable", page: "timetable" },
+  { title: "Approvals", page: "approvals" },
+  { title: "Courses", page: "courses" },
+  { title: "Admin", page: "admin", color: "#f08080" },
+  { title: "Teacher", page: "teacher", color: "#add8e6" },
+  { title: "Student", page: "student", color: "#90ee90" },
+  { title: "Parent", page: "parent", color: "rgb(240,170,240)" },
+  { title: "Staff", page: "office_staff", color: "#ffa07a" }
+];
+
+const filteredQuickTiles = QUICK_TILES.filter(tile =>
+  roleAccess.pages.includes(tile.page)
+);
+
   const QuickTile = ({ title, page, onOpen, color }) => {
     return (
       <div
@@ -50,16 +76,17 @@ const Navbar = ({
         >
           {title.charAt(0).toUpperCase()}
         </div>
-  
         <span>{title}</span>
       </div>
     );
   };
   
 
+
     return (
       <nav className="navbar">
       <div className="nav-left">
+          
         <div className="mobile-back">
       <div className="menu-toggle mobile-back-btn" onClick={toggleSidebar}>
       <FaBars />
@@ -85,8 +112,6 @@ const Navbar = ({
   </div>
   )}
 
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-  </div>
     <div className="nav-search">
   <FaSearch className="search-icon-left" />
   <input
@@ -106,11 +131,11 @@ const Navbar = ({
       setShowQuickPanel(false);
     }}
   />
-
-  <div
+<div
   className="search-school-icon"
-  onClick={() => setShowSchoolName(prev => !prev)}
-  >
+  onClick={() => setAccountPopupOpen(prev => !prev)}
+>
+
   {showSchoolName && (
   <div className="school-name-popup">
   {school || localStorage.getItem("schoolName") || "School Name"}
@@ -121,7 +146,12 @@ const Navbar = ({
   <img
   src={logo || localStorage.getItem("schoolLogo")}
   alt="school"
-  />
+  onClick={(e) => {
+    e.stopPropagation();
+    setAccountPopupOpen(true);
+  }}
+/>
+
   ) : (
   <FaSchool />
   )}
@@ -136,24 +166,19 @@ const Navbar = ({
   <span className="search-title"></span>
   </div>
   {searchQuery === "" && (
-  <>
   <div className="quick-row">
-  <QuickTile title="Calendar" page="calendar" onOpen={handleMenuClick} />
-  <QuickTile title="Applications" page="applications" onOpen={handleMenuClick} />
-  <QuickTile title="Accounts" page="accounts" onOpen={handleMenuClick} />
-  <QuickTile title="Timetable" page="timetable" onOpen={handleMenuClick} />
-  <QuickTile title="Approvals" page="approvals" onOpen={handleMenuClick} />
-  <QuickTile title="Courses" page="courses" onOpen={handleMenuClick} />
+    {filteredQuickTiles.map(tile => (
+      <QuickTile
+        key={tile.page}
+        title={tile.title}
+        page={tile.page}
+        color={tile.color}
+        onOpen={handleMenuClick}
+      />
+    ))}
   </div>
-  <div className="quick-title">Account Creation</div>
-  <div className="quick-row">
-  <QuickTile title="Admin" page="admin" color="#f08080" onOpen={handleMenuClick} />
-  <QuickTile title="Teacher" page="teacher" color="#add8e6" onOpen={handleMenuClick} />
-  <QuickTile title="Student" page="student" color="#90ee90" onOpen={handleMenuClick} />
-  <QuickTile title="Parent" page="parent" color="rgb(240,170,240)" onOpen={handleMenuClick} />
-  <QuickTile title="Staff" page="office_staff" color="#ffa07a" onOpen={handleMenuClick} />
-  </div>   </>
-  )}
+)}
+
   {pageResults.length > 0 && (
   <>
   <div className="quick-title">Pages</div>

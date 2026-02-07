@@ -102,3 +102,50 @@
     padding: 22px;
   }
 }
+/* 🔥 REAL 360px FIX — NO POSITION HACKS */
+@media (max-width: 360px){
+
+  body{
+    overflow-x: hidden;
+  }
+
+  /* NAVBAR NORMAL FLOW */
+  .navbar{
+    position: relative !important;
+    top: 0 !important;
+    left: auto !important;
+    transform: none !important;
+
+    width: 100%;
+    max-width: 360px;
+
+    margin: 12px auto 0 auto; /* 👈 CENTER */
+
+    padding: 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: transparent;
+    box-shadow: none;
+  }
+
+  /* SEARCH WRAPPER */
+  .nav-search{
+    width: calc(100% - 24px); /* 👈 same gap both sides */
+    margin: 0 auto;
+  }
+
+  /* SEARCH INPUT */
+  .nav-search input{
+    width: 100%;
+    height: 56px;
+    border-radius: 999px;
+  }
+
+  /* MENU ICON OFF */
+  .menu-toggle{
+    display: none !important;
+  }
+}

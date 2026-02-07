@@ -1047,16 +1047,7 @@ const deleteEntry = async (row) => {
       />
     ) : (
       <>
-      
     
-{!isOfficeStaff && (
-  <span 
-    style={{ color: "#2140df", cursor: "pointer", fontWeight: 600 }}
-    onClick={() => setActivePage("accounts")}
-  ><FaArrowLeft/>
-    
-  </span>
-)}
 <h2 className="page-title">Accounts Dashboard</h2>
       {!isOfficeStaff && (
       <div className="today-summary">

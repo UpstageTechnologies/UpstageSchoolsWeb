@@ -106,12 +106,6 @@ export default function BillPage({ adminUid, billStudentId, billDate, setActiveP
   return (
     <div className="bill-page">
 
-      <span
-        style={{ color: "#2140df", cursor: "pointer", fontWeight: 600 }}
-        onClick={() => setActivePage("accounts")}
-      >
-        ← Back
-      </span>
 
       <div className="bill-card">
   <div className="invoice invoice-responsive">

@@ -11,11 +11,23 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
 
     const q = globalSearch.toLowerCase();
   
-    // 🔥 TYPE FILTER
+    // 🔥 TYPE FILTER USING MODULE
     if (activeFilter !== "all") {
-      if (activeFilter === "income" && h.category !== "income") return false;
-      if (activeFilter === "expense" && h.category !== "expense") return false;
-      if (activeFilter === "inventory" && h.category !== "inventory") return false;
+  
+      if (
+        activeFilter === "income" &&
+        !["FEES", "FEES_MASTER", "INCOME", "COMPETITION"].includes(h.module)
+      ) return false;
+  
+      if (
+        activeFilter === "expense" &&
+        !["STUDENT_MISC", "EXPENSE"].includes(h.module)
+      ) return false;
+  
+      if (
+        activeFilter === "inventory" &&
+        !["INVENTORY"].includes(h.module)
+      ) return false;
     }
   
     // 🔍 SEARCH FILTER
@@ -25,8 +37,8 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
       h.name?.toLowerCase().includes(q) ||
       String(h.amount || "").includes(q)
     );
-  
   });
+  
   
   useEffect(() => {
 
@@ -70,15 +82,6 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
 
   return (
     <div className="accounts-wrapper">
-
-      {/* BACK */}
-      <span
-        style={{ cursor: "pointer", color: "#2140df", fontWeight: 600 }}
-        onClick={() => setActivePage("accounts")}
-      >
-        ← Back
-      </span>
-
       <h2 className="page-title">History</h2>
       <div className="history-filters">
 
