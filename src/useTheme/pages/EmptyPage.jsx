@@ -84,6 +84,11 @@ export default function EmptyPage() {
 >
   New User →
 </button>
+<button
+  type="button"
+  onClick={() => navigate("/choose-login")}>
+    Demo 
+</button>
 </form>
       </div>
       <div className="hero-right">

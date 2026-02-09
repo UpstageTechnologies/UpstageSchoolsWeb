@@ -10,56 +10,40 @@
   .menu-toggle{
     display:flex !important;
   }
-}
-/* MOBILE BACK ARROW */
+}/* MOBILE BACK ARROW – FINAL CLEAN */
 .mobile-back-btn{
-  display:none;
-}
-.mobile-back-btn{
-  background:#f1f5f9;
-  border-radius:50%;
-  width:36px;
-  height:36px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:33px;
-  box-shadow:0 2px 6px rgba(0,0,0,0.12);
-}
+  display:none;                 /* default hidden (desktop) */
 
-.mobile-back-btn:active{
-  transform:scale(0.92);
-}
-.mobile-back-btn{
   background:rgba(255,255,255,0.7);
   backdrop-filter:blur(8px);
-  border-radius:50%;
-  width:38px;
-  height:38px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:33px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.18);
-}
-.mobile-back-btn{
+
   border:1px solid #e5e7eb;
   border-radius:50%;
+
   width:43px;
   height:43px;
+
   display:flex;
   align-items:center;
   justify-content:center;
+
   font-size:18px;
   color:#000;
-}
-.mobile-back-btn{
+
+  box-shadow:0 4px 12px rgba(0,0,0,0.18);
   transition:0.2s ease;
 }
 
+/* Active press */
+.mobile-back-btn:active{
+  transform:scale(0.92);
+}
+
+/* Hover (desktop only effect, safe) */
 .mobile-back-btn:hover{
   background:#e5e7eb;
 }
+
 .dashboard-content{
   padding-top: 110px !important;  
 }
@@ -371,5 +355,17 @@
   /* Input padding adjust so icons overlap aagadhu */
   .nav-search input{
     padding-right:92px !important;
+  }
+}
+/* 🔥 iOS SAFARI INPUT ZOOM FIX */
+@supports (-webkit-touch-callout: none) {
+  .nav-search input {
+    font-size: 16px !important;   /* 👈 MUST be 16px */
+  }
+}
+@supports (-webkit-touch-callout: none) {
+  .nav-search input {
+    transform: translateZ(0);
+    -webkit-text-size-adjust: 100%;
   }
 }

@@ -807,7 +807,6 @@ const handleMenuClick = (page) => {
     </div>
   </div>
 )}
-
           <div className="dashboard-content">
 {activePage === "calendar" && (
   <div className="calendar-fullpage">
