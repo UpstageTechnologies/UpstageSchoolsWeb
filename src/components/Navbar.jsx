@@ -8,6 +8,7 @@ import {
 } from "react-icons/fa";
 import "../features/dashboard_styles/navbar.css";
 import { ROLE_ACCESS } from "../config/roleAccess";
+import { useRef, useEffect } from "react";
 
 const Navbar = ({
   toggleSidebar,
@@ -46,6 +47,7 @@ const Navbar = ({
   localStorage.getItem("role");
 
 const roleAccess = ROLE_ACCESS[role] || { pages: [] };
+const searchInputRef = useRef(null);
 const QUICK_TILES = [
   { title: "Calendar", page: "calendar" },
   { title: "Applications", page: "applications" },
@@ -81,7 +83,33 @@ const filteredQuickTiles = QUICK_TILES.filter(tile =>
     );
   };
   
-
+  useEffect(() => {
+    const handleTouch = (e) => {
+      if (
+        searchInputRef.current &&
+        !searchInputRef.current.contains(e.target)
+      ) {
+        searchInputRef.current.blur(); // 🔥 keyboard close
+      }
+    };
+  
+    document.addEventListener("touchstart", handleTouch);
+    document.addEventListener("mousedown", handleTouch);
+  
+    return () => {
+      document.removeEventListener("touchstart", handleTouch);
+      document.removeEventListener("mousedown", handleTouch);
+    };
+  }, []);
+  useEffect(() => {
+    const onScroll = () => {
+      searchInputRef.current?.blur();
+    };
+  
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  
 
     return (
       <nav className="navbar">
@@ -115,6 +143,7 @@ const filteredQuickTiles = QUICK_TILES.filter(tile =>
     <div className="nav-search">
   <FaSearch className="search-icon-left" />
   <input
+  ref={searchInputRef}
   placeholder="Search..."
   value={searchQuery}
   onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
@@ -206,26 +235,31 @@ const filteredQuickTiles = QUICK_TILES.filter(tile =>
         if (item.type === "teacher") {
           localStorage.setItem("selectedTeacherId", item.id);
           handleMenuClick("teacher");
+          searchInputRef.current?.blur(); 
         }
 
         if (item.type === "student") {
           localStorage.setItem("selectedStudentId", item.id);
           handleMenuClick("student");
+          searchInputRef.current?.blur(); 
         }
 
         if (item.type === "parent") {
           localStorage.setItem("selectedParentId", item.id);
           handleMenuClick("parent");
+          searchInputRef.current?.blur(); 
         }
 
         if (item.type === "admin") {
           localStorage.setItem("selectedAdminId", item.id);
           handleMenuClick("admin");
+          searchInputRef.current?.blur(); 
         }
 
         if (item.type === "office_staff") {
           localStorage.setItem("selectedOfficeStaffId", item.id);
           handleMenuClick("office_staff");
+          searchInputRef.current?.blur(); 
         }
 
         setSearchQuery("");

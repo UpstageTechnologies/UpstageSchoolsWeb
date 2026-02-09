@@ -496,7 +496,8 @@ const handleMenuClick = (page) => {
         }
       }, [role]);
       
-    const adminUid = user?.uid || localStorage.getItem("adminUid");
+      const adminUid = localStorage.getItem("adminUid");
+
    
     return (
       <>

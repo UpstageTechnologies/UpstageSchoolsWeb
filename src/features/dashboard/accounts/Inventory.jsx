@@ -17,8 +17,10 @@ const [showStaffType, setShowStaffType] = useState(false);
   const [teachers, setTeachers] = useState([]);
   const [teacherSearch, setTeacherSearch] = useState("");
   const [competitionClassSearch, setCompetitionClassSearch] = useState("");
-  // ===== COMPETITION STATES =====
-const [competitionClass, setCompetitionClass] = useState("");
+ 
+const [competitionList, setCompetitionList] = useState([]);
+const [competitionSearch, setCompetitionSearch] = useState("");
+const [showCompetitionDropdown, setShowCompetitionDropdown] = useState(false);
 
   const [showTeacherDropdown, setShowTeacherDropdown] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState(null);
@@ -142,35 +144,20 @@ const [discountOptions, setDiscountOptions] = useState([ "0","5", "10","15", "20
   .filter(t =>
     t.name?.toLowerCase().includes(teacherSearch.toLowerCase())
   );const saveCompetition = async () => {
-    if (!competitionName || !competitionAmount) {
-      alert("Enter competition name & amount");
-      return;
-    }
+    if (!competitionName || !competitionAmount) return;
   
     await addDoc(
-      collection(db, "users", adminUid, "Account", "accounts", "Competition"),
+      collection(db,"users",adminUid,"Account","accounts","Competition"),
       {
-        className: selectedClass,   // all / class name
         name: competitionName,
         amount: Number(competitionAmount),
+        className: selectedClass,
         createdAt: new Date()
       }
     );
   
-    // 🔥 History Save
-    await addDoc(historyRef, {
-      entryType: "inventory",
-      action: "ADD",
-      module: "COMPETITION",
-      name: competitionName,
-      amount: Number(competitionAmount),
-      date: new Date(),
-      createdAt: new Date()
-    });
-  
     setCompetitionName("");
     setCompetitionAmount("");
-    setSelectedClass("all");
   };
   
   const saveFee = async () => {
@@ -502,6 +489,27 @@ setNewStaffPhone("");
   .filter(s =>
     s.name?.toLowerCase().includes(staffSearch.toLowerCase())
   );
+  useEffect(() => {
+    if (!adminUid) return;
+  
+    const ref = collection(
+      db,
+      "users",
+      adminUid,
+      "Account",
+      "accounts",
+      "Competition"
+    );
+  
+    return onSnapshot(ref, snap => {
+      const names = snap.docs.map(d => d.data().name);
+      setCompetitionList([...new Set(names)]); // unique names
+    });
+  }, [adminUid]);
+  const filteredCompetitions = competitionList.filter(n =>
+    n.toLowerCase().includes(competitionSearch.toLowerCase())
+  );
+  
   return (
     <div className="accounts-wrapper fade-in">
       <h2 className="page-title">Inventory</h2>
@@ -736,14 +744,52 @@ setNewStaffPhone("");
     </div>
   )}
 </div>
+<div className="student-dropdown" style={{ flex: 2 }}>
+  <input
+    placeholder="Competition Name"
+    value={competitionName}
+    onChange={e => {
+      setCompetitionName(e.target.value);
+      setCompetitionSearch(e.target.value);
+      setShowCompetitionDropdown(true);
+    }}
+    onFocus={() => setShowCompetitionDropdown(true)}
+  />
 
-{/* ===== NAME ===== */}
-<input
-  style={{ flex:2 }}
-  placeholder="Competition Name"
-  value={competitionName}
-  onChange={e => setCompetitionName(e.target.value)}
-/>
+  {showCompetitionDropdown && (
+    <div className="student-dropdown-list">
+
+      {/* Existing competition names */}
+      {filteredCompetitions.map(name => (
+        <div
+          key={name}
+          className="student-option"
+          onClick={() => {
+            setCompetitionName(name);
+            setShowCompetitionDropdown(false);
+          }}
+        >
+          {name}
+        </div>
+      ))}
+
+      {/* ➕ Add new competition */}
+      {competitionSearch &&
+        !competitionList.includes(competitionSearch) && (
+          <div
+            className="student-option"
+            style={{ color: "#2563eb" }}
+            onClick={() => {
+              setCompetitionName(competitionSearch);
+              setShowCompetitionDropdown(false);
+            }}
+          >
+            ➕ Add "{competitionSearch}"
+          </div>
+        )}
+    </div>
+  )}
+</div>
 
 {/* ===== AMOUNT ===== */}
 <input

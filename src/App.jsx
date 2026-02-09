@@ -52,6 +52,7 @@ function App() {
         <Route path="FeesPage" element={<FeesPage />} />
         <Route path="/dashboard/view"element={<UserViewDashboard />}/>
         <Route path="/landing" element={<Landing />} />
+     
       </Routes>
     </Router>
   );

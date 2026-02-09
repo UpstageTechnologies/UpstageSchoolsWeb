@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
+import CommonTable from "../Accounts/CommonTable";
+
+
 export default function FeesPage({ adminUid, mode, setActivePage , globalSearch = ""}) {
 const [incomeList, setIncomeList] = useState([]);
 const [expenseList, setExpenseList] = useState([]);
@@ -272,6 +275,7 @@ const competitionAnalysis = (() => {
 
       if (!map[key]) {
         map[key] = {
+         date: i.date,
           className: i.className,
           competitionName: i.competitionName,
           expenseName: "",
@@ -585,6 +589,7 @@ const filteredExpenseAnalysis = competitionAnalysis.filter(r => {
     <table className="nice-table">
       <thead>
         <tr>
+        <th>Date</th>
           <th>Class</th>
           <th>Competition Name</th>
           <th>Expense Name</th>
@@ -607,6 +612,7 @@ const filteredExpenseAnalysis = competitionAnalysis.filter(r => {
 {filteredExpenseAnalysis.map((r, i) => (
 
           <tr key={i}>
+             <td data-label="Date">{i.date}</td>
 
             <td data-label="Class">{r.className}</td>
 
@@ -913,7 +919,9 @@ else if (paid > 0 && balance > 0) {
           )}
 {incomeTab==="full"&&(
 <div className="section-card pop"><h3 className="section-title">Full Payment Students</h3>
-<div className="nice-table-wrapper"><table className="nice-table">
+
+<div className="nice-table-wrapper">
+<table className="nice-table">
 <thead><tr><th>Name</th><th>Class</th><th>Paid</th><th>Balance</th><th>Date</th></tr></thead>
 <tbody>{incomeList.filter(i=>i.paymentType==="full").map(i=>(
 <tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td>₹0</td><td>{i.date}</td></tr>
@@ -958,7 +966,8 @@ else if (paid > 0 && balance > 0) {
 )}</>)}
       {mode==="expenses"&&(
 <div className="section-card pop"><h3 className="section-title">Expenses Details</h3>
-<div className="nice-table-wrapper"><table className="nice-table">
+<div className="nice-table-wrapper">
+  <table className="nice-table">
 <thead><tr><th>Type</th><th>Name</th><th>Amount</th><th>Date</th></tr></thead>
 <tbody>{expenseList
 .filter(e =>

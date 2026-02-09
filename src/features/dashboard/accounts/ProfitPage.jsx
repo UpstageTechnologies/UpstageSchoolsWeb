@@ -87,6 +87,7 @@ const positions = {
 const [categorySearch, setCategorySearch] = useState("");
 const [positionSearch, setPositionSearch] = useState("");
 const [classes, setClasses] = useState([]);
+
 useEffect(() => {
   if (!adminUid) return;
   const ref = collection(db, "users", adminUid, "Classes");
@@ -94,6 +95,29 @@ useEffect(() => {
     setClasses(snap.docs.map(d => d.data().name));
   });
 }, [adminUid]);
+useEffect(() => {
+  if (!adminUid) return;
+
+  const ref = collection(
+    db,
+    "users",
+    adminUid,
+    "Account",
+    "accounts",
+    "Competition"
+  );
+
+  return onSnapshot(ref, snap => {
+    setCompetitionList(
+      snap.docs.map(d => ({
+        id: d.id,
+        ...d.data()
+      }))
+    );
+  });
+
+}, [adminUid]);
+
 const filteredCategories = categories.filter(c =>
   c.toLowerCase().includes(categorySearch.toLowerCase()));
 const filteredPositions = (positions[salaryRole] || []).filter(p =>
@@ -1418,7 +1442,6 @@ const deleteEntry = async (row) => {
   />
 )}
 
-
 {newPayType === "partial" && (
   <input
     type="number"
@@ -1753,26 +1776,24 @@ const deleteEntry = async (row) => {
   {showCompetitionDropdown && (
     <div className="student-dropdown-list">
 
-      {competitionList
-        .filter(c =>
-          c.name
-            ?.toLowerCase()
-            .includes(competitionSearch.toLowerCase())
-        )
-        .map(c => (
-          <div
-            key={c.id}
-            className="student-option"
-            onClick={() => {
-              setCompetitionName(c.name);      // ✅ set name
-              setCompetitionAmount(c.amount); // ✅ auto amount
-              setCompetitionSearch("");
-              setShowCompetitionDropdown(false);
-            }}
-          >
-            {c.name} - ₹{c.amount}
-          </div>
-        ))}
+{competitionList
+  .filter(c =>
+    c.name?.toLowerCase().includes(competitionSearch.toLowerCase())
+  )
+  .map(c => (
+    <div
+      key={c.id}
+      className="student-option"
+      onClick={() => {
+        setCompetitionName(c.name);
+        setCompetitionAmount(c.amount);
+        setShowCompetitionDropdown(false);
+      }}
+    >
+      {c.name} – ₹{c.amount}
+    </div>
+  ))}
+
 
       {competitionSearch && (
         <div

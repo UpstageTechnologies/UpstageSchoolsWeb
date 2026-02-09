@@ -42,9 +42,7 @@ import React, { useEffect, useState } from "react";
 
   const [totalStudents, setTotalStudents] = useState(0);
   const [totalTeachers, setTotalTeachers] = useState(0);
-
-
-    const [showUpgrade, setShowUpgrade] = useState(false);
+const [showUpgrade, setShowUpgrade] = useState(false);
 
     const userPlan = (plan || "basic").toLowerCase();
     const isPremium = userPlan === "premium" || userPlan === "lifetime";
@@ -97,54 +95,52 @@ const parentId = localStorage.getItem("parentDocId");
     return () => unsub();
   }, [adminUid]);
 
- 
-
   useEffect(() => {
     if (!adminUid) return;
   
+    const role = localStorage.getItem("role");
     let ref;
-    let cacheKey = "profile_cache_master";
   
-    // 👀 VIEW MODE
-    if (viewAs === "admin" && viewAdminId) {
-      ref = doc(db, "users", adminUid, "admins", viewAdminId);
-      cacheKey = `profile_cache_admin_${viewAdminId}`;
+    // 🔴 MASTER → DIRECT USER DOC (NO CACHE)
+    if (role === "master") {
+      ref = doc(db, "users", adminUid);
+  
+      // IMPORTANT: old cache delete
+      localStorage.removeItem("profile_cache_master");
+  
+      (async () => {
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          setProfile(snap.data());
+        }
+      })();
+  
+      return;
     }
-    // 👤 NORMAL MODE
-    else {
-      const role = localStorage.getItem("role");
   
-      if (role === "admin") {
-        const id = localStorage.getItem("adminId");
-        ref = doc(db, "users", adminUid, "admins", id);
-        cacheKey = `profile_cache_admin_${id}`;
-      } else {
-        ref = doc(db, "users", adminUid);
-        cacheKey = "profile_cache_master";
+    // 🟢 ADMIN → admins collection (cache allowed)
+    if (role === "admin") {
+      const adminId = localStorage.getItem("adminId");
+      if (!adminId) return;
+  
+      ref = doc(db, "users", adminUid, "admins", adminId);
+      const cacheKey = `profile_cache_admin_${adminId}`;
+  
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        setProfile(JSON.parse(cached));
       }
+  
+      (async () => {
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          setProfile(snap.data());
+          localStorage.setItem(cacheKey, JSON.stringify(snap.data()));
+        }
+      })();
     }
+  }, [adminUid]);
   
-    // ⚡ 1️⃣ INSTANT render from cache
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-      setProfile(JSON.parse(cached));
-    }
-  
-    // 🔄 2️⃣ Background refresh (non-blocking)
-    (async () => {
-      const snap = await getDoc(ref);
-      if (snap.exists()) {
-        const data = snap.data();
-        setProfile(data);
-        localStorage.setItem(cacheKey, JSON.stringify(data));
-      }
-    })();
-  }, [adminUid, viewAs, viewAdminId]);
-  
-  
-  
-
-
   useEffect(() => {
     if (!adminUid) return;
 
@@ -273,8 +269,9 @@ const parentId = localStorage.getItem("parentDocId");
     viewMode === "student"
       ? (totalStudents > 0 ? totalStudents : 1)
       : (totalTeachers > 0 ? totalTeachers : 1);
-
-
+      if (!adminUid) {
+        return <div>Loading...</div>;
+      }
     return (
   <>
       {profile && (

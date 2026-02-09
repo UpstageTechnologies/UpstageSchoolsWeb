@@ -77,6 +77,58 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
     // Normal date string
     return new Date(d).toLocaleDateString();
   };
+  const allDates = [
+    ...new Set(
+      filteredHistory
+        .map(h => {
+          if (!h.date) return null;
+  
+          // Firestore Timestamp
+          if (h.date.seconds) {
+            return new Date(h.date.seconds * 1000)
+              .toISOString()
+              .split("T")[0];
+          }
+  
+          // normal string date
+          return h.date;
+        })
+        .filter(Boolean)
+    )
+  ].sort();
+  const [entryDate, setEntryDate] = useState(() => {
+    const today = new Date().toISOString().split("T")[0];
+    return today;
+  });
+  
+  const currentPageIndex = allDates.indexOf(entryDate);
+  const totalPages = allDates.length;
+  
+  const maxVisiblePages = 5;
+  
+  const getVisiblePages = () => {
+    let start = Math.max(
+      0,
+      currentPageIndex - Math.floor(maxVisiblePages / 2)
+    );
+  
+    let end = start + maxVisiblePages;
+  
+    if (end > totalPages) {
+      end = totalPages;
+      start = Math.max(0, end - maxVisiblePages);
+    }
+  
+    return allDates.slice(start, end).map((_, i) => start + i);
+  };
+  
+  const goToPage = (index) => {
+    if (index < 0 || index >= totalPages) return;
+    setEntryDate(allDates[index]);
+  };
+  
+  const prevPage = () => goToPage(currentPageIndex - 1);
+  const nextPage = () => goToPage(currentPageIndex + 1);
   
   
 
@@ -116,6 +168,12 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
 </div>
 
       <div className="section-card pop">
+      <input
+  type="date"
+  value={entryDate}
+  onChange={e => setEntryDate(e.target.value)}
+  style={{ marginBottom: 12 }}
+/>
 
         <table className="nice-table">
           <thead>
@@ -137,18 +195,68 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
                 </td>
               </tr>
             )}
-{filteredHistory.map(h => (
-  <tr key={h.id}>
- <td data-label="Type">{h.module}</td>
-<td data-label="Action">{h.action}</td>
-<td data-label="Name">{h.name}</td>
-<td data-label="Amount">₹{h.amount}</td>
-<td data-label="Date">{formatDate(h.date)}</td>
-  </tr>
-))}
-</tbody></table>
+{filteredHistory
+  .filter(h => {
+    if (!entryDate) return true;
 
-      </div>
+    let hDate = "";
+
+    // Firestore Timestamp
+    if (h.date?.seconds) {
+      hDate = new Date(h.date.seconds * 1000)
+        .toISOString()
+        .split("T")[0];
+    } 
+    // Normal date string
+    else {
+      hDate = h.date;
+    }
+
+    return hDate === entryDate;
+  })
+  .map(h => (
+    <tr key={h.id}>
+      <td data-label="Type">{h.module}</td>
+      <td data-label="Action">{h.action}</td>
+      <td data-label="Name">{h.name}</td>
+      <td data-label="Amount">₹{h.amount}</td>
+      <td data-label="Date">{formatDate(h.date)}</td>
+    </tr>
+  ))}
+
+</tbody></table>
+<div className="pagination-bar">
+  <div className="tab-buttons">
+
+    <button
+      className="tab-btn"
+      disabled={currentPageIndex === 0}
+      onClick={prevPage}
+    >
+      Previous
+    </button>
+
+    {getVisiblePages().map(i => (
+      <button
+        key={i}
+        className={`tab-btn ${i === currentPageIndex ? "active" : ""}`}
+        onClick={() => goToPage(i)}
+      >
+        {i + 1}
+      </button>
+    ))}
+
+    <button
+      className="tab-btn"
+      disabled={currentPageIndex === totalPages - 1}
+      onClick={nextPage}
+    >
+      Next
+    </button>
+
+  </div>
+</div>
+ </div>
 
     </div>
   );
