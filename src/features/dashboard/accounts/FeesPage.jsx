@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot ,getDoc } from "firebase/firestore";
 import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
 
@@ -33,7 +33,7 @@ const [reportPendingFee, setReportPendingFee] = useState(null);
 const [analysisClassFilter, setAnalysisClassFilter] = useState("All");
 const [analysisCompetitionFilter, setAnalysisCompetitionFilter] = useState("");
 const [analysisExpenseFilter, setAnalysisExpenseFilter] = useState("");
-
+const [savedYear, setSavedYear] = useState(null);
 
 const [showOverviewDropdown, setShowOverviewDropdown] = useState(false);
 const historyRef = collection(
@@ -190,6 +190,7 @@ useEffect(() => {
     unsubStudents = onSnapshot(studentsRef, snap => {
       setStudents(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
+    
     const classesRef = collection(db, "users", adminUid, "Classes");
 const unsubClasses = onSnapshot(classesRef, snap => {
   setClasses(snap.docs.map(d => ({
@@ -205,6 +206,7 @@ const unsubClasses = onSnapshot(classesRef, snap => {
       unsubClasses();
     };
   }, [adminUid, mode]);
+  
   const isPrintActive = (tab) => incomeTab === tab
 const getFeePaid = (studentId, feeId) =>
 incomeList
@@ -336,6 +338,53 @@ const filteredExpenseAnalysis = competitionAnalysis.filter(r => {
 
   return true;
 });
+const getStatusInfo = (paid, balance, endDate) => {
+  if (!endDate) {
+    return {
+      title: "Fully Not Paid",
+      sub: "",
+      color: "red"
+    };
+  }
+
+  const today = new Date();
+  const due = new Date(endDate);
+  const diff = Math.ceil((due - today) / 86400000);
+
+  // fully paid case (safety)
+  if (balance <= 0) {
+    return {
+      title: "Paid",
+      sub: "On Time",
+      color: "green"
+    };
+  }
+
+  // fully not paid
+  if (paid === 0 && balance > 0) {
+    if (diff < 0) {
+      return {
+        title: "Fully Not Paid",
+        sub: `Overdue – ${Math.abs(diff)} days`,
+        color: "red"
+      };
+    }
+
+    return {
+      title: "Fully Not Paid",
+      sub: `Due in ${diff} days`,
+      color: "orange"
+    };
+  }
+
+  // partial payment
+  return {
+    title: "Partially Paid",
+    sub: "Balance Pending",
+    color: "orange"
+  };
+};
+
   return (
     <div className="accounts-wrapper fade-in">
 
@@ -737,7 +786,12 @@ if (paid === 0 && balance > 0) {
 else if (paid > 0 && balance > 0) {
   status = getPendingTerms(student.id, fee.id);
 }
-        
+const statusInfo = getStatusInfo(
+  paid,
+  balance,
+  savedYear?.endDate
+);
+
       
       return (
         <tr key={`${student.id}_${fee.id}`}>
@@ -747,14 +801,29 @@ else if (paid > 0 && balance > 0) {
           <td>₹{paid}</td>
           <td>₹{balance}</td>
 
-          <td style={{
-            color:
-              status === "Full" ? "green" :
-              status === "Partial" ? "orange" :
-              "red"
-          }}>
-            {status}
-          </td>
+          <td>
+  <div
+    style={{
+      fontWeight: 600,
+      color: statusInfo.color
+    }}
+  >
+    {statusInfo.title}
+  </div>
+
+  {statusInfo.sub && (
+    <div
+      style={{
+        fontSize: 12,
+        marginTop: 2,
+        color: "#6b7280"
+      }}
+    >
+      {statusInfo.sub}
+    </div>
+  )}
+</td>
+
         </tr>
       );
     })
@@ -763,95 +832,7 @@ else if (paid > 0 && balance > 0) {
 </table>
 </div>
 )}
-{showPendingPopup && (
-  <div className="modal-backdrop">
-    <div className="modal-box">
-      <h3>Pending Payment</h3>
-      <select
-        value={pendingClass}
-        onChange={e => {
-          setPendingClass(e.target.value);
-          setPendingFee(null);
-        }}
-      >
-        <option value="">Select Class</option>
-        {classes.map(c => (
-  <option key={c} value={c}>
-    Class {c}
-  </option>
-))}
-      </select>
-      <select
-        value={pendingFee?.id || ""}
-        disabled={!pendingClass}
-        onChange={e => {
-          const fee = feesMaster.find(f => f.id === e.target.value);
-          setPendingFee(fee);
-        }}
-      >
-        <option value="">Select Fees</option>
-        {feesMaster
-          .filter(f => f.type === "fees" && f.className === pendingClass)
-          .map(f => (
-            <option key={f.id} value={f.id}>
-              {f.name}
-            </option>
-        ))}
-      </select>
-      <div style={{ marginTop: 12 }}>
-      <button
-  onClick={() => {
-    if (!pendingClass || !pendingFee) return;
-    setReportPendingClass(pendingClass);
-    setReportPendingFee(pendingFee);
 
-    setShowPendingPopup(false);
-  }}
->
-  OK
-</button>
-        <button onClick={() => setShowPendingPopup(false)}>
-          Cancel
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-{incomeTab === "pending" && pendingClass && pendingFee && (
-  <div className="section-card pop ">
-    <h3 className="section-title">
-      Pending Balance – Class {pendingClass}
-    </h3>
-    <p>
-      Fees: <b>{pendingFee.name}</b>
-    </p>
-    <table className="nice-table">
-      <thead>
-        <tr>
-          <th>Student</th>
-          <th>Paid</th>
-          <th>Balance</th>
-        </tr>
-      </thead>
-      <tbody>
-        {students
-          .filter(s => s.class === pendingClass)
-          .map(s => {
-            const balance = getBalance(s.id, pendingFee);
-            if (balance <= 0) return null;
-
-            return (
-              <tr key={s.id}>
-                <td data-label="Student Name">{s.studentName}</td>
-                <td data-label="Paid">₹{getPaidAmount(s.id, pendingFee.id)}</td>
-                <td data-label="Balance"style={{ color: "red" }}>₹{balance}</td>
-              </tr>
-            );
-          })}
-      </tbody>
-    </table>
-  </div>
-)}
 {incomeTab === "new" &&  (
   <div className="section-card pop ">
               <h3 className="section-title">New Admission Payments</h3>
@@ -922,9 +903,9 @@ else if (paid > 0 && balance > 0) {
 
 <div className="nice-table-wrapper">
 <table className="nice-table">
-<thead><tr><th>Name</th><th>Class</th><th>Paid</th><th>Balance</th><th>Date</th></tr></thead>
+<thead><tr><th>Name</th><th>Class</th><th>Paid</th><th>Date</th></tr></thead>
 <tbody>{incomeList.filter(i=>i.paymentType==="full").map(i=>(
-<tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td>₹0</td><td>{i.date}</td></tr>
+<tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td>{i.date}</td></tr>
 ))}</tbody>
 </table></div></div>
 )}
@@ -947,7 +928,7 @@ else if (paid > 0 && balance > 0) {
 </table></div>
 )}
 {incomeTab==="term2"&&(
-<div className="section-card pop"><h3 className="section-title">Term 1 Payments</h3>
+<div className="section-card pop"><h3 className="section-title">Term 2 Payments</h3>
 <table className="nice-table">
 <thead><tr><th>Name</th><th>Class</th><th>Paid</th><th>Balance</th><th>Date</th></tr></thead>
 <tbody>{incomeList.filter(i=>i.paymentType==="term2").map(i=>(
@@ -956,7 +937,7 @@ else if (paid > 0 && balance > 0) {
 </table></div>
 )}
 {incomeTab==="term3"&&(
-<div className="section-card pop"><h3 className="section-title">Term 1 Payments</h3>
+<div className="section-card pop"><h3 className="section-title">Term 3 Payments</h3>
 <table className="nice-table">
 <thead><tr><th>Name</th><th>Class</th><th>Paid</th><th>Balance</th><th>Date</th></tr></thead>
 <tbody>{incomeList.filter(i=>i.paymentType==="term3").map(i=>(

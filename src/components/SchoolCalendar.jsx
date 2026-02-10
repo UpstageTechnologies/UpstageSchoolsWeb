@@ -11,12 +11,55 @@
     meeting: "#00bcd4",
     birthday: "#ff9800"
   };
+  const buildPrintWeeks = (year, month, events) => {
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstDay = new Date(year, month, 1).getDay();
+  
+    const weeks = [];
+    let week = Array(firstDay).fill(null);
+  
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      const ev = events[date] || null;
+  
+      const prev = week[week.length - 1];
+  
+      if (
+        ev &&
+        prev &&
+        prev.event &&
+        prev.event.type === ev.type &&
+        prev.event.title === ev.title
+      ) {
+        prev.span += 1;   // 🔥 merge
+      } else {
+        week.push({
+          day: d,
+          span: 1,
+          event: ev
+        });
+      }
+  
+      if (week.length === 7) {
+        weeks.push(week);
+        week = [];
+      }
+    }
+  
+    if (week.length) {
+      while (week.length < 7) week.push(null);
+      weeks.push(week);
+    }
+  
+    return weeks;
+  };
+  
 
   export default function SchoolCalendar({ adminUid, role, onDateSelect }) {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [events, setEvents] = useState({});
     const [editingDate, setEditingDate] = useState(null);
-
+    const [printMode, setPrintMode] = useState(false);
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     const todayStr = new Date().toLocaleDateString("en-CA");
@@ -107,18 +150,72 @@
           .sort((a, b) => a.date.localeCompare(b.date));
       }, [events, year, month]);
       
-
+      useEffect(() => {
+        const afterPrint = () => setPrintMode(false);
+        window.addEventListener("afterprint", afterPrint);
+        return () => window.removeEventListener("afterprint", afterPrint);
+      }, []);
+      
     return (
+      <>
+    {printMode && (
+      <div className="print-calendar">
+        <h2>
+          ACADEMIC CALENDAR –{" "}
+          {currentDate.toLocaleString("default", { month: "long" })} {year}
+        </h2>
+
+        <div className="print-week days">
+          {DAYS.map(d => (
+            <div key={d}>{d.toUpperCase()}</div>
+          ))}
+        </div>
+
+        {buildPrintWeeks(year, month, events).map((week, i) => (
+          <div key={i} className="print-week">
+            {week.map((cell, j) =>
+              cell ? (
+                <div
+                  key={j}
+                  className="print-cell"
+                  style={{ gridColumn: `span ${cell.span}` }}
+                >
+                  <strong>{cell.day}</strong>
+                  {cell.event && <div>{cell.event.title}</div>}
+                </div>
+              ) : (
+                <div key={j} />
+              )
+            )}
+          </div>
+        ))}
+      </div>
+    )}
+
       <div className="sc-calendar">
         <div className="sc-header">
-          <button onClick={() => setCurrentDate(new Date(year, month - 1, 1))}>‹</button>
+  <button onClick={() => setCurrentDate(new Date(year, month - 1, 1))}>‹</button>
 
-          <h3>
-            {currentDate.toLocaleString("default", { month: "long" })} {year}
-          </h3>
+  <h3>
+    {currentDate.toLocaleString("default", { month: "long" })} {year}
+  </h3>
 
-          <button onClick={() => setCurrentDate(new Date(year, month + 1, 1))}>›</button>
-        </div>
+  <div className="sc-header-actions">
+  <button
+  className="sc-icon-btn sc-print-btn"
+  onClick={() => {
+    setPrintMode(true);
+    setTimeout(() => window.print(), 200);
+  }}
+>
+  🖨️
+</button>
+
+
+    <button onClick={() => setCurrentDate(new Date(year, month + 1, 1))}>›</button>
+  </div>
+</div>
+
 
         <div className="sc-week">
           {DAYS.map(d => <div key={d}>{d}</div>)}
@@ -214,5 +311,6 @@
           </div>
         )}
       </div>
+      </>
     );
   }
