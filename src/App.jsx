@@ -30,7 +30,9 @@ function App() {
       <Routes>
         <Route path="/" element={<EmptyPage />} />
         <Route path="/UniversalLogin" element={<UniversalLogin />} />
-        {/* <Route path="/login" element={<Login />} /> */}
+        <Route path="/login" element={<UniversalLogin />} />
+<Route path="/choose-login" element={<ChooseLogin />} />
+
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/payment" element={<PaymentSelection />} /> 

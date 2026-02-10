@@ -200,7 +200,7 @@ html,body,#root{
    TABLET
 ========================= */
 
-@media(max-width:1024px){
+@media(max-width:1500px){
 
   .hero-wrapper{
     gap:40px;

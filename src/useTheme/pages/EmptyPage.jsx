@@ -22,13 +22,18 @@ export default function EmptyPage() {
 
   const [role, setRole] = useState("");
   const navigate = useNavigate();
-  
   const handleSubmit = (e) => {
     e.preventDefault();
+  
+    // ❌ clear demo state
+    localStorage.removeItem("fromChooseLogin");
+    localStorage.removeItem("prefillUser");
+    localStorage.removeItem("prefillPass");
+  
     localStorage.setItem("selectedRole", role);
     navigate("/landing");
-    
   };
+  
   useEffect(() => {
     const fetchSchools = async () => {
       const snap = await getDocs(collection(db, "users"));
@@ -86,9 +91,18 @@ export default function EmptyPage() {
 </button>
 <button
   type="button"
-  onClick={() => navigate("/choose-login")}>
-    Demo 
+  onClick={() => {
+    // clean start for demo
+    localStorage.removeItem("fromChooseLogin");
+    localStorage.removeItem("prefillUser");
+    localStorage.removeItem("prefillPass");
+
+    navigate("/choose-login");
+  }}
+>
+  Demo
 </button>
+
 </form>
       </div>
       <div className="hero-right">

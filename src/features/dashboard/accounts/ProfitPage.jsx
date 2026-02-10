@@ -95,6 +95,7 @@ useEffect(() => {
     setClasses(snap.docs.map(d => d.data().name));
   });
 }, [adminUid]);
+
 useEffect(() => {
   if (!adminUid) return;
 
@@ -799,7 +800,8 @@ const todayProfit = todayIncome - todayExpense;
     });
     
     setExName(""); setExAmt("");
-  };const saveCompetitionIncome = async () => {
+  };
+  const saveCompetitionIncome = async () => {
     if (
       !competitionClass ||
       !competitionStudent ||
@@ -811,6 +813,7 @@ const todayProfit = todayIncome - todayExpense;
       return;
     }
   
+    // 1️⃣ Income
     await addDoc(incomesRef, {
       incomeType: "competition",
       className: competitionClass,
@@ -820,17 +823,41 @@ const todayProfit = todayIncome - todayExpense;
       date: entryDate,
       createdAt: new Date()
     });
-    await addDoc(historyRef,{
+  
+    // 2️⃣ History
+    await addDoc(historyRef, {
       entryType: "income",
-      action:"ADD",
-      module:"COMPETITION",
+      action: "ADD",
+      module: "COMPETITION",
       name: competitionName,
-      amount:Number(competitionAmount),
-      date:entryDate,
-      createdAt:new Date()
+      amount: Number(competitionAmount),
+      date: entryDate,
+      createdAt: new Date()
     });
-    
-    
+  
+    // 3️⃣ Inventory (🔥 THIS WAS MISSING)
+    const competitionsRef = collection(
+      db,
+      "users",
+      adminUid,
+      "Account",
+      "accounts",
+      "Competition"
+    );
+  
+    const isNewCompetition = !competitionList.some(
+      c =>
+        c.name &&
+        c.name.toLowerCase() === competitionName.toLowerCase()
+    );
+  
+    if (isNewCompetition) {
+      await addDoc(competitionsRef, {
+        name: competitionName,
+        amount: Number(competitionAmount),
+        createdAt: new Date()
+      });
+    }
   
     setCompetitionClass("");
     setCompetitionStudent("");
@@ -1785,10 +1812,11 @@ const deleteEntry = async (row) => {
       key={c.id}
       className="student-option"
       onClick={() => {
-        setCompetitionName(c.name);
-        setCompetitionAmount(c.amount);
+        setCompetitionName(competitionSearch);
+        setCompetitionAmount(""); // user type pannum
         setShowCompetitionDropdown(false);
       }}
+      
     >
       {c.name} – ₹{c.amount}
     </div>

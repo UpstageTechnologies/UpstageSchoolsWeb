@@ -504,7 +504,7 @@ const handleMenuClick = (page) => {
      
 
       <BackConfirm />
-      <div className={`dashboard-container ${accountPopupOpen ? "popup-open" : ""}`}>
+      <div style={{background:"#F2F4F7"}} className={`dashboard-container ${accountPopupOpen ? "popup-open" : ""}`}>
       <div className={`sidebar sidebar-${sidebarState}`}>
 {/* ===== SIDEBAR PROFILE ===== */}
 <div
@@ -808,7 +808,7 @@ const handleMenuClick = (page) => {
     </div>
   </div>
 )}
-          <div className="dashboard-content">
+          <div style={{background:"#F2F4F7"}}className="dashboard-content">
 {activePage === "calendar" && (
   <div className="calendar-fullpage">
     <SchoolCalendar

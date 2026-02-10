@@ -18,6 +18,7 @@ import { auth, db } from "../../services/firebase";
 import logo from "../../assets/logo.jpeg";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "../styles/UniversalLogin.css";
+import { useEffect } from "react";
 
 const UniversalLogin = () => {
 
@@ -26,7 +27,11 @@ const UniversalLogin = () => {
   provider.setCustomParameters({
     prompt: "select_account"
   });
-  
+  const role = localStorage.getItem("selectedRole") || "";
+const isFromChooseLogin =
+  localStorage.getItem("fromChooseLogin") === "true";
+
+const lockDemo = role === "master" && isFromChooseLogin;
 
 const handleGoogleSignIn = async () => {
   try {
@@ -54,16 +59,24 @@ const handleGoogleSignIn = async () => {
     alert(error.message);
   }
 };
-
-
-    const [role, setRole] = useState(
-        localStorage.getItem("selectedRole") || ""
-      );  
   const [userId, setUserId] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    if (!isFromChooseLogin) return;
+  
+    const preUser = localStorage.getItem("prefillUser");
+    const prePass = localStorage.getItem("prefillPass");
+  
+    if (role === "master" && preUser) setEmail(preUser);
+    if (role !== "master" && preUser) setUserId(preUser);
+    if (prePass) setPassword(prePass);
+  }, [role, isFromChooseLogin]);
+  
+  
+  
 
   const navigate = useNavigate();
 
@@ -89,6 +102,7 @@ const handleGoogleSignIn = async () => {
 
     navigate("/dashboard");
   };
+
 
   // ---------------------------
   // SUB USER LOGIN
@@ -207,30 +221,36 @@ const handleGoogleSignIn = async () => {
   
         <form onSubmit={handleLogin}>
   
-          {role === "master" ? (
-            <input
-              placeholder="Email"
-              value={email}
-              onChange={e=>setEmail(e.target.value)}
-              required
-            />
-          ) : (
-            <input
-              placeholder="User ID"
-              value={userId}
-              onChange={e=>setUserId(e.target.value)}
-              required
-            />
-          )}
-  
+        {role === "master" ? (
+ <input
+ placeholder="Email"
+ value={email}
+ onChange={e => setEmail(e.target.value)}
+ readOnly={lockDemo}
+/>
+
+) : (
+  <input
+    placeholder="User ID"
+    value={userId}
+    onChange={e => setUserId(e.target.value)}
+    required
+  />
+)}
+
           <div className="password-wrapper">
-            <input
-              type={showPass ? "text" : "password"}
-              placeholder="Password"
-              value={password}
-              onChange={e=>setPassword(e.target.value)}
-              required
-            />
+          <input
+  type={showPass ? "text" : "password"}
+  placeholder="Password"
+  value={password}
+  onChange={
+    lockDemo ? undefined : e => setPassword(e.target.value)
+  }
+  readOnly={lockDemo}
+  required
+/>
+
+
             <span onClick={()=>setShowPass(!showPass)}>
               {showPass ? <FaEyeSlash/> : <FaEye/>}
             </span>

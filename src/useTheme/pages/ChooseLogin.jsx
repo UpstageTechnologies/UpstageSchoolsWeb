@@ -1,104 +1,95 @@
 import { useNavigate } from "react-router-dom";
-import logo from "../../assets/logo.jpeg";
-
-const MASTER_UID = "0Nngpl6jEwOhGmueP0d9PYy398a2";
 
 const ChooseLogin = () => {
   const navigate = useNavigate();
 
-  const goDashboard = (role) => {
-    // 🔥 MASTER UID FIXED
-    localStorage.setItem("adminUid", MASTER_UID);
-    localStorage.setItem("role", role);
-
-    localStorage.setItem("schoolName", "Demo School");
-    localStorage.setItem("plan", "lifetime");
-
-    if (role === "master") {
-      localStorage.setItem("adminName", "School Owner");
-    }
-    if (role === "admin") {
-      localStorage.setItem("adminName", "Admin");
-    }
-    if (role === "teacher") {
-      localStorage.setItem("teacherName", "Teacher");
-    }
-    if (role === "parent") {
-      localStorage.setItem("parentName", "Parent");
-    }
-    if (role === "office_staff") {
-      localStorage.setItem("staffName", "Staff");
-    }
-
-    navigate("/dashboard");
+  const goWithPrefill = (role, user, pass) => {
+    localStorage.clear();
+  
+    localStorage.setItem("selectedRole", role);
+  
+    localStorage.setItem(
+      "adminUid",
+      "0Nngpl6jEwOhGmueP0d9PYy398a2"
+    );
+  
+    // 🔥 DEMO PREFILL
+    localStorage.setItem("prefillUser", user);
+    localStorage.setItem("prefillPass", pass);
+  
+    // 🔥 IMPORTANT FLAG
+    localStorage.setItem("fromChooseLogin", "true");
+  
+    navigate("/login");
   };
-
+  
   return (
-    <div className="landing-container">
-      <nav className="nnav">
-        <img src={logo} alt="Logo" />
-      </nav>
+    <div className="ul-page">
+      <div className="ul-top-bg"></div>
 
-      <div className="role-box">
-        {/* 🔥 MASTER — NO LOGIN PAGE */}
-        <div onClick={() => {
-  localStorage.setItem(
-    "adminUid",
-    "0Nngpl6jEwOhGmueP0d9PYy398a2" // MASTER ID
-  );
-  localStorage.setItem("role", "master");
+      <div className="ul-card">
+        <div className="ul-logo">Demo School</div>
+        <div className="ul-welcome">Choose your role to continue</div>
 
-  navigate("/dashboard");
-}}
->
-          School Owner (Demo)
-        </div>
-        <div onClick={() => {
-  localStorage.setItem(
-    "adminUid",
-    "vd8GKjbWrgfpO3FnokO5qHe2o1s2" // MASTER ID
-  );
-  localStorage.setItem(
-    "adminId",
-    "6JjkEs657wx3QrfhYYzB" // ADMIN ID
-  );
-  localStorage.setItem("role", "admin");
+        <h2>Select Login</h2>
+        <p className="ul-sub">Demo access (Try Now)</p>
 
-  navigate("/dashboard");
-}}
->Admin</div>
-<div
-  onClick={() => {
-    localStorage.setItem("adminUid", "0Nngpl6jEwOhGmueP0d9PYy398a2");
-    localStorage.setItem("teacherDocId", "1TZJvwgnh54DNX3PuTU9");
-    localStorage.setItem("role", "teacher");
-    navigate("/dashboard");
-  }}
->
-  Teacher
-</div>
+        {/* MASTER */}
+        <button
+          style={{ margin: 34 }}
+          className="auth-btn unlog-btn"
+          onClick={() =>
+            goWithPrefill("master", "username@gmail.com", "123456")
+          }
+        >
+          School Owner
+        </button>
 
-<div
-  onClick={() => {
-    localStorage.setItem("adminUid","0Nngpl6jEwOhGmueP0d9PYy398a2");
-    localStorage.setItem("parentDocId", "Ni9HDGmyLBTSWgfm1fJy");
-    localStorage.setItem("role", "parent");
-    navigate("/dashboard");
-  }}
->
-  Parent
-</div>
+        <div className="or-line">OR</div>
 
-<div
-  onClick={() => {
-    localStorage.setItem("adminUid", "0Nngpl6jEwOhGmueP0d9PYy398a2");
-    localStorage.setItem("staffDocId", "e57TdCp2mW11gNrNFrbI");
-    localStorage.setItem("role", "office_staff");
-    navigate("/dashboard");
-  }}
->
-  Staff
-</div>
+        {/* ADMIN */}
+        <button
+          style={{ margin: 34 }}
+          className="auth-btn google-btn"
+          onClick={() =>
+            goWithPrefill("admin", "Demoadmin", "DemoA")
+          }
+        >
+          Admin
+        </button>
+
+        {/* TEACHER */}
+        <button
+          style={{ margin: 34 }}
+          className="auth-btn google-btn"
+          onClick={() =>
+            goWithPrefill("teacher", "Demoteacher", "DemoT")
+          }
+        >
+          Teacher
+        </button>
+
+        {/* PARENT */}
+        <button
+          style={{ margin: 34 }}
+          className="auth-btn google-btn"
+          onClick={() =>
+            goWithPrefill("parent", "Demoparent", "DemoP")
+          }
+        >
+          Parent
+        </button>
+
+        {/* STAFF */}
+        <button
+          style={{ margin: 34 }}
+          className="auth-btn google-btn"
+          onClick={() =>
+            goWithPrefill("office_staff", "Demostaff", "DemoS")
+          }
+        >
+          Staff
+        </button>
       </div>
     </div>
   );

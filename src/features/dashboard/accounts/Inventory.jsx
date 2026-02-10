@@ -309,7 +309,6 @@ setNewStaffPhone("");
   };
   const feesData = feesMaster.filter(i => i.type === "fees");
   const salaryData = feesMaster.filter(i => i.type === "salary");
-  const competitionData = feesMaster.filter(i => i.type === "competition");
   const filteredCompetitionClasses = classes.filter(cls =>
     cls.toLowerCase().includes(
       competitionClassSearch.toLowerCase()
@@ -502,12 +501,18 @@ setNewStaffPhone("");
     );
   
     return onSnapshot(ref, snap => {
-      const names = snap.docs.map(d => d.data().name);
-      setCompetitionList([...new Set(names)]); // unique names
+      setCompetitionList(
+        snap.docs.map(d => ({
+          id: d.id,
+          ...d.data()
+        }))
+      );
     });
   }, [adminUid]);
-  const filteredCompetitions = competitionList.filter(n =>
-    n.toLowerCase().includes(competitionSearch.toLowerCase())
+  const filteredCompetitions = competitionList.filter(
+    c =>
+      c.name &&
+      c.name.toLowerCase().includes(competitionSearch.toLowerCase())
   );
   
   return (
@@ -759,34 +764,57 @@ setNewStaffPhone("");
   {showCompetitionDropdown && (
     <div className="student-dropdown-list">
 
-      {/* Existing competition names */}
-      {filteredCompetitions.map(name => (
-        <div
-          key={name}
-          className="student-option"
-          onClick={() => {
-            setCompetitionName(name);
-            setShowCompetitionDropdown(false);
-          }}
-        >
-          {name}
-        </div>
-      ))}
+{filteredCompetitions.map(c => (
+  <div
+    key={c.id}
+    className="student-option"
+    onClick={() => {
+      setCompetitionName(c.name);
+      setCompetitionAmount(c.amount);
+      setShowCompetitionDropdown(false);
+    }}
+  >
+    {c.name} – ₹{c.amount}
+  </div>
+))}
+
 
       {/* ➕ Add new competition */}
       {competitionSearch &&
-        !competitionList.includes(competitionSearch) && (
-          <div
-            className="student-option"
-            style={{ color: "#2563eb" }}
-            onClick={() => {
-              setCompetitionName(competitionSearch);
-              setShowCompetitionDropdown(false);
-            }}
-          >
-            ➕ Add "{competitionSearch}"
-          </div>
-        )}
+  !competitionList.some(
+    c => c.name.toLowerCase() === competitionSearch.toLowerCase()
+  ) && (
+    <div
+      className="student-option"
+      style={{ color: "#2563eb" }}
+      onClick={async () => {
+
+        await addDoc(
+          collection(
+            db,
+            "users",
+            adminUid,
+            "Account",
+            "accounts",
+            "Competition"
+          ),
+          {
+            name: competitionSearch,
+            amount: Number(competitionAmount || 0),
+            className: selectedClass || "all",
+            createdAt: new Date()
+          }
+        );
+
+        setCompetitionName(competitionSearch);
+        setCompetitionSearch("");
+        setShowCompetitionDropdown(false);
+      }}
+    >
+      ➕ Add "{competitionSearch}"
+    </div>
+)}
+
     </div>
   )}
 </div>
@@ -1163,17 +1191,23 @@ setNewStaffPhone("");
     </thead>
 
     <tbody>
-      {competitionData.map(c => (
+      {competitionList.map(c => (
         <tr key={c.id}>
           <td>{c.className}</td>
           <td>{c.name}</td>
           <td>₹{c.amount}</td>
         </tr>
       ))}
+
+      {competitionList.length === 0 && (
+        <tr>
+          <td colSpan="3" style={{ textAlign: "center", opacity: 0.6 }}>
+            No competitions added
+          </td>
+        </tr>
+      )}
     </tbody>
   </table>
-)}
-
-    </div>
+)} </div>
   );
 }
