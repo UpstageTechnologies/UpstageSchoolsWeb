@@ -463,7 +463,7 @@ const handleMenuClick = (page) => {
         admin:"admin",
        upgrade: "payment",
         income: "income",       
-  expenses: "expenses", 
+        expenseList: "expenses"
         
       };
       
