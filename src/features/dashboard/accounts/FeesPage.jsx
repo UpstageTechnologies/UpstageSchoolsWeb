@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
-import CommonTable from "../Accounts/CommonTable";
+
 
 
 export default function FeesPage({ adminUid, mode, setActivePage , globalSearch = ""}) {
