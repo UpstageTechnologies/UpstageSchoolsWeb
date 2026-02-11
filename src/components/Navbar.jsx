@@ -207,21 +207,27 @@ const filteredQuickTiles = QUICK_TILES.filter(tile =>
     ))}
   </div>
 )}
-
-  {pageResults.length > 0 && (
+{pageResults.length > 0 && (
   <>
-  <div className="quick-title">Pages</div>
-  <div className="quick-row">
-    {pageResults.map((item,i)=>(
-      <QuickTile
-        key={i}
-        title={item.label}
-        page={item.value}
-      />
-    ))}
-  </div>
+    <div className="quick-title">Pages</div>
+    <div className="quick-row">
+      {pageResults.map((item, i) => (
+        <QuickTile
+          key={i}
+          title={item.label}
+          page={item.value}
+          onOpen={(page) => {
+            handleMenuClick(page);
+            setSearchQuery("");
+            setShowQuickPanel(false);
+            searchInputRef.current?.blur();
+          }}
+        />
+      ))}
+    </div>
   </>
-  )}
+)}
+
   {peopleResults.length > 0 && (
   <>
   <div className="quick-title">People</div>

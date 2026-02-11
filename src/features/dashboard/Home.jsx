@@ -276,6 +276,30 @@ const parentId = localStorage.getItem("parentDocId");
   <>
       {profile && (
         <div className="student-header">
+            {/* 🔥 DEMO DAYS */}
+{localStorage.getItem("adminUid") === "0Nngpl6jEwOhGmueP0d9PYy398a2" &&
+  localStorage.getItem("demoStartDate") && (() => {
+
+    const start = new Date(localStorage.getItem("demoStartDate"));
+    const diffDays = Math.floor(
+      (new Date() - start) / (1000 * 60 * 60 * 24)
+    );
+    const remaining = 7 - diffDays;
+
+    if (remaining <= 0) return null;
+
+    return (
+      <div style={{
+        fontSize:12,
+        fontWeight:600,
+        color:"#f59e0b",
+        marginBottom:8
+      }}>
+        Demo: {remaining} days left
+      </div>
+    );
+  })()
+}
 
   {/* ===== TOP ROW ===== */}
   <div className="student-top-row">

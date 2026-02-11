@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { collection, onSnapshot ,getDoc } from "firebase/firestore";
+import { collection, onSnapshot ,getDoc , doc } from "firebase/firestore";
 import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
-
-
-
 export default function FeesPage({ adminUid, mode, setActivePage , globalSearch = ""}) {
 const [incomeList, setIncomeList] = useState([]);
 const [expenseList, setExpenseList] = useState([]);
@@ -206,6 +203,28 @@ const unsubClasses = onSnapshot(classesRef, snap => {
       unsubClasses();
     };
   }, [adminUid, mode]);
+  useEffect(() => {
+    if (!adminUid) return;
+  
+    const loadAcademicYear = async () => {
+      const ref = doc(
+        db,
+        "users",
+        adminUid,
+        "SchoolSettings",
+        "academicYear"
+      );
+  
+      const snap = await getDoc(ref);
+  
+      if (snap.exists()) {
+        setSavedYear(snap.data());
+      }
+    };
+  
+    loadAcademicYear();
+  }, [adminUid]);
+  
   
   const isPrintActive = (tab) => incomeTab === tab
 const getFeePaid = (studentId, feeId) =>
@@ -338,10 +357,11 @@ const filteredExpenseAnalysis = competitionAnalysis.filter(r => {
 
   return true;
 });
-const getStatusInfo = (paid, balance, endDate) => {
+const getStatusInfo = (paid, balance, endDate, pendingLabel) => {
+
   if (!endDate) {
     return {
-      title: "Fully Not Paid",
+      title: pendingLabel || "Fully Not Paid",
       sub: "",
       color: "red"
     };
@@ -351,7 +371,7 @@ const getStatusInfo = (paid, balance, endDate) => {
   const due = new Date(endDate);
   const diff = Math.ceil((due - today) / 86400000);
 
-  // fully paid case (safety)
+  // FULLY PAID
   if (balance <= 0) {
     return {
       title: "Paid",
@@ -360,30 +380,24 @@ const getStatusInfo = (paid, balance, endDate) => {
     };
   }
 
-  // fully not paid
-  if (paid === 0 && balance > 0) {
-    if (diff < 0) {
-      return {
-        title: "Fully Not Paid",
-        sub: `Overdue – ${Math.abs(diff)} days`,
-        color: "red"
-      };
-    }
-
+  // 🔴 OVERDUE
+  if (diff < 0) {
     return {
-      title: "Fully Not Paid",
-      sub: `Due in ${diff} days`,
-      color: "orange"
+      title: pendingLabel || "Fully Not Paid",
+      sub: `Overdue – ${Math.abs(diff)} days`,
+      color: "red"
     };
   }
 
-  // partial payment
+  // 🟠 NOT YET DUE
   return {
-    title: "Partially Paid",
-    sub: "Balance Pending",
+    title: pendingLabel || "Fully Not Paid",
+    sub: `Due in ${diff} days`,
     color: "orange"
   };
 };
+
+
 
   return (
     <div className="accounts-wrapper fade-in">
@@ -786,11 +800,22 @@ if (paid === 0 && balance > 0) {
 else if (paid > 0 && balance > 0) {
   status = getPendingTerms(student.id, fee.id);
 }
+let pendingLabel = "";
+
+if (paid === 0 && balance > 0) {
+  pendingLabel = "Fully Not Paid";
+}
+else if (paid > 0 && balance > 0) {
+  pendingLabel = getPendingTerms(student.id, fee.id);
+}
+
 const statusInfo = getStatusInfo(
   paid,
   balance,
-  savedYear?.endDate
+  savedYear?.endDate,
+  pendingLabel
 );
+
 
       
       return (
@@ -811,15 +836,29 @@ const statusInfo = getStatusInfo(
     {statusInfo.title}
   </div>
 
+  {/* 🔴 Overdue / Due in X days */}
   {statusInfo.sub && (
     <div
       style={{
         fontSize: 12,
         marginTop: 2,
-        color: "#6b7280"
+        color: statusInfo.color
       }}
     >
       {statusInfo.sub}
+    </div>
+  )}
+
+  {/* 📅 Due Date */}
+  {statusInfo.dateText && (
+    <div
+      style={{
+        fontSize: 11,
+        marginTop: 2,
+        color: "#9ca3af"
+      }}
+    >
+      {statusInfo.dateText}
     </div>
   )}
 </td>

@@ -4,7 +4,11 @@ const ChooseLogin = () => {
   const navigate = useNavigate();
 
   const goWithPrefill = (role, user, pass) => {
-    localStorage.clear();
+  // ❌ remove localStorage.clear()
+
+localStorage.removeItem("prefillUser");
+localStorage.removeItem("prefillPass");
+
   
     localStorage.setItem("selectedRole", role);
   
@@ -12,7 +16,11 @@ const ChooseLogin = () => {
       "adminUid",
       "0Nngpl6jEwOhGmueP0d9PYy398a2"
     );
-  
+      // 🔥 DEMO START DATE SAVE
+if (!localStorage.getItem("demoStartDate")) {
+  localStorage.setItem("demoStartDate", new Date().toISOString());
+}
+
     // 🔥 DEMO PREFILL
     localStorage.setItem("prefillUser", user);
     localStorage.setItem("prefillPass", pass);

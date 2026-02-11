@@ -39,6 +39,7 @@ const [competitionAmount, setCompetitionAmount] = useState("");
 const [competitionList, setCompetitionList] = useState([]);
 const [competitionSearch, setCompetitionSearch] = useState("");
 const [showCompetitionDropdown, setShowCompetitionDropdown] = useState(false);
+const [savedYear, setSavedYear] = useState(null);
 
 const [competitionClass, setCompetitionClass] = useState("");
 const [competitionStudent, setCompetitionStudent] = useState("");
@@ -51,6 +52,14 @@ const [miscSearch, setMiscSearch] = useState("");
 const [miscName, setMiscName] = useState("");       // Sports Day
 const [expenseSubName, setExpenseSubName] = useState(""); // Decoration
 
+const isFeePaidInCurrentYear = (studentId, feeId, startDate, endDate) => {
+  return incomeList.some(i =>
+    i.studentId === studentId &&
+    i.feeId === feeId &&
+    i.date >= startDate &&
+    i.date <= endDate
+  );
+};
 
 const miscNames = [
   ...new Set([
@@ -453,6 +462,12 @@ useEffect(() => {
       return alert("Fill all fields");
   
       const fee = selectedFees[0];
+
+      if (alreadyPaidThisYear(studentDocRef.id, fee.id)) {
+        alert("This fee already paid for this academic year");
+        return;
+      }
+      
       if (!fee) return alert("Select fee");
 const alreadyPaid = incomeList.some(
   i =>
@@ -531,6 +546,22 @@ const generatedParentId = `P-${Date.now()}`;
         ]
       }
     );
+    const alreadyPaidThisYear = (studentId, feeId) => {
+      if (!savedYear) return false;
+    
+      const start = new Date(savedYear.startDate);
+      const end = new Date(savedYear.endDate);
+    
+      return incomeList.some(i => {
+        if (i.studentId !== studentId) return false;
+        if (i.feeId !== feeId) return false;
+    
+        const paymentDate = new Date(i.date);
+    
+        return paymentDate >= start && paymentDate <= end;
+      });
+    };
+    
     
   
     /* ================= UPDATE PARENT WITH STUDENT ================= */
@@ -613,6 +644,12 @@ setOldPayAmount("");
     if (!stu || !oldPayType || !entryDate) return alert("Fill all fields");
   
     const fee = selectedFees[0];
+
+    if (alreadyPaidThisYear(stu.id, fee.id)) {
+      alert("This fee already paid for this academic year");
+      return;
+    }
+    
     if (!fee) return alert("Select a fee");
     
     const total = fee.amount;
@@ -723,6 +760,19 @@ if (oldPayType === "monthly") {
     if (final > balanceBefore) {
       return alert("Cannot pay more than balance");
     }
+    // 🔥 BLOCK same fee inside same academic year
+const alreadyPaidThisYear = isFeePaidInCurrentYear(
+  stu.id,
+  fee.id,
+  savedYear?.startDate,
+  savedYear?.endDate
+);
+
+if (alreadyPaidThisYear) {
+  alert("This fee is already collected for this academic year");
+  return;
+}
+
   
     const balanceAfter = balanceBefore - final;    // 👈 correct
   
@@ -1059,7 +1109,26 @@ const getTermPaidCount = (studentId, feeId) =>
     }
   }, [isOfficeStaff]);
 
-
+  useEffect(() => {
+    if (!adminUid) return;
+  
+    const yearRef = doc(
+      db,
+      "users",
+      adminUid,
+      "AcademicYear",
+      "currentYear"
+    );
+  
+    const unsubYear = onSnapshot(yearRef, snap => {
+      if (snap.exists()) {
+        setSavedYear(snap.data());
+      }
+    });
+  
+    return () => unsubYear();
+  }, [adminUid]);
+  
 
 const deleteEntry = async (row) => {
   if (!window.confirm("Delete this entry?")) return;

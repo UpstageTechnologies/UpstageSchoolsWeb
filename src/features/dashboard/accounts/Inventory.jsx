@@ -784,7 +784,7 @@ setNewStaffPhone("");
   !competitionList.some(
     c => c.name.toLowerCase() === competitionSearch.toLowerCase()
   ) && (
-    <div
+    <div  
       className="student-option"
       style={{ color: "#2563eb" }}
       onClick={async () => {

@@ -59,7 +59,6 @@
     const [currentDate, setCurrentDate] = useState(new Date());
     const [events, setEvents] = useState({});
     const [editingDate, setEditingDate] = useState(null);
-    const [printMode, setPrintMode] = useState(false);
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     const todayStr = new Date().toLocaleDateString("en-CA");
@@ -149,17 +148,12 @@
           )
           .sort((a, b) => a.date.localeCompare(b.date));
       }, [events, year, month]);
-      
-      useEffect(() => {
-        const afterPrint = () => setPrintMode(false);
-        window.addEventListener("afterprint", afterPrint);
-        return () => window.removeEventListener("afterprint", afterPrint);
-      }, []);
+     
       
     return (
       <>
-    {printMode && (
-      <div className="print-calendar">
+   <div className="print-calendar print-only">
+
         <h2>
           ACADEMIC CALENDAR –{" "}
           {currentDate.toLocaleString("default", { month: "long" })} {year}
@@ -190,9 +184,9 @@
           </div>
         ))}
       </div>
-    )}
+    
+<div className="sc-calendar no-print">
 
-      <div className="sc-calendar">
         <div className="sc-header">
   <button onClick={() => setCurrentDate(new Date(year, month - 1, 1))}>‹</button>
 
@@ -203,13 +197,11 @@
   <div className="sc-header-actions">
   <button
   className="sc-icon-btn sc-print-btn"
-  onClick={() => {
-    setPrintMode(true);
-    setTimeout(() => window.print(), 200);
-  }}
+  onClick={() => window.print()}
 >
   🖨️
 </button>
+
 
 
     <button onClick={() => setCurrentDate(new Date(year, month + 1, 1))}>›</button>
