@@ -1,15 +1,27 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
 /* =====================================================
    CALENDAR CONTAINER
 ===================================================== */
 .sc-calendar {
-    width: 100%;
-    max-width: 340px;
-    background: #ffffff;
-    border-radius: 18px;
-    padding: 16px;
-    box-shadow: 0 18px 45px rgba(0,0,0,0.12);
-    animation: fadeIn 0.3s ease;
-  }
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 16px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
   
   /* =====================================================
      HEADER
@@ -60,7 +72,7 @@
   ===================================================== */
   .sc-grid {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 6px;
   }
   
@@ -438,10 +450,8 @@
   .sc-calendar {
     display: none;   /* hide normal UI */
   }
-}
-@media print {
+}@media print {
 
-  /* 🔥 A4 LANDSCAPE */
   @page {
     size: A4 landscape;
     margin: 12mm;
@@ -449,61 +459,68 @@
 
   body {
     margin: 0;
-    padding: 0;
   }
 
-  /* hide normal UI */
   .sc-calendar {
     display: none !important;
   }
 
-  /* print container */
   .print-calendar {
     width: 100%;
-    height: auto;
-    display: block;
     font-family: Arial, sans-serif;
   }
-}
-@media print {
-  .print-calendar h2 {
-    text-align: center;
-    font-size: 20px;
-    font-weight: 800;
-    margin-bottom: 10px;
-    letter-spacing: 1px;
-  }
-}
-@media print {
+
   .print-week {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     border-bottom: 1px solid #000;
   }
 
-  .print-week.days div {
-    font-size: 13px;
-    font-weight: 700;
-    text-align: center;
-    padding: 6px 0;
-  }
-
   .print-cell {
     border-right: 1px solid #000;
     min-height: 65px;
-    padding: 6px 4px;
+    padding: 6px;
     text-align: center;
   }
 
-  .print-cell strong {
-    font-size: 13px;
-    display: block;
-    margin-bottom: 4px;
+  .print-cell div {
+    word-break: break-word;
+  }
+}
+
+@media (max-width: 1024px) {
+  .sc-day {
+    height: 50px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sc-day {
+    height: 44px;
   }
 
-  .print-cell div {
-    font-size: 11px;
-    font-weight: 700;
-    line-height: 1.2;
+  .sc-day span {
+    font-size: 12px;
   }
+
+  .sc-day small {
+    font-size: 8px;
+  }
+
+  .sc-header h3 {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sc-day {
+    height: 38px;
+  }
+
+  .sc-day small {
+    display: none; /* hide event text on very small screens */
+  }
+}
+.sc-day {
+  -webkit-tap-highlight-color: transparent;
 }
