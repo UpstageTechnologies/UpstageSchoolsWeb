@@ -47,6 +47,7 @@ import TeacherHome from "./TeacherHome";
 import ParentHome from "./ParentHome";
 import SchoolCalendar from "../../components/SchoolCalendar";
 import Navbar from "../../components/Navbar";
+import CoursePlanner from "./CoursePlanner";
 import { lazy, Suspense } from "react";
 
 const Teacher = lazy(() => import("./Teacher"));
@@ -930,11 +931,18 @@ const handleMenuClick = (page) => {
     <UpgradePopup onClose={() => handleMenuClick("home")}    />
   )
 )}
+{/* COURSES PAGE */}
+{isAdminOrSubAdmin && activePage === "courses" && (
+  <Courses handleMenuClick={handleMenuClick} />
+)}
 
+{/* COURSE PLANNER PAGE */}
+{isAdminOrSubAdmin && activePage.startsWith("course-planner-") && (
+  <CoursePlanner
+    classId={activePage.replace("course-planner-", "")}
+  />
+)}
 
-        {isAdminOrSubAdmin && activePage === "courses" && (
-            <Courses />
-            )}
            {(role === "teacher" || viewAs === "teacher") &&
   activePage === "teacher-attendance" && (
     <TeacherAttendance teacherId={viewTeacherId} />

@@ -24,6 +24,10 @@ import FeesPage from "./features/dashboard/accounts/FeesPage";
 import UserViewDashboard from "./features/dashboard/UserViewDashboard";
 import EmptyPage from "./useTheme/pages/EmptyPage";
 import UniversalLogin from "./useTheme/pages/UniversalLogin";
+import Course from "./features/dashboard/Courses";
+import CoursePlanner from "./features/dashboard/CoursePlanner";
+import Timetable from "./features/dashboard/Timetable";
+
 function App() {
   return (
     <Router>
@@ -54,7 +58,8 @@ function App() {
         <Route path="FeesPage" element={<FeesPage />} />
         <Route path="/dashboard/view"element={<UserViewDashboard />}/>
         <Route path="/landing" element={<Landing />} />
-     
+        <Route path="/courses/:classId/course-planner" element={<CoursePlanner />} />
+<Route path="/courses/:classId/timetable-planner" element={<Timetable />} />
       </Routes>
     </Router>
   );

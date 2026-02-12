@@ -534,7 +534,12 @@
     width: 100%;
     font-family: Arial, sans-serif;
   }
+}/* Hide print layout normally */
+.print-calendar {
+  display: none;
 }
+
+/* PRINT MODE */
 @media print {
 
   @page {
@@ -546,18 +551,18 @@
     margin: 0;
   }
 
-  /* hide UI */
-  .no-print {
+  /* Hide normal UI */
+  .sc-calendar {
     display: none !important;
   }
 
-  /* Print container full width */
+  /* Show print layout */
   .print-calendar {
+    display: block;
     width: 100%;
     font-family: Arial, sans-serif;
   }
 
-  /* Title */
   .print-calendar h2 {
     text-align: center;
     font-size: 22px;
@@ -565,8 +570,7 @@
     margin-bottom: 18px;
   }
 
-  /* Header row (SUN MON TUE...) */
-  .print-week.days {
+  .print-week {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
   }
@@ -576,37 +580,67 @@
     padding: 10px 0;
     font-weight: 700;
     text-align: center;
-    font-size: 14px;
   }
 
-  /* Each week row */
-  .print-week {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-  }
-
-  /* Each cell */
   .print-cell {
     border: 1px solid #000;
-    min-height: 95px;      /* 🔥 Bigger box */
+    min-height: 95px;
     padding: 10px 6px;
     text-align: center;
-    vertical-align: top;
   }
 
-  /* Date number */
   .print-cell strong {
     display: block;
     font-size: 16px;
-    font-weight: 700;
     margin-bottom: 6px;
   }
 
-  /* Event text */
   .print-cell div {
     font-size: 13px;
     font-weight: 600;
     word-break: break-word;
   }
 
+}/* Sunday */
+.sc-day.sunday-holiday {
+  background: #ff4d8d;
+  color: #fff;
+}
+
+/* Govt holiday */
+.sc-day.gov-holiday {
+  background: #16a34a;
+  color: #fff;
+}
+
+/* Manual holiday */
+.sc-day.holiday {
+  background: #ff3d71;
+  color: #fff;
+}
+
+/* Summary */
+.sc-summary {
+  margin-top: 20px;
+}
+
+.summary-box {
+  display: flex;
+  justify-content: space-between;
+  background: #f4f7fc;
+  padding: 12px;
+  border-radius: 14px;
+}
+
+.summary-box div {
+  text-align: center;
+}
+
+.summary-box strong {
+  font-size: 13px;
+}
+
+.summary-box p {
+  font-size: 18px;
+  font-weight: 800;
 }

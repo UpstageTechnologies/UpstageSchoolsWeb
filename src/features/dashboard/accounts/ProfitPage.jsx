@@ -8,15 +8,7 @@ import OfficeStaff from "../OfficeStaff";
 import BillPage from "./BillPage";   
 import "../../dashboard_styles/IE.css";
 import {  FaArrowLeft, FaTrash } from "react-icons/fa";
-export default function ProfitPage({
-  adminUid,
-  setActivePage,
-  activePage = "",
-  plan,
-  trialAccess,
-  trialExpiresAt,
-  showUpgrade
-}) {
+export default function ProfitPage({adminUid,setActivePage,activePage = "",plan,trialAccess,trialExpiresAt,showUpgrade}) {
   const role = localStorage.getItem("role");
 const isOfficeStaff = role === "office_staff";
   const [incomeList, setIncomeList] = useState([]);
@@ -51,15 +43,6 @@ const [showMiscDropdown, setShowMiscDropdown] = useState(false);
 const [miscSearch, setMiscSearch] = useState("");
 const [miscName, setMiscName] = useState("");       // Sports Day
 const [expenseSubName, setExpenseSubName] = useState(""); // Decoration
-
-const isFeePaidInCurrentYear = (studentId, feeId, startDate, endDate) => {
-  return incomeList.some(i =>
-    i.studentId === studentId &&
-    i.feeId === feeId &&
-    i.date >= startDate &&
-    i.date <= endDate
-  );
-};
 
 const miscNames = [
   ...new Set([
@@ -452,6 +435,21 @@ useEffect(() => {
     cb();
   };
   
+  const alreadyPaidThisYear = (studentId, feeId) => {
+    if (!savedYear) return false;
+  
+    const start = new Date(savedYear.startDate);
+    const end = new Date(savedYear.endDate);
+  
+    return incomeList.some(i => {
+      if (i.studentId !== studentId) return false;
+      if (i.feeId !== feeId) return false;
+  
+      const paymentDate = new Date(i.date);
+  
+      return paymentDate >= start && paymentDate <= end;
+    });
+  };
   
   
   
@@ -462,11 +460,6 @@ useEffect(() => {
       return alert("Fill all fields");
   
       const fee = selectedFees[0];
-
-      if (alreadyPaidThisYear(studentDocRef.id, fee.id)) {
-        alert("This fee already paid for this academic year");
-        return;
-      }
       
       if (!fee) return alert("Select fee");
 const alreadyPaid = incomeList.some(
@@ -546,21 +539,7 @@ const generatedParentId = `P-${Date.now()}`;
         ]
       }
     );
-    const alreadyPaidThisYear = (studentId, feeId) => {
-      if (!savedYear) return false;
     
-      const start = new Date(savedYear.startDate);
-      const end = new Date(savedYear.endDate);
-    
-      return incomeList.some(i => {
-        if (i.studentId !== studentId) return false;
-        if (i.feeId !== feeId) return false;
-    
-        const paymentDate = new Date(i.date);
-    
-        return paymentDate >= start && paymentDate <= end;
-      });
-    };
     
     
   
@@ -598,7 +577,7 @@ const generatedParentId = `P-${Date.now()}`;
       paymentType: newPayType,
     
       paymentStage: "Admission",
-    
+      academicYearId: savedYear?.id || null, 
       date: entryDate,
       createdAt: new Date()
     });
@@ -623,6 +602,20 @@ const generatedParentId = `P-${Date.now()}`;
 setOldPayAmount("");
 
   };
+  const isFeePaidInCurrentYear = (studentId, feeId) => {
+    if (!savedYear?.startDate || !savedYear?.endDate) return false;
+  
+    const start = new Date(savedYear.startDate);
+    const end = new Date(savedYear.endDate);
+  
+    return incomeList.some(i => {
+      if (i.studentId !== studentId) return false;
+      if (i.feeId !== feeId) return false;
+  
+      const paymentDate = new Date(i.date);
+      return paymentDate >= start && paymentDate <= end;
+    });
+  };
   
   /* ---------- INCOME: OLD ADMISSION ---------- */
   const selectOldClass = cls=>{
@@ -644,11 +637,11 @@ setOldPayAmount("");
     if (!stu || !oldPayType || !entryDate) return alert("Fill all fields");
   
     const fee = selectedFees[0];
-
     if (alreadyPaidThisYear(stu.id, fee.id)) {
       alert("This fee already paid for this academic year");
       return;
     }
+    
     
     if (!fee) return alert("Select a fee");
     
@@ -760,20 +753,13 @@ if (oldPayType === "monthly") {
     if (final > balanceBefore) {
       return alert("Cannot pay more than balance");
     }
-    // 🔥 BLOCK same fee inside same academic year
-const alreadyPaidThisYear = isFeePaidInCurrentYear(
-  stu.id,
-  fee.id,
-  savedYear?.startDate,
-  savedYear?.endDate
-);
+    const alreadyPaid = isFeePaidInCurrentYear(stu.id, fee.id);
 
-if (alreadyPaidThisYear) {
-  alert("This fee is already collected for this academic year");
-  return;
-}
-
-  
+    if (alreadyPaid) {
+      alert("This fee is already collected for this academic year");
+      return;
+    }
+    
     const balanceAfter = balanceBefore - final;    // 👈 correct
   
     await addDoc(incomesRef, {

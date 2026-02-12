@@ -820,11 +820,11 @@ const statusInfo = getStatusInfo(
       
       return (
         <tr key={`${student.id}_${fee.id}`}>
-          <td>{student.studentName}</td>
-          <td>{student.class}</td>
-          <td>{fee.name}</td>
-          <td>₹{paid}</td>
-          <td>₹{balance}</td>
+          <td data-label="StudentName">{student.studentName}</td>
+          <td data-label="class">{student.class}</td>
+          <td data-label="Feesname">{fee.name}</td>
+          <td data-label="paid">₹{paid}</td>
+          <td data-label="Balance">₹{balance}</td>
 
           <td>
   <div
@@ -953,7 +953,7 @@ const statusInfo = getStatusInfo(
 <div className="nice-table-wrapper"><table className="nice-table">
 <thead><tr><th>Name</th><th>Class</th><th>Paid</th><th>Balance</th><th>Date</th></tr></thead>
 <tbody>{incomeList.filter(i=>i.paymentType==="partial").map(i=>(
-<tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td>₹{getFeeBalance(i.studentId,i.feeId)}</td><td>{i.date}</td></tr>
+<tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td  data-label="Balance">₹{getFeeBalance(i.studentId,i.feeId)}</td><td  data-label="Date">{i.date}</td></tr>
 ))}</tbody>
 </table></div></div>
 )}
