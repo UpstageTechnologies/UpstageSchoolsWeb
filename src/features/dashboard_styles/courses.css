@@ -71,4 +71,40 @@
         align-items: center;
         gap: 8px;  /* space between text & icon */
       }
-      
+      /* ===================================
+   📱 Tablet Responsive (600px–1024px)
+=================================== */
+
+@media (max-width: 1024px) and (min-width: 600px) {
+
+  .course-container {
+    padding: 30px 25px;
+  }
+
+  .page-title {
+    font-size: 24px;
+    margin-bottom: 25px;
+  }
+
+  /* 2 cards per row for tablet */
+  .class-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .class-card {
+    padding: 35px;
+    min-height: 190px;
+    border-radius: 20px;
+  }
+
+  .class-card h3 {
+    font-size: 18px;
+  }
+
+  .button {
+    width: 160px;
+    font-size: 13px;
+    padding: 9px 12px;
+  }
+}

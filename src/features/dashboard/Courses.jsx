@@ -55,7 +55,8 @@ export default function Course({ handleMenuClick }) {
 
 <button
   className="button"
-  onClick={() => navigate(`/courses/${c.id}/timetable-planner`)}
+  onClick={() => handleMenuClick(`timetable-planner-${c.id}`)}
+
 >
   Timetable Planner <FaArrowRight />
 </button>

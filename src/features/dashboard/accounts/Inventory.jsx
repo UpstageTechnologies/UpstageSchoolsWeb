@@ -144,14 +144,35 @@ const [discountOptions, setDiscountOptions] = useState([ "0","5", "10","15", "20
   .filter(t =>
     t.name?.toLowerCase().includes(teacherSearch.toLowerCase())
   );const saveCompetition = async () => {
-    if (!competitionName || !competitionAmount) return;
+
+    if (!competitionName.trim()) {
+      alert("Enter competition name");
+      return;
+    }
+  
+    if (!competitionAmount || Number(competitionAmount) <= 0) {
+      alert("Enter valid amount");
+      return;
+    }
+  
+    // prevent duplicate name
+    const exists = competitionList.some(
+      c =>
+        c.name?.trim().toLowerCase() ===
+        competitionName.trim().toLowerCase()
+    );
+  
+    if (exists) {
+      alert("Competition already exists");
+      return;
+    }
   
     await addDoc(
       collection(db,"users",adminUid,"Account","accounts","Competition"),
       {
-        name: competitionName,
+        name: competitionName.trim(),
         amount: Number(competitionAmount),
-        className: selectedClass,
+        className: selectedClass || "all",
         createdAt: new Date()
       }
     );
@@ -159,6 +180,7 @@ const [discountOptions, setDiscountOptions] = useState([ "0","5", "10","15", "20
     setCompetitionName("");
     setCompetitionAmount("");
   };
+  
   
   const saveFee = async () => {
     if (!entryType || !feeAmount || (entryType==="fees" && !feeType))
@@ -787,29 +809,12 @@ setNewStaffPhone("");
     <div  
       className="student-option"
       style={{ color: "#2563eb" }}
-      onClick={async () => {
-
-        await addDoc(
-          collection(
-            db,
-            "users",
-            adminUid,
-            "Account",
-            "accounts",
-            "Competition"
-          ),
-          {
-            name: competitionSearch,
-            amount: Number(competitionAmount || 0),
-            className: selectedClass || "all",
-            createdAt: new Date()
-          }
-        );
-
-        setCompetitionName(competitionSearch);
-        setCompetitionSearch("");
+      onClick={() => {
+        setCompetitionName(competitionSearch.trim());
+        setCompetitionAmount("");
         setShowCompetitionDropdown(false);
       }}
+      
     >
       ➕ Add "{competitionSearch}"
     </div>

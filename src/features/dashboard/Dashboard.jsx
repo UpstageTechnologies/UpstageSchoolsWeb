@@ -48,6 +48,9 @@ import ParentHome from "./ParentHome";
 import SchoolCalendar from "../../components/SchoolCalendar";
 import Navbar from "../../components/Navbar";
 import CoursePlanner from "./CoursePlanner";
+import Timetable from "./Timetable";
+
+
 import { lazy, Suspense } from "react";
 
 const Teacher = lazy(() => import("./Teacher"));
@@ -940,6 +943,12 @@ const handleMenuClick = (page) => {
 {isAdminOrSubAdmin && activePage.startsWith("course-planner-") && (
   <CoursePlanner
     classId={activePage.replace("course-planner-", "")}
+  />
+)}
+{/* TIMETABLE PLANNER PAGE */}
+{isAdminOrSubAdmin && activePage.startsWith("timetable-planner-") && (
+  <Timetable
+    classId={activePage.replace("timetable-planner-", "")}
   />
 )}
 

@@ -16,6 +16,7 @@ const [showTermDropdown, setShowTermDropdown] = useState(false);
 const [feeCategory, setFeeCategory] = useState("Tuition");
 const [filterClass, setFilterClass] = useState("All");
 const [showPendingPopup, setShowPendingPopup] = useState(false);
+
 const [pendingClass, setPendingClass] = useState("");
 const [pendingFee, setPendingFee] = useState(null);
 const [feesMaster, setFeesMaster] = useState([]);
@@ -28,9 +29,32 @@ const [showClassFilterDropdown, setShowClassFilterDropdown] = useState(false);
 const [reportPendingClass, setReportPendingClass] = useState("");
 const [reportPendingFee, setReportPendingFee] = useState(null);
 const [analysisClassFilter, setAnalysisClassFilter] = useState("All");
-const [analysisCompetitionFilter, setAnalysisCompetitionFilter] = useState("");
-const [analysisExpenseFilter, setAnalysisExpenseFilter] = useState("");
+const [analysisClassSearch, setAnalysisClassSearch] = useState("");
+const [showAnalysisClassDD, setShowAnalysisClassDD] = useState(false);
+const currentYear = new Date().getFullYear().toString();
+
+const [analysisYear, setAnalysisYear] = useState(currentYear);
+
 const [savedYear, setSavedYear] = useState(null);
+const [selectedCompetition, setSelectedCompetition] = useState(null);
+const [competitionList, setCompetitionList] = useState([]);
+const competitionRef = collection(
+  db,
+  "users",
+  adminUid,
+  "Account",
+  "accounts",
+  "Competition"
+);
+
+const unsubCompetition = onSnapshot(competitionRef, snap => {
+  setCompetitionList(
+    snap.docs.map(d => ({
+      id: d.id,
+      ...d.data()
+    }))
+  );
+});
 
 const [showOverviewDropdown, setShowOverviewDropdown] = useState(false);
 const historyRef = collection(
@@ -86,6 +110,8 @@ const generateReport = () => {
   setReportData(data);
   setShowGeneratedReport(true);
 };
+
+
 const filterIncomeByDate = () => {
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0];
@@ -283,80 +309,6 @@ const getPendingTerms = (studentId, feeId) => {
     .map(t => t.replace("term", "Term "))
     .join(" & ") + " Not Paid";
 };
-const competitionAnalysis = (() => {
-
-  const map = {};
-
-  // 🟢 COLLECT COMPETITION INCOME
-  incomeList
-    .filter(i => i.incomeType === "competition")
-    .forEach(i => {
-
-      const key = `${i.className}__${i.competitionName}`;
-
-      if (!map[key]) {
-        map[key] = {
-         date: i.date,
-          className: i.className,
-          competitionName: i.competitionName,
-          expenseName: "",
-          income: 0,
-          expense: 0
-        };
-      }
-
-      map[key].income += Number(i.paidAmount || 0);
-    });
-
-  // 🔴 COLLECT STUDENT MISC EXPENSE
-  expenseList
-    .filter(e => e.type === "student_misc")
-    .forEach(e => {
-
-      const key = `${e.className}__${e.miscName}`;
-
-      if (!map[key]) {
-        map[key] = {
-          className: e.className,
-          competitionName: e.miscName,
-          expenseName: "",
-          income: 0,
-          expense: 0
-        };
-      }
-
-      map[key].expense += Number(e.amount || 0);
-
-      if (!map[key].expenseName) {
-        map[key].expenseName = e.name;
-      }
-    });
-
-  return Object.values(map);
-})();
-const filteredExpenseAnalysis = competitionAnalysis.filter(r => {
-
-  if (
-    analysisClassFilter !== "All" &&
-    r.className !== analysisClassFilter
-  ) return false;
-
-  if (
-    analysisCompetitionFilter &&
-    !r.competitionName
-      ?.toLowerCase()
-      .includes(analysisCompetitionFilter.toLowerCase())
-  ) return false;
-
-  if (
-    analysisExpenseFilter &&
-    !r.expenseName
-      ?.toLowerCase()
-      .includes(analysisExpenseFilter.toLowerCase())
-  ) return false;
-
-  return true;
-});
 const getStatusInfo = (paid, balance, endDate, pendingLabel) => {
 
   if (!endDate) {
@@ -395,9 +347,39 @@ const getStatusInfo = (paid, balance, endDate, pendingLabel) => {
     sub: `Due in ${diff} days`,
     color: "orange"
   };
-};
+};const competitionCards = competitionList.map((comp) => {
 
+  const totalIncome = incomeList
+    .filter(i =>
+      i.incomeType === "competition" &&
+      i.competitionName?.trim().toLowerCase() === comp.name?.trim().toLowerCase()
+    )
+    .reduce((sum, i) => sum + Number(i.paidAmount || 0), 0);
 
+  const totalExpense = expenseList
+    .filter(e =>
+      e.type === "student_misc" &&
+      e.miscName?.trim().toLowerCase() === comp.name?.trim().toLowerCase()
+    )
+    .reduce((sum, e) => sum + Number(e.amount || 0), 0);
+
+  return {
+    competitionName: comp.name,
+    totalIncome,
+    totalExpense
+  };
+});
+const competitionClasses = [
+  ...new Set(
+    incomeList
+      .filter(i =>
+        i.incomeType === "competition" &&
+        i.competitionName?.trim().toLowerCase() ===
+          selectedCompetition?.trim().toLowerCase()
+      )
+      .map(i => i.className)
+  )
+];
 
   return (
     <div className="accounts-wrapper fade-in">
@@ -616,94 +598,209 @@ const getStatusInfo = (paid, balance, endDate, pendingLabel) => {
 {incomeTab === "expenseAnalysis" && (
   <div className="section-card pop">
 
-    <h3 className="section-title">Competition Expense Analysis</h3>
-    {/* ===== FILTER BAR ===== */}
-<div style={{display:"flex", gap:12, marginBottom:12}}>
+  <h3 className="section-title">Competition Expense Analysis</h3>
 
-{/* CLASS */}
-<select
-  value={analysisClassFilter}
-  onChange={e => setAnalysisClassFilter(e.target.value)}
+  {/* ===== IF NO CARD SELECTED ===== */}
+  {!selectedCompetition ? (
+
+    <div className="class-grid">
+      {competitionCards.map((comp, index) => (
+  <div
+  key={index}
+  className={`class-card card-${index % 6}`}
+  onClick={() => setSelectedCompetition(comp.competitionName)}
 >
-  <option value="All">All Classes</option>
-  {classes.map(c => (
-    <option key={c.id} value={c.name}>
-      Class {c.name}
-    </option>
-  ))}
-</select>
+  <h3 className="card-title-main">
+    {comp.competitionName}
+  </h3>
 
-{/* COMPETITION NAME */}
-<input
-  placeholder="Search Competition"
-  value={analysisCompetitionFilter}
-  onChange={e => setAnalysisCompetitionFilter(e.target.value)}
-/>
+  <div className="card-amounts">
+    <p className="income-text">
+      Income: ₹{comp.totalIncome.toLocaleString()}
+    </p>
 
-{/* EXPENSE NAME */}
-<input
-  placeholder="Search Expense"
-  value={analysisExpenseFilter}
-  onChange={e => setAnalysisExpenseFilter(e.target.value)}
-/>
+    <p className="expense-text">
+      Expense: ₹{comp.totalExpense.toLocaleString()}
+    </p>
+
+    <p
+      className={
+        comp.totalIncome - comp.totalExpense >= 0
+          ? "balance-text positive"
+          : "balance-text negative"
+      }
+    >
+      Balance: ₹{(comp.totalIncome - comp.totalExpense).toLocaleString()}
+    </p>
+  </div>
+
+  <button className="button">
+    View Details →
+  </button>
+</div>
+
+))}
+
+
+    </div>
+
+  ) : (
+
+    <>
+      <button
+        className="button"
+        onClick={() => setSelectedCompetition(null)}
+        style={{ marginBottom: 20 }}
+      >
+        ← Back
+      </button>
+      <div style={{ display: "flex", gap: 15, marginBottom: 15 }}>
+    {/* YEAR DROPDOWN */}
+<div className="student-dropdown" style={{ width: 150 }}>
+  <select
+    value={analysisYear}
+    onChange={(e) => setAnalysisYear(e.target.value)}
+    style={{ width: "100%", padding: "8px" }}
+  >
+    {[...new Set(
+      incomeList
+        .filter(i => i.date)
+        .map(i => i.date.slice(0, 4))
+    )]
+      .sort((a, b) => b - a)   // latest year first
+      .map(year => (
+        <option key={year} value={year}>
+          {year}
+        </option>
+      ))}
+  </select>
+</div>
+
+{/* CLASS DROPDOWN */}
+<div className="student-dropdown" style={{ width: 200 }}>
+  <input
+    placeholder="All Class"
+    value={
+      analysisClassFilter === "All"
+        ? analysisClassSearch
+        : analysisClassFilter
+    }
+    onChange={e => {
+      setAnalysisClassSearch(e.target.value);
+      setAnalysisClassFilter("All");
+      setShowAnalysisClassDD(true);
+    }}
+    onFocus={() => setShowAnalysisClassDD(true)}
+  />
+
+  {showAnalysisClassDD && (
+    <div className="student-dropdown-list">
+
+      <div
+        className="student-option"
+        onClick={() => {
+          setAnalysisClassFilter("All");
+          setAnalysisClassSearch("");
+          setShowAnalysisClassDD(false);
+        }}
+      >
+        All Classes
+      </div>
+
+      {competitionClasses
+        .filter(cls =>
+          cls
+            ?.toLowerCase()
+            .includes(analysisClassSearch.toLowerCase())
+        )
+        .map(cls => (
+          <div
+            key={cls}
+            className="student-option"
+            onClick={() => {
+              setAnalysisClassFilter(cls);
+              setAnalysisClassSearch("");
+              setShowAnalysisClassDD(false);
+            }}
+          >
+            Class {cls}
+          </div>
+        ))}
+    </div>
+  )}
+</div>
 
 </div>
 
-    <table className="nice-table">
-      <thead>
-        <tr>
-        <th>Date</th>
-          <th>Class</th>
-          <th>Competition Name</th>
-          <th>Expense Name</th>
-          <th>Income</th>
-          <th>Expense</th>
-          <th>Balance</th>
-        </tr>
-      </thead>
-
-      <tbody>
-
-      {filteredExpenseAnalysis.length === 0 && (
-
+      <table className="nice-table">
+        <thead>
           <tr>
-            <td colSpan="6" style={{ textAlign: "center" }}>
-              No competition data
-            </td>
+            <th>Date</th>
+            <th>Class</th>
+            <th>Expense Name</th>
+            <th>Income</th>
+            <th>Expense</th>
+            <th>Balance</th>
           </tr>
-        )}
-{filteredExpenseAnalysis.map((r, i) => (
+        </thead>
+        <tbody>
+{incomeList
+  .filter(i =>
+    i.incomeType === "competition" &&
+    i.competitionName?.trim().toLowerCase() === selectedCompetition?.trim().toLowerCase() &&
+    i.date?.startsWith(analysisYear) &&  
+    (
+      analysisClassFilter === "All" ||
+      i.className === analysisClassFilter
+    )
+    
+  )
 
-          <tr key={i}>
-             <td data-label="Date">{i.date}</td>
+  .map((i, index) => {
 
-            <td data-label="Class">{r.className}</td>
+    const relatedExpenses = expenseList.filter(e =>
+      e.type === "student_misc" &&
+      e.miscName?.trim().toLowerCase() === selectedCompetition?.trim().toLowerCase()
+    );
 
-            <td data-label="Competition">{r.competitionName}</td>
+    const totalExpense = relatedExpenses.reduce(
+      (sum, e) => sum + Number(e.amount || 0),
+      0
+    );
 
-            <td data-label="ExpenseName">{r.expenseName || "-"}</td>
+    return (
+      <tr key={index}>
+        <td>{i.date}</td>
+        <td>{i.className}</td>
+        <td>-</td>
+        <td style={{ color: "green" }}>
+          ₹{i.paidAmount}
+        </td>
+        <td style={{ color: "red" }}>
+          ₹{totalExpense}
+        </td>
+        <td
+          style={{
+            color:
+              i.paidAmount - totalExpense >= 0
+                ? "green"
+                : "red"
+          }}
+        >
+          ₹{i.paidAmount - totalExpense}
+        </td>
+      </tr>
+    );
+  })}
 
-            <td data-label="Income"style={{ color: "green" }}>
-              ₹{r.income}
-            </td>
 
-            <td data-label="Expenses"style={{ color: "red" }}>
-              ₹{r.expense}
-            </td>
+        </tbody>
+      </table>
+    </>
+  )}
 
-            <td data-label="Balance"style={{ 
-              color: r.income - r.expense >= 0 ? "green" : "red" 
-            }}>
-              ₹{r.income - r.expense}
-            </td>
+</div>
 
-          </tr>
-        ))}
-
-      </tbody>
-    </table>
-
-  </div>
 )}
 
 {(incomeTab === "tuition" || incomeTab === "other") && (

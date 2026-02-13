@@ -43,20 +43,21 @@ const [showMiscDropdown, setShowMiscDropdown] = useState(false);
 const [miscSearch, setMiscSearch] = useState("");
 const [miscName, setMiscName] = useState("");       // Sports Day
 const [expenseSubName, setExpenseSubName] = useState(""); // Decoration
+const [expenseNameSearch, setExpenseNameSearch] = useState("");
+const [showExpenseNameDD, setShowExpenseNameDD] = useState(false);
 
-const miscNames = [
-  ...new Set([
-    // 🔹 from competition income
-    ...incomeList
-      .filter(i => i.incomeType === "competition")
-      .map(i => i.competitionName),
 
-    // 🔹 from student misc expenses
-    ...expenseList
+const expenseNames = [
+  ...new Set(
+    expenseList
       .filter(e => e.type === "student_misc")
       .map(e => e.name)
-  ])
+  )
 ].filter(Boolean);
+const miscNames = competitionList
+  .map(c => c.name)
+  .filter(Boolean);
+
 
 
 const getSalaryFromInventory = (role, position, teacherName) => {
@@ -1867,8 +1868,9 @@ const deleteEntry = async (row) => {
       key={c.id}
       className="student-option"
       onClick={() => {
-        setCompetitionName(competitionSearch);
-        setCompetitionAmount(""); // user type pannum
+        setCompetitionName(c.name);     // ✅ correct
+        setCompetitionAmount(c.amount);
+        setCompetitionSearch("");
         setShowCompetitionDropdown(false);
       }}
       
@@ -2189,12 +2191,57 @@ const deleteEntry = async (row) => {
       )}
     </div>
 
-    {/* 🔹 Expense Name */}
-    <input
-      placeholder="Expense Name"
-      value={expenseSubName}
-      onChange={e => setExpenseSubName(e.target.value)}
-    />
+    <div className="student-dropdown">
+  <input
+    placeholder="Expense Name"
+    value={expenseSubName || expenseNameSearch}
+    onChange={e => {
+      setExpenseNameSearch(e.target.value);
+      setExpenseSubName("");
+      setShowExpenseNameDD(true);
+    }}
+    onFocus={() => setShowExpenseNameDD(true)}
+  />
+
+  {showExpenseNameDD && (
+    <div className="student-dropdown-list">
+
+      {expenseNames
+        .filter(n =>
+          n?.toLowerCase().includes(expenseNameSearch.toLowerCase())
+        )
+        .map(name => (
+          <div
+            key={name}
+            className="student-option"
+            onClick={() => {
+              setExpenseSubName(name);
+              setExpenseNameSearch("");
+              setShowExpenseNameDD(false);
+            }}
+          >
+            {name}
+          </div>
+        ))}
+
+      {expenseNameSearch && (
+        <div
+          className="student-option"
+          style={{ color: "#2563eb" }}
+          onClick={() => {
+            setExpenseSubName(expenseNameSearch);
+            setExpenseNameSearch("");
+            setShowExpenseNameDD(false);
+          }}
+        >
+          ➕ Add "{expenseNameSearch}"
+        </div>
+      )}
+
+    </div>
+  )}
+</div>
+
 
     {/* 🔢 Amount */}
     <input

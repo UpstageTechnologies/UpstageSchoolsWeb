@@ -256,4 +256,50 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0) !importan
     background: #4f6df5;
     color: #fff;
   }
+  .card-title-main {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: #111827;
+  }
   
+  .card-amounts {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 18px;
+  }
+  
+  .income-text {
+    color: #000;
+    font-weight: 300;
+  }
+  
+  .expense-text {
+    color: #000;
+    font-weight: 300;
+  }
+  
+  .balance-text {
+    font-weight: 400;
+    font-size: 12px;
+  }
+  
+  .balance-text.positive {
+    color: #000;
+  }
+  
+  .balance-text.negative {
+    color: #000;
+  }
+  .class-card {
+    border-radius: 25px;
+    padding: 20px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    transition: 0.3s ease;
+  }
+  
+  .class-card:hover {
+    transform: translateY(-6px);
+  }
+    

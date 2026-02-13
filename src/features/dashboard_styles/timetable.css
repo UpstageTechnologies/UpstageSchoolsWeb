@@ -1,0 +1,55 @@
+.timetable-container {
+    padding: 40px;
+  }
+  
+  .section-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 20px;
+  }
+  
+  .section-card {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+    transition: 0.3s ease;
+  }
+  
+  .section-card:hover {
+    transform: translateY(-6px);
+  }
+  .timetable-view {
+    margin-top: 30px;
+  }
+  
+  .timetable-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  .timetable-table th,
+  .timetable-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+  }
+  
+  .timetable-table th {
+    background: #f3f4f6;
+    font-weight: 600;
+  }
+  
+  .back-btn {
+    margin-top: 10px;
+    padding: 8px 14px;
+    border: none;
+    background: #2563eb;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  

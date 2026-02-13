@@ -59,7 +59,7 @@ function App() {
         <Route path="/dashboard/view"element={<UserViewDashboard />}/>
         <Route path="/landing" element={<Landing />} />
         <Route path="/courses/:classId/course-planner" element={<CoursePlanner />} />
-<Route path="/courses/:classId/timetable-planner" element={<Timetable />} />
+
       </Routes>
     </Router>
   );

@@ -14,7 +14,18 @@ export default function Settings({ adminUid }) {
   const [className, setClassName] = useState("");
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
- 
+  const [schoolStartTime, setSchoolStartTime] = useState("");
+const [schoolEndTime, setSchoolEndTime] = useState("");
+const [timeError, setTimeError] = useState("");
+const [timeSaving, setTimeSaving] = useState(false);
+const [periodCount, setPeriodCount] = useState("");
+const [periodDuration, setPeriodDuration] = useState("");
+
+const [breakCount, setBreakCount] = useState("");
+const [breakDuration, setBreakDuration] = useState("");
+
+const [timingValidationError, setTimingValidationError] = useState("");
+
   const [saveStatus, setSaveStatus] = useState("");
   const [savedYear, setSavedYear] = useState(null);
   
@@ -162,6 +173,154 @@ const [saving, setSaving] = useState(false);
     setSaving(false);
     setSaveStatus("Saved successfully ✅");
   };
+  useEffect(() => {
+    if (!adminUid) return;
+  
+    const loadTiming = async () => {
+      const ref = doc(db, "users", adminUid, "SchoolSettings", "timing");
+      const snap = await getDoc(ref);
+  
+      if (snap.exists()) {
+        setSchoolStartTime(snap.data().startTime || "");
+        setSchoolEndTime(snap.data().endTime || "");
+      }
+    };
+  
+    loadTiming();
+  }, [adminUid]);
+  useEffect(() => {
+    if (
+      !periodCount ||
+      !periodDuration ||
+      !schoolStartTime ||
+      !schoolEndTime
+    ) {
+      setTimingValidationError("");
+      return;
+    }
+  
+    const schoolMinutes = getSchoolTotalMinutes();
+  
+    const totalPeriodMinutes =
+      Number(periodCount) * Number(periodDuration);
+  
+    const totalBreakMinutes =
+      Number(breakCount || 0) * Number(breakDuration || 0);
+  
+    const totalUsed = totalPeriodMinutes + totalBreakMinutes;
+  
+    if (totalUsed > schoolMinutes) {
+      setTimingValidationError(
+        "Timing mismatch ❌ Period + Break exceeds school duration"
+      );
+    } else if (totalUsed < schoolMinutes) {
+      setTimingValidationError(
+        "Timing incomplete ⚠ Period + Break less than school duration"
+      );
+    } else {
+      setTimingValidationError("");
+    }
+  }, [
+    periodCount,
+    periodDuration,
+    breakCount,
+    breakDuration,
+    schoolStartTime,
+    schoolEndTime
+  ]);
+  
+  const calculateDuration = () => {
+    if (!schoolStartTime || !schoolEndTime) return null;
+  
+    const [startH, startM] = schoolStartTime.split(":").map(Number);
+    const [endH, endM] = schoolEndTime.split(":").map(Number);
+  
+    const startMinutes = startH * 60 + startM;
+    const endMinutes = endH * 60 + endM;
+  
+    if (endMinutes <= startMinutes) return "invalid";
+  
+    const diff = endMinutes - startMinutes;
+    const hours = Math.floor(diff / 60);
+    const minutes = diff % 60;
+  
+    return `${hours}h ${minutes}m`;
+  };
+  const saveSchoolTiming = async () => {
+    // Basic validations
+    if (
+      !schoolStartTime ||
+      !schoolEndTime ||
+      !periodCount ||
+      !periodDuration
+    ) {
+      setTimeError("Fill all timing and period fields");
+      return;
+    }
+  
+    if (calculateDuration() === "invalid") {
+      setTimeError("End time must be after start time");
+      return;
+    }
+  
+    if (timingValidationError) {
+      setTimeError("Fix timing mismatch before saving");
+      return;
+    }
+  
+    setTimeSaving(true);
+    setTimeError("");
+  
+    await setDoc(
+      doc(db, "users", adminUid, "SchoolSettings", "timing"),
+      {
+        schoolStartTime,
+        schoolEndTime,
+        periodCount: Number(periodCount),
+        periodDuration: Number(periodDuration),
+        breakCount: Number(breakCount || 0),
+        breakDuration: Number(breakDuration || 0)
+      }
+    );
+  
+    setTimeSaving(false);
+  };
+  
+  const getSchoolTotalMinutes = () => {
+    if (!schoolStartTime || !schoolEndTime) return 0;
+  
+    const [sh, sm] = schoolStartTime.split(":").map(Number);
+    const [eh, em] = schoolEndTime.split(":").map(Number);
+  
+    const start = sh * 60 + sm;
+    const end = eh * 60 + em;
+  
+    if (end <= start) return 0;
+  
+    return end - start;
+  };
+  useEffect(() => {
+    if (!adminUid) return;
+  
+    const loadTiming = async () => {
+      const ref = doc(db, "users", adminUid, "SchoolSettings", "timing");
+      const snap = await getDoc(ref);
+  
+      if (snap.exists()) {
+        const data = snap.data();
+  
+        setSchoolStartTime(data.schoolStartTime || "");
+        setSchoolEndTime(data.schoolEndTime || "");
+        setPeriodCount(data.periodCount || "");
+        setPeriodDuration(data.periodDuration || "");
+        setBreakCount(data.breakCount || "");
+        setBreakDuration(data.breakDuration || "");
+      }
+    };
+  
+    loadTiming();
+  }, [adminUid]);
+  
   return (
     <div className="settings-wrapper">
   
@@ -227,6 +386,125 @@ const [saving, setSaving] = useState(false);
 )}
 
       </div>
+      <div className="settings-card timing-card">
+  <h2 className="card-title">🕒 School Schedule & Period Setup</h2>
+
+  {/* SCHOOL TIME SECTION */}
+  <div className="timing-section">
+    <h4 className="section-title">School Timing</h4>
+
+    <div className="input-row">
+      <div className="input-group">
+        <label>Start Time</label>
+        <input
+          type="time"
+          value={schoolStartTime}
+          onChange={(e) => setSchoolStartTime(e.target.value)}
+        />
+      </div>
+
+      <div className="input-group">
+        <label>End Time</label>
+        <input
+          type="time"
+          value={schoolEndTime}
+          onChange={(e) => setSchoolEndTime(e.target.value)}
+        />
+      </div>
+    </div>
+
+    {calculateDuration() && calculateDuration() !== "invalid" && (
+      <div className="duration-box">
+        Total Duration: {calculateDuration()}
+      </div>
+    )}
+
+    {calculateDuration() === "invalid" && (
+      <div className="error-box">
+        End time must be after start time
+      </div>
+    )}
+  </div>
+
+  <div className="divider" />
+
+  {/* PERIOD SETTINGS */}
+  <div className="timing-section">
+    <h4 className="section-title">📚 Period Settings</h4>
+
+    <div className="input-row">
+      <div className="input-group">
+        <label>No. of Periods</label>
+        <input
+          type="number"
+          value={periodCount}
+          onChange={(e) => setPeriodCount(e.target.value)}
+          min="1"
+        />
+      </div>
+
+      <div className="input-group">
+        <label>Each Period (mins)</label>
+        <input
+          type="number"
+          value={periodDuration}
+          onChange={(e) => setPeriodDuration(e.target.value)}
+          min="1"
+        />
+      </div>
+    </div>
+  </div>
+
+  <div className="divider" />
+
+  {/* BREAK SETTINGS */}
+  <div className="timing-section">
+    <h4 className="section-title">☕ Break Settings</h4>
+
+    <div className="input-row">
+      <div className="input-group">
+        <label>No. of Breaks</label>
+        <input
+          type="number"
+          value={breakCount}
+          onChange={(e) => setBreakCount(e.target.value)}
+          min="0"
+        />
+      </div>
+
+      <div className="input-group">
+        <label>Each Break (mins)</label>
+        <input
+          type="number"
+          value={breakDuration}
+          onChange={(e) => setBreakDuration(e.target.value)}
+          min="0"
+        />
+      </div>
+    </div>
+  </div>
+
+  {/* VALIDATION STATUS */}
+  <div className="validation-area">
+    {timingValidationError ? (
+      <div className="error-box">{timingValidationError}</div>
+    ) : (
+      periodCount &&
+      periodDuration &&
+      schoolStartTime &&
+      schoolEndTime && (
+        <div className="success-box">
+          Timing perfectly matched ✅
+        </div>
+      )
+    )}
+  </div>
+
+  <button className="primary-btn save-btn" onClick={saveSchoolTiming}>
+    {timeSaving ? "Saving..." : "Save Timing"}
+  </button>
+</div>
+
   
       {/* CLASS SETTINGS */}
       <div className="settings-card">
@@ -531,6 +809,58 @@ input:focus {
     order: 1;
     flex: 2;
   }
+}
+.timing-card {
+  padding: 30px;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #334155;
+}
+
+.divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 25px 0;
+}
+
+.duration-box {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #f1f5f9;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.validation-area {
+  margin-top: 20px;
+}
+
+.error-box {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.success-box {
+  background: #dcfce7;
+  color: #166534;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.save-btn {
+  margin-top: 25px;
+  width: 100%;
 }
 
 
