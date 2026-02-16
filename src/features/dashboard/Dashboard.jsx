@@ -1,17 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState , lazy ,Suspense } from "react";
+import { useCallback, useMemo } from "react";
   import { auth } from "../../services/firebase";
   import { onAuthStateChanged, signOut } from "firebase/auth";
   import { doc, getDoc } from "firebase/firestore";
   import { db } from "../../services/firebase";
   import { useNavigate } from "react-router-dom";
   import "../dashboard_styles/Dashboard.css";
-  import { collection, getDocs } from "firebase/firestore"; 
-  import Approvals from "./Approvals";
-  import Courses from "./Courses";
-  import Profile from "./Profile";
-  import Settings from "./accounts/Settings";
+  import { collection, getDocs , onSnapshot} from "firebase/firestore"; 
+  
   import { FaSearch } from "react-icons/fa";
   import { buildGlobalSearchResults } from "../../utils/globalSearch";
+  import Navbar from "../../components/Navbar";
+  import UpgradePopup from "../../components/UpgradePopup";
+  import BackConfirm from "../../components/BackConfirm";
   import {
     FaUserCircle,FaArrowLeft,
     FaUserGraduate,
@@ -22,42 +23,34 @@ import React, { useEffect, useState } from "react";
     FaChevronUp,FaCalendarAlt,FaClipboardCheck,FaWpforms,FaMoneyBillWave
   } from "react-icons/fa";
   import { ROLE_ACCESS } from "../../config/roleAccess";
-
-  import schoolLogo from "../../assets/sch.jpg";
-  import Admin from "./Admin";
-  import OfficeStaff from "./OfficeStaff";
-  import { onSnapshot } from "firebase/firestore";
-  import StudentDetails from "./StudentDetails";
-  import AdminTimetable from "./AdminTimetable";
-  import TeacherTimetable from "./TeacherTimetable";
-  import BackConfirm from "../../components/BackConfirm";
-  import Attendance from "./Attendance";
-  import ShowTodaysAbsent from "./ShowTodaysAbsent";
-  import TeacherAttendance from "./TeacherAttendance";
-  import ShowTodaysTeacherAbsent from "./ShowTodaysTeacherAbsent";
-  import Home from "./Home";
-  import ApplicationList from "./ApplicationList";
-  import HistoryPage from "./accounts/HistoryPage";
-import FeesPage from "./accounts/FeesPage";
-import ProfitPage from "./accounts/ProfitPage";
-import Inventory from "./accounts/Inventory";
-import ExpensesPage from "./accounts/ExpensesPage";
-import UpgradePopup from "../../components/UpgradePopup";
-import TeacherHome from "./TeacherHome";
-import ParentHome from "./ParentHome";
-import SchoolCalendar from "../../components/SchoolCalendar";
-import Navbar from "../../components/Navbar";
-import CoursePlanner from "./CoursePlanner";
-import Timetable from "./Timetable";
-
-
-import { lazy, Suspense } from "react";
-
+  const Admin = lazy(() => import("./Admin"));
+  const OfficeStaff = lazy(() => import("./OfficeStaff"));
+  const StudentDetails = lazy(() => import("./StudentDetails"));
+const AdminTimetable = lazy(() => import("./AdminTimetable"));
+const TeacherTimetable = lazy(() => import("./TeacherTimetable"));
+const TeacherHome = lazy(() => import("./TeacherHome"));
+const ParentHome = lazy(() => import("./ParentHome"));
+  const Attendance = lazy(() => import("./Attendance"));
+  const ShowTodaysAbsent = lazy(() => import("./ShowTodaysAbsent"));
+const TeacherAttendance = lazy(() => import("./TeacherAttendance"));
+const ShowTodaysTeacherAbsent = lazy(() => import("./ShowTodaysTeacherAbsent"));
+const Approvals = lazy(() => import("./Approvals"));
+const Courses = lazy(() => import("./Courses"));
+const Home = lazy(() => import("./Home"));
+  const ApplicationList = lazy(() => import("./ApplicationList"));
+  const HistoryPage = lazy(() => import("./accounts/HistoryPage"));
+  const FeesPage = lazy(() => import("./accounts/FeesPage"));
+  const ProfitPage = lazy(() => import("./accounts/ProfitPage"));
+  const Inventory = lazy(() => import("./accounts/Inventory"));
+const ExpensesPage = lazy(() => import("./accounts/ExpensesPage"));
+const Profile = lazy(() => import("./Profile"));
+const Settings = lazy(() => import("./accounts/Settings"));
+const SchoolCalendar = lazy(() => import("../../components/SchoolCalendar"));
+const CoursePlanner = lazy(() => import("./CoursePlanner"));
+const Timetable = lazy(() => import("./Timetable"));
 const Teacher = lazy(() => import("./Teacher"));
 const Parent = lazy(() => import("./Parent"));
 const Student = lazy(() => import("./Student"));
-
-
   const Dashboard = () => {
     const [user, setUser] = useState(null);
     const [role, setRole] = useState(null);
@@ -90,7 +83,8 @@ const badgeColors = {teacher: "#add8e6", student: "#90ee90",      // green
   office_staff: "#ffa07a", // orange
   page: "#64748b"
 };
-const highlightText = (text, query) => {
+const highlightText = useCallback((text, query) => {
+
   if (!query) return text;
 
   const regex = new RegExp(`(${query})`, "gi");
@@ -115,19 +109,20 @@ const highlightText = (text, query) => {
       </span>
     )
   );
-};
+},[]);
 const [showSearch, setShowSearch] = useState(false);
 
 const closeSearch = () => {
   setShowSearch(false);
-};
+};useEffect(() => {
+  if (!showSearch) return;
 
-useEffect(() => {
-  const adminUid =
-    localStorage.getItem("adminUid") || auth.currentUser?.uid;
-
-  if (!adminUid) return;
   const loadAll = async () => {
+    const adminUid =
+      localStorage.getItem("adminUid") || auth.currentUser?.uid;
+
+    if (!adminUid) return;
+
     const tSnap = await getDocs(collection(db, "users", adminUid, "teachers"));
     const sSnap = await getDocs(collection(db, "users", adminUid, "students"));
     const pSnap = await getDocs(collection(db, "users", adminUid, "parents"));
@@ -142,7 +137,8 @@ useEffect(() => {
   };
 
   loadAll();
-}, []);
+}, [showSearch]);
+
 
     const [showUpgrade, setShowUpgrade] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
@@ -205,8 +201,7 @@ useEffect(() => {
         year: "numeric"
       });
     };
-
-    const requirePremium = (callback) => {
+    const requirePremium = useCallback((callback) => {
       const now = new Date();
     
       const hasPremiumAccess =
@@ -224,8 +219,9 @@ useEffect(() => {
         return;
       }
     
-      callback(); // ✅ allow action
-    };
+      callback();
+    }, [plan, trialAccess, trialExpiresAt]);
+    
     useEffect(() => {
       const off = () => setUpgradeDisabled(true);
       const on = () => setUpgradeDisabled(false);
@@ -263,17 +259,6 @@ useEffect(() => {
         
         return;
       }
-
-      const isPremium = plan === "premium" || plan === "lifetime";
-
-const requirePremium = (page) => {
-  if (!isPremium) {
-    navigate("/payment");
-    return false;
-  }
-  handleMenuClick(page);
-  return true;
-};
       const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
         if (!currentUser) {
           navigate("/login", { replace: true });
@@ -346,14 +331,14 @@ useEffect(() => {
 
   return () => unsub();
 }, []);
-const handleMenuClick = (page) => {
+const handleMenuClick = useCallback((page) => {
   setPageHistory(prev => {
     if (prev[prev.length - 1] === page) return prev;
     return [...prev, page];
   });
-
   setActivePage(page);
-};
+}, []);
+
 
 
     useEffect(() => {
@@ -813,6 +798,18 @@ const handleMenuClick = (page) => {
   </div>
 )}
           <div style={{background:"#F2F4F7"}}className="dashboard-content">
+            <Suspense fallback={
+  <div style={{
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    height: "60vh",
+    fontSize: 18,
+    fontWeight: 500
+  }}>
+    Loading page...
+  </div>
+}>
 {activePage === "calendar" && (
   <div className="calendar-fullpage">
     <SchoolCalendar
@@ -970,7 +967,7 @@ const handleMenuClick = (page) => {
   )}
   {activePage === "settings" && (
   <Settings adminUid={adminUid} />
-)}</div>
+)}</Suspense></div>
         </div>
         {showUpgrade && !upgradeDisabled && (
   <UpgradePopup
