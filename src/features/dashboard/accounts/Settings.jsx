@@ -20,6 +20,8 @@ const [timeError, setTimeError] = useState("");
 const [timeSaving, setTimeSaving] = useState(false);
 const [periodCount, setPeriodCount] = useState("");
 const [periodDuration, setPeriodDuration] = useState("");
+const [periodTimes, setPeriodTimes] = useState([]);
+const [breakTimes, setBreakTimes] = useState([]);
 
 const [breakCount, setBreakCount] = useState("");
 const [breakDuration, setBreakDuration] = useState("");
@@ -228,6 +230,22 @@ const [saving, setSaving] = useState(false);
     schoolStartTime,
     schoolEndTime
   ]);
+  useEffect(() => {
+    // Generate empty period boxes
+    const periods = Array.from(
+      { length: Number(periodCount || 0) },
+      () => ({ start: "", end: "" })
+    );
+    setPeriodTimes(periods);
+  
+    // Generate empty break boxes
+    const breaks = Array.from(
+      { length: Number(breakCount || 0) },
+      () => ({ start: "", end: "" })
+    );
+    setBreakTimes(breaks);
+  
+  }, [periodCount, breakCount]);
   
   const calculateDuration = () => {
     if (!schoolStartTime || !schoolEndTime) return null;
@@ -247,6 +265,14 @@ const [saving, setSaving] = useState(false);
     return `${hours}h ${minutes}m`;
   };
   const saveSchoolTiming = async () => {
+
+    const slotErrors = validateTimeRanges();
+
+if (slotErrors.length > 0) {
+  setTimeError("Fix time slot errors before saving");
+  return;
+}
+
     // Basic validations
     if (
       !schoolStartTime ||
@@ -320,6 +346,50 @@ const [saving, setSaving] = useState(false);
   
     loadTiming();
   }, [adminUid]);
+  const validateTimeRanges = () => {
+    const errors = [];
+  
+    if (!schoolStartTime || !schoolEndTime) return;
+  
+    const schoolStart = new Date(`1970-01-01T${schoolStartTime}`);
+    const schoolEnd = new Date(`1970-01-01T${schoolEndTime}`);
+  
+    const allSlots = [...periodTimes, ...breakTimes];
+  
+    for (let i = 0; i < allSlots.length; i++) {
+      const slot = allSlots[i];
+  
+      if (!slot.start || !slot.end) continue;
+  
+      const start = new Date(`1970-01-01T${slot.start}`);
+      const end = new Date(`1970-01-01T${slot.end}`);
+  
+      if (start < schoolStart || end > schoolEnd) {
+        errors.push("Time must be inside school hours");
+      }
+  
+      if (end <= start) {
+        errors.push("End time must be after start time");
+      }
+  
+      // Overlap check
+      for (let j = 0; j < allSlots.length; j++) {
+        if (i === j) continue;
+  
+        const other = allSlots[j];
+        if (!other.start || !other.end) continue;
+  
+        const oStart = new Date(`1970-01-01T${other.start}`);
+        const oEnd = new Date(`1970-01-01T${other.end}`);
+  
+        if (start < oEnd && end > oStart) {
+          errors.push("Time slot overlap detected");
+        }
+      }
+    }
+  
+    return [...new Set(errors)];
+  };
   
   return (
     <div className="settings-wrapper">
@@ -358,7 +428,7 @@ const [saving, setSaving] = useState(false);
             />
           </div>
         </div>
-  
+    
         <button className="primary-btn" onClick={saveSchoolDates}>
           {saving ? "Saving..." : "Save Academic Year"}
         </button>
@@ -454,6 +524,35 @@ const [saving, setSaving] = useState(false);
       </div>
     </div>
   </div>
+  {periodTimes.map((p, index) => (
+  <div key={index} className="input-row">
+    <div className="input-group">
+      <label>Period {index + 1} Start</label>
+      <input
+        type="time"
+        value={p.start}
+        onChange={(e) => {
+          const updated = [...periodTimes];
+          updated[index].start = e.target.value;
+          setPeriodTimes(updated);
+        }}
+      />
+    </div>
+
+    <div className="input-group">
+      <label>Period {index + 1} End</label>
+      <input
+        type="time"
+        value={p.end}
+        onChange={(e) => {
+          const updated = [...periodTimes];
+          updated[index].end = e.target.value;
+          setPeriodTimes(updated);
+        }}
+      />
+    </div>
+  </div>
+))}
 
   <div className="divider" />
 
@@ -482,7 +581,36 @@ const [saving, setSaving] = useState(false);
         />
       </div>
     </div>
+  </div>{breakTimes.map((b, index) => (
+  <div key={index} className="input-row">
+    <div className="input-group">
+      <label>Break {index + 1} Start</label>
+      <input
+        type="time"
+        value={b.start}
+        onChange={(e) => {
+          const updated = [...breakTimes];
+          updated[index].start = e.target.value;
+          setBreakTimes(updated);
+        }}
+      />
+    </div>
+
+    <div className="input-group">
+      <label>Break {index + 1} End</label>
+      <input
+        type="time"
+        value={b.end}
+        onChange={(e) => {
+          const updated = [...breakTimes];
+          updated[index].end = e.target.value;
+          setBreakTimes(updated);
+        }}
+      />
+    </div>
   </div>
+))}
+
 
   {/* VALIDATION STATUS */}
   <div className="validation-area">

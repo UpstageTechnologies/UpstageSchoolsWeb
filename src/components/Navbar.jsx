@@ -269,7 +269,10 @@ const filteredQuickTiles = QUICK_TILES.filter(tile =>
         }
 
         setSearchQuery("");
-        setGlobalResults([]);
+        setSearchQuery("");
+        setShowQuickPanel(false);
+        searchInputRef.current?.blur();
+        
       }}
     >
       <span>{highlightText(item.label, searchQuery)}</span>

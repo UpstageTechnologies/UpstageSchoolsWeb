@@ -7,7 +7,6 @@ import { useCallback, useMemo } from "react";
   import { useNavigate } from "react-router-dom";
   import "../dashboard_styles/Dashboard.css";
   import { collection, getDocs , onSnapshot} from "firebase/firestore"; 
-  
   import { FaSearch } from "react-icons/fa";
   import { buildGlobalSearchResults } from "../../utils/globalSearch";
   import Navbar from "../../components/Navbar";
@@ -181,18 +180,25 @@ useEffect(() => {
 
     const isAdminOrSubAdmin = role === "master" || role === "admin";
     const isOfficeStaff = role === "office_staff"; 
-    const roleAccess = ROLE_ACCESS[role] || { pages: [], people: [] };
-    const pageResults = globalResults.filter(
-      r =>
-        r.type === "page" &&
-        roleAccess.pages.includes(r.value)
-    );
+    const roleAccess = useMemo(() => {
+      return ROLE_ACCESS[role] || { pages: [], people: [] };
+    }, [role]);
+    const pageResults = useMemo(() => {
+      return globalResults.filter(
+        r =>
+          r.type === "page" &&
+          roleAccess.pages.includes(r.value)
+      );
+    }, [globalResults, roleAccess]);
     
-    const peopleResults = globalResults.filter(
-      r =>
-        r.type !== "page" &&
-        roleAccess.people.includes(r.type)
-    );
+    const peopleResults = useMemo(() => {
+      return globalResults.filter(
+        r =>
+          r.type !== "page" &&
+          roleAccess.people.includes(r.type)
+      );
+    }, [globalResults, roleAccess]);
+    
     const formatDate = (timestamp) => {
       if (!timestamp) return "No Expiry";
       return timestamp.toDate().toLocaleDateString("en-IN", {
