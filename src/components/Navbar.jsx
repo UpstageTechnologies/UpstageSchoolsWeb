@@ -85,13 +85,17 @@ const filteredQuickTiles = QUICK_TILES.filter(tile =>
   
   useEffect(() => {
     const handleTouch = (e) => {
-      if (
-        searchInputRef.current &&
-        !searchInputRef.current.contains(e.target)
-      ) {
-        searchInputRef.current.blur(); // 🔥 keyboard close
-      }
-    };
+      const dropdown = document.querySelector(".search-dropdown");
+
+if (
+  searchInputRef.current &&
+  !searchInputRef.current.contains(e.target) &&
+  (!dropdown || !dropdown.contains(e.target))
+) {
+  searchInputRef.current.blur();
+  setShowQuickPanel(false);
+}
+    }
   
     document.addEventListener("touchstart", handleTouch);
     document.addEventListener("mousedown", handleTouch);
@@ -267,8 +271,6 @@ const filteredQuickTiles = QUICK_TILES.filter(tile =>
           handleMenuClick("office_staff");
           searchInputRef.current?.blur(); 
         }
-
-        setSearchQuery("");
         setSearchQuery("");
         setShowQuickPanel(false);
         searchInputRef.current?.blur();
