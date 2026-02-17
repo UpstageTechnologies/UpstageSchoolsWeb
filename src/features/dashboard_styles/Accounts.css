@@ -238,18 +238,42 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0) !importan
     background: #f0f3ff;
   }
   
-  .tab-buttons { overflow: visible !important; }
-  .tab-btn {
-    height: 44px;              /* 🔥 same height */
-    padding: 0 20px;
+  .tab-buttons {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 10px;
+    gap: 12px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scrollbar-width: none;   /* Firefox */
+  }
+  
+  .tab-buttons::-webkit-scrollbar {
+    display: none;           /* Chrome */
+  }
+  
+  .tab-btn {
+    flex: 0 0 auto;          /* 🔥 prevent shrinking */
+    height: 42px;
+    padding: 0 18px;         /* 👈 correct spacing */
+    border-radius: 12px;
     font-weight: 600;
-    background: #fff;
-    border: 1px solid #ddd;
+    font-size: 14px;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
     cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;     /* 🔥 text break aagakudadhu */
+  }
+  
+  .tab-btn:hover {
+    background: #e5e7eb;
+  }
+  
+  .tab-btn.active {
+    background: linear-gradient(135deg,#4f6df5,#3b5bdb);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(79,109,245,0.3);
   }
   
   .tab-btn.active {
@@ -302,4 +326,5 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0) !importan
   .class-card:hover {
     transform: translateY(-6px);
   }
-    
+ 
+  

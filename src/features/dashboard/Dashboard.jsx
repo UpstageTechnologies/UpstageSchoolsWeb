@@ -109,13 +109,11 @@ const highlightText = useCallback((text, query) => {
     )
   );
 },[]);
-const [showSearch, setShowSearch] = useState(false);
+
 
 const closeSearch = () => {
   setShowSearch(false);
 };useEffect(() => {
-  if (!showSearch) return;
-
   const loadAll = async () => {
     const adminUid =
       localStorage.getItem("adminUid") || auth.currentUser?.uid;
@@ -136,7 +134,8 @@ const closeSearch = () => {
   };
 
   loadAll();
-}, [showSearch]);
+}, []);   // 🔥 empty dependency
+
 
 
     const [showUpgrade, setShowUpgrade] = useState(false);
@@ -190,7 +189,6 @@ useEffect(() => {
           roleAccess.pages.includes(r.value)
       );
     }, [globalResults, roleAccess]);
-    
     const peopleResults = useMemo(() => {
       return globalResults.filter(
         r =>
@@ -198,6 +196,7 @@ useEffect(() => {
           roleAccess.people.includes(r.type)
       );
     }, [globalResults, roleAccess]);
+    
     
     const formatDate = (timestamp) => {
       if (!timestamp) return "No Expiry";

@@ -349,17 +349,23 @@ if (slotErrors.length > 0) {
   const validateTimeRanges = () => {
     const errors = [];
   
-    if (!schoolStartTime || !schoolEndTime) return;
+    if (!schoolStartTime || !schoolEndTime) return errors;
   
     const schoolStart = new Date(`1970-01-01T${schoolStartTime}`);
     const schoolEnd = new Date(`1970-01-01T${schoolEndTime}`);
   
-    const allSlots = [...periodTimes, ...breakTimes];
+    const allSlots = [
+      ...periodTimes.map(p => ({ ...p, type: "period" })),
+      ...breakTimes.map(b => ({ ...b, type: "break" }))
+    ];
   
     for (let i = 0; i < allSlots.length; i++) {
       const slot = allSlots[i];
   
-      if (!slot.start || !slot.end) continue;
+      if (!slot.start || !slot.end) {
+        errors.push("All time fields must be filled");
+        continue;
+      }
   
       const start = new Date(`1970-01-01T${slot.start}`);
       const end = new Date(`1970-01-01T${slot.end}`);
@@ -372,10 +378,7 @@ if (slotErrors.length > 0) {
         errors.push("End time must be after start time");
       }
   
-      // Overlap check
-      for (let j = 0; j < allSlots.length; j++) {
-        if (i === j) continue;
-  
+      for (let j = i + 1; j < allSlots.length; j++) {
         const other = allSlots[j];
         if (!other.start || !other.end) continue;
   
@@ -389,6 +392,27 @@ if (slotErrors.length > 0) {
     }
   
     return [...new Set(errors)];
+  };
+  const generatePreviewTable = () => {
+    const errors = validateTimeRanges();
+    if (errors.length > 0) return [];
+  
+    const combined = [
+      ...periodTimes.map((p, i) => ({
+        label: `Period ${i + 1}`,
+        ...p
+      })),
+      ...breakTimes.map((b, i) => ({
+        label: `Break ${i + 1}`,
+        ...b
+      }))
+    ];
+  
+    return combined.sort(
+      (a, b) =>
+        new Date(`1970-01-01T${a.start}`) -
+        new Date(`1970-01-01T${b.start}`)
+    );
   };
   
   return (
@@ -610,6 +634,13 @@ if (slotErrors.length > 0) {
     </div>
   </div>
 ))}
+{validateTimeRanges().length > 0 && (
+  <div className="error-box">
+    {validateTimeRanges().map((err, i) => (
+      <div key={i}>{err}</div>
+    ))}
+  </div>
+)}
 
 
   {/* VALIDATION STATUS */}
@@ -633,7 +664,32 @@ if (slotErrors.length > 0) {
   </button>
 </div>
 
-  
+{validateTimeRanges().length === 0 &&
+  generatePreviewTable().length > 0 && (
+    <div style={{ marginTop: 20 }}>
+      <h4>📋 Schedule Preview</h4>
+
+      <table className="year-table">
+        <thead>
+          <tr>
+            <th>Slot</th>
+            <th>Start</th>
+            <th>End</th>
+          </tr>
+        </thead>
+        <tbody>
+          {generatePreviewTable().map((slot, index) => (
+            <tr key={index}>
+              <td>{slot.label}</td>
+              <td>{slot.start}</td>
+              <td>{slot.end}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+)}
+
       {/* CLASS SETTINGS */}
       <div className="settings-card">
         <h2 className="card-title">🏫 Classes</h2>

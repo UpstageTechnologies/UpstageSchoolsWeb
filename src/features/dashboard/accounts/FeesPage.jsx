@@ -455,7 +455,7 @@ const competitionClasses = [
       Income Report – {reportFilter.toUpperCase()}
     </h3>
 
-    <table className="nice-table">
+    <table className="nice-table1">
   <thead>
     <tr>
       <th>Student</th>
@@ -732,7 +732,7 @@ const competitionClasses = [
 
 </div>
 
-      <table className="nice-table">
+      <table className="nice-table1">
         <thead>
           <tr>
             <th>Date</th>
@@ -854,7 +854,7 @@ const competitionClasses = [
   </div>
   
 </div>  
-<table className="nice-table">
+<table className="nice-table1">
 <thead>
 <tr>
   <th>Student</th>
@@ -972,8 +972,8 @@ const statusInfo = getStatusInfo(
 {incomeTab === "new" &&  (
   <div className="section-card pop ">
               <h3 className="section-title">New Admission Payments</h3>
-              <div className="nice-table-wrapper">
-                <table className="nice-table">
+              <div className="nice-table1-wrapper">
+                <table className="nice-table1">
                   <thead>
                     <tr>
                       <th >Student</th>
@@ -1007,8 +1007,8 @@ const statusInfo = getStatusInfo(
           {incomeTab === "old" && (
   <div className="section-card pop">
 <h3 className="section-title">Old Admission Payments</h3>
-              <div className="nice-table-wrapper">
-                <table className="nice-table">
+              <div className="nice-table-wrapper1">
+                <table className="nice-table1">
                   <thead>
                     <tr>
                       <th>Student</th>
@@ -1037,8 +1037,8 @@ const statusInfo = getStatusInfo(
 {incomeTab==="full"&&(
 <div className="section-card pop"><h3 className="section-title">Full Payment Students</h3>
 
-<div className="nice-table-wrapper">
-<table className="nice-table">
+<div className="nice-table-wrapper1">
+<table className="nice-table1">
 <thead><tr><th>Name</th><th>Class</th><th>Paid</th><th>Date</th></tr></thead>
 <tbody>{incomeList.filter(i=>i.paymentType==="full").map(i=>(
 <tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td>{i.date}</td></tr>
@@ -1047,7 +1047,7 @@ const statusInfo = getStatusInfo(
 )}
 {incomeTab==="partial"&&(
 <div className="section-card pop"><h3 className="section-title">Partial Payment Students</h3>
-<div className="nice-table-wrapper"><table className="nice-table">
+<div className="nice-table-wrapper1"><table className="nice-table1">
 <thead><tr><th>Name</th><th>Class</th><th>Paid</th><th>Balance</th><th>Date</th></tr></thead>
 <tbody>{incomeList.filter(i=>i.paymentType==="partial").map(i=>(
 <tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td  data-label="Balance">₹{getFeeBalance(i.studentId,i.feeId)}</td><td  data-label="Date">{i.date}</td></tr>
@@ -1056,7 +1056,7 @@ const statusInfo = getStatusInfo(
 )}
 {incomeTab==="term1"&&(
 <div className="section-card pop"><h3 className="section-title">Term 1 Payments</h3>
-<table className="nice-table">
+<table className="nice-table1">
 <thead><tr><th>Name</th><th>Class</th><th>Paid</th><th>Balance</th><th>Date</th></tr></thead>
 <tbody>{applyDateFilter(incomeList).filter(i=>i.paymentType==="term1").map(i=>(
 <tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td>₹{getFeeBalance(i.studentId,i.feeId)}</td><td>{i.date}</td></tr>
@@ -1065,7 +1065,7 @@ const statusInfo = getStatusInfo(
 )}
 {incomeTab==="term2"&&(
 <div className="section-card pop"><h3 className="section-title">Term 2 Payments</h3>
-<table className="nice-table">
+<table className="nice-table1">
 <thead><tr><th>Name</th><th>Class</th><th>Paid</th><th>Balance</th><th>Date</th></tr></thead>
 <tbody>{incomeList.filter(i=>i.paymentType==="term2").map(i=>(
 <tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td>₹{getFeeBalance(i.studentId,i.feeId)}</td><td>{i.date}</td></tr>
@@ -1074,7 +1074,7 @@ const statusInfo = getStatusInfo(
 )}
 {incomeTab==="term3"&&(
 <div className="section-card pop"><h3 className="section-title">Term 3 Payments</h3>
-<table className="nice-table">
+<table className="nice-table1">
 <thead><tr><th>Name</th><th>Class</th><th>Paid</th><th>Balance</th><th>Date</th></tr></thead>
 <tbody>{incomeList.filter(i=>i.paymentType==="term3").map(i=>(
 <tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td>₹{getFeeBalance(i.studentId,i.feeId)}</td><td>{i.date}</td></tr>
@@ -1083,8 +1083,8 @@ const statusInfo = getStatusInfo(
 )}</>)}
       {mode==="expenses"&&(
 <div className="section-card pop"><h3 className="section-title">Expenses Details</h3>
-<div className="nice-table-wrapper">
-  <table className="nice-table">
+<div className="nice-table-wrapper1">
+  <table className="nice-table1">
 <thead><tr><th>Type</th><th>Name</th><th>Amount</th><th>Date</th></tr></thead>
 <tbody>{expenseList
 .filter(e =>

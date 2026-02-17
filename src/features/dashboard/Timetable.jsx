@@ -14,6 +14,8 @@ export default function Timetable({ classId }) {
   const [slots, setSlots] = useState([]);
   const [academicStart, setAcademicStart] = useState(null);
 const [academicEnd, setAcademicEnd] = useState(null);
+const [isLeaveDay, setIsLeaveDay] = useState(false);
+
 
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
@@ -121,11 +123,12 @@ const [academicEnd, setAcademicEnd] = useState(null);
 
     return result;
   };
-
-  // 🔹 Section Click
   const handleSectionClick = async (sectionName) => {
     if (!adminUid) return;
-
+  
+    const cycleNumber = getCycleDay(selectedDate);
+    const cycleKey = `Day${cycleNumber}`;
+  
     const timetableRef = doc(
       db,
       "users",
@@ -133,25 +136,29 @@ const [academicEnd, setAcademicEnd] = useState(null);
       "timetables",
       `${classId}_${sectionName}`
     );
-
-    const existing = await getDoc(timetableRef);
-
-    // ✅ If exists load date specific
-    if (existing.exists()) {
-      const data = existing.data();
-      const dateData = data.dates?.[selectedDate];
-
-      if (dateData) {
-        setSlots(dateData);
+  
+    const snap = await getDoc(timetableRef);
+  
+    if (snap.exists()) {
+      const data = snap.data();
+      const cycleData = data.cycles?.[cycleKey];
+  
+      if (cycleData) {
+        setSlots(cycleData);
       } else {
-        setSlots([]);
+        await createNewCycle(timetableRef, cycleKey);
       }
-
+  
       setActiveSection(sectionName);
       return;
     }
-
-    // ✅ Generate new from timing
+  
+    // first time create
+    await createNewCycle(timetableRef, cycleKey);
+    setActiveSection(sectionName);
+  };
+  
+  const createNewCycle = async (timetableRef, cycleKey) => {
     const timingRef = doc(
       db,
       "users",
@@ -159,42 +166,32 @@ const [academicEnd, setAcademicEnd] = useState(null);
       "SchoolSettings",
       "timing"
     );
-
+  
     const timingSnap = await getDoc(timingRef);
-
+  
     if (!timingSnap.exists()) {
       alert("Please set school timing first");
       return;
     }
-
-    const timingData = timingSnap.data();
-    const generatedSlots = generateTimeSlots(timingData);
-
-    // 🔥 Auto assign subjects first day
-    const firstDayData = generatedSlots.map((slot, index) => {
-      if (slot.type === "break") return slot;
-
-      return {
-        ...slot,
-        subject:
-          classSubjects[index % classSubjects.length] || ""
-      };
-    });
-
-    await setDoc(timetableRef, {
-      classId,
-      section: sectionName,
-      dates: {
-        [selectedDate]: firstDayData
-      }
-    });
-
-    setSlots(firstDayData);
-    setActiveSection(sectionName);
+  
+    const generatedSlots = generateTimeSlots(timingSnap.data());
+  
+    await setDoc(
+      timetableRef,
+      {
+        cycles: {
+          [cycleKey]: generatedSlots
+        }
+      },
+      { merge: true }
+    );
+  
+    setSlots(generatedSlots);
   };
-
-  // 🔹 Save Subject Changes
   const saveChanges = async () => {
+    const cycleNumber = getCycleDay(selectedDate);
+    const cycleKey = `Day${cycleNumber}`;
+  
     const timetableRef = doc(
       db,
       "users",
@@ -202,20 +199,80 @@ const [academicEnd, setAcademicEnd] = useState(null);
       "timetables",
       `${classId}_${activeSection}`
     );
-
-    const existing = await getDoc(timetableRef);
-    const oldData = existing.exists() ? existing.data() : {};
-
-    await setDoc(timetableRef, {
-      ...oldData,
-      dates: {
-        ...oldData.dates,
-        [selectedDate]: slots
-      }
-    });
-
+  
+    await setDoc(
+      timetableRef,
+      {
+        cycles: {
+          [cycleKey]: slots
+        }
+      },
+      { merge: true }
+    );
+  
     alert("Saved Successfully ✅");
   };
+  useEffect(() => {
+    const loadCycleData = async () => {
+      if (!adminUid || !activeSection) return;
+  
+      const cycleNumber = getCycleDay(selectedDate);
+      const cycleKey = `Day${cycleNumber}`;
+  
+      const timetableRef = doc(
+        db,
+        "users",
+        adminUid,
+        "timetables",
+        `${classId}_${activeSection}`
+      );
+  
+      const snap = await getDoc(timetableRef);
+  
+      if (!snap.exists()) return;
+  
+      const data = snap.data();
+      const cycleData = data.cycles?.[cycleKey];
+  
+      if (cycleData) {
+        setSlots(cycleData);
+      } else {
+        await createNewCycle(timetableRef, cycleKey);
+      }
+    };
+  
+    loadCycleData();
+  }, [selectedDate, activeSection]);
+  
+  const TOTAL_CYCLE_DAYS = 6;
+  const getCycleDay = (date) => {
+    if (!academicStart) return 1;
+  
+    const start = new Date(academicStart);
+    const current = new Date(date);
+  
+    // If Sunday → leave
+    if (current.getDay() === 0) {
+      setIsLeaveDay(true);
+      return 1;
+    }
+  
+    setIsLeaveDay(false);
+  
+    let workingDays = 0;
+    let temp = new Date(start);
+  
+    while (temp <= current) {
+      const day = temp.getDay();
+      if (day !== 0) {
+        workingDays++;
+      }
+      temp.setDate(temp.getDate() + 1);
+    }
+  
+    return ((workingDays - 1) % 6) + 1;
+  };
+  
 
   return (
     <div className="timetable-container">
@@ -273,54 +330,108 @@ const [academicEnd, setAcademicEnd] = useState(null);
           </button>
 
           <table className="timetable-table">
-            <thead>
-              <tr>
-                <th>Period</th>
-                <th>Start</th>
-                <th>End</th>
-                <th>Subject</th>
-              </tr>
-            </thead>
-            <tbody>
-              {slots.length === 0 ? (
-                <tr>
-                  <td colSpan="4" style={{textAlign:"center"}}>
-                    No Data Found
-                  </td>
-                </tr>
-              ) : (
-                slots.map((slot, index) => (
-                  <tr key={index}>
-                    <td>{slot.label}</td>
-                    <td>{slot.start}</td>
-                    <td>{slot.end}</td>
-                    <td>
-                      {slot.type === "break" ? (
-                        <span style={{color:"#999"}}>Break</span>
-                      ) : (
-                        <select
-                          value={slot.subject || ""}
-                          onChange={(e) => {
-                            const updated = [...slots];
-                            updated[index].subject = e.target.value;
-                            setSlots(updated);
-                          }}
-                        >
-                          <option value="">
-                            Select Subject
-                          </option>
-                          {classSubjects.map((sub, i) => (
-                            <option key={i} value={sub}>
-                              {sub}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
+          <thead>
+  <tr>
+    <th>Slot</th>
+    <th>Start</th>
+    <th>End</th>
+    <th>Subject</th>
+    <th>Course</th>
+    <th>Topic</th>
+  </tr>
+</thead>
+<tbody>
+  {slots === "LEAVE" ? (
+    <tr>
+      <td colSpan="6" style={{ textAlign: "center", color: "red", fontWeight: "600" }}>
+        🚫 Leave Day
+      </td>
+    </tr>
+  ) : slots.length === 0 ? (
+    <tr>
+      <td colSpan="6" style={{ textAlign: "center" }}>
+        No Data Found
+      </td>
+    </tr>
+  ) : (
+    slots.map((slot, index) => (
+      <tr key={index}>
+        <td>{slot.label}</td>
+        <td>{slot.start}</td>
+        <td>{slot.end}</td>
+
+        {slot.type === "break" ? (
+          <>
+            <td style={{color:"#999"}}>Break</td>
+            <td>—</td>
+            <td>—</td>
+          </>
+        ) : (
+          <>
+            <td>
+            <select disabled={isLeaveDay}
+
+                value={slot.subject || ""}
+                onChange={(e) => {
+                  const updated = [...slots];
+                  updated[index].subject = e.target.value;
+                  setSlots(updated);
+                }}
+              >
+                <option value="">Select</option>
+                {classSubjects.map((sub, i) => (
+                  <option key={i} value={sub}>
+                    {sub}
+                  </option>
+                ))}
+              </select>
+            </td>
+
+            <td>
+            <input disabled={isLeaveDay}
+
+                type="text"
+                value={slot.course || ""}
+                onChange={(e) => {
+                  const updated = [...slots];
+                  updated[index].course = e.target.value;
+                  setSlots(updated);
+                }}
+              />
+            </td>
+            {isLeaveDay && (
+  <div style={{
+    background:"#fee2e2",
+    color:"#b91c1c",
+    padding:"10px",
+    borderRadius:"8px",
+    marginBottom:"10px",
+    textAlign:"center",
+    fontWeight:"600"
+  }}>
+    Leave Day — Timetable Locked
+  </div>
+)}
+
+            <td>
+              <input
+                disabled={slots === "LEAVE"}
+                type="text"
+                value={slot.topic || ""}
+                onChange={(e) => {
+                  const updated = [...slots];
+                  updated[index].topic = e.target.value;
+                  setSlots(updated);
+                }}
+              />
+            </td>
+          </>
+        )}
+      </tr>
+    ))
+  )}
+</tbody>
+
           </table>
 
           <button className="save-btn" onClick={saveChanges}>
@@ -332,4 +443,3 @@ const [academicEnd, setAcademicEnd] = useState(null);
     </div>
   );
 }
-

@@ -8,7 +8,7 @@ import {
 } from "react-icons/fa";
 import "../features/dashboard_styles/navbar.css";
 import { ROLE_ACCESS } from "../config/roleAccess";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect , useState } from "react";
 
 const Navbar = ({
   toggleSidebar,
@@ -46,8 +46,12 @@ const Navbar = ({
   localStorage.getItem("viewAs") ??
   localStorage.getItem("role");
 
+  const [allUsers, setAllUsers] = useState([]);
+
+
 const roleAccess = ROLE_ACCESS[role] || { pages: [] };
 const searchInputRef = useRef(null);
+
 const QUICK_TILES = [
   { title: "Calendar", page: "calendar" },
   { title: "Applications", page: "applications" },
@@ -61,6 +65,8 @@ const QUICK_TILES = [
   { title: "Parent", page: "parent", color: "rgb(240,170,240)" },
   { title: "Staff", page: "office_staff", color: "#ffa07a" }
 ];
+
+
 
 const filteredQuickTiles = QUICK_TILES.filter(tile =>
   roleAccess.pages.includes(tile.page)
