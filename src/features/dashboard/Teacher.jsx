@@ -648,14 +648,6 @@ useEffect(() => {
     <option value="ECA Staff">ECA Staff</option>
   </select>
 )}
-
-
-
-        
-
-
-
-
             <div className="modal-actions">
               <button className="save" onClick={() => requirePremium(handleSaveTeacher)}>
                 Save

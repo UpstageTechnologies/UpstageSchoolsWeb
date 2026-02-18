@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc , collection } from "firebase/firestore";
 import { db, auth } from "../../services/firebase";
 import "../dashboard_styles/timetable.css";
+
 
 export default function Timetable({ classId }) {
   const adminUid =
@@ -16,7 +17,7 @@ const [academicEnd, setAcademicEnd] = useState(null);
 const [isLeaveDay, setIsLeaveDay] = useState(false);
 const [className, setClassName] = useState("");
 const [subjectTopics, setSubjectTopics] = useState({});
-
+const [teachers, setTeachers] = useState([]);
 
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
@@ -371,6 +372,44 @@ const [subjectTopics, setSubjectTopics] = useState({});
       (t) => (t.completedPeriods || 0) < t.periods
     );
   };
+  useEffect(() => {
+    const loadTeachers = async () => {
+      if (!adminUid) return;
+  
+      const snap = await getDocs(
+        collection(db, "users", adminUid, "teachers")
+      );
+  
+      const teacherList = snap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+  
+      setTeachers(teacherList);
+    };
+  
+    loadTeachers();
+  }, [adminUid]);
+  const getMatchingTeachers = (subject) => {
+
+    if (!className || !activeSection || !subject) return [];
+  
+    return teachers.filter(t => {
+      if (t.category !== "Teaching Staff") return false;
+  
+      return (t.assignedClasses || []).some(c => {
+  
+        return (
+          String(c.class).trim() === String(className).trim() &&
+          String(c.section).trim() === String(activeSection).trim() &&
+          String(c.subject).trim().toLowerCase() ===
+          String(subject).trim().toLowerCase()
+        );
+  
+      });
+    });
+  };
+  
   
 
   return (
@@ -468,7 +507,10 @@ const [subjectTopics, setSubjectTopics] = useState({});
         <th>Start</th>
         <th>End</th>
         <th>Subject</th>
+      
         <th>Topic</th>
+        <th>Teacher</th>
+      
       </tr>
     </thead>
 
@@ -527,6 +569,7 @@ const [subjectTopics, setSubjectTopics] = useState({});
                     ))}
                   </select>
                 </td>
+        
 
                 {/* TOPIC */}
                 <td className="topic-cell">
@@ -566,6 +609,26 @@ const [subjectTopics, setSubjectTopics] = useState({});
                     );
                   })() : "-"}
                 </td>
+                <td>
+  {slot.subject ? (
+    <select
+      value={slot.teacherId || ""}
+      onChange={(e) => {
+        const updated = [...slots];
+        updated[index].teacherId = e.target.value;
+        setSlots(updated);
+      }}
+    >
+      <option value="">Select Teacher</option>
+
+      {getMatchingTeachers(slot.subject).map((t) => (
+        <option key={t.id} value={t.teacherId}>
+          {t.name}
+        </option>
+      ))}
+    </select>
+  ) : "-"}
+</td>
               </>
             )}
           </tr>
