@@ -232,48 +232,78 @@ body {
   .day-number {
     font-size: 18px;
   }
-}
-.table-wrapper {
+}.table-wrapper {
   width: 100%;
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
 }
 
 .timetable-table {
-  min-width: 700px;
-  border-collapse: collapse;
-  background: white;
-  border-radius: 14px;
-  overflow: hidden;
-}
-.timetable-table {
   width: 100%;
   border-collapse: collapse;
-  background: #fff;
-  border-radius: 12px;
+  background: #ffffff;
+  border-radius: 14px;
   overflow: hidden;
+  table-layout: fixed;
+}
+
+.timetable-table thead {
+  background: #f3f4f6;
 }
 
 .timetable-table th {
-  background: #f9fafb;
-  font-weight: 600;
+  padding: 16px;
   font-size: 14px;
-  padding: 14px;
+  font-weight: 600;
   text-align: left;
   border-bottom: 1px solid #e5e7eb;
 }
 
 .timetable-table td {
-  padding: 16px 14px;
-  border-bottom: 1px solid #f1f5f9;
+  padding: 18px 16px;
   font-size: 14px;
+  border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
 }
 
-.timetable-table tr:hover {
-  background: #f9fafb;
+.center-cell {
+  text-align: center;
+  padding: 30px;
 }
 
+.leave-cell {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.break-text {
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+/* Column widths */
+.timetable-table th:nth-child(1),
+.timetable-table td:nth-child(1) {
+  width: 80px;
+}
+
+.timetable-table th:nth-child(2),
+.timetable-table td:nth-child(2),
+.timetable-table th:nth-child(3),
+.timetable-table td:nth-child(3) {
+  width: 100px;
+}
+
+.timetable-table th:nth-child(4),
+.timetable-table td:nth-child(4) {
+  width: 160px;
+}
+
+.timetable-table th:nth-child(5),
+.timetable-table td:nth-child(5) {
+  width: auto;
+}
+
+/* Topic UI */
 .topic-wrapper {
   display: flex;
   flex-direction: column;
@@ -282,7 +312,6 @@ body {
 
 .topic-name {
   font-weight: 500;
-  color: #111827;
 }
 
 .topic-progress {
@@ -308,3 +337,4 @@ body {
   font-weight: 500;
   color: #16a34a;
 }
+
