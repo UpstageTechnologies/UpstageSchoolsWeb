@@ -3,7 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Landing from "./useTheme/pages/Landing";
 // import Login from "./useTheme/pages/Login";
 import Register from "./useTheme/pages/Register";
-import SubDashboard from "./features/dashboard/SubDashboard";
+import SubDashboard from "./features/dashboard/SubDashboard.jsx";
+
 
 import Dashboard from "./features/dashboard/Dashboard";
 import PaymentSelection from "./features/payment/PaymentSelection";

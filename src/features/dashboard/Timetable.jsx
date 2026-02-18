@@ -460,139 +460,121 @@ const [subjectTopics, setSubjectTopics] = useState({});
          </div>
        )}
      
-       <table className="timetable-table">
-         <thead>
-           <tr>
-             <th>Slot</th>
-             <th>Start</th>
-             <th>End</th>
-             <th>Subject</th>
-             <th>Topic</th>
-           </tr>
-         </thead>
-     
-         <tbody>
-           {isLeaveDay ? (
-             <tr>
-               <td colSpan="6" style={{ textAlign: "center", color: "red" }}>
-                 Leave Day
-               </td>
-             </tr>
-           ) : slots.length === 0 ? (
-             <tr>
-               <td colSpan="6" style={{ textAlign: "center" }}>
-                 No Data Found
-               </td>
-             </tr>
-           ) : (
-             slots.map((slot, index) => (
-               <tr key={index}>
-                 <td>{slot.label}</td>
-                 <td>{slot.start}</td>
-                 <td>{slot.end}</td>
-     
-                 {slot.type === "break" ? (
-                   <>
-                     <td style={{ color: "#999" }}>Break</td>
-                     <td>—</td>
-                     <td>—</td>
-                   </>
-                 ) : (
-                   <>
-                     <td>
-                     <select
-  disabled={isLeaveDay}
-  value={slot.subject || ""}
-  onChange={(e) => {
-    const selectedSubject = e.target.value;
-    const updated = [...slots];
-  
-    updated[index].subject = selectedSubject;
-  
-    const currentTopic = getCurrentTopic(selectedSubject);
-  
-    updated[index].topic = currentTopic
-      ? currentTopic.name
-      : "";
-  
-    setSlots(updated);
-  }}
-  
->
-  <option value="">Select</option>
-  {classSubjects.map((sub, i) => (
-    <option key={i} value={sub}>
-      {sub}
-    </option>
-  ))}
-</select>
+     <div className="table-wrapper">
+  <table className="timetable-table">
+    <thead>
+      <tr>
+        <th>Slot</th>
+        <th>Start</th>
+        <th>End</th>
+        <th>Subject</th>
+        <th>Topic</th>
+      </tr>
+    </thead>
 
+    <tbody>
+      {isLeaveDay ? (
+        <tr>
+          <td colSpan="5" className="center-cell leave-cell">
+            Leave Day
+          </td>
+        </tr>
+      ) : slots.length === 0 ? (
+        <tr>
+          <td colSpan="5" className="center-cell">
+            No Data Found
+          </td>
+        </tr>
+      ) : (
+        slots.map((slot, index) => (
+          <tr key={index}>
+            <td>{slot.label}</td>
+            <td>{slot.start}</td>
+            <td>{slot.end}</td>
 
-                     </td>
-                     <td>
-                     {slot.subject && slot.topic && (
-  <div style={{ fontSize: "12px", color: "#666", marginBottom: "4px" }}>
-    {
-      (() => {
-        const topic = (subjectTopics[slot.subject] || [])
-          .find(t => t.name === slot.topic);
+            {slot.type === "break" ? (
+              <>
+                <td className="break-text">Break</td>
+                <td className="break-text">—</td>
+              </>
+            ) : (
+              <>
+                {/* SUBJECT */}
+                <td>
+                  <select
+                    disabled={isLeaveDay}
+                    value={slot.subject || ""}
+                    onChange={(e) => {
+                      const selectedSubject = e.target.value;
+                      const updated = [...slots];
 
-        if (!topic) return null;
+                      updated[index].subject = selectedSubject;
 
-        return `${topic.completedPeriods || 0}/${topic.periods} periods`;
-      })()
-    }
-  </div>
-)}
-<td className="topic-cell">
-  {slot.subject ? (() => {
+                      const currentTopic =
+                        getCurrentTopic(selectedSubject);
 
-    const topic = getCurrentTopic(slot.subject);
+                      updated[index].topic =
+                        currentTopic?.name || "";
 
-    if (!topic) {
-      return (
-        <span className="topic-complete">
-          All Topics Completed ✓
-        </span>
-      );
-    }
+                      setSlots(updated);
+                    }}
+                  >
+                    <option value="">Select</option>
+                    {classSubjects.map((sub, i) => (
+                      <option key={i} value={sub}>
+                        {sub}
+                      </option>
+                    ))}
+                  </select>
+                </td>
 
-    const completed = topic.completedPeriods || 0;
-    const total = topic.periods;
+                {/* TOPIC */}
+                <td className="topic-cell">
+                  {slot.subject ? (() => {
+                    const topic = getCurrentTopic(slot.subject);
 
-    return (
-      <div className="topic-wrapper">
-        <div className="topic-name">
-          {topic.name}
-        </div>
+                    if (!topic) {
+                      return (
+                        <span className="topic-complete">
+                          All Topics Completed ✓
+                        </span>
+                      );
+                    }
 
-        <div className="topic-progress">
-          {completed}/{total} periods
-        </div>
+                    const completed = topic.completedPeriods || 0;
+                    const total = topic.periods;
 
-        <div className="progress-bar">
-          <div
-            className="progress-fill"
-            style={{
-              width: `${(completed / total) * 100}%`
-            }}
-          />
-        </div>
-      </div>
-    );
+                    return (
+                      <div className="topic-wrapper">
+                        <div className="topic-name">
+                          {topic.name}
+                        </div>
 
-  })() : "-"}
-</td>
+                        <div className="topic-progress">
+                          {completed}/{total} periods
+                        </div>
 
+                        <div className="progress-bar">
+                          <div
+                            className="progress-fill"
+                            style={{
+                              width: `${(completed / total) * 100}%`
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })() : "-"}
+                </td>
+              </>
+            )}
+          </tr>
+        ))
+      )}
+    </tbody>
+  </table>
+</div>
 
-</td> 
-          </>
-                 )}
-               </tr>
-             ))
-           )}
-         </tbody>
-       </table>
      
        <button
          className="save-btn"
