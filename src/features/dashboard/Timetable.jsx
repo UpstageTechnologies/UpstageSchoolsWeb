@@ -4,7 +4,6 @@ import { db, auth } from "../../services/firebase";
 import "../dashboard_styles/timetable.css";
 
 export default function Timetable({ classId }) {
-
   const adminUid =
     auth.currentUser?.uid || localStorage.getItem("adminUid");
 
@@ -15,6 +14,8 @@ export default function Timetable({ classId }) {
   const [academicStart, setAcademicStart] = useState(null);
 const [academicEnd, setAcademicEnd] = useState(null);
 const [isLeaveDay, setIsLeaveDay] = useState(false);
+const [className, setClassName] = useState("");
+const [subjectTopics, setSubjectTopics] = useState({});
 
 
   const [selectedDate, setSelectedDate] = useState(
@@ -59,11 +60,43 @@ const [isLeaveDay, setIsLeaveDay] = useState(false);
       if (snap.exists()) {
         setSections(snap.data().sections || []);
         setClassSubjects(snap.data().subjects || []);
+        setClassName(snap.data().name || "");
+
       }
     };
 
     loadClassData();
   }, [adminUid, classId]);
+  useEffect(() => {
+    const loadAllTopics = async () => {
+      if (!adminUid || !classId || classSubjects.length === 0) return;
+  
+      const topicMap = {};
+  
+      for (const subject of classSubjects) {
+        const topicRef = doc(
+          db,
+          "users",
+          adminUid,
+          "coursePlanner",
+          classId,
+          "subjects",
+          subject
+        );
+  
+        const snap = await getDoc(topicRef);
+  
+        topicMap[subject] = snap.exists()
+          ? snap.data().topics || []
+          : [];
+      }
+  
+      setSubjectTopics(topicMap);
+    };
+  
+    loadAllTopics();
+  }, [classSubjects, adminUid, classId]);
+  
   const changeDate = (direction) => {
     const current = new Date(selectedDate);
     current.setDate(current.getDate() + direction);
@@ -188,7 +221,65 @@ const [isLeaveDay, setIsLeaveDay] = useState(false);
   
     setSlots(generatedSlots);
   };
+  const updateTopicProgress = async () => {
+    for (const slot of slots) {
+      if (!slot.subject || !slot.topic) continue;
+  
+      const topicRef = doc(
+        db,
+        "users",
+        adminUid,
+        "coursePlanner",
+        classId,
+        "subjects",
+        slot.subject
+      );
+  
+      const snap = await getDoc(topicRef);
+      if (!snap.exists()) continue;
+  
+      const topics = snap.data().topics || [];
+  
+      const updatedTopics = topics.map((t) => {
+        if (t.name === slot.topic) {
+          return {
+            ...t,
+            completedPeriods: Math.min(
+              (t.completedPeriods || 0) + 1,
+              t.periods
+            )
+          };
+        }
+        return t;
+      });
+  
+      await setDoc(topicRef, { topics: updatedTopics }, { merge: true });
+    }
+  };
   const saveChanges = async () => {
+    await updateTopicProgress();
+  
+    // 🔥 RELOAD TOPICS AFTER UPDATE
+    const topicMap = {};
+    for (const subject of classSubjects) {
+      const topicRef = doc(
+        db,
+        "users",
+        adminUid,
+        "coursePlanner",
+        classId,
+        "subjects",
+        subject
+      );
+  
+      const snap = await getDoc(topicRef);
+      topicMap[subject] = snap.exists()
+        ? snap.data().topics || []
+        : [];
+    }
+  
+    setSubjectTopics(topicMap);
+  
     const cycleNumber = getCycleDay(selectedDate);
     const cycleKey = `Day${cycleNumber}`;
   
@@ -212,6 +303,7 @@ const [isLeaveDay, setIsLeaveDay] = useState(false);
   
     alert("Saved Successfully ✅");
   };
+  
   useEffect(() => {
     const loadCycleData = async () => {
       if (!adminUid || !activeSection) return;
@@ -272,6 +364,13 @@ const [isLeaveDay, setIsLeaveDay] = useState(false);
   
     return ((workingDays - 1) % 6) + 1;
   };
+  const getCurrentTopic = (subject) => {
+    const topics = subjectTopics[subject] || [];
+  
+    return topics.find(
+      (t) => (t.completedPeriods || 0) < t.periods
+    );
+  };
   
 
   return (
@@ -300,145 +399,209 @@ const [isLeaveDay, setIsLeaveDay] = useState(false);
 
       {/* TIMETABLE VIEW */}
       {activeSection && (
-        <div className="timetable-view">
+        
+       <div className="timetable-view">
+        {/* 🔥 7 Day Strip */}
+<div className="week-strip">
+  {[...Array(7)].map((_, i) => {
+    const dateObj = new Date(selectedDate);
+    dateObj.setDate(dateObj.getDate() - dateObj.getDay() + i + 1); // Monday start
 
-<div className="date-nav">
-  {academicStart && selectedDate > academicStart && (
-    <button onClick={() => changeDate(-1)}>◀</button>
-  )}
+    const formatted = dateObj.toISOString().split("T")[0];
+    const dayName = dateObj.toLocaleDateString("en-US", { weekday: "short" });
+    const dayNum = dateObj.getDate();
 
-  <span>{selectedDate}</span>
+    const isActive = formatted === selectedDate;
 
-  {academicEnd && selectedDate < academicEnd && (
-    <button onClick={() => changeDate(1)}>▶</button>
-  )}
+    return (
+      <div
+        key={i}
+        className={`day-box ${isActive ? "active-day" : ""}`}
+        onClick={() => setSelectedDate(formatted)}
+      >
+        <span className="day-name">{dayName}</span>
+        <span className="day-number">{dayNum}</span>
+      </div>
+    );
+  })}
 </div>
 
+<h3>
+  Class {className}{activeSection}
+</h3>
 
-          <h3>
-            Class {classId} - Section {activeSection}
-          </h3>
+       <div className="date-nav">
+         {academicStart && selectedDate > academicStart && (
+           <button onClick={() => changeDate(-1)}>◀</button>
+         )}
+     
+         <span>{selectedDate}</span>
+     
+         {academicEnd && selectedDate < academicEnd && (
+           <button onClick={() => changeDate(1)}>▶</button>
+         )}
+       </div>
+     
+     
+       {/* ✅ Leave Banner */}
+       {isLeaveDay && (
+         <div
+           style={{
+             background: "#fee2e2",
+             color: "#b91c1c",
+             padding: "12px",
+             borderRadius: "8px",
+             marginBottom: "15px",
+             textAlign: "center",
+             fontWeight: "600",
+           }}
+         >
+           🚫 Leave Day — Timetable Locked
+         </div>
+       )}
+     
+       <table className="timetable-table">
+         <thead>
+           <tr>
+             <th>Slot</th>
+             <th>Start</th>
+             <th>End</th>
+             <th>Subject</th>
+             <th>Topic</th>
+           </tr>
+         </thead>
+     
+         <tbody>
+           {isLeaveDay ? (
+             <tr>
+               <td colSpan="6" style={{ textAlign: "center", color: "red" }}>
+                 Leave Day
+               </td>
+             </tr>
+           ) : slots.length === 0 ? (
+             <tr>
+               <td colSpan="6" style={{ textAlign: "center" }}>
+                 No Data Found
+               </td>
+             </tr>
+           ) : (
+             slots.map((slot, index) => (
+               <tr key={index}>
+                 <td>{slot.label}</td>
+                 <td>{slot.start}</td>
+                 <td>{slot.end}</td>
+     
+                 {slot.type === "break" ? (
+                   <>
+                     <td style={{ color: "#999" }}>Break</td>
+                     <td>—</td>
+                     <td>—</td>
+                   </>
+                 ) : (
+                   <>
+                     <td>
+                     <select
+  disabled={isLeaveDay}
+  value={slot.subject || ""}
+  onChange={(e) => {
+    const selectedSubject = e.target.value;
+    const updated = [...slots];
+  
+    updated[index].subject = selectedSubject;
+  
+    const currentTopic = getCurrentTopic(selectedSubject);
+  
+    updated[index].topic = currentTopic
+      ? currentTopic.name
+      : "";
+  
+    setSlots(updated);
+  }}
+  
+>
+  <option value="">Select</option>
+  {classSubjects.map((sub, i) => (
+    <option key={i} value={sub}>
+      {sub}
+    </option>
+  ))}
+</select>
 
-          <button
-            className="back-btn"
-            onClick={() => {
-              setActiveSection(null);
-              setSlots([]);
-            }}
-          >
-            ⬅ Back
-          </button>
 
-          <table className="timetable-table">
-          <thead>
-  <tr>
-    <th>Slot</th>
-    <th>Start</th>
-    <th>End</th>
-    <th>Subject</th>
-    <th>Course</th>
-    <th>Topic</th>
-  </tr>
-</thead>
-<tbody>
-  {slots === "LEAVE" ? (
-    <tr>
-      <td colSpan="6" style={{ textAlign: "center", color: "red", fontWeight: "600" }}>
-        🚫 Leave Day
-      </td>
-    </tr>
-  ) : slots.length === 0 ? (
-    <tr>
-      <td colSpan="6" style={{ textAlign: "center" }}>
-        No Data Found
-      </td>
-    </tr>
-  ) : (
-    slots.map((slot, index) => (
-      <tr key={index}>
-        <td>{slot.label}</td>
-        <td>{slot.start}</td>
-        <td>{slot.end}</td>
+                     </td>
+                     <td>
+                     {slot.subject && slot.topic && (
+  <div style={{ fontSize: "12px", color: "#666", marginBottom: "4px" }}>
+    {
+      (() => {
+        const topic = (subjectTopics[slot.subject] || [])
+          .find(t => t.name === slot.topic);
 
-        {slot.type === "break" ? (
-          <>
-            <td style={{color:"#999"}}>Break</td>
-            <td>—</td>
-            <td>—</td>
-          </>
-        ) : (
-          <>
-            <td>
-            <select disabled={isLeaveDay}
+        if (!topic) return null;
 
-                value={slot.subject || ""}
-                onChange={(e) => {
-                  const updated = [...slots];
-                  updated[index].subject = e.target.value;
-                  setSlots(updated);
-                }}
-              >
-                <option value="">Select</option>
-                {classSubjects.map((sub, i) => (
-                  <option key={i} value={sub}>
-                    {sub}
-                  </option>
-                ))}
-              </select>
-            </td>
-
-            <td>
-            <input disabled={isLeaveDay}
-
-                type="text"
-                value={slot.course || ""}
-                onChange={(e) => {
-                  const updated = [...slots];
-                  updated[index].course = e.target.value;
-                  setSlots(updated);
-                }}
-              />
-            </td>
-            {isLeaveDay && (
-  <div style={{
-    background:"#fee2e2",
-    color:"#b91c1c",
-    padding:"10px",
-    borderRadius:"8px",
-    marginBottom:"10px",
-    textAlign:"center",
-    fontWeight:"600"
-  }}>
-    Leave Day — Timetable Locked
+        return `${topic.completedPeriods || 0}/${topic.periods} periods`;
+      })()
+    }
   </div>
 )}
+<td className="topic-cell">
+  {slot.subject ? (() => {
 
-            <td>
-              <input
-                disabled={slots === "LEAVE"}
-                type="text"
-                value={slot.topic || ""}
-                onChange={(e) => {
-                  const updated = [...slots];
-                  updated[index].topic = e.target.value;
-                  setSlots(updated);
-                }}
-              />
-            </td>
-          </>
-        )}
-      </tr>
-    ))
-  )}
-</tbody>
+    const topic = getCurrentTopic(slot.subject);
 
-          </table>
+    if (!topic) {
+      return (
+        <span className="topic-complete">
+          All Topics Completed ✓
+        </span>
+      );
+    }
 
-          <button className="save-btn" onClick={saveChanges}>
-            Save Changes
-          </button>
+    const completed = topic.completedPeriods || 0;
+    const total = topic.periods;
 
+    return (
+      <div className="topic-wrapper">
+        <div className="topic-name">
+          {topic.name}
         </div>
+
+        <div className="topic-progress">
+          {completed}/{total} periods
+        </div>
+
+        <div className="progress-bar">
+          <div
+            className="progress-fill"
+            style={{
+              width: `${(completed / total) * 100}%`
+            }}
+          />
+        </div>
+      </div>
+    );
+
+  })() : "-"}
+</td>
+
+
+</td> 
+          </>
+                 )}
+               </tr>
+             ))
+           )}
+         </tbody>
+       </table>
+     
+       <button
+         className="save-btn"
+         onClick={saveChanges}
+         disabled={isLeaveDay}
+       >
+         Save Changes
+       </button>
+     </div>
       )}
     </div>
   );

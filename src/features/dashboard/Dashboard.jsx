@@ -50,6 +50,8 @@ const Timetable = lazy(() => import("./Timetable"));
 const Teacher = lazy(() => import("./Teacher"));
 const Parent = lazy(() => import("./Parent"));
 const Student = lazy(() => import("./Student"));
+const SubDashboard = lazy(() => import("./SubDashboard"));
+
   const Dashboard = () => {
     const [user, setUser] = useState(null);
     const [role, setRole] = useState(null);
@@ -313,6 +315,7 @@ setTrialExpiresAt(data.trialExpiresAt || null);
       }
     }, [showSchoolName]);
     
+    
 
 useEffect(() => {
   const masterUid =
@@ -344,6 +347,16 @@ const handleMenuClick = useCallback((page) => {
   setActivePage(page);
 }, []);
 
+useEffect(() => {
+  const handler = () => {
+    handleMenuClick("subdashboard");
+  };
+
+  window.addEventListener("open-admin-subdashboard", handler);
+
+  return () =>
+    window.removeEventListener("open-admin-subdashboard", handler);
+}, [handleMenuClick]);
 
 
     useEffect(() => {
@@ -893,19 +906,30 @@ const handleMenuClick = useCallback((page) => {
  plan={plan}
  showUpgrade={() => setShowUpgrade(true)}
 />
+)}{isAdminOrSubAdmin && activePage === "teacher" && (
+  <Teacher 
+    adminUid={adminUid} 
+    globalSearch={searchQuery} 
+    requirePremium={requirePremium}
+    setActivePage={handleMenuClick}   // 👈 MUST BE THIS
+  />
 )}
-            {isAdminOrSubAdmin && activePage === "teacher" && (
-              <Teacher adminUid={adminUid} globalSearch={searchQuery} requirePremium={requirePremium} />)}
 {(isAdminOrSubAdmin || viewAs === "parent") && activePage === "parent" && (
-  <Parent adminUid={adminUid}  globalSearch={searchQuery} requirePremium={requirePremium} />
+  <Parent 
+    adminUid={adminUid}  
+    globalSearch={searchQuery} 
+    requirePremium={requirePremium}
+    setActivePage={handleMenuClick}   // ✅ ADD THIS
+  />
 )}
+
 
 
             {isAdminOrSubAdmin && activePage === "student" && (
               <Student adminUid={adminUid} globalSearch={searchQuery} requirePremium={requirePremium} />
             )}
               {isAdminOrSubAdmin && activePage === "office_staff" && (
-  <OfficeStaff adminUid={adminUid} globalSearch={searchQuery} requirePremium={requirePremium}/>
+  <OfficeStaff adminUid={adminUid} globalSearch={searchQuery} requirePremium={requirePremium} setActivePage={handleMenuClick} />
 )}
             {(role === "teacher" || role === "parent") &&
               activePage === "studentDetails" && <StudentDetails />}
@@ -913,10 +937,14 @@ const handleMenuClick = useCallback((page) => {
             {isAdminOrSubAdmin && activePage === "timetable" && (
               <AdminTimetable />
             )}
-
 {(role === "master") && activePage === "admin" && (
-  <Admin requirePremium={requirePremium} globalSearch={searchQuery}/>
+  <Admin 
+    requirePremium={requirePremium} 
+    globalSearch={searchQuery}
+    setActivePage={handleMenuClick}
+  />
 )}
+
 
 
             {activePage === "approvals" && role === "master" && <Approvals requirePremium={requirePremium} />}
@@ -970,6 +998,8 @@ const handleMenuClick = useCallback((page) => {
               {activePage === "profile" && (
     <Profile />
   )}
+ {activePage === "subdashboard" && <SubDashboard />}
+
   {activePage === "settings" && (
   <Settings adminUid={adminUid} />
 )}</Suspense></div>

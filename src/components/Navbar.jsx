@@ -195,7 +195,6 @@ if (
   <FaSchool />
   )}
     </div>
-
   {(showQuickPanel || globalResults.length > 0) && (
   <div className="search-dropdown">
   <div className="search-header">

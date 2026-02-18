@@ -34,7 +34,8 @@
     "Manager",
     "Supervisor"
   ];
-  const OfficeStaff = ({ globalSearch = "" }) => {
+  const OfficeStaff = ({ globalSearch = "", setActivePage }) => {
+
     const selectedOfficeStaffId =
       localStorage.getItem("selectedOfficeStaffId");
   
@@ -299,12 +300,12 @@
                   <button
                       className="view-btn"
                       onClick={() => {
-                        localStorage.setItem("viewAs", "office_staff");
-                        localStorage.setItem("viewStaffId", s.id);
-                        window.dispatchEvent(
-                          new CustomEvent("open-office-staff-dashboard")
-                        );
+                        localStorage.setItem("viewType", "office_staff");
+                        localStorage.setItem("viewName", s.name);
+                        localStorage.setItem("viewId", s.staffId);
+                        setActivePage("subdashboard");
                       }}
+                      
                     >
                       <FaEye /> View
                     </button>

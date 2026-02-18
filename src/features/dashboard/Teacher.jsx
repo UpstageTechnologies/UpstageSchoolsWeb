@@ -34,9 +34,8 @@ const classes = Array.from({ length: 12 }, (_, i) => i + 1);
 const sections = Array.from({ length: 26 }, (_, i) =>
   String.fromCharCode(65 + i)
 );
+const Teacher = ({ requirePremium, globalSearch = "", setActivePage }) => {
 
-const Teacher = ({requirePremium , globalSearch = ""}) => {
-  /* ================= BASIC ================= */
   const adminUid =
     auth.currentUser?.uid || localStorage.getItem("adminUid");
 
@@ -374,11 +373,16 @@ useEffect(() => {
                 <button
   className="view-btn"
   onClick={() => {
-    window.open(
-      `/dashboard/view?role=teacher&id=${t.id}`,
-      "_blank"
-    );
+    if (typeof setActivePage === "function") {
+      localStorage.setItem("viewType", "teacher");
+      localStorage.setItem("viewName", t.name);
+      localStorage.setItem("viewId", t.teacherId);
+      setActivePage("subdashboard");
+    } else {
+      console.error("setActivePage not received properly");
+    }
   }}
+  
 >
   <FaEye /> View
 </button>

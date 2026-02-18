@@ -21,9 +21,8 @@ const handleViewParent = (p) => {
 
   window.open("/dashboard", "_blank");   // 👈 new tab
 };
+const Parent = ({ requirePremium, globalSearch="", setActivePage }) => {
 
-
-const Parent = ({requirePremium ,globalSearch="" }) => {
   /* ================= BASIC ================= */
   const adminUid =
     auth.currentUser?.uid || localStorage.getItem("adminUid");
@@ -496,7 +495,13 @@ if (editId) {
 {/* 👁 VIEW AS PARENT */}
 <button
   className="view-btn"
-  onClick={() => handleViewParent(p)}
+  onClick={() => {
+    localStorage.setItem("viewType", "parent");
+    localStorage.setItem("viewName", p.parentName);
+    localStorage.setItem("viewId", p.parentId);
+    setActivePage("subdashboard");
+  }}
+  
 >
   <FaEye /> View
 </button>

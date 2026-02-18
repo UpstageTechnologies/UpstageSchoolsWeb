@@ -14,13 +14,10 @@ import {
 import { auth, db } from "../../services/firebase";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
-
-
-
 const role = localStorage.getItem("role");
 const isAdmin = role === "master";
+const Admin = ({ requirePremium, globalSearch = "", setActivePage }) => {
 
-const Admin = ({ requirePremium , globalSearch = ""}) => {
   const [showModal, setShowModal] = useState(false);
   const [admins, setAdmins] = useState([]);
   const [editId, setEditId] = useState(null);
@@ -167,11 +164,12 @@ if (!/^\d{10}$/.test(phoneClean)) {
     });
   };
   const handleView = (admin) => {
-    window.open(
-      `/dashboard/view?role=admin&id=${admin.id}`,
-      "_blank"
-    );
+    localStorage.setItem("viewType", "admin");
+    localStorage.setItem("viewName", admin.name);
+    localStorage.setItem("viewId", admin.adminId);
+    setActivePage("subdashboard");
   };
+  
   useEffect(() => {
     return () => {
       localStorage.removeItem("selectedAdminId");

@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Landing from "./useTheme/pages/Landing";
 // import Login from "./useTheme/pages/Login";
 import Register from "./useTheme/pages/Register";
+import SubDashboard from "./features/dashboard/SubDashboard";
+
 import Dashboard from "./features/dashboard/Dashboard";
 import PaymentSelection from "./features/payment/PaymentSelection";
 import Logout from "./useTheme/pages/Logout";
@@ -45,7 +47,10 @@ function App() {
         <Route path="/teacher-login" element={<TeacherLogin />} />
         <Route path="/parent-login" element={<ParentLogin />} />
         <Route path="/admin-login" element={<AdminLogin />} />
+
         <Route path="/office-staff-login" element={<OfficeStaffLogin />} />
+        <Route path="/subdashboard" element={<SubDashboard />} />
+
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="attendance" element={<Attendance />} />
         <Route path="/todays-absent" element={<ShowTodaysAbsent />} />
