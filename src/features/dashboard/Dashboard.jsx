@@ -50,8 +50,7 @@ const Timetable = lazy(() => import("./Timetable"));
 const Teacher = lazy(() => import("./Teacher"));
 const Parent = lazy(() => import("./Parent"));
 const Student = lazy(() => import("./Student"));
-const SubDashboard = lazy(() => import("./SubDashboard"));
-
+const SubDashboard = lazy(() => import("./SubDashboard.jsx"));
   const Dashboard = () => {
     const [user, setUser] = useState(null);
     const [role, setRole] = useState(null);
