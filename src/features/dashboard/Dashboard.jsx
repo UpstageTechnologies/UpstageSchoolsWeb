@@ -241,39 +241,73 @@ useEffect(() => {
         window.removeEventListener("enable-upgrade-popup", on);
       };
     }, []);
+    
     useEffect(() => {
       const storedRole = localStorage.getItem("role");
-    
-      // 🔐 TEACHER / PARENT / ADMIN / OFFICE STAFF
+
+      // 🔐 TEACHER / PARENT /  ADMIN
       if (
         storedRole === "teacher" ||
         storedRole === "parent" ||
         storedRole === "admin" ||
-        storedRole === "office_staff"
-      ) {
+        storedRole === "office_staff" 
+      ) 
+       {
         setRole(storedRole);
+        setUser({
+          displayName:
+            localStorage.getItem("staffName") ||
+            localStorage.getItem("adminName") ||
+            localStorage.getItem("teacherName") ||
+            localStorage.getItem("parentName") ||
+            "User",
+          email: localStorage.getItem("email") || ""
+        });
+        
         return;
       }
-    
-      // 🔵 MASTER (Firebase Auth)
       const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
         if (!currentUser) {
           navigate("/login", { replace: true });
           return;
         }
-    
+
+        setUser(currentUser);
+
         const adminSnap = await getDoc(doc(db, "users", currentUser.uid));
         if (!adminSnap.exists()) {
           navigate("/login");
           return;
         }
-    
+        const data = adminSnap.data();
+
         setRole("master");
+        
+        // ⭐ read school name + logo
+        setSchool(data.schoolName || "School Name");
+        localStorage.setItem("schoolName", data.schoolName || "");
+        
+        // ⭐ optional — future use
+        localStorage.setItem("schoolLogo", data.schoolLogo || "");
+        
+        setPlan((data.plan || "basic").toLowerCase());
+        setTrialAccess(data.trialAccess === true);
+setTrialExpiresAt(data.trialExpiresAt || null);
+
+
+        localStorage.setItem("plan", (data.plan || "basic").toLowerCase());
+
+
+        setPlanExpiry(data.planExpiry || null);
+        
+        localStorage.setItem("adminName", data.username || "Admin");
+        
+
+        localStorage.setItem("adminName", data.username || "Admin");
       });
-    
-      return () => unsubscribe();
+
+      return () => unsubscribe && unsubscribe();
     }, [navigate]);
-    
     useEffect(() => {
       if(showSchoolName){
         const t = setTimeout(() => setShowSchoolName(false), 3000);
@@ -470,19 +504,17 @@ useEffect(() => {
       }, [role]);
       
       const adminUid = localStorage.getItem("adminUid");
-
       useEffect(() => {
-        const storedRole = localStorage.getItem("role");
-      
         if (
-          storedRole === "teacher" ||
-          storedRole === "parent" ||
-          storedRole === "admin" ||
-          storedRole === "office_staff"
+          role === "teacher" ||
+          role === "parent" ||
+          role === "admin" ||
+          role === "office_staff"
         ) {
-          navigate("/main-dashboard", { replace: true });
+          setActivePage("subdashboard");
         }
-      }, [navigate]);
+      }, [role]);
+      
       
     return (
       <>
@@ -977,11 +1009,9 @@ useEffect(() => {
     <Profile />
   )}
 {activePage === "subdashboard" && (
-  <SubDashboard 
-    setActivePage={handleMenuClick}
-    setAccountPopupOpen={setAccountPopupOpen}
-  />
+  <SubDashboard setActivePage={handleMenuClick} />
 )}
+
 
   {activePage === "settings" && (
   <Settings adminUid={adminUid} />

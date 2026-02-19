@@ -44,7 +44,7 @@ function App() {
 
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
-<Route path="/main-dashboard" element={<SubDashboard />} />
+
 
         <Route path="/payment" element={<PaymentSelection />} /> 
         <Route path="/logout" element={<Logout />} />

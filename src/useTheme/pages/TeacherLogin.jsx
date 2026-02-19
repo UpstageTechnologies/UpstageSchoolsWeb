@@ -63,7 +63,8 @@ const TeacherLogin = () => {
       localStorage.setItem("role", "teacher");
       localStorage.setItem("adminUid", adminUid);
       localStorage.setItem("role", "teacher");
-navigate("/main-dashboard");
+      navigate("/dashboard");
+
 
     } catch (err) {
       console.error(err);
