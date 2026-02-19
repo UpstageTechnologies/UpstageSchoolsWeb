@@ -7,6 +7,7 @@ import Register from "./useTheme/pages/Register";
 
 
 import Dashboard from "./features/dashboard/Dashboard";
+import SubDashboard from "./features/dashboard/SubDashboard";
 import PaymentSelection from "./features/payment/PaymentSelection";
 import Logout from "./useTheme/pages/Logout";
 import ChooseLogin from "./useTheme/pages/ChooseLogin";
@@ -42,6 +43,8 @@ function App() {
 
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
+<Route path="/main-dashboard" element={<SubDashboard />} />
+
         <Route path="/payment" element={<PaymentSelection />} /> 
         <Route path="/logout" element={<Logout />} />
         <Route path="/choose-login" element={<ChooseLogin />} />

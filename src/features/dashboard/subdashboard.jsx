@@ -1,10 +1,31 @@
 import React from "react";
 import "../dashboard_styles/SubDashboard.css";
+const SubDashboard = ({ setActivePage, setAccountPopupOpen }) => {
+  console.log("Popup function:", setAccountPopupOpen);
 
-const SubDashboard = () => {
-  const type = localStorage.getItem("viewType");
-  const name = localStorage.getItem("viewName");
-  const id = localStorage.getItem("viewId");
+  const role = localStorage.getItem("role");
+
+  const type =
+  localStorage.getItem("viewType") ||
+  localStorage.getItem("role");
+
+const name =
+  localStorage.getItem("viewName") ||
+  localStorage.getItem("adminName") ||
+  localStorage.getItem("teacherName") ||
+  localStorage.getItem("parentName") ||
+  localStorage.getItem("staffName");
+
+const id =
+  localStorage.getItem("viewId") ||
+  localStorage.getItem("adminId") ||
+  localStorage.getItem("teacherId") ||
+  localStorage.getItem("parentId") ||
+  localStorage.getItem("staffId");
+
+const photo =
+  localStorage.getItem("viewPhoto") ||
+  localStorage.getItem("profilePhoto");
 
   const titleMap = {
     admin: "Admin Dashboard",
@@ -12,7 +33,27 @@ const SubDashboard = () => {
     parent: "Parent Dashboard",
     office_staff: "Office Staff Dashboard"
   };
-
+  const cardConfig = {
+    admin: [
+      "Account Creation",
+      "Teacher Attendance",
+      "Student Attendance",
+      "Courses & Timetable"
+    ],
+    teacher: [
+      "Timetable",
+      "Attendance",
+      "My Attendance",
+      "Courses"
+    ],
+    parent: [
+      "Child Attendance",
+      "Timetable",
+      "Courses",
+      "Marks & Exams"
+    ]
+  };
+  
   return (
     <div className="sub-wrapper">
       <div className="sub-container">
@@ -20,18 +61,28 @@ const SubDashboard = () => {
         {/* HEADER */}
         <div className="sub-header">
           <h1>{titleMap[type] || "Dashboard"}</h1>
-          <div className="sub-profile">
-  {localStorage.getItem("profilePhoto") ? (
-    <img
-      src={localStorage.getItem("profilePhoto")}
-      alt="profile"
-      className="profile-image"
-    />
-  ) : (
-    <div className="avatar">
-      {name?.charAt(0)}
-    </div>
-  )}
+          <div 
+  className="sub-profile"
+  onClick={() => {
+    if (typeof setAccountPopupOpen === "function") {
+      setAccountPopupOpen(true);
+    }
+  }}
+  style={{ cursor: "pointer" }}
+>
+
+{photo ? (
+  <img
+    src={photo}
+    alt="profile"
+    className="profile-image"
+  />
+) : (
+  <div className="avatar">
+    {name?.charAt(0)}
+  </div>
+)}
+
 
   <div>
     <div className="profile-name">{name}</div>
@@ -40,30 +91,15 @@ const SubDashboard = () => {
 </div>
 
         </div>
-
-        {/* TOP CARDS */}
         <div className="top-cards">
-          <div className="card white">
-            <h3>ID</h3>
-            <p>{id}</p>
-          </div>
+  {cardConfig[role]?.map((title, index) => (
+    <div key={index} className="card">
+      <h3>{title}</h3>
+    </div>
+  ))}
+</div>
 
-          <div className="card green">
-            <h2>5</h2>
-            <span>Active Tasks</span>
-          </div>
-
-          <div className="card yellow">
-            <h2>10</h2>
-            <span>Pending Items</span>
-          </div>
-
-          <div className="card orange">
-            <h2>3</h2>
-            <span>Alerts</span>
-          </div>
-        </div>
-
+        
         {/* TABLE SECTION */}
         <div className="table-section">
           <h3>Overview</h3>
@@ -81,7 +117,30 @@ const SubDashboard = () => {
     {name?.charAt(0)}
   </div>
 )}
-              <span>{name}</span>
+         {localStorage.getItem("viewType") && (
+  <button
+    onClick={() => {
+      localStorage.removeItem("viewType");
+      localStorage.removeItem("viewName");
+      localStorage.removeItem("viewId");
+      localStorage.removeItem("viewPhoto");
+
+      setActivePage("teacher"); // go back to teacher list
+    }}
+    style={{
+      marginLeft: 15,
+      background: "#2563eb",
+      color: "#fff",
+      padding: "6px 12px",
+      borderRadius: 6,
+      border: "none",
+      cursor: "pointer"
+    }}
+  >
+    Exit View
+  </button>
+)}
+     <span>{name}</span>
             </div>
 
             <div className="progress">
@@ -109,5 +168,4 @@ const SubDashboard = () => {
     </div>
   );
 };
-
 export default SubDashboard;

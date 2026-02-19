@@ -737,64 +737,106 @@ const competitionClasses = [
           <tr>
             <th>Date</th>
             <th>Class</th>
-            <th>Expense Name</th>
+            <th>Income Name</th>
             <th>Income</th>
+            <th>Expense Name</th>
+         
             <th>Expense</th>
             <th>Balance</th>
           </tr>
         </thead>
         <tbody>
-{incomeList
-  .filter(i =>
-    i.incomeType === "competition" &&
-    i.competitionName?.trim().toLowerCase() === selectedCompetition?.trim().toLowerCase() &&
-    i.date?.startsWith(analysisYear) &&  
-    (
-      analysisClassFilter === "All" ||
-      i.className === analysisClassFilter
-    )
-    
+{competitionClasses
+  .filter(cls =>
+    analysisClassFilter === "All" ||
+    cls === analysisClassFilter
   )
+  .map((cls, index) => {
 
-  .map((i, index) => {
+    // 🔹 Filter income by class
+    const classIncome = incomeList.filter(i =>
+      i.incomeType === "competition" &&
+      i.competitionName?.trim().toLowerCase() === selectedCompetition?.trim().toLowerCase() &&
+      i.date?.startsWith(analysisYear) &&
+      i.className === cls
+    );
 
+    if (!classIncome.length) return null;
+
+    // 🔹 Merge student names + amount
+    const studentIncomeList = classIncome.map(i =>
+      `${i.studentName} - ₹${i.paidAmount}`
+    );
+
+    const totalIncome = classIncome.reduce(
+      (sum, i) => sum + Number(i.paidAmount || 0),
+      0
+    );
+
+    // 🔹 Filter expenses
     const relatedExpenses = expenseList.filter(e =>
       e.type === "student_misc" &&
       e.miscName?.trim().toLowerCase() === selectedCompetition?.trim().toLowerCase()
     );
 
-    const totalExpense = relatedExpenses.reduce(
-      (sum, e) => sum + Number(e.amount || 0),
-      0
-    );
+    // 🔹 Group expenses by name
+    const expenseGrouped = {};
+    relatedExpenses.forEach(e => {
+      if (!expenseGrouped[e.name]) {
+        expenseGrouped[e.name] = 0;
+      }
+      expenseGrouped[e.name] += Number(e.amount || 0);
+    });
+
+    const totalExpense = Object.values(expenseGrouped)
+      .reduce((sum, amt) => sum + amt, 0);
+
+    const balance = totalIncome - totalExpense;
 
     return (
       <tr key={index}>
-        <td>{i.date}</td>
-        <td>{i.className}</td>
-        <td>-</td>
-        <td style={{ color: "green" }}>
-          ₹{i.paidAmount}
+        <td>{analysisYear}</td>
+        <td>{cls}</td>
+
+        {/* Income Names */}
+        <td>
+          {studentIncomeList.map((s, i) => (
+            <div key={i}>{s}</div>
+          ))}
         </td>
-        <td style={{ color: "red" }}>
+
+        {/* Income Total */}
+        <td style={{ color: "green", fontWeight: 600 }}>
+          ₹{totalIncome}
+        </td>
+
+        {/* Expense Name + Amount */}
+        <td>
+          {Object.entries(expenseGrouped).map(([name, amt], i) => (
+            <div key={i}>
+              {name} - ₹{amt}
+            </div>
+          ))}
+        </td>
+
+        {/* Expense Total */}
+        <td style={{ fontWeight: 600 }}>
           ₹{totalExpense}
         </td>
-        <td
-          style={{
-            color:
-              i.paidAmount - totalExpense >= 0
-                ? "green"
-                : "red"
-          }}
-        >
-          ₹{i.paidAmount - totalExpense}
+
+        {/* Balance */}
+        <td style={{
+          fontWeight: 700,
+          color: balance >= 0 ? "green" : "red"
+        }}>
+          ₹{balance}
         </td>
       </tr>
     );
+
   })}
+</tbody>
 
-
-        </tbody>
       </table>
     </>
   )}

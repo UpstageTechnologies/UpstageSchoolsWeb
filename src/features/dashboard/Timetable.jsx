@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { doc, getDoc, setDoc , collection } from "firebase/firestore";
+import { doc, getDoc, getDocs, setDoc, collection } from "firebase/firestore";
 import { db, auth } from "../../services/firebase";
 import "../dashboard_styles/timetable.css";
 
@@ -391,24 +391,28 @@ const [teachers, setTeachers] = useState([]);
     loadTeachers();
   }, [adminUid]);
   const getMatchingTeachers = (subject) => {
-
     if (!className || !activeSection || !subject) return [];
+  
+    // 🔥 extract only number from className (ex: "6A" → "6")
+    const classNumber = className.toString().match(/\d+/)?.[0];
   
     return teachers.filter(t => {
       if (t.category !== "Teaching Staff") return false;
   
       return (t.assignedClasses || []).some(c => {
-  
         return (
-          String(c.class).trim() === String(className).trim() &&
-          String(c.section).trim() === String(activeSection).trim() &&
+          String(c.class).trim() === String(classNumber).trim() &&
+          String(c.section).trim().toUpperCase() ===
+            String(activeSection).trim().toUpperCase() &&
           String(c.subject).trim().toLowerCase() ===
-          String(subject).trim().toLowerCase()
+            String(subject).trim().toLowerCase()
         );
-  
       });
     });
   };
+  useEffect(() => {
+    console.log("Teachers Loaded:", teachers);
+  }, [teachers]);
   
   
   return (

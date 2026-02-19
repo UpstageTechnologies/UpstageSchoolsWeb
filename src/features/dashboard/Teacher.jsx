@@ -377,17 +377,14 @@ useEffect(() => {
       localStorage.setItem("viewType", "teacher");
       localStorage.setItem("viewName", t.name);
       localStorage.setItem("viewId", t.teacherId);
+      localStorage.setItem("viewPhoto", t.photoURL || "");
+
       setActivePage("subdashboard");
-    } else {
-      console.error("setActivePage not received properly");
     }
   }}
-  
 >
   <FaEye /> View
 </button>
-
-
   <button
     className="edit-btn"
     onClick={() =>
