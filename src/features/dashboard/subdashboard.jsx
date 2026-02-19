@@ -81,7 +81,6 @@ const SubDashboard = () => {
     {name?.charAt(0)}
   </div>
 )}
-
               <span>{name}</span>
             </div>
 
