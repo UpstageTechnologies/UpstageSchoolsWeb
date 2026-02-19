@@ -7,7 +7,8 @@ import Register from "./useTheme/pages/Register";
 
 
 import Dashboard from "./features/dashboard/Dashboard";
-import SubDashboard from "./features/dashboard/SubDashboard";
+import SubDashboard from "./features/dashboard/SubDashboard.jsx";
+
 import PaymentSelection from "./features/payment/PaymentSelection";
 import Logout from "./useTheme/pages/Logout";
 import ChooseLogin from "./useTheme/pages/ChooseLogin";
