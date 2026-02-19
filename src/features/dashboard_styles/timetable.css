@@ -337,4 +337,70 @@ body {
   font-weight: 500;
   color: #16a34a;
 }
+.premium-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  transition: 0.3s ease;
+}
 
+.premium-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.12);
+}
+
+.assigned-teacher-card {
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f3f4f6;
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.teacher-photo {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.teacher-name {
+  font-weight: 600;
+  margin: 0;
+}
+
+.class-teacher-badge {
+  font-size: 12px;
+  background: #6366f1;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 20px;
+}
+
+.assign-box {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+}
+
+.teacher-select {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.assign-btn {
+  background: #4f46e5;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.assign-btn:hover {
+  background: #4338ca;
+}

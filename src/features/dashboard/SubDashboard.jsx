@@ -92,12 +92,69 @@ const photo =
 
         </div>
         <div className="top-cards">
-  {cardConfig[role]?.map((title, index) => (
-    <div key={index} className="card">
+  {cardConfig[type]?.map((title, index) => (
+    <div
+      key={index}
+      className="card"
+      style={{ cursor: "pointer" }}
+      onClick={() => {
+        // 🔵 TEACHER
+        if (type === "teacher") {
+          if (title === "Timetable") {
+            setActivePage("teacher-timetable");
+          }
+          if (title === "Attendance") {
+            setActivePage("teacher-attendance");
+          }
+          if (title === "My Attendance") {
+            setActivePage("teacher-attendance"); // change if separate page
+          }
+          if (title === "Courses") {
+            setActivePage("courses");
+          }
+        }
+
+        // 🔴 ADMIN
+        if (type === "admin") {
+          if (title === "Teacher Attendance") {
+            setActivePage("attendance");
+          }
+          if (title === "Student Attendance") {
+            setActivePage("attendance");
+          }
+          if (title === "Account Creation") {
+            setActivePage("teacher");
+          }
+          if (title === "Courses & Timetable") {
+            setActivePage("courses");
+          }
+        }
+
+        // 🟣 PARENT
+        if (type === "parent") {
+          if (title === "Child Attendance") {
+            setActivePage("teacher-attendance");
+          }
+          if (title === "Timetable") {
+            setActivePage("teacher-timetable");
+          }
+          if (title === "Courses") {
+            setActivePage("courses");
+          }
+        }
+
+        // 🟡 OFFICE STAFF
+        if (type === "office_staff") {
+          setActivePage("accounts");
+        }
+      }}
+    >
       <h3>{title}</h3>
     </div>
   ))}
 </div>
+
+
 
         
         {/* TABLE SECTION */}

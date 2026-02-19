@@ -18,6 +18,8 @@ const [isLeaveDay, setIsLeaveDay] = useState(false);
 const [className, setClassName] = useState("");
 const [subjectTopics, setSubjectTopics] = useState({});
 const [teachers, setTeachers] = useState([]);
+const [sectionTeachers, setSectionTeachers] = useState({});
+const [selectedTeacher, setSelectedTeacher] = useState({});
 
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
@@ -59,10 +61,14 @@ const [teachers, setTeachers] = useState([]);
       const snap = await getDoc(ref);
 
       if (snap.exists()) {
-        setSections(snap.data().sections || []);
-        setClassSubjects(snap.data().subjects || []);
-        setClassName(snap.data().name || "");
-
+        const data = snap.data();
+      
+        setSections(data.sections || []);
+        setClassSubjects(data.subjects || []);
+        setClassName(data.name || "");
+      
+        // 🔥 VERY IMPORTANT
+        setSectionTeachers(data.sectionTeachers || {});
       }
     };
 
@@ -191,6 +197,39 @@ const [teachers, setTeachers] = useState([]);
     await createNewCycle(timetableRef, cycleKey);
     setActiveSection(sectionName);
   };
+  const handleAssignTeacher = async (section) => {
+    const teacher = selectedTeacher[section];
+  
+    if (!teacher) return alert("Select teacher first");
+  
+    const ref = doc(db, "users", adminUid, "Classes", classId);
+  
+    const teacherData = {
+      teacherId: teacher.teacherId || "",
+      name: teacher.name || "",
+      photoURL: teacher.photoURL || ""
+    };
+  
+    await setDoc(
+      ref,
+      {
+        sectionTeachers: {
+          [section]: teacherData
+        }
+      },
+      { merge: true }
+    );
+  
+    setSectionTeachers(prev => ({
+      ...prev,
+      [section]: teacherData
+    }));
+  
+    // 🔥 Automatically open timetable
+    setActiveSection(section);
+  };
+  
+  
   
   const createNewCycle = async (timetableRef, cycleKey) => {
     const timingRef = doc(
@@ -257,6 +296,7 @@ const [teachers, setTeachers] = useState([]);
       await setDoc(topicRef, { topics: updatedTopics }, { merge: true });
     }
   };
+  
   const saveChanges = async () => {
     await updateTopicProgress();
   
@@ -301,6 +341,18 @@ const [teachers, setTeachers] = useState([]);
       },
       { merge: true }
     );
+    const filteredClassTeachers = Object.fromEntries(
+      Object.entries(classTeachers).filter(
+        ([key, value]) => value?.teacherId
+      )
+    );
+    
+    await setDoc(docRef, {
+      ...data,
+      classTeachers: filteredClassTeachers
+    });
+    
+    
   
     alert("Saved Successfully ✅");
   };
@@ -385,11 +437,14 @@ const [teachers, setTeachers] = useState([]);
         ...doc.data()
       }));
   
+      console.log("Teachers Loaded:", teacherList);
+  
       setTeachers(teacherList);
     };
   
     loadTeachers();
   }, [adminUid]);
+  
   const getMatchingTeachers = (subject) => {
     if (!className || !activeSection || !subject) return [];
   
@@ -422,22 +477,68 @@ const [teachers, setTeachers] = useState([]);
 
       {/* SECTION LIST */}
       {!activeSection && (
-        <div className="section-grid">
-          {sections.length === 0 ? (
-            <p>No Sections Added</p>
-          ) : (
-            sections.map((sec, index) => (
-              <div
-                key={index}
-                className="section-card"
-                onClick={() => handleSectionClick(sec)}
-              >
-                <h3>Section {sec}</h3>
-              </div>
-            ))
-          )}
-        </div>
-      )}
+  <div className="section-grid">
+    {sections.map((sec, index) => (
+      <div key={index} className="section-card">
+
+        <h3>Section {sec}</h3>
+
+        {sectionTeachers[sec] ? (
+          <div
+            className="assigned-teacher-card"
+            onClick={() => setActiveSection(sec)}
+          >
+            <img
+              src={
+                sectionTeachers[sec].photoURL ||
+                `https://ui-avatars.com/api/?name=${sectionTeachers[sec].name}`
+              }
+              alt="teacher"
+              className="teacher-photo"
+            />
+            <div>
+              <p>{sectionTeachers[sec].name}</p>
+              <span className="assigned-label">
+                Class Teacher
+              </span>
+            </div>
+          </div>
+        ) : (
+          <>
+            <select
+              onChange={(e) => {
+                const teacher = teachers.find(
+                  t => t.id === e.target.value
+                );
+
+                setSelectedTeacher(prev => ({
+                  ...prev,
+                  [sec]: teacher
+                }));
+              }}
+            >
+              <option value="">Select Teacher</option>
+              {teachers
+                .filter(t => t.category === "Teaching Staff")
+                .map(t => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+            </select>
+
+            <button
+              onClick={() => handleAssignTeacher(sec)}
+            >
+              Assign
+            </button>
+          </>
+        )}
+      </div>
+    ))}
+  </div>
+)}
+
 
       {/* TIMETABLE VIEW */}
       {activeSection && (
@@ -614,22 +715,31 @@ const [teachers, setTeachers] = useState([]);
                 </td>
                 <td>
   {slot.subject ? (
-    <select
-      value={slot.teacherId || ""}
-      onChange={(e) => {
-        const updated = [...slots];
-        updated[index].teacherId = e.target.value;
-        setSlots(updated);
-      }}
-    >
-      <option value="">Select Teacher</option>
+   <select
+   className="teacher-select"
+   onClick={(e) => e.stopPropagation()}
+   onChange={(e) => {
+     const teacher = teachers.find(
+       t => t.id === e.target.value
+     );
+ 
+     setSelectedTeacher(prev => ({
+       ...prev,
+       [sec]: teacher
+     }));
+   }}
+ >
+   <option value="">Select Teacher</option>
+ 
+   {teachers.map(t => (
+  <option key={t.id} value={t.id}>
+    {t.name}
+  </option>
+))}
 
-      {getMatchingTeachers(slot.subject).map((t) => (
-        <option key={t.id} value={t.teacherId}>
-          {t.name}
-        </option>
-      ))}
-    </select>
+
+ </select>
+ 
   ) : "-"}
 </td>
               </>

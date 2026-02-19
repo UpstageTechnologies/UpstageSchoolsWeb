@@ -556,19 +556,27 @@ useEffect(() => {
   {!isOfficeStaff && (
     <>
 <li
-  className={activePage === "home" ? "active" : ""}
+  className={
+    activePage === "subdashboard" || activePage === "home"
+      ? "active"
+      : ""
+  }
   onClick={() => {
-    if (role === "teacher") {
-      handleMenuClick("teacher-home");
-    } else if (role === "parent") {
-      handleMenuClick("parent-home");
-    } else
-    handleMenuClick("home");
-  
+    if (
+      role === "teacher" ||
+      role === "parent" ||
+      role === "admin" ||
+      role === "office_staff"
+    ) {
+      handleMenuClick("subdashboard");
+    } else {
+      handleMenuClick("home"); // master main home
+    }
   }}
 >
   <FaHome /> Home
 </li>
+
 {role === "master" && (
         <li className={activePage === "payment" ? "active" : ""}onClick={() => navigate("/payment")}>
           <FaSignOutAlt /> Upgrade
