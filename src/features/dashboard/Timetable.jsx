@@ -411,7 +411,6 @@ const [teachers, setTeachers] = useState([]);
   };
   
   
-
   return (
     <div className="timetable-container">
 
