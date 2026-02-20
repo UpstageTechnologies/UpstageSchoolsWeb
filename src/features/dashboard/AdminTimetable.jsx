@@ -1,102 +1,62 @@
-import React, { useEffect, useState } from "react";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { auth, db } from "../../services/firebase";
-import "../dashboard_styles/AdminTimetable.css";
-import SchoolCalendar from "../../components/SchoolCalendar";
-import { addDoc, collection, Timestamp } from "firebase/firestore";
-import UpgradePopup from "../../components/UpgradePopup"
-import lkgImg from "../../assets/lkg.jpg";       // use std.jpg for LKG
-import ukgImg from "../../assets/ukg.jpg";
-import playImg from "../../assets/playgroup.jpg";
-import stdImg from "../../assets/std.jpg";
-;
+import { useEffect, useState } from "react";
+import { db } from "../../services/firebase";
+import { doc, getDoc, getDocs, collection } from "firebase/firestore";
+import "../dashboard_styles/teachertimetable.css";
+export default function AdminTimetable() {
 
+  const adminUid = localStorage.getItem("adminUid");
+  const [teachersMap, setTeachersMap] = useState({});
+  const [classes, setClasses] = useState([]);
+  const [sections, setSections] = useState([]);
+  const [selectedClass, setSelectedClass] = useState("");
+  const [selectedSection, setSelectedSection] = useState("");
+  const [slots, setSlots] = useState([]);
 
-const CLASSES = [
-  "LKG",
-  "UKG",
-  "Play Group",
-  ...Array.from({ length: 12 }, (_, i) => i + 1)
-];
-
-const classImages = {
-  "LKG": lkgImg,
-  "UKG": ukgImg,
-  "Play Group": playImg,
-};
-
-
-
-const SECTIONS = ["A", "B", "C", "D"];
-const PERIODS = [1, 2, 3, 4, 5, 6];
-const DAYS = ["Sunday","Monday", "Tuesday", "Wednesday", "Thursday", "Friday","Saturday"];
-
-const AdminTimetable = () => {
-  const [selectedClass, setSelectedClass] = useState(null);
-  const [selectedSection, setSelectedSection] = useState(null);
-  const [selectedDay, setSelectedDay] = useState("Monday");
-  const [table, setTable] = useState({});
-  const [showUpgrade, setShowUpgrade] = useState(false);
-
-  
-  const adminUid =
-  auth.currentUser?.uid || localStorage.getItem("adminUid");
-
-const role = localStorage.getItem("role");
-
-const plan = localStorage.getItem("plan") || "basic";
-
-const isPremiumPlan = plan === "premium" || plan === "lifetime";
-const hasPremiumAccess = isPremiumPlan;
-
-
-
-
-
-
-
-  /* ================= LOAD ================= */
-  const loadTimetable = async () => {
-    if (!selectedClass || !selectedSection || !adminUid) return;
-
-    const ref = doc(
-      db,
-      "users",
-      adminUid,
-      "timetables",
-      `${selectedClass}_${selectedSection}`
-    );
-
-    const snap = await getDoc(ref);
-
-    if (snap.exists() && snap.data()?.[selectedDay]) {
-      setTable(snap.data()[selectedDay]);
-    } else {
-      setTable({});
-    }
-  };
-
+  /* ================= LOAD ALL CLASSES ================= */
   useEffect(() => {
-    loadTimetable();
-  }, [selectedDay, selectedSection,selectedClass]);
-
-  const handleCalendarDateSelect = (dateStr) => {
-    const date = new Date(dateStr + "T00:00:00");
-    const dayName = date.toLocaleDateString("en-US", {
-      weekday: "long"
-    });
-
-    const allowed = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-
-    if (allowed.includes(dayName)) setSelectedDay(dayName);
-  };
-
-  /* ================= SAVE (ADMIN) ================= */
-  const saveTimetable = async () => {
-    try {
+    const loadClasses = async () => {
       if (!adminUid) return;
 
-      const ref = doc(
+      const snap = await getDocs(
+        collection(db, "users", adminUid, "Classes")
+      );
+
+      setClasses(
+        snap.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }))
+      );
+    };
+
+    loadClasses();
+  }, [adminUid]);
+
+  /* ================= LOAD SECTIONS WHEN CLASS SELECTED ================= */
+  useEffect(() => {
+    const loadSections = async () => {
+      if (!selectedClass) return;
+
+      const ref = doc(db, "users", adminUid, "Classes", selectedClass);
+      const snap = await getDoc(ref);
+
+      if (snap.exists()) {
+        setSections(snap.data().sections || []);
+      }
+
+      setSelectedSection("");
+      setSlots([]);
+    };
+
+    loadSections();
+  }, [selectedClass]);
+
+  /* ================= LOAD TIMETABLE ================= */
+  useEffect(() => {
+    const loadTimetable = async () => {
+      if (!selectedClass || !selectedSection) return;
+
+      const timetableRef = doc(
         db,
         "users",
         adminUid,
@@ -104,186 +64,110 @@ const hasPremiumAccess = isPremiumPlan;
         `${selectedClass}_${selectedSection}`
       );
 
-      await setDoc(
-        ref,
-        { [selectedDay]: table },
-        { merge: true }
-      );
+      const snap = await getDoc(timetableRef);
 
-      alert("✅ Timetable saved");
-    } catch (err) {
-      console.error(err);
-      alert("Save failed");
-    }
-  };
+      if (snap.exists()) {
+        const data = snap.data();
+        const cycles = data.cycles || {};
 
-  /* ADDED — SUB ADMIN APPROVAL REQUEST  */
-  const requestTimetableApproval = async () => {
-    await addDoc(
-      collection(db, "users", adminUid, "approval_requests"),
-      {
-        module: "timetable",
-        action: "update",
-        classKey: `${selectedClass}_${selectedSection}`,
-        day: selectedDay,
-        payload: table,
-        status: "pending",
-        createdBy: localStorage.getItem("adminId"),
-        createdAt: Timestamp.now()
+        // show Day1 by default
+        const firstCycle = Object.keys(cycles)[0];
+        setSlots(cycles[firstCycle] || []);
+      } else {
+        setSlots([]);
       }
-    );
+    };
 
-    alert("⏳ Sent to main admin for approval");
-  };
-
-  const resetAll = () => {
-    setSelectedClass(null);
-    setSelectedSection(null);
-    setTable({});
-  };
-
-
-
+    loadTimetable();
+  }, [selectedSection]);
+  useEffect(() => {
+    const loadTeachers = async () => {
+      if (!adminUid) return;
+  
+      const snap = await getDocs(
+        collection(db, "users", adminUid, "teachers")
+      );
+  
+      const map = {};
+      snap.docs.forEach(doc => {
+        map[doc.id] = doc.data().name; // 👈 adjust if field different
+      });
+  
+      setTeachersMap(map);
+    };
+  
+    loadTeachers();
+  }, [adminUid]);
   return (
-    <div className="tt-container">
-           {(selectedClass || selectedSection) && (
-    <p className="back" onClick={() => {
-      setSelectedClass("");
-      setSelectedSection("");
-    }}>
-      ← Back
-    </p>
-  )}
-      <h2 className="tt-title">Admin Timetable</h2>
+    <div className="Heading">
+      <h2>Admin Timetable Viewer</h2>
 
-{!selectedClass && (
-  <div className="class-grid">
-    {CLASSES.map(c => (
-      <div
-        key={c}
-        className="class-card"
-        onClick={() => setSelectedClass(c)}
-        style={{
-          backgroundImage:
-            typeof c === "number"
-              ? `url(${stdImg})`
-              : `url(${classImages[c]})`,
-        }}
+      {/* CLASS SELECT */}
+      <select
+        value={selectedClass}
+        onChange={(e) => setSelectedClass(e.target.value)}
       >
-        <div className="class-overlay">
-          {typeof c === "number" ? `${c} Std` : c}
-        </div>
-      </div>
-    ))}
-  </div>
-)}
+        <option value="">Select Class</option>
+        {classes.map(c => (
+          <option key={c.id} value={c.id}>
+            {c.name}
+          </option>
+        ))}
+      </select>
 
-
-      {selectedClass && !selectedSection && (
-        <>
-          <h3 className="tt-sub">
-            Class {selectedClass} – Select Section
-          </h3>
-
-          <div className="section-row">
-            {SECTIONS.map(sec => (
-              <div
-                key={sec}
-                className="section-btn"
-                onClick={() => setSelectedSection(sec)}
-              >
-                {sec}
-              </div>
-            ))}
-          </div>
-
-        </>
+      {/* SECTION SELECT */}
+      {selectedClass && (
+        <select
+          value={selectedSection}
+          onChange={(e) => setSelectedSection(e.target.value)}
+          style={{ marginLeft: "10px" }}
+        >
+          <option value="">Select Section</option>
+          {sections.map((sec, i) => (
+            <option key={i} value={sec}>
+              {sec}
+            </option>
+          ))}
+        </select>
       )}
 
-      {selectedClass && selectedSection && (
-        <div className="tt-layout">
-
-          <div className="tt-left">
-            <h3 className="tt-sub">
-              Class {selectedClass} – Section {selectedSection}
-            </h3>
-
-            <div className="day-row">
-              {DAYS.map(d => (
-                <button
-                  key={d}
-                  className={`day-btn ${selectedDay === d ? "active" : ""}`}
-                  onClick={() => setSelectedDay(d)}
-                >
-                  {d}
-                </button>
-              ))}
-            </div>
-
-            {PERIODS.map(p => (
-              <div key={p} className="period-row">
-                <label>Period {p}</label>
-                <input
-                  placeholder="Enter Subject"
-                  value={table[`p${p}`] || ""}
-                  onChange={e =>
-                    setTable({
-                      ...table,
-                      [`p${p}`]: e.target.value
-                    })
-                  }
-                />
-              </div>
-            ))}
-
-            {/* ⭐ BUTTON LOGIC ONLY — SAVE CODE UNCHANGED ⭐ */}
-            <button
-  className="save-btn"
-  onClick={() => {
-    // 🔐 Block Basic Plan
-    if (!hasPremiumAccess) {
-      setShowUpgrade(true);
-      return;
-    }
-  
-    // Sub-admin → approval flow
-    if (role === "admin") {
-      requestTimetableApproval();
-    } else {
-      // Master → direct save
-      saveTimetable();
-    }
-  }}
-  
->
-  Save Timetable
-</button>
-
-
-           
-          </div>
-
-          <div className="tt-right">
-            <SchoolCalendar
-              adminUid={adminUid}
-              role={role}
-              onDateSelect={handleCalendarDateSelect}
-            />
-          </div>
-
+      {/* TIMETABLE TABLE */}
+      {selectedSection && (
+  <div className="tablecard">
+          {slots.length === 0 ? (
+            <p>No timetable found</p>
+          ) : (
+            <table className="tabel">
+              <thead>
+                <tr>
+                  <th>Slot</th>
+                  <th>Start</th>
+                  <th>End</th>
+                  <th>Subject</th>
+                  <th>Teacher</th>
+                </tr>
+              </thead>
+              <tbody>
+                {slots.map((slot, i) => (
+                  <tr key={i}>
+                    <td>{slot.label}</td>
+                    <td>{slot.start}</td>
+                    <td>{slot.end}</td>
+                    <td>
+                      {slot.type === "break" ? "Break" : slot.subject}
+                    </td>
+                    <td>
+                      {slot.type === "break"
+  ? "-"
+  : teachersMap[slot.teacherId] || "-"}
+                    </td>
+                  </tr> 
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       )}
-      {showUpgrade && (
-  <UpgradePopup
-    onClose={() => setShowUpgrade(false)}
-    onUpgrade={() => {
-      window.location.href = "/payment";
-    }}
-  />
-)}
-
     </div>
   );
-};
-
-export default AdminTimetable;
+}

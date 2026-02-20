@@ -8,6 +8,7 @@ import {
   Timestamp,
   deleteDoc,
   doc,
+  setDoc,
   updateDoc,
   query,
   where
@@ -204,8 +205,8 @@ if (!/^\d{10}$/.test(phoneClean)) {
         updateData
       );
     } else {
-      await addDoc(
-        collection(db, "users", adminUid, "teachers"),
+      await setDoc(
+        doc(db, "users", adminUid, "teachers", teacherIdTrimmed),
         {
           ...form,
           teacherId: teacherIdTrimmed,

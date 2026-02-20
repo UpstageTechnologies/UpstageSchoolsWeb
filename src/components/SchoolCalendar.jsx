@@ -62,7 +62,28 @@
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     const todayStr = new Date().toLocaleDateString("en-CA");
+    const [academicStart, setAcademicStart] = useState(null);
+const [academicEnd, setAcademicEnd] = useState(null);
+useEffect(() => {
+  if (!adminUid) return;
 
+  const loadAcademicYear = async () => {
+    const snap = await getDocs(
+      collection(db, "users", adminUid, "SchoolSettings")
+    );
+
+    snap.forEach(doc => {
+      if (doc.id === "academicYear") {
+        const data = doc.data();
+        setAcademicStart(new Date(data.startDate));
+        setAcademicEnd(new Date(data.endDate));
+        setCurrentDate(new Date(data.startDate)); // 🔥 Start from academic month
+      }
+    });
+  };
+
+  loadAcademicYear();
+}, [adminUid]);
     useEffect(() => {
       if (!adminUid) return;
 
@@ -188,7 +209,16 @@
 <div className="sc-calendar no-print">
 
         <div className="sc-header">
-  <button onClick={() => setCurrentDate(new Date(year, month - 1, 1))}>‹</button>
+        <button
+  onClick={() => {
+    const newDate = new Date(year, month - 1, 1);
+    if (!academicStart || newDate >= new Date(academicStart.getFullYear(), academicStart.getMonth(), 1)) {
+      setCurrentDate(newDate);
+    }
+  }}
+>
+  ‹
+</button>
 
   <h3>
     {currentDate.toLocaleString("default", { month: "long" })} {year}
@@ -204,7 +234,16 @@
 
 
 
-    <button onClick={() => setCurrentDate(new Date(year, month + 1, 1))}>›</button>
+<button
+  onClick={() => {
+    const newDate = new Date(year, month + 1, 1);
+    if (!academicEnd || newDate <= new Date(academicEnd.getFullYear(), academicEnd.getMonth(), 1)) {
+      setCurrentDate(newDate);
+    }
+  }}
+>
+  ›
+</button>
   </div>
 </div>
 
@@ -222,15 +261,32 @@
             const day = i + 1;
             const dateStr = formatDate(day);
             const ev = events[dateStr];
+            const dateObj = new Date(dateStr);
+
+            const isOutside =
+              academicStart &&
+              academicEnd &&
+              (dateObj < academicStart || dateObj > academicEnd);
 
             return (
               <div
-                key={day}
-                className={`sc-day ${dateStr === todayStr ? "today" : ""}`}
-                style={ev ? { background: EVENT_COLORS[ev.type], color: "#fff" } : {}}
-                onClick={() => onDateSelect?.(dateStr)}
-                onDoubleClick={() => (ev ? setEditingDate(dateStr) : addEvent(dateStr))}
-              >
+              key={day}
+              className={`sc-day 
+                ${dateStr === todayStr ? "today" : ""} 
+                ${isOutside ? "disabled-day" : ""}
+              `}
+              style={
+                isOutside
+                  ? { opacity: 0.3, pointerEvents: "none" }
+                  : ev
+                  ? { background: EVENT_COLORS[ev.type], color: "#fff" }
+                  : {}
+              }
+              onClick={() => !isOutside && onDateSelect?.(dateStr)}
+              onDoubleClick={() =>
+                !isOutside && (ev ? setEditingDate(dateStr) : addEvent(dateStr))
+              }
+            >
                 <span>{day}</span>
                 {ev && <small>{ev.title}</small>}
               </div>

@@ -7,7 +7,7 @@ import "../dashboard_styles/timetable.css";
 export default function Timetable({ classId }) {
   const adminUid =
     auth.currentUser?.uid || localStorage.getItem("adminUid");
-
+    const [editingSection, setEditingSection] = useState(null);
   const [sections, setSections] = useState([]);
   const [classSubjects, setClassSubjects] = useState([]);
   const [activeSection, setActiveSection] = useState(null);
@@ -20,7 +20,9 @@ const [subjectTopics, setSubjectTopics] = useState({});
 const [teachers, setTeachers] = useState([]);
 const [sectionTeachers, setSectionTeachers] = useState({});
 const [selectedTeacher, setSelectedTeacher] = useState({});
-
+const [saveStatus, setSaveStatus] = useState("idle"); 
+// idle | saving | success
+// idle | saving | success
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
@@ -166,6 +168,8 @@ const [selectedTeacher, setSelectedTeacher] = useState({});
   const handleSectionClick = async (sectionName) => {
     if (!adminUid) return;
   
+    setActiveSection(sectionName); // 👈 FIRST set section
+  
     const cycleNumber = getCycleDay(selectedDate);
     const cycleKey = `Day${cycleNumber}`;
   
@@ -183,19 +187,14 @@ const [selectedTeacher, setSelectedTeacher] = useState({});
       const data = snap.data();
       const cycleData = data.cycles?.[cycleKey];
   
-      if (cycleData) {
+      if (cycleData && cycleData.length > 0) {
         setSlots(cycleData);
       } else {
         await createNewCycle(timetableRef, cycleKey);
       }
-  
-      setActiveSection(sectionName);
-      return;
+    } else {
+      await createNewCycle(timetableRef, cycleKey);
     }
-  
-    // first time create
-    await createNewCycle(timetableRef, cycleKey);
-    setActiveSection(sectionName);
   };
   const handleAssignTeacher = async (section) => {
     const teacher = selectedTeacher[section];
@@ -262,101 +261,121 @@ const [selectedTeacher, setSelectedTeacher] = useState({});
     setSlots(generatedSlots);
   };
   const updateTopicProgress = async () => {
-    for (const slot of slots) {
-      if (!slot.subject || !slot.topic) continue;
+
+    const teacherGrouped = {};
   
-      const topicRef = doc(
+    slots.forEach(slot => {
+      if (!slot.teacherId || slot.type === "break") return;
+  
+      if (!teacherGrouped[slot.teacherId]) {
+        teacherGrouped[slot.teacherId] = [];
+      }
+  
+      teacherGrouped[slot.teacherId].push({
+        classId: className,
+        section: activeSection,
+        subject: slot.subject,
+        topic: slot.topic || "",
+        start: slot.start,
+        end: slot.end
+      });
+    });
+  
+    for (const teacherId in teacherGrouped) {
+  
+      const teacherRef = doc(
         db,
         "users",
         adminUid,
-        "coursePlanner",
-        classId,
-        "subjects",
-        slot.subject
+        "teacherTimetables",
+        teacherId
       );
   
-      const snap = await getDoc(topicRef);
-      if (!snap.exists()) continue;
+      // 🔥 FIRST GET OLD DATA
+      const snap = await getDoc(teacherRef);
   
-      const topics = snap.data().topics || [];
+      let existingSchedules = {};
   
-      const updatedTopics = topics.map((t) => {
-        if (t.name === slot.topic) {
-          return {
-            ...t,
-            completedPeriods: Math.min(
-              (t.completedPeriods || 0) + 1,
-              t.periods
-            )
-          };
-        }
-        return t;
-      });
+      if (snap.exists()) {
+        existingSchedules = snap.data().schedules || {};
+      }
   
-      await setDoc(topicRef, { topics: updatedTopics }, { merge: true });
+      // 🔥 UPDATE ONLY CURRENT DATE
+      existingSchedules[selectedDate] = teacherGrouped[teacherId];
+  
+      await setDoc(
+        teacherRef,
+        {
+          schedules: existingSchedules
+        },
+        { merge: true }
+      );
+  
+      console.log("Saved for teacher:", teacherId);
     }
   };
   
   const saveChanges = async () => {
-    await updateTopicProgress();
+    try {
+      setSaveStatus("saving");
   
-    // 🔥 RELOAD TOPICS AFTER UPDATE
-    const topicMap = {};
-    for (const subject of classSubjects) {
-      const topicRef = doc(
+      await updateTopicProgress();
+  
+      // 🔥 RELOAD TOPICS AFTER UPDATE
+      const topicMap = {};
+      for (const subject of classSubjects) {
+        const topicRef = doc(
+          db,
+          "users",
+          adminUid,
+          "coursePlanner",
+          classId,
+          "subjects",
+          subject
+        );
+  
+        const snap = await getDoc(topicRef);
+        topicMap[subject] = snap.exists()
+          ? snap.data().topics || []
+          : [];
+      }
+  
+      setSubjectTopics(topicMap);
+  
+      const cycleNumber = getCycleDay(selectedDate);
+      const cycleKey = `Day${cycleNumber}`;
+  
+      const timetableRef = doc(
         db,
         "users",
         adminUid,
-        "coursePlanner",
-        classId,
-        "subjects",
-        subject
+        "timetables",
+        `${classId}_${activeSection}`
       );
   
-      const snap = await getDoc(topicRef);
-      topicMap[subject] = snap.exists()
-        ? snap.data().topics || []
-        : [];
+      await setDoc(
+        timetableRef,
+        {
+          cycles: {
+            [cycleKey]: slots
+          }
+        },
+        { merge: true }
+      );
+  
+      // ✅ Success state
+      setSaveStatus("success");
+  
+      // 2 seconds aprm normal ku thirumba
+      setTimeout(() => {
+        setSaveStatus("idle");
+      }, 2000);
+  
+    } catch (error) {
+      console.error(error);
+      setSaveStatus("idle");
     }
-  
-    setSubjectTopics(topicMap);
-  
-    const cycleNumber = getCycleDay(selectedDate);
-    const cycleKey = `Day${cycleNumber}`;
-  
-    const timetableRef = doc(
-      db,
-      "users",
-      adminUid,
-      "timetables",
-      `${classId}_${activeSection}`
-    );
-  
-    await setDoc(
-      timetableRef,
-      {
-        cycles: {
-          [cycleKey]: slots
-        }
-      },
-      { merge: true }
-    );
-    const filteredClassTeachers = Object.fromEntries(
-      Object.entries(classTeachers).filter(
-        ([key, value]) => value?.teacherId
-      )
-    );
-    
-    await setDoc(docRef, {
-      ...data,
-      classTeachers: filteredClassTeachers
-    });
-    
-    
-  
-    alert("Saved Successfully ✅");
   };
-  
   useEffect(() => {
     const loadCycleData = async () => {
       if (!adminUid || !activeSection) return;
@@ -374,15 +393,18 @@ const [selectedTeacher, setSelectedTeacher] = useState({});
   
       const snap = await getDoc(timetableRef);
   
-      if (!snap.exists()) return;
+      if (!snap.exists()) {
+        await createNewCycle(timetableRef, cycleKey);
+        return;
+      }
   
       const data = snap.data();
       const cycleData = data.cycles?.[cycleKey];
   
-      if (cycleData) {
-        setSlots(cycleData);
-      } else {
+      if (!cycleData || cycleData.length === 0) {
         await createNewCycle(timetableRef, cycleKey);
+      } else {
+        setSlots(cycleData);
       }
     };
   
@@ -445,10 +467,9 @@ const [selectedTeacher, setSelectedTeacher] = useState({});
     loadTeachers();
   }, [adminUid]);
   
-  const getMatchingTeachers = (subject) => {
-    if (!className || !activeSection || !subject) return [];
+  const getMatchingTeachers = () => {
+    if (!className || !activeSection) return [];
   
-    // 🔥 extract only number from className (ex: "6A" → "6")
     const classNumber = className.toString().match(/\d+/)?.[0];
   
     return teachers.filter(t => {
@@ -458,9 +479,7 @@ const [selectedTeacher, setSelectedTeacher] = useState({});
         return (
           String(c.class).trim() === String(classNumber).trim() &&
           String(c.section).trim().toUpperCase() ===
-            String(activeSection).trim().toUpperCase() &&
-          String(c.subject).trim().toLowerCase() ===
-            String(subject).trim().toLowerCase()
+            String(activeSection).trim().toUpperCase()
         );
       });
     });
@@ -483,57 +502,69 @@ const [selectedTeacher, setSelectedTeacher] = useState({});
 
         <h3>Section {sec}</h3>
 
-        {sectionTeachers[sec] ? (
-          <div
-            className="assigned-teacher-card"
-            onClick={() => setActiveSection(sec)}
-          >
-            <img
-              src={
-                sectionTeachers[sec].photoURL ||
-                `https://ui-avatars.com/api/?name=${sectionTeachers[sec].name}`
-              }
-              alt="teacher"
-              className="teacher-photo"
-            />
-            <div>
-              <p>{sectionTeachers[sec].name}</p>
-              <span className="assigned-label">
-                Class Teacher
-              </span>
-            </div>
-          </div>
-        ) : (
-          <>
-            <select
-              onChange={(e) => {
-                const teacher = teachers.find(
-                  t => t.id === e.target.value
-                );
+        {sectionTeachers[sec] && editingSection !== sec ? (
+  <div className="assigned-teacher-wrapper">
+    <div
+      className="assigned-teacher-card"
+      onClick={() => handleSectionClick(sec)}
+    >
+      <img
+        src={
+          sectionTeachers[sec].photoURL ||
+          `https://ui-avatars.com/api/?name=${sectionTeachers[sec].name}`
+        }
+        alt="teacher"
+        className="teacher-photo"
+      />
+      <div>
+        <p>{sectionTeachers[sec].name}</p>
+        <span className="assigned-label">
+          Class Teacher
+        </span>
+      </div>
+    </div>
 
-                setSelectedTeacher(prev => ({
-                  ...prev,
-                  [sec]: teacher
-                }));
-              }}
-            >
-              <option value="">Select Teacher</option>
-              {teachers
-                .filter(t => t.category === "Teaching Staff")
-                .map(t => (
-                  <option key={t.id} value={t.id}>
-                    {t.name}
-                  </option>
-                ))}
-            </select>
+    {/* ✏️ Pencil Icon */}
+    <span
+      className="edit-teacher-icon"
+      onClick={() => setEditingSection(sec)}
+    >
+      ✏️
+    </span>
+  </div>
+) : (
+  <>
+    <select
+      value={selectedTeacher[sec]?.id || ""}
+      onChange={(e) => {
+        const teacher = teachers.find(
+          t => t.id === e.target.value
+        );
 
-            <button
-              onClick={() => handleAssignTeacher(sec)}
-            >
-              Assign
-            </button>
-          </>
-        )}
+        setSelectedTeacher(prev => ({
+          ...prev,
+          [sec]: teacher
+        }));
+      }}
+    >
+      <option value="">Select Teacher</option>
+      {teachers.map(t => (
+        <option key={t.id} value={t.id}>
+          {t.name}
+        </option>
+      ))}
+    </select>
+
+    <button
+      onClick={() => {
+        handleAssignTeacher(sec);
+        setEditingSection(null); // close edit mode
+      }}
+    >
+      Assign
+    </button>
+  </>
+)}
       </div>
     ))}
   </div>
@@ -715,31 +746,31 @@ const [selectedTeacher, setSelectedTeacher] = useState({});
                 </td>
                 <td>
   {slot.subject ? (
-   <select
-   className="teacher-select"
-   onClick={(e) => e.stopPropagation()}
-   onChange={(e) => {
-     const teacher = teachers.find(
-       t => t.id === e.target.value
-     );
- 
-     setSelectedTeacher(prev => ({
-       ...prev,
-       [sec]: teacher
-     }));
-   }}
- >
-   <option value="">Select Teacher</option>
- 
-   {teachers.map(t => (
-  <option key={t.id} value={t.id}>
-    {t.name}
-  </option>
-))}
+    <select
+      className="teacher-select"
+      value={slot.teacherId || ""}
+      onChange={(e) => {
+        const teacher = teachers.find(
+          t => t.id === e.target.value
+        );
 
+        const updated = [...slots];
 
- </select>
- 
+        updated[index].teacherId = teacher?.id || "";
+        updated[index].teacherName = teacher?.name || "";
+        console.log("Assigned teacher:", teacher?.id);
+        updated[index].teacherName = teacher?.name || "";
+
+        setSlots(updated);
+      }}
+    >
+      <option value="">Select Teacher</option>
+      {getMatchingTeachers(slot.subject).map(t => (
+        <option key={t.id} value={t.id}>
+          {t.name}
+        </option>
+      ))}
+    </select>
   ) : "-"}
 </td>
               </>
@@ -752,13 +783,17 @@ const [selectedTeacher, setSelectedTeacher] = useState({});
 </div>
 
      
-       <button
-         className="save-btn"
-         onClick={saveChanges}
-         disabled={isLeaveDay}
-       >
-         Save Changes
-       </button>
+<button
+  className="save-btn"
+  onClick={saveChanges}
+  disabled={isLeaveDay || saveStatus === "saving"}
+>
+  {saveStatus === "saving"
+    ? "Saving..."
+    : saveStatus === "success"
+    ? "Saved Successfully ✅"
+    : "Save Changes"}
+</button>
      </div>
       )}
     </div>

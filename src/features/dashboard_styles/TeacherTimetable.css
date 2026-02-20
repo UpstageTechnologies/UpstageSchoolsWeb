@@ -1,0 +1,185 @@
+/* ========== PAGE ========== */
+body{
+    background:#f4f6fb;
+    margin:0;
+    font-family:"Inter",sans-serif;
+  }
+  
+  .Heading{
+    padding:20px;
+    min-height:100vh;
+  }
+  
+  .Heading h2{
+    font-size:26px;
+    font-weight:600;
+    margin-bottom:25px;
+    color:#1e293b;
+  }
+  
+  /* ========== EMPTY ========== */
+  .subheading{
+    background:#fff;
+    padding:18px;
+    border-radius:12px;
+    color:#64748b;
+    box-shadow:0 5px 15px rgba(0,0,0,0.05);
+    width:fit-content;
+  }
+  
+  /* ========== DATE CARD ========== */
+  .tablecard{
+    background:#fff;
+    padding:20px;
+    border-radius:16px;
+    margin-bottom:30px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.05);
+    border-left:6px solid #6366f1;
+    transition:.3s ease;
+  }
+  
+  .tablecard h3{
+    font-size:18px;
+    font-weight:600;
+    margin-bottom:15px;
+    color:#4f46e5;
+  }
+  
+  /* ========== DESKTOP TABLE ========== */
+  .tabel{
+    width:100%;
+    border-collapse:collapse;
+  }
+  
+  .tabel th,
+  .tabel td{
+    padding:12px;
+    text-align:left;
+    font-size:14px;
+  }
+  
+  .tabel thead{
+    background:#eef2ff;
+  }
+  
+  .tabel th{
+    font-weight:600;
+    color:#3730a3;
+  }
+  
+  .tabel td{
+    border-bottom:1px solid #f1f5f9;
+    color:#334155;
+  }
+  
+  .tabel tbody tr:nth-child(even){
+    background:#f8fafc;
+  }
+  
+  .tabel tbody tr:hover{
+    background:#e0e7ff;
+  }
+  
+  /* ================================================= */
+  /* ================= MOBILE CARD =================== */
+  /* ================================================= */
+  
+  @media (max-width:768px){
+  
+    .Heading{
+      padding:15px;
+    }
+  
+    .Heading h2{
+      font-size:20px;
+    }
+  
+    .tablecard{
+      padding:15px;
+    }
+  
+    /* hide header */
+    .tabel thead{
+      display:none;
+    }
+  
+    .tabel,
+    .tabel tbody,
+    .tabel tr,
+    .tabel td{
+      display:block;
+      width:100%;
+    }
+  
+    .tabel tr{
+      background:#fff;
+      margin-bottom:14px;
+      border-radius:14px;
+      box-shadow:0 6px 18px rgba(0,0,0,.08);
+      padding:12px;
+    }
+  
+    .tabel td{
+      display:flex;
+      justify-content:space-between;
+      padding:6px 0;
+      border:none;
+      font-size:13px;
+    }
+  
+    /* Labels auto add */
+    .tabel td:nth-child(1)::before{content:"Class";font-weight:600;color:#6b7280;}
+    .tabel td:nth-child(2)::before{content:"Section";font-weight:600;color:#6b7280;}
+    .tabel td:nth-child(3)::before{content:"Subject";font-weight:600;color:#6b7280;}
+    .tabel td:nth-child(4)::before{content:"Topic";font-weight:600;color:#6b7280;}
+    .tabel td:nth-child(5)::before{content:"Start";font-weight:600;color:#6b7280;}
+    .tabel td:nth-child(6)::before{content:"End";font-weight:600;color:#6b7280;}
+  
+  }
+  
+  /* ================= 480px SMALL ================= */
+  @media (max-width:480px){
+  
+    .Heading{
+      padding:12px;
+    }
+  
+    .tabel td{
+      font-size:12px;
+    }
+  }
+  
+  /* ================= 360px EXTRA SMALL ================= */
+  @media (max-width:360px){
+  
+    .Heading{
+      padding:10px;
+    }
+  
+    .Heading h2{
+      font-size:18px;
+    }
+  
+    .tablecard{
+      padding:12px;
+    }
+  
+    .tabel td{
+      font-size:11px;
+    }
+  }
+  
+  /* ================= BIG SCREEN ================= */
+  @media (min-width:2600px){
+  
+    .Heading{
+      max-width:1200px;
+      margin:auto;
+    }
+  
+    .tabel th,
+    .tabel td{
+      font-size:15px;
+      padding:14px;
+    }
+  }

@@ -1,6 +1,8 @@
 import React from "react";
 import "../dashboard_styles/SubDashboard.css";
+import SchoolCalendar from "../../components/SchoolScheduleCalendar"
 const SubDashboard = ({ setActivePage, setAccountPopupOpen }) => {
+  
   console.log("Popup function:", setAccountPopupOpen);
 
   const role = localStorage.getItem("role");
@@ -87,6 +89,8 @@ const photo =
   <div>
     <div className="profile-name">{name}</div>
     <div className="profile-role">{type}</div>
+    {/* MINI CALENDAR SECTION */}
+
   </div>
 </div>
 
@@ -151,76 +155,21 @@ const photo =
     >
       <h3>{title}</h3>
     </div>
+    
   ))}
+
+</div>
+{/* FULL WIDTH CALENDAR SECTION */}
+<div className="calendar-full">
+  <h3>Academic Calendar</h3>
+
+  <SchoolCalendar
+    adminUid={localStorage.getItem("adminId")}
+    role={type}
+    compact={true}
+  />
 </div>
 
-
-
-        
-        {/* TABLE SECTION */}
-        <div className="table-section">
-          <h3>Overview</h3>
-
-          <div className="table-row">
-            <div className="row-name">
-             {localStorage.getItem("profilePhoto") ? (
-  <img
-    src={localStorage.getItem("profilePhoto")}
-    alt="mini"
-    className="mini-image"
-  />
-) : (
-  <div className="mini-avatar">
-    {name?.charAt(0)}
-  </div>
-)}
-         {localStorage.getItem("viewType") && (
-  <button
-    onClick={() => {
-      localStorage.removeItem("viewType");
-      localStorage.removeItem("viewName");
-      localStorage.removeItem("viewId");
-      localStorage.removeItem("viewPhoto");
-
-      setActivePage("teacher"); // go back to teacher list
-    }}
-    style={{
-      marginLeft: 15,
-      background: "#2563eb",
-      color: "#fff",
-      padding: "6px 12px",
-      borderRadius: 6,
-      border: "none",
-      cursor: "pointer"
-    }}
-  >
-    Exit View
-  </button>
-)}
-     <span>{name}</span>
-            </div>
-
-            <div className="progress">
-              <div className="progress-bar"></div>
-            </div>
-
-            <div className="badge green-badge">Good</div>
-          </div>
-
-          <div className="table-row">
-            <div className="row-name">
-              <div className="mini-avatar">A</div>
-              <span>Sample Data</span>
-            </div>
-
-            <div className="progress yellow-progress">
-              <div className="progress-bar"></div>
-            </div>
-
-            <div className="badge yellow-badge">Average</div>
-          </div>
-
-        </div>
       </div>
     </div>
   );
