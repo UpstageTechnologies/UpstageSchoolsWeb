@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { db } from "../../services/firebase";
 import { doc, getDoc } from "firebase/firestore";
-import "../dashboard_styles/teachertimetable.css";
+import "../dashboard_styles/TeacherTimetable.css";
 export default function TeacherTimetable() {
 
   const [schedules, setSchedules] = useState({});
