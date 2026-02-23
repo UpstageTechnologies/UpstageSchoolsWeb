@@ -4,8 +4,9 @@
 import React, { useEffect, useState } from "react";
 import { collection, addDoc, deleteDoc, onSnapshot, doc, setDoc, getDoc  } from "firebase/firestore";
 import { db } from "../../../services/firebase"
-import { FaTrash } from "react-icons/fa";
+import { FaBook, FaCalendar, FaClock, FaHome, FaTrash } from "react-icons/fa";
 import SchoolScheduleCalendar from "../../../components/SchoolScheduleCalendar";
+
 
 export default function Settings({ adminUid }) {
   const isNumberClass = (name) => /^\d+$/.test(name.trim());
@@ -22,7 +23,7 @@ const [periodCount, setPeriodCount] = useState("");
 const [periodDuration, setPeriodDuration] = useState("");
 const [periodTimes, setPeriodTimes] = useState([]);
 const [breakTimes, setBreakTimes] = useState([]);
-
+const [activeSection, setActiveSection] = useState("home");
 const [breakCount, setBreakCount] = useState("");
 const [breakDuration, setBreakDuration] = useState("");
 
@@ -34,6 +35,16 @@ const [timingValidationError, setTimingValidationError] = useState("");
   const [startDate, setStartDate] = useState("");
 const [endDate, setEndDate] = useState("");
 const [saving, setSaving] = useState(false);
+
+useEffect(() => {
+  window.settingsSectionState = () => activeSection;
+  window.resetSettingsSection = () => setActiveSection("home");
+
+  return () => {
+    delete window.settingsSectionState;
+    delete window.resetSettingsSection;
+  };
+}, [activeSection]);
 
   useEffect(() => {
     if (!adminUid) return;
@@ -426,9 +437,23 @@ if (slotErrors.length > 0) {
         <h1>⚙️ School Settings</h1>
         <p>Manage academic year & classes</p>
       </div>
-  
-      {/* ACADEMIC YEAR */}
-      <div className="settings-card">
+      {activeSection === "home" && (
+  <div className="settings-home">
+    <div className="menu-card" onClick={() => setActiveSection("calendar")}>
+      <FaCalendar /> School Calendar
+    </div>
+
+    <div className="menu-card" onClick={() => setActiveSection("timing")}>
+      <FaClock/> School Timing
+    </div>
+
+    <div className="menu-card" onClick={() => setActiveSection("classes")}>
+    <FaHome/>Classes & <FaBook/>Courses
+    </div>
+  </div>
+)}
+{activeSection === "calendar" && (
+  <div className="settings-card">
       <h2 className="card-title">📅 School Schedule Calendar</h2>
  
   
@@ -480,7 +505,8 @@ if (slotErrors.length > 0) {
 )}
 
       </div>
-      <div className="settings-card timing-card">
+)}{activeSection === "timing" && (
+  <div className="settings-card timing-card">
   <h2 className="card-title">🕒 School Schedule & Period Setup</h2>
 
   {/* SCHOOL TIME SECTION */}
@@ -663,6 +689,7 @@ if (slotErrors.length > 0) {
     {timeSaving ? "Saving..." : "Save Timing"}
   </button>
 </div>
+)}
 
 {validateTimeRanges().length === 0 &&
   generatePreviewTable().length > 0 && (
@@ -689,9 +716,8 @@ if (slotErrors.length > 0) {
       </table>
     </div>
 )}
-
-      {/* CLASS SETTINGS */}
-      <div className="settings-card">
+{activeSection === "classes" && (
+  <div className="settings-card">
         <h2 className="card-title">🏫 Classes</h2>
   
         <div className="input-row">
@@ -773,6 +799,7 @@ if (slotErrors.length > 0) {
           </div>
         )}
       </div>
+)}
       </div>
 
 <div className="settings-right">
@@ -1046,7 +1073,67 @@ input:focus {
   margin-top: 25px;
   width: 100%;
 }
+/* =========================
+   SETTINGS HOME MENU
+========================= */
 
+.settings-home {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+  margin-top: 24px;
+  color: skyblue;
+}
 
+/* Tablet */
+@media (min-width: 600px) {
+  .settings-home {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop */
+@media (min-width: 992px) {
+  .settings-home {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.menu-card {
+  background: var(--card);
+  padding: 30px 20px;
+  border-radius: 16px;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+  transition: all 0.25s ease;
+  border: 1px solid skyblue;
+  user-select: none;
+}
+
+.menu-card:hover {
+  transform: translateY(-6px);
+ 
+}
+
+.menu-card:active {
+  transform: scale(0.98);
+}
+
+/* Optional: Icon bigger look */
+.menu-card span,
+.menu-card {
+  font-size: 18px;
+}
+
+/* Mobile polish */
+@media (max-width: 480px) {
+  .menu-card {
+    padding: 24px 16px;
+    font-size: 16px;
+  }
+}
 `;
   

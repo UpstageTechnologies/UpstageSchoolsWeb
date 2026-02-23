@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { doc, getDoc, getDocs, setDoc, collection } from "firebase/firestore";
+import { doc, getDoc, getDocs, setDoc, collection ,onSnapshot} from "firebase/firestore";
 import { db, auth } from "../../services/firebase";
 import "../dashboard_styles/timetable.css";
 
@@ -13,6 +13,7 @@ export default function Timetable({ classId }) {
   const [activeSection, setActiveSection] = useState(null);
   const [slots, setSlots] = useState([]);
   const [academicStart, setAcademicStart] = useState(null);
+  const [holidays, setHolidays] = useState([]);
 const [academicEnd, setAcademicEnd] = useState(null);
 const [isLeaveDay, setIsLeaveDay] = useState(false);
 const [className, setClassName] = useState("");
@@ -23,6 +24,7 @@ const [selectedTeacher, setSelectedTeacher] = useState({});
 const [saveStatus, setSaveStatus] = useState("idle"); 
 // idle | saving | success
 // idle | saving | success
+
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
@@ -53,7 +55,29 @@ const [saveStatus, setSaveStatus] = useState("idle");
   
     loadAcademicYear();
   }, [adminUid]);
+  useEffect(() => {
+    const dateObj = new Date(selectedDate);
+    const isSunday = dateObj.getDay() === 0;
+    const isHoliday = holidays.includes(selectedDate);
   
+    setIsLeaveDay(isSunday || isHoliday);
+  }, [selectedDate, holidays]);
+  useEffect(() => {
+    if (!adminUid) return;
+  
+    const unsub = onSnapshot(
+      collection(db, "users", adminUid, "calendar"),
+      (snap) => {
+        const holidayDates = snap.docs
+          .filter(doc => doc.data().isHoliday)
+          .map(doc => doc.id);
+  
+        setHolidays(holidayDates);
+      }
+    );
+  
+    return () => unsub();
+  }, [adminUid]);
   // 🔹 Load Sections + Subjects
   useEffect(() => {
     const loadClassData = async () => {
@@ -263,24 +287,70 @@ const [saveStatus, setSaveStatus] = useState("idle");
   const updateTopicProgress = async () => {
 
     const teacherGrouped = {};
-  
-    slots.forEach(slot => {
-      if (!slot.teacherId || slot.type === "break") return;
-  
-      if (!teacherGrouped[slot.teacherId]) {
-        teacherGrouped[slot.teacherId] = [];
-      }
-  
-      teacherGrouped[slot.teacherId].push({
-        classId: className,
-        section: activeSection,
-        subject: slot.subject,
-        topic: slot.topic || "",
-        start: slot.start,
-        end: slot.end
-      });
+  const topicCounter = {};
+
+  // 1️⃣ Loop once
+  for (const slot of slots) {
+
+    if (!slot.teacherId || slot.type === "break") continue;
+
+    // Teacher grouping
+    if (!teacherGrouped[slot.teacherId]) {
+      teacherGrouped[slot.teacherId] = [];
+    }
+
+    teacherGrouped[slot.teacherId].push({
+      classId: className,
+      section: activeSection,
+      subject: slot.subject,
+      topic: slot.topic || "",
+      start: slot.start,
+      end: slot.end
     });
-  
+
+    // Count topic usage
+    if (slot.subject && slot.topic) {
+      const key = `${slot.subject}_${slot.topic}`;
+      topicCounter[key] = (topicCounter[key] || 0) + 1;
+    }
+  }
+
+  // 2️⃣ Update topic progress once
+  for (const key in topicCounter) {
+
+    const [subject, topicName] = key.split("_");
+
+    const subjectRef = doc(
+      db,
+      "users",
+      adminUid,
+      "coursePlanner",
+      classId,
+      "subjects",
+      subject
+    );
+
+    const snap = await getDoc(subjectRef);
+    if (!snap.exists()) continue;
+
+    const topics = snap.data().topics || [];
+
+    const updatedTopics = topics.map(topic => {
+      if (topic.name === topicName) {
+        return {
+          ...topic,
+          completedPeriods:
+            (topic.completedPeriods || 0) + topicCounter[key]
+        };
+      }
+      return topic;
+    });
+
+    await setDoc(subjectRef, { topics: updatedTopics }, { merge: true });
+  }
+    // -------------------------------
+    // ✅ 3️⃣ SAVE TEACHER TIMETABLE
+    // -------------------------------
     for (const teacherId in teacherGrouped) {
   
       const teacherRef = doc(
@@ -291,7 +361,6 @@ const [saveStatus, setSaveStatus] = useState("idle");
         teacherId
       );
   
-      // 🔥 FIRST GET OLD DATA
       const snap = await getDoc(teacherRef);
   
       let existingSchedules = {};
@@ -300,14 +369,12 @@ const [saveStatus, setSaveStatus] = useState("idle");
         existingSchedules = snap.data().schedules || {};
       }
   
-      // 🔥 UPDATE ONLY CURRENT DATE
-      existingSchedules[selectedDate] = teacherGrouped[teacherId];
+      existingSchedules[selectedDate] =
+        teacherGrouped[teacherId];
   
       await setDoc(
         teacherRef,
-        {
-          schedules: existingSchedules
-        },
+        { schedules: existingSchedules },
         { merge: true }
       );
   
@@ -409,36 +476,33 @@ const [saveStatus, setSaveStatus] = useState("idle");
     };
   
     loadCycleData();
-  }, [selectedDate, activeSection]);
-  
+  }, [selectedDate, activeSection, holidays, academicStart]); 
   const TOTAL_CYCLE_DAYS = 6;
-  const getCycleDay = (date) => {
-    if (!academicStart) return 1;
-  
-    const start = new Date(academicStart);
-    const current = new Date(date);
-  
-    // If Sunday → leave
-    if (current.getDay() === 0) {
-      setIsLeaveDay(true);
-      return 1;
+
+const getCycleDay = (date) => {
+  if (!academicStart) return 1;
+
+  const start = new Date(academicStart);
+  const current = new Date(date);
+
+  let workingDays = 0;
+  let temp = new Date(start);
+
+  while (temp <= current) {
+    const dayString = temp.toISOString().split("T")[0];
+
+    const isSunday = temp.getDay() === 0;
+    const isHoliday = holidays.includes(dayString);
+
+    if (!isSunday && !isHoliday) {
+      workingDays++;
     }
-  
-    setIsLeaveDay(false);
-  
-    let workingDays = 0;
-    let temp = new Date(start);
-  
-    while (temp <= current) {
-      const day = temp.getDay();
-      if (day !== 0) {
-        workingDays++;
-      }
-      temp.setDate(temp.getDate() + 1);
-    }
-  
-    return ((workingDays - 1) % 6) + 1;
-  };
+
+    temp.setDate(temp.getDate() + 1);
+  }
+
+  return ((workingDays - 1) % TOTAL_CYCLE_DAYS) + 1;
+};
   const getCurrentTopic = (subject) => {
     const topics = subjectTopics[subject] || [];
   

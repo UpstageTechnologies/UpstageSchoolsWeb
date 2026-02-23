@@ -11,7 +11,7 @@ export default function AdminTimetable() {
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedSection, setSelectedSection] = useState("");
   const [slots, setSlots] = useState([]);
-
+  const [selectedDate, setSelectedDate] = useState("");
   /* ================= LOAD ALL CLASSES ================= */
   useEffect(() => {
     const loadClasses = async () => {
@@ -54,32 +54,29 @@ export default function AdminTimetable() {
   /* ================= LOAD TIMETABLE ================= */
   useEffect(() => {
     const loadTimetable = async () => {
-      if (!selectedClass || !selectedSection) return;
-
+      if (!selectedClass || !selectedSection || !selectedDate) return;
+  
       const timetableRef = doc(
         db,
         "users",
         adminUid,
         "timetables",
-        `${selectedClass}_${selectedSection}`
+        `${selectedClass}_${selectedSection}`,
+        "dates",
+        selectedDate
       );
-
+  
       const snap = await getDoc(timetableRef);
-
+  
       if (snap.exists()) {
-        const data = snap.data();
-        const cycles = data.cycles || {};
-
-        // show Day1 by default
-        const firstCycle = Object.keys(cycles)[0];
-        setSlots(cycles[firstCycle] || []);
+        setSlots(snap.data().slots || []);
       } else {
         setSlots([]);
       }
     };
-
+  
     loadTimetable();
-  }, [selectedSection]);
+  }, [selectedClass, selectedSection, selectedDate, adminUid]);
   useEffect(() => {
     const loadTeachers = async () => {
       if (!adminUid) return;
@@ -130,6 +127,15 @@ export default function AdminTimetable() {
           ))}
         </select>
       )}
+      {/* DATE SELECT */}
+{selectedSection && (
+  <input
+    type="date"
+    value={selectedDate}
+    onChange={(e) => setSelectedDate(e.target.value)}
+    style={{ marginLeft: "10px" }}
+  />
+)}
 
       {/* TIMETABLE TABLE */}
       {selectedSection && (

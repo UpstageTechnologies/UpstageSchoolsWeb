@@ -28,6 +28,7 @@ import { useCallback, useMemo } from "react";
   const StudentDetails = lazy(() => import("./StudentDetails"));
 const AdminTimetable = lazy(() => import("./AdminTimetable"));
 const TeacherTimetable = lazy(() => import("./TeacherTimetable"));
+const ParentTimetable= lazy(() =>import("./ParentTimetable"));
 const TeacherHome = lazy(() => import("./TeacherHome"));
 const ParentHome = lazy(() => import("./ParentHome"));
   const Attendance = lazy(() => import("./Attendance"));
@@ -1023,7 +1024,9 @@ useEffect(() => {
 
   {activePage === "settings" && (
   <Settings adminUid={adminUid} />
-)}</Suspense></div>
+)}
+{activePage === "parent-timetable" && <ParentTimetable />}
+</Suspense></div>
         </div>
         {showUpgrade && !upgradeDisabled && (
   <UpgradePopup

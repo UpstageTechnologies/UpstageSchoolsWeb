@@ -134,16 +134,29 @@ if (
   <div
   className="mobile-back-btn"
   onClick={() => {
-  setPageHistory(prev => {
-  if (prev.length <= 1) return prev;
 
-  const newHistory = [...prev];
-  newHistory.pop();              // remove current
-  const previous = newHistory[newHistory.length - 1];
-
-  setActivePage(previous);
-  return newHistory;
-  });
+    // If currently in Settings page and not in home section
+    if (activePage === "settings") {
+      const settingsSection = window.settingsSectionState;
+  
+      if (settingsSection && settingsSection() !== "home") {
+        window.resetSettingsSection();
+        return;
+      }
+    }
+  
+    // Otherwise normal page back
+    setPageHistory(prev => {
+      if (prev.length <= 1) return prev;
+  
+      const newHistory = [...prev];
+      newHistory.pop();
+      const previous = newHistory[newHistory.length - 1];
+  
+      setActivePage(previous);
+      return newHistory;
+    });
+  
   }}
   >
   <FaArrowLeft />

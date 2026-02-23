@@ -55,7 +55,7 @@
   };
   
 
-  export default function SchoolCalendar({ adminUid, role, onDateSelect }) {
+  export default function SchoolCalendar({ adminUid, role, onDateSelect , compact }) {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [events, setEvents] = useState({});
     const [editingDate, setEditingDate] = useState(null);

@@ -140,7 +140,7 @@ const photo =
             setActivePage("teacher-attendance");
           }
           if (title === "Timetable") {
-            setActivePage("teacher-timetable");
+            setActivePage("parent-timetable");
           }
           if (title === "Courses") {
             setActivePage("courses");
