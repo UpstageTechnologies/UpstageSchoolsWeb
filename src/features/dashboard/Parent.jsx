@@ -491,8 +491,6 @@ if (editId) {
         <td data-label="Address">{p.address}</td>
 
         <td >
-
-{/* 👁 VIEW AS PARENT */}
 <button
   className="view-btn"
   onClick={() => {
