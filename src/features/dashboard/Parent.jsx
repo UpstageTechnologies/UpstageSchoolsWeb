@@ -489,7 +489,6 @@ if (editId) {
         <td data-label="Email">{p.email}</td>
         <td data-label="Phone">{p.phone}</td>
         <td data-label="Address">{p.address}</td>
-
         <td >
 <button
   className="view-btn"

@@ -127,7 +127,6 @@ export default function AdminTimetable() {
           ))}
         </select>
       )}
-      {/* DATE SELECT */}
 {selectedSection && (
   <input
     type="date"
