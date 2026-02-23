@@ -8,7 +8,7 @@ import {
   doc,
   getDoc
 } from "firebase/firestore";
-import "../dashboard_styles/teachertimetable.css";
+import "../dashboard_styles/TeacherTimetable.css";
 
 export default function ParentTimetable() {
 
