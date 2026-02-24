@@ -495,7 +495,11 @@ if (editId) {
   onClick={() => {
     localStorage.setItem("viewType", "parent");
     localStorage.setItem("viewName", p.parentName);
+    localStorage.setItem("parentName", p.parentName); // 🔥 ADD THIS
     localStorage.setItem("viewId", p.parentId);
+    localStorage.setItem("parentId", p.parentId);     // 🔥 ADD THIS
+    localStorage.setItem("adminUid", auth.currentUser.uid);
+  
     setActivePage("subdashboard");
   }}
   

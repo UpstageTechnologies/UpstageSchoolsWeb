@@ -8,26 +8,37 @@ import {
   doc,
   getDoc
 } from "firebase/firestore";
-import "../dashboard_styles/TeacherTimetable.css";
+import "../dashboard_styles/timetable.css";
 
 export default function ParentTimetable() {
-
-  const adminUid = localStorage.getItem("adminUid");
-  const parentId =
-  localStorage.getItem("viewId") ||
-  localStorage.getItem("parentId");
+  useEffect(() => {
+    console.log("ADMIN:", adminUid);
+    console.log("PARENT:", parentId);
+  }, []);
+  // ✅ IMPORTANT
+  const adminUid =
+    localStorage.getItem("adminUid") ||
+    localStorage.getItem("adminId");
+    const parentId =
+    localStorage.getItem("viewId") ||
+    localStorage.getItem("parentId") ||
+    localStorage.getItem("parentDocId");
 
   const [students, setStudents] = useState([]);
   const [activeStudent, setActiveStudent] = useState(null);
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const selectedDate = new Date().toISOString().split("T")[0];
-
   /* ================= LOAD STUDENTS ================= */
   useEffect(() => {
+
     const loadStudents = async () => {
-      if (!adminUid || !parentId) return;
+
+      if (!adminUid || !parentId) {
+        console.log("Missing adminUid or parentId");
+        setLoading(false);
+        return;
+      }
 
       const q = query(
         collection(db, "users", adminUid, "students"),
@@ -41,6 +52,8 @@ export default function ParentTimetable() {
         ...d.data()
       }));
 
+      console.log("Students:", list);
+
       setStudents(list);
 
       if (list.length > 0) {
@@ -51,50 +64,52 @@ export default function ParentTimetable() {
     };
 
     loadStudents();
+
   }, [adminUid, parentId]);
+
   useEffect(() => {
+
     const loadTimetable = async () => {
   
       if (!adminUid || !activeStudent) return;
   
-      const docId =
-        `${activeStudent.class}_${activeStudent.section}`;
-  
-      const timetableRef = doc(
-        db,
-        "users",
-        adminUid,
-        "timetables",
-        docId
+      const q = query(
+        collection(db, "users", adminUid, "timetables"),
+        where("className", "==", activeStudent.class),
+        where("section", "==", activeStudent.section)
       );
   
-      const snap = await getDoc(timetableRef);
+      const snap = await getDocs(q);
   
-      if (!snap.exists()) {
+      if (snap.empty) {
+        console.log("No timetable found");
         setSlots([]);
         return;
       }
   
-      const data = snap.data();
+      const data = snap.docs[0].data();
       const cycles = data.cycles || {};
   
-      // Always show Day1 for now
-      const dayKey = "Day1";
-  
-      setSlots(cycles[dayKey] || []);
+      setSlots(cycles["Day1"] || []);
     };
   
     loadTimetable();
+  
   }, [activeStudent, adminUid]);
 
-  if (loading) return <div className="Heading"><h2>Loading...</h2></div>;
+  if (loading)
+    return (
+      <div className="Heading">
+        <h2>Loading...</h2>
+      </div>
+    );
 
   return (
     <div className="Heading">
 
       <h2>My Child Timetable</h2>
 
-      {/* 🔥 CHILD SELECTOR */}
+      {/* 🔥 CHILD SWITCH BUTTONS */}
       {students.length > 1 && (
         <div style={{ marginBottom: 20 }}>
           {students.map((s) => (
@@ -123,11 +138,13 @@ export default function ParentTimetable() {
         </div>
       )}
 
-      {/* 🔹 TIMETABLE TABLE */}
+      {/* 🔹 TIMETABLE */}
       {activeStudent && (
         <div className="tablecard">
           <h3>
-            {activeStudent.studentName} - Class {activeStudent.class}{activeStudent.section}
+            {activeStudent.studentName} - Class{" "}
+            {activeStudent.class}
+            {activeStudent.section}
           </h3>
 
           {slots.length === 0 ? (

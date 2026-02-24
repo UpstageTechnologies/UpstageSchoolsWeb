@@ -32,7 +32,7 @@ import UniversalLogin from "./useTheme/pages/UniversalLogin";
 import Course from "./features/dashboard/Courses";
 import CoursePlanner from "./features/dashboard/CoursePlanner";
 import Timetable from "./features/dashboard/Timetable";
-
+import RegularTimetable from "./features/dashboard/RegularTimetable";
 function App() {
   return (
     <Router>
@@ -44,7 +44,10 @@ function App() {
 
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
-
+        <Route
+  path="/regular-timetable/:docId"
+  element={<RegularTimetable />}
+/>
 
         <Route path="/payment" element={<PaymentSelection />} /> 
         <Route path="/logout" element={<Logout />} />

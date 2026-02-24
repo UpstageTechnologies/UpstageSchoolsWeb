@@ -2,9 +2,13 @@ import { useEffect, useState } from "react";
 import { doc, getDoc, getDocs, setDoc, collection ,onSnapshot} from "firebase/firestore";
 import { db, auth } from "../../services/firebase";
 import "../dashboard_styles/timetable.css";
+import { useNavigate } from "react-router-dom";
+import { FaCalendar } from "react-icons/fa";
 
 
 export default function Timetable({ classId }) {
+ 
+const navigate = useNavigate();
   const adminUid =
     auth.currentUser?.uid || localStorage.getItem("adminUid");
     const [editingSection, setEditingSection] = useState(null);
@@ -55,6 +59,35 @@ const [saveStatus, setSaveStatus] = useState("idle");
   
     loadAcademicYear();
   }, [adminUid]);
+  const generateManualSlots = (timingData) => {
+    const { periodTimes = [], breakTimes = [] } = timingData;
+  
+    const periods = periodTimes.map((p, index) => ({
+      type: "period",
+      label: `P${index + 1}`,
+      start: p.start,
+      end: p.end,
+      subject: "",
+      teacherId: "",
+      topic: ""
+    }));
+  
+    const breaks = breakTimes.map((b) => ({
+      type: "break",
+      label: "Break",
+      start: b.start,
+      end: b.end
+    }));
+  
+    const combined = [...periods, ...breaks];
+  
+    // 🔥 Sort by start time
+    return combined.sort(
+      (a, b) =>
+        new Date(`1970-01-01T${a.start}`) -
+        new Date(`1970-01-01T${b.start}`)
+    );
+  };
   useEffect(() => {
     const dateObj = new Date(selectedDate);
     const isSunday = dateObj.getDay() === 0;
@@ -202,7 +235,7 @@ const [saveStatus, setSaveStatus] = useState("idle");
       "users",
       adminUid,
       "timetables",
-      `${classId}_${sectionName}`
+      `${className}_${sectionName}`
     );
   
     const snap = await getDoc(timetableRef);
@@ -270,7 +303,7 @@ const [saveStatus, setSaveStatus] = useState("idle");
       return;
     }
   
-    const generatedSlots = generateTimeSlots(timingSnap.data());
+    const generatedSlots = generateManualSlots(timingSnap.data());
   
     await setDoc(
       timetableRef,
@@ -417,7 +450,7 @@ const [saveStatus, setSaveStatus] = useState("idle");
         "users",
         adminUid,
         "timetables",
-        `${classId}_${activeSection}`
+        `${className}_${activeSection}`
       );
   
       await setDoc(
@@ -455,7 +488,7 @@ const [saveStatus, setSaveStatus] = useState("idle");
         "users",
         adminUid,
         "timetables",
-        `${classId}_${activeSection}`
+        `${className}_${activeSection}`
       );
   
       const snap = await getDoc(timetableRef);
@@ -639,6 +672,18 @@ const getCycleDay = (date) => {
       {activeSection && (
         
        <div className="timetable-view">
+        <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
+        <button
+  className="mode-btn"
+  onClick={() =>
+    navigate(
+      `/regular-timetable/${className}_${activeSection}`
+    )
+  }
+>
+  <FaCalendar/>Regular Timetable
+</button>
+</div>
         {/* 🔥 7 Day Strip */}
 <div className="week-strip">
   {[...Array(7)].map((_, i) => {

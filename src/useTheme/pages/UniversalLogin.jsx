@@ -135,10 +135,14 @@ const handleGoogleSignIn = async () => {
       localStorage.setItem("teacherDocId", docSnap.id);
       localStorage.setItem("teacherName", data.name);
     }
-
     if (roleName === "parent") {
       localStorage.setItem("parentDocId", docSnap.id);
       localStorage.setItem("parentName", data.parentName);
+    
+      localStorage.setItem("viewId", data.parentId);   // ✅ FIXED
+      localStorage.setItem("viewType", "parent");
+      localStorage.setItem("viewName", data.parentName);
+      localStorage.setItem("parentId", data.parentId);
     }
 
     if (roleName === "office_staff") {

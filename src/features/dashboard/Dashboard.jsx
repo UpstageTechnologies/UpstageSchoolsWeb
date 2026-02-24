@@ -49,6 +49,7 @@ const Settings = lazy(() => import("./accounts/Settings"));
 const SchoolCalendar = lazy(() => import("../../components/SchoolCalendar"));
 const CoursePlanner = lazy(() => import("./CoursePlanner"));
 const Timetable = lazy(() => import("./Timetable"));
+const RegularTimetable = lazy (() => import("./RegularTimetable"))
 const Teacher = lazy(() => import("./Teacher"));
 const Parent = lazy(() => import("./Parent"));
 const Student = lazy(() => import("./Student"));
@@ -1020,7 +1021,6 @@ useEffect(() => {
 {activePage === "subdashboard" && (
   <SubDashboard setActivePage={handleMenuClick} />
 )}
-
 
   {activePage === "settings" && (
   <Settings adminUid={adminUid} />

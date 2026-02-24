@@ -313,10 +313,8 @@ if (slotErrors.length > 0) {
       {
         schoolStartTime,
         schoolEndTime,
-        periodCount: Number(periodCount),
-        periodDuration: Number(periodDuration),
-        breakCount: Number(breakCount || 0),
-        breakDuration: Number(breakDuration || 0)
+        periodTimes,
+        breakTimes
       }
     );
   
