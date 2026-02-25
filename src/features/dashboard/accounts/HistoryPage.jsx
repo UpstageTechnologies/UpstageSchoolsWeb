@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot , addDoc, deleteDoc, doc , setDoc} from "firebase/firestore";
 import { db } from "../../../services/firebase";
 
 export default function HistoryPage({ adminUid, setActivePage , globalSearch = ""}) {
@@ -9,37 +9,70 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
   const [activeFilter, setActiveFilter] = useState("all"); 
   const filteredHistory = historyList.filter(h => {
 
-    const q = globalSearch.toLowerCase();
+    const entryType = h.entryType;
+    const action = h.action;
   
-    // 🔥 TYPE FILTER USING MODULE
-    if (activeFilter !== "all") {
-  
-      if (
-        activeFilter === "income" &&
-        !["FEES", "FEES_MASTER", "INCOME", "COMPETITION"].includes(h.module)
-      ) return false;
-  
-      if (
-        activeFilter === "expense" &&
-        !["STUDENT_MISC", "EXPENSE"].includes(h.module)
-      ) return false;
-  
-      if (
-        activeFilter === "inventory" &&
-        !["INVENTORY"].includes(h.module)
-      ) return false;
+    if (activeFilter === "income") {
+      return entryType === "income" && action !== "DELETE";
     }
   
-    // 🔍 SEARCH FILTER
-    return (
-      h.module?.toLowerCase().includes(q) ||
-      h.action?.toLowerCase().includes(q) ||
-      h.name?.toLowerCase().includes(q) ||
-      String(h.amount || "").includes(q)
-    );
+    else if (activeFilter === "expense") {
+      return entryType === "expense" && action !== "DELETE";
+    }
+  
+    else if (activeFilter === "inventory") {
+      return entryType === "inventory" && action !== "DELETE";
+    }
+  
+    else if (activeFilter === "deleted") {
+      return action === "DELETE";
+    }
+  
+    else {
+      return true; // all
+    }
+  
   });
+  const handleUndo = async (item) => {
+
+    if (!item.originalData) {
+      alert("Old record – No backup data available");
+      return;
+    }
   
+    let collectionName = "";
   
+    // 🔥 use module instead of entryType
+    if (item.module === "SALARY_MASTER") {
+      collectionName = "FeesMaster";
+    }
+    else if (item.module === "FEES_MASTER") {
+      collectionName = "FeesMaster";
+    }
+    else if (item.module === "COMPETITION") {
+      collectionName = "Competition";
+    }
+    else if (item.entryType === "income") {
+      collectionName = "Income";
+    }
+    else if (item.entryType === "expense") {
+      collectionName = "Expenses";
+    }
+    else {
+      return;
+    }
+  
+    await addDoc(
+      collection(db, "users", adminUid, "Account", "accounts", collectionName),
+      item.originalData
+    );
+  
+    await deleteDoc(
+      doc(db, "users", adminUid, "Account", "accounts", "History", item.id)
+    );
+  
+    alert("Restored successfully ✅");
+  };
   useEffect(() => {
 
     if (!adminUid) return;
@@ -165,6 +198,12 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
   >
     Inventory
   </button>
+  <button
+  className={activeFilter==="deleted" ? "tab-btn active" : "tab-btn"}
+  onClick={()=>setActiveFilter("deleted")}
+>
+  Deleted
+</button>
 </div>
 
       <div className="section-card pop">
@@ -183,6 +222,7 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
               <th>Name</th>
               <th>Amount</th>
               <th>Date</th>
+              <th>Actions</th>
             </tr>
           </thead>
 
@@ -221,6 +261,19 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
       <td data-label="Name">{h.name}</td>
       <td data-label="Amount">₹{h.amount}</td>
       <td data-label="Date">{formatDate(h.date)}</td>
+      <td>
+  {h.action === "DELETE" && (
+   <button onClick={() => handleUndo(h)}>
+    Undo
+  </button>
+  )}
+
+  {h.action === "UNDO" && (
+    <span style={{ color: "green", fontWeight: "bold" }}>
+      Restored
+    </span>
+  )}
+</td>
     </tr>
   ))}
 

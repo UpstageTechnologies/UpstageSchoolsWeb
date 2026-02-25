@@ -3,12 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Landing from "./useTheme/pages/Landing";
 // import Login from "./useTheme/pages/Login";
 import Register from "./useTheme/pages/Register";
-
-
-
 import Dashboard from "./features/dashboard/Dashboard";
-
-
 import PaymentSelection from "./features/payment/PaymentSelection";
 import Logout from "./useTheme/pages/Logout";
 import ChooseLogin from "./useTheme/pages/ChooseLogin";

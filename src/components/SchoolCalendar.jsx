@@ -1,5 +1,5 @@
   import React, { useEffect, useMemo, useState } from "react";
-  import { collection, doc, getDocs, setDoc, addDoc, Timestamp, deleteDoc } from "firebase/firestore";
+  import { collection, doc, getDocs, setDoc, addDoc, Timestamp, deleteDoc , onSnapshot } from "firebase/firestore";
   import { db } from "../services/firebase";
   import "./SchoolCalendar.css";
 
@@ -84,19 +84,22 @@ useEffect(() => {
 
   loadAcademicYear();
 }, [adminUid]);
-    useEffect(() => {
-      if (!adminUid) return;
+useEffect(() => {
+  if (!adminUid) return;
 
-      const loadEvents = async () => {
-        const snap = await getDocs(collection(db, "users", adminUid, "calendar"));
+  const ref = collection(db, "users", adminUid, "calendar");
 
-        const data = {};
-        snap.forEach(d => (data[d.id] = d.data()));
-        setEvents(data);
-      };
+  const unsub = onSnapshot(ref, (snap) => {
+    const data = {};
+    snap.forEach(d => {
+      data[d.id] = d.data();
+    });
 
-      loadEvents();
-    }, [adminUid]);
+    setEvents(data);
+  });
+
+  return () => unsub();
+}, [adminUid]);
 
     /* APPROVAL (SUB ADMIN) */
     const requestEventApproval = async (dateStr, data) => {

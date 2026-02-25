@@ -40,9 +40,10 @@
 }
 .summary-layout {
   background: #F2F4F7;   /* 🔥 BEST GRAY */
-  padding: 24px;
+  margin: 0px 5px 5px 5px;
   border-radius: 24px;
 }
+
 
 /* ========== SUMMARY LAYOUT ========== */
 .summary-layout {
@@ -600,9 +601,14 @@
 .top-card.blue  i { background:#3a9df5; }
 .top-card.yellow i { background:#fbbf24; }
 .top-card.red   i { background:#fb5a5a; }
-
+@media (max-width: 768px){
+   .summary-layout{margin: 0px 5px 5px 5px;}
+}
+@media (max-width: 1160px){
+  .summary-layout{margin: 0px 5px 5px 5px;}
+}
 /* Mobile */
-@media (max-width: 700px) {
+@media (max-width: 768px) {
   .top-summary-row {
     grid-template-columns: repeat(2, 1fr);
   }

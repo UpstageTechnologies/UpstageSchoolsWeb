@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, addDoc, onSnapshot ,query,deleteDoc, doc, updateDoc} from "firebase/firestore";
+import { collection, addDoc, onSnapshot ,query,deleteDoc, doc, updateDoc ,getDoc} from "firebase/firestore";
 import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
 import "../../dashboard_styles/studentSearch.css";
@@ -49,7 +49,13 @@ const entryTypes = ["Fees", "Salary", "Competition"];
 const [competitionName, setCompetitionName] = useState("");
 const [competitionAmount, setCompetitionAmount] = useState("");
 const [showCompetitionClassDD, setShowCompetitionClassDD] = useState(false);
-
+const handleSalarySubmit = () => {
+  if (editId) {
+    updateSalary();
+  } else {
+    saveFee();   // your salary save logic already inside saveFee()
+  }
+};
 const historyRef = collection(
   db,
   "users",
@@ -336,23 +342,41 @@ setNewStaffPhone("");
       competitionClassSearch.toLowerCase()
     )
   );
-  
-
   const deleteFee = async (id) => {
     if (!window.confirm("Delete this item?")) return;
   
-    await deleteDoc(
-      doc(db, "users", adminUid, "Account", "accounts", "FeesMaster", id)
+    const docRef = doc(
+      db,
+      "users",
+      adminUid,
+      "Account",
+      "accounts",
+      "FeesMaster",
+      id
     );
   
-    await addDoc(historyRef,{
-      entryType:"inventory",
-      action:"DELETE",
-      module:"FEES_MASTER",
-      name:"Deleted Fee",
-      amount:0,
+    // 🔥 Step 1: get original data
+    const snap = await getDoc(docRef);
+  
+    if (!snap.exists()) {
+      alert("Document not found");
+      return;
+    }
+  
+    const originalData = snap.data();
+  
+    // 🔥 Step 2: delete
+    await deleteDoc(docRef);
+  
+    // 🔥 Step 3: save full backup
+    await addDoc(historyRef, {
+      entryType: "inventory",
+      action: "DELETE",
+      module: "FEES_MASTER",
+      originalId: id,
+      originalData: originalData,   // 🔥 IMPORTANT
       date: todayDate,
-      createdAt:new Date()
+      createdAt: new Date()
     });
   };
   
@@ -450,21 +474,67 @@ setNewStaffPhone("");
       alert("Salary update failed");
     }
   };
+  const deleteCompetition = async (item) => {
+    if (!window.confirm("Delete competition?")) return;
+  
+    const originalData = { ...item };
+  
+    await deleteDoc(
+      doc(
+        db,
+        "users",
+        adminUid,
+        "Account",
+        "accounts",
+        "Competition",
+        item.id
+      )
+    );
+  
+    await addDoc(historyRef, {
+      entryType: "inventory",
+      action: "DELETE",
+      module: "COMPETITION",
+      originalId: item.id,
+      originalData: originalData,
+      date: todayDate,
+      createdAt: new Date()
+    });
+  };
   const deleteSalary = async (id) => {
     if (!window.confirm("Delete this salary entry?")) return;
   
-    await deleteDoc(
-      doc(db, "users", adminUid, "Account", "accounts", "FeesMaster", id)
+    const docRef = doc(
+      db,
+      "users",
+      adminUid,
+      "Account",
+      "accounts",
+      "FeesMaster",
+      id
     );
-  };
-  const handleSalarySubmit = () => {
-    if (editId) {
-      updateSalary();
-    } else {
-      saveFee(); // existing save salary logic
+  
+    const snap = await getDoc(docRef);
+  
+    if (!snap.exists()) {
+      alert("Not found");
+      return;
     }
+  
+    const originalData = snap.data();
+  
+    await deleteDoc(docRef);
+  
+    await addDoc(historyRef, {
+      entryType: "inventory",
+      action: "DELETE",
+      module: "SALARY_MASTER",
+      originalId: id,
+      originalData: originalData,
+      date: todayDate,
+      createdAt: new Date()
+    });
   };
-        
   const resetSalaryForm = () => {
     setEditId(null);
     setEntryType("");
@@ -1133,7 +1203,7 @@ setNewStaffPhone("");
         <FaEdit /> Edit
       </button>
 
-      <button className="delete-btn" onClick={() => deleteFee(i.id)}>
+      <button className="delete-btn" onClick={() => deleteFee(i)}>
         <FaTrash /> Delete
       </button>
     </td>

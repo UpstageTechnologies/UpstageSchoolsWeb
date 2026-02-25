@@ -57,8 +57,10 @@ const photo =
   };
   
   return (
+    
     <div className="sub-wrapper">
       <div className="sub-container">
+        
 
         {/* HEADER */}
         <div className="sub-header">
@@ -127,7 +129,7 @@ const photo =
             setActivePage("attendance");
           }
           if (title === "Account Creation") {
-            setActivePage("teacher");
+            setActivePage("account-creation");
           }
           if (title === "Courses & Timetable") {
             setActivePage("courses");
@@ -160,7 +162,7 @@ const photo =
 
 </div>
 {/* FULL WIDTH CALENDAR SECTION */}
-<div className="calendar-full">
+<div className="">
   <h3>Academic Calendar</h3>
 
   <SchoolCalendar

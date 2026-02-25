@@ -76,7 +76,7 @@ html,body{overflow-x:hidden;}
 .dropdown-item{padding:10px 14px;display:flex;align-items:center;gap:10px;font-size:14px;transition:background 0.2s;}
 .dropdown-item:hover{background:#f2f2f2;}
 .dropdown-item.logout{color:#d32f2f;font-weight:500;}
-.dashboard-content{padding:90px 25px 25px 25px;}
+.dashboard-content{padding:10px 5px 5px 15px;}
 
 .sidebar{background:#ffffff;border-radius:18px;box-shadow:0 10px 25px rgba(0,0,0,0.08);top:8px;left:8px;height:calc(100vh - 16px);}
 .account-main{display:flex;align-items:center;justify-content:space-between;gap:10px;}
@@ -625,4 +625,31 @@ html,body{overflow-x:hidden;}
     margin: 5px 25px 5px 185px;
     max-width:100%;
   }
+}/* FULL SCREEN MODE */
+.fullscreen-mode {
+  display: block !important;
+  width: 100% !important;
+  min-height: 100vh !important;
+}
+
+.fullscreen-mode .main-content {
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.fullscreen-mode .dashboard-content {
+  width: 100% !important;
+  min-height: 100vh !important;
+  padding: 10px 10px 10px 10px!important;   /* 🔥 all sides equal */
+  box-sizing: border-box;
+}
+
+.fullscreen-mode .sub-wrapper {
+  padding: 0 !important;
+}
+
+.fullscreen-mode .sub-container {
+  margin: 0 !important;
+  max-width: 100% !important;
+  padding: 24px 32px !important;
 }

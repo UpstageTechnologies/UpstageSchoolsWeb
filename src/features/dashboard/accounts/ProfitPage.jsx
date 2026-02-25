@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, onSnapshot, addDoc, updateDoc,  deleteDoc, doc } from "firebase/firestore";
+import { collection, onSnapshot, addDoc, updateDoc,  deleteDoc, doc ,getDoc} from "firebase/firestore";
   import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
 import "../../dashboard_styles/studentSearch.css";
@@ -1115,34 +1115,59 @@ const getTermPaidCount = (studentId, feeId) =>
   
     return () => unsubYear();
   }, [adminUid]);
+  const deleteEntry = async (row) => {
+    if (!window.confirm("Delete this entry?")) return;
   
-
-const deleteEntry = async (row) => {
-  if (!window.confirm("Delete this entry?")) return;
-
-  try {
+    let collectionName = "";
+    let entryType = "";
+  
     if (row.type === "income") {
-      await deleteDoc(
-        doc(db, "users", adminUid, "Account", "accounts", "Income", row.id)
-      );
+      collectionName = "Income";
+      entryType = "income";
+    } 
+    else if (row.type === "expense") {
+      collectionName = "Expenses";
+      entryType = "expense";
+    } 
+    else {
+      return;
     }
-
-    if (row.type === "expense") {
-      await deleteDoc(
-        doc(db, "users", adminUid, "Account", "accounts", "Expenses", row.id)
-      );
+  
+    const docRef = doc(
+      db,
+      "users",
+      adminUid,
+      "Account",
+      "accounts",
+      collectionName,
+      row.id
+    );
+  
+    const snap = await getDoc(docRef);
+  
+    if (!snap.exists()) {
+      alert("Document not found");
+      return;
     }
-
-    console.log("Deleted successfully:", row.id);
-
-  } catch (err) {
-    console.error("Delete failed:", err);
-    alert("Failed to delete entry");
-  }
-};
-
-
-
+  
+    const originalData = snap.data();
+  
+    await deleteDoc(docRef);
+  
+    await addDoc(historyRef, {
+      entryType,
+      action: "DELETE",
+      module: collectionName,
+      originalId: row.id,
+      originalData: originalData,
+      name: originalData.studentName || originalData.name || "",
+      amount: originalData.paidAmount || originalData.amount || 0,
+      date: originalData.date || new Date(),
+      createdAt: new Date()
+    });
+  
+    alert("Deleted successfully ✅");
+  };
   return (
     <>
     {activePage && activePage.startsWith("bill_") ? (

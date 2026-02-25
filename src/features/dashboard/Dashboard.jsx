@@ -23,6 +23,7 @@ import { useCallback, useMemo } from "react";
     FaChevronUp,FaCalendarAlt,FaClipboardCheck,FaWpforms,FaMoneyBillWave
   } from "react-icons/fa";
   import { ROLE_ACCESS } from "../../config/roleAccess";
+
   const Admin = lazy(() => import("./Admin"));
   const OfficeStaff = lazy(() => import("./OfficeStaff"));
   const StudentDetails = lazy(() => import("./StudentDetails"));
@@ -55,6 +56,7 @@ const Parent = lazy(() => import("./Parent"));
 const Student = lazy(() => import("./Student"));
 
   const Dashboard = () => {
+   
     const [user, setUser] = useState(null);
     const [role, setRole] = useState(null);
     const [school, setSchool] = useState("");
@@ -79,7 +81,7 @@ const [officeStaffList, setOfficeStaffList] = useState([]);
 const [studentsList, setStudentsList] = useState([]);
 const [parentsList, setParentsList] = useState([]);
 const [globalResults, setGlobalResults] = useState([]);
-
+const hideLayout = role === "teacher" || role === "parent";
 const badgeColors = {teacher: "#add8e6", student: "#90ee90",      // green
   parent: "rgb(240, 170, 240)",       // purple
   admin: "#f08080",        // red
@@ -523,9 +525,15 @@ useEffect(() => {
      
 
       <BackConfirm />
-      <div style={{background:"#F2F4F7"}} className={`dashboard-container ${accountPopupOpen ? "popup-open" : ""}`}>
-      <div className={`sidebar sidebar-${sidebarState}`}>
-{/* ===== SIDEBAR PROFILE ===== */}
+      <div
+  style={{ background: "#F2F4F7" }}
+  className={`dashboard-container 
+    ${accountPopupOpen ? "popup-open" : ""} 
+    ${hideLayout ? "fullscreen-mode" : ""}`
+  }
+>
+      {!hideLayout && (
+  <div className={`sidebar sidebar-${sidebarState}`}>
 <div
   className="sidebar-profile">
   {localStorage.getItem("profilePhoto") ? (
@@ -739,9 +747,11 @@ useEffect(() => {
     </>
   )}
 </ul>
+
         </div>
-        <div className="main-content">
-   
+        )}
+     <div className={`main-content ${hideLayout ? "fullscreen-content" : ""}`}>
+   {!hideLayout && 
         <Navbar
   toggleSidebar={toggleSidebar}
   activePage={activePage}
@@ -771,6 +781,7 @@ useEffect(() => {
   badgeColors={badgeColors}
   viewAs={viewAs}
 />
+  }
 {accountPopupOpen && (
   <div
     className="profile-modal-overlay"
