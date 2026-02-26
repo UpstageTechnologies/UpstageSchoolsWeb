@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { collection, onSnapshot , addDoc, deleteDoc, doc , setDoc} from "firebase/firestore";
 import { db } from "../../../services/firebase";
-
+import "../../dashboard_styles/History.css";
+import { FaUndo } from "react-icons/fa";
 export default function HistoryPage({ adminUid, setActivePage , globalSearch = ""}) {
 
 
@@ -264,7 +265,7 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
       <td>
   {h.action === "DELETE" && (
    <button onClick={() => handleUndo(h)}>
-    Undo
+    <FaUndo style={{ marginRight: 6 }}/>Undo
   </button>
   )}
 

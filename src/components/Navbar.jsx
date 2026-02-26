@@ -122,7 +122,7 @@ if (
   
 
     return (
-      <nav className="navbar">
+      <nav style={{margin:"0px"}}className="navbar">
       <div className="nav-left">
           
         <div className="mobile-back">
@@ -165,7 +165,7 @@ if (
 
     <div className="nav-search">
   <FaSearch className="search-icon-left" />
-  <input
+  <input style={{fontSize:"30px;"}}
   ref={searchInputRef}
   placeholder="Search..."
   value={searchQuery}

@@ -76,7 +76,7 @@ html,body{overflow-x:hidden;}
 .dropdown-item{padding:10px 14px;display:flex;align-items:center;gap:10px;font-size:14px;transition:background 0.2s;}
 .dropdown-item:hover{background:#f2f2f2;}
 .dropdown-item.logout{color:#d32f2f;font-weight:500;}
-.dashboard-content{padding:10px 5px 5px 15px;}
+.dashboard-content{padding:0px 10px 30px 10px;}
 
 .sidebar{background:#ffffff;border-radius:18px;box-shadow:0 10px 25px rgba(0,0,0,0.08);top:8px;left:8px;height:calc(100vh - 16px);}
 .account-main{display:flex;align-items:center;justify-content:space-between;gap:10px;}
@@ -400,7 +400,7 @@ html,body{overflow-x:hidden;}
 
 /* CONTENT GAP */
 .dashboard-content{
-  padding-top:90px;
+  padding-top:60px;
 }
 .topbar-row{
   position:fixed;
@@ -614,18 +614,14 @@ html,body{overflow-x:hidden;}
   font-weight: 600;
   color: #374151; /* gray-700 */
 }
-
 @media (min-width:769px) and (max-width:1100px){
-  .dashboard-container{
-  
-    justify-content:center;
-  }
 
   .main-content{
-    margin: 5px 25px 5px 185px;
-    max-width:100%;
+    margin-left: clamp(160px,22vw,220px);
+    margin-right: 1px;
   }
-}/* FULL SCREEN MODE */
+
+}
 .fullscreen-mode {
   display: block !important;
   width: 100% !important;
@@ -652,4 +648,59 @@ html,body{overflow-x:hidden;}
   margin: 0 !important;
   max-width: 100% !important;
   padding: 24px 32px !important;
+}
+@media (min-width:769px) and (max-width:1100px){
+.dashboard-content{
+ padding-left: 10px;
+ padding-right: 10px;
+}
+}
+/* =========================================
+   769px - 859px + SIDEBAR OPEN COMPACT MODE
+========================================= */
+@media (min-width:769px) and (max-width:1038px) and (min-Width:901px) and (max-width:1037px) and (max-width:970px) {
+
+  /* Only when sidebar is NOT closed */
+  .sidebar:not(.sidebar-close) ~ .main-content {
+
+    /* Reduce overall scale slightly */
+    font-size: 14px;
+  }
+
+  /* Profile name */
+  .sidebar:not(.sidebar-close) ~ .main-content h1{
+    font-size: 20px !important;
+  }
+
+  /* Email / phone text */
+  .sidebar:not(.sidebar-close) ~ .main-content h3,
+  .sidebar:not(.sidebar-close) ~ .main-content p{
+    font-size: 13px !important;
+  }
+
+  /* Top stat cards */
+  .sidebar:not(.sidebar-close) ~ .main-content .dashboard-content > div{
+    padding: 14px !important;
+  }
+
+  /* Small stat numbers */
+  .sidebar:not(.sidebar-close) ~ .main-content .dashboard-content h2{
+    font-size: 18px !important;
+  }
+
+  /* Big attendance % */
+  .sidebar:not(.sidebar-close) ~ .main-content .attendance-rate{
+    font-size: 36px !important;
+  }
+
+  /* Reduce card border radius slightly */
+  .sidebar:not(.sidebar-close) ~ .main-content .dashboard-content > div{
+    border-radius: 14px !important;
+  }
+
+  /* Reduce graph label boxes */
+  .sidebar:not(.sidebar-close) ~ .main-content .month-label{
+    transform: scale(0.9);
+  }
+
 }

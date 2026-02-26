@@ -1,0 +1,254 @@
+/* ===============================
+   HISTORY PAGE – MODERN THEME
+================================= */
+
+/* Wrapper */
+.accounts-wrapper{
+    padding:20px;
+    background:#f5f7fb;
+    min-height:100vh;
+  }
+  
+  /* Title */
+  .page-title{
+    font-size:26px;
+    font-weight:700;
+    margin-bottom:18px;
+    color:#111827;
+  }
+  
+  /* ===============================
+     FILTER TABS
+  ================================= */
+  
+  .history-filters{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:18px;
+  }
+  
+  .tab-btn{
+    height:42px;
+    padding:0 18px;
+    border-radius:14px;
+    font-weight:600;
+    font-size:14px;
+    background:#ffffff;
+    border:1px solid #e5e7eb;
+    cursor:pointer;
+    transition:all .25s ease;
+    white-space:nowrap;
+  }
+  
+  .tab-btn:hover{
+    background:#eef2ff;
+    border-color:#dbe3ff;
+  }
+  
+  .tab-btn.active{
+    background:linear-gradient(135deg,#4f6df5,#3b5bdb);
+    color:#fff;
+    border:none;
+    box-shadow:0 6px 16px rgba(79,109,245,0.35);
+  }
+  
+  .tab-btn:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+  }
+  
+  /* ===============================
+     CARD CONTAINER
+  ================================= */
+  
+  .section-card{
+    background:#ffffff;
+    border-radius:20px;
+    padding:20px;
+    box-shadow:0 20px 40px rgba(0,0,0,0.06);
+    transition:.3s ease;
+  }
+  
+  .section-card:hover{
+    transform:translateY(-3px);
+  }
+  
+  .section-card.pop{
+    animation:fadeIn .4s ease;
+  }
+  
+  @keyframes fadeIn{
+    from{opacity:0; transform:translateY(8px);}
+    to{opacity:1; transform:none;}
+  }
+  
+  /* ===============================
+     DATE INPUT
+  ================================= */
+  
+  input[type="date"]{
+    height:40px;
+    padding:0 12px;
+    border-radius:12px;
+    border:1px solid #d1d5db;
+    background:#fff;
+    font-weight:500;
+    margin-bottom:14px;
+  }
+  
+  input[type="date"]:focus{
+    outline:none;
+    border-color:#4f6df5;
+    box-shadow:0 0 0 3px rgba(79,109,245,.15);
+  }
+  
+  /* ===============================
+     TABLE STYLE
+  ================================= */
+  
+  .nice-table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+    border-radius:16px;
+    overflow:hidden;
+  }
+  
+  .nice-table thead{
+    background:#f1f4ff;
+  }
+  
+  .nice-table th{
+    padding:14px 16px;
+    font-size:14px;
+    font-weight:700;
+    color:#374151;
+    text-align:left;
+  }
+  
+  .nice-table td{
+    padding:14px 16px;
+    font-size:14px;
+    border-top:1px solid #f0f0f0;
+    color:#111827;
+  }
+  
+  .nice-table tbody tr{
+    transition:.2s ease;
+  }
+  
+  .nice-table tbody tr:hover{
+    background:#f9faff;
+  }
+  
+  /* Amount alignment */
+  .nice-table td:nth-child(4){
+    text-align:right;
+    font-weight:600;
+  }
+  
+  /* ===============================
+     UNDO BUTTON
+  ================================= */
+  
+  .nice-table button{
+    padding:6px 14px;
+    border-radius:10px;
+    border:none;
+    background:#ef4444;
+    color:white;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.2s ease;
+  }
+  
+  .nice-table button:hover{
+    background:#dc2626;
+    transform:translateY(-2px);
+  }
+  
+  /* Restored text */
+  .nice-table span{
+    font-size:13px;
+    font-weight:700;
+    color:#16a34a;
+  }
+  
+  /* ===============================
+     PAGINATION
+  ================================= */
+  
+  .pagination-bar{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    margin-top:20px;
+  }
+  
+  .tab-buttons{
+    display:flex;
+    gap:10px;
+    overflow-x:auto;
+    scrollbar-width:none;
+  }
+  
+  .tab-buttons::-webkit-scrollbar{
+    display:none;
+  }
+  
+  /* ===============================
+     MOBILE RESPONSIVE TABLE
+  ================================= */
+  
+  @media (max-width:768px){
+  
+    .nice-table thead{
+      display:none;
+    }
+  
+    .nice-table,
+    .nice-table tbody,
+    .nice-table tr,
+    .nice-table td{
+      display:block;
+      width:100%;
+    }
+  
+    .nice-table tr{
+      margin-bottom:14px;
+      padding:14px;
+      border-radius:16px;
+      background:#ffffff;
+      box-shadow:0 10px 20px rgba(0,0,0,0.05);
+    }
+  
+    .nice-table td{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      border:none;
+      padding:6px 0;
+    }
+  
+    .nice-table td::before{
+      content:attr(data-label);
+      font-weight:600;
+      color:#6b7280;
+    }
+  }
+  
+  /* ===============================
+     MOBILE FILTER STACK
+  ================================= */
+  
+  @media (max-width:600px){
+    .history-filters{
+      flex-direction:column;
+    }
+  
+    .history-filters .tab-btn{
+      width:100%;
+    }
+  }

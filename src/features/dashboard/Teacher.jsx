@@ -35,17 +35,61 @@ const classes = Array.from({ length: 12 }, (_, i) => i + 1);
 const sections = Array.from({ length: 26 }, (_, i) =>
   String.fromCharCode(65 + i)
 );
+const FloatingInput = ({
+  name,
+  label,
+  value,
+  onChange,
+  type = "text",
+  focused,
+  setFocused,
+  rightIcon,
+  onRightIconClick
+}) => (
+  <div className={`floating-input ${focused === name || value ? "active" : ""}`}>
+    
+    <input
+      type={type}
+      placeholder={focused === name ? "" : label}
+      value={value}
+      onFocus={() => setFocused(name)}
+      onBlur={() => setFocused(null)}
+      onChange={onChange}
+      style={{ paddingRight: rightIcon ? 40 : 14 }}
+    />
+
+    <label>{label}</label>
+
+    {rightIcon && (
+      <span
+        onClick={onRightIconClick}
+        style={{
+          position: "absolute",
+          right: 12,
+          top: "50%",
+          transform: "translateY(-50%)",
+          cursor: "pointer",
+          color: "#555"
+        }}
+      >
+        {rightIcon}
+      </span>
+    )}
+  </div>
+);
 const Teacher = ({ requirePremium, globalSearch = "", setActivePage }) => {
 
   const adminUid =
     auth.currentUser?.uid || localStorage.getItem("adminUid");
 
   const role = localStorage.getItem("role"); // admin | sub_admin
+  const [focused, setFocused] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [teachers, setTeachers] = useState([]);
   const [editId, setEditId] = useState(null);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  // 🔥 MOVE THIS ABOVE Teacher COMPONENT
 
   /* ================= FORM ================= */
   const [form, setForm] = useState({
@@ -117,6 +161,7 @@ const Teacher = ({ requirePremium, globalSearch = "", setActivePage }) => {
 
     setClassForm({ class: "", section: "", subject: "" });
   };
+
 
   /* ================= SAVE ================= */
   const handleSaveTeacher = async () => {
@@ -463,27 +508,33 @@ useEffect(() => {
 
   <p style={{ fontSize: 12, color: "#777" }}>Select profile photo</p>
 </div>
-
-
-            <input
-              placeholder="Teacher Name"
-              value={form.name}
+<FloatingInput
+  name="name"
+  label="Teacher Name"
+  value={form.name}
+  focused={focused}
+  setFocused={setFocused}
               onChange={e => setForm({ ...form, name: e.target.value })}
             />
-
-            <input
-              placeholder="Teacher ID"
-              value={form.teacherId}
+<FloatingInput
+  name="teacherId"
+  label="Teacher ID"
+  value={form.teacherId}
+  focused={focused}
+  setFocused={setFocused}
               onChange={e =>
                 setForm({ ...form, teacherId: e.target.value })
               }
             />
 
 <div style={{ position: "relative" }}>
-  <input
-    type={showPassword ? "text" : "password"}
-    placeholder= "Password"
-    value={password}
+<FloatingInput
+  name="password"
+  label="Password"
+  type={showPassword ? "text" : "password"}
+  value={password}
+  focused={focused}
+  setFocused={setFocused}
     onChange={e => setPassword(e.target.value)}
     style={{ width: "100%", paddingRight: 40 }}
   />
@@ -502,26 +553,33 @@ useEffect(() => {
     {showPassword ? <FaEyeSlash /> : <FaEye />}
   </span>
 </div>
-
-
-            <input
-              placeholder="Email"
-              value={form.email}
-              onChange={e => setForm({ ...form, email: e.target.value })}
+<FloatingInput
+  name="email"
+  label="Email"
+  value={form.email}
+  focused={focused}
+  setFocused={setFocused}
+  onChange={(e) =>
+               setForm({ ...form, email: e.target.value })}
             />
-
-<input
-  placeholder="Phone"
+<FloatingInput
+  name="phone"
+  label="Phone"
   value={form.phone}
+  focused={focused}
+  setFocused={setFocused}
   maxLength={10}
   onChange={e => {
     const v = e.target.value.replace(/\D/g, "");   // remove non-digits
     setForm({ ...form, phone: v.slice(0, 10) });   // max 10 digits
   }}
 />
-<input
-  placeholder="Address"
+<FloatingInput
+  name="address"
+  label="Address"
   value={form.address}
+  focused={focused}
+  setFocused={setFocused}
   rows={3}
   onChange={e =>
     setForm({ ...form, address: e.target.value })
@@ -583,10 +641,12 @@ useEffect(() => {
         <option key={s}>{s}</option>
       ))}
     </select>
-
-    <input
-      placeholder="Subject"
-      value={classForm.subject}
+    <FloatingInput
+  name="subject"
+  label="Subject"
+  value={classForm.subject}
+  focused={focused}
+  setFocused={setFocused}
       onChange={e =>
         setClassForm({ ...classForm, subject: e.target.value })
       }
