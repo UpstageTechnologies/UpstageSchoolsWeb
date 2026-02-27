@@ -387,7 +387,7 @@
   padding:0 95px 0 60px;   /* 👈 more gap */
 }
 /* ===== 360px SEARCH PERFECT ALIGNMENT ===== */
-@media (max-width: 360px){
+@media (max-width: 480px){
 
   .nav-search input{
     height: 62px !important;        /* reduce height */
@@ -414,7 +414,7 @@
   }
 }/* ===== PERFECT 360px FULL WIDTH FIX ===== */
 /* ===== CLEAN 360px SEARCH FULL WIDTH ===== */
-@media (max-width: 360px){
+@media (max-width: 480px){
 
   .navbar{
     position: fixed;

@@ -270,7 +270,7 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
   )}
 
   {h.action === "UNDO" && (
-    <span style={{ color: "green", fontWeight: "bold" }}>
+    <span style={{ color: "green" , fontWeight: "bold" }}>
       Restored
     </span>
   )}
