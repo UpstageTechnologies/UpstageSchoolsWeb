@@ -3,6 +3,7 @@ import { collection, addDoc, onSnapshot ,query,deleteDoc, doc, updateDoc ,getDoc
 import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
 import "../../dashboard_styles/studentSearch.css";
+import "../../dashboard_styles/IE.css";
 import {  FaEdit, FaTrash} from "react-icons/fa";
 export default function Inventory({ adminUid, setActivePage, plan, showUpgrade }) {
   const [feesMaster, setFeesMaster] = useState([]);

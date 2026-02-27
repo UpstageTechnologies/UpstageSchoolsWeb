@@ -654,11 +654,7 @@ html,body{overflow-x:hidden;}
  padding-left: 10px;
  padding-right: 10px;
 }
-}
-/* =========================================
-   769px - 859px + SIDEBAR OPEN COMPACT MODE
-========================================= */
-@media (min-width:769px) and (max-width:1038px) and (min-Width:901px) and (max-width:1037px) and (max-width:970px) {
+}@media (min-width: 769px) and (max-width: 1100px) {
 
   /* Only when sidebar is NOT closed */
   .sidebar:not(.sidebar-close) ~ .main-content {

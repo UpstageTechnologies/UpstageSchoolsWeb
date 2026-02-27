@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, onSnapshot, addDoc, updateDoc,  deleteDoc, doc ,getDoc} from "firebase/firestore";
+import { collection, onSnapshot, addDoc, updateDoc,  deleteDoc, doc ,getDoc ,query, where, getDocs} from "firebase/firestore";
   import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
 import "../../dashboard_styles/studentSearch.css";
@@ -617,7 +617,22 @@ setOldPayAmount("");
       return paymentDate >= start && paymentDate <= end;
     });
   };
+  const isTermAlreadyPaid = async (studentId, feeId, termType) => {
+
+    if (!savedYear?.id) return false;  // 🔥 prevent crash
   
+    const q = query(
+      incomesRef,
+      where("studentId", "==", studentId),
+      where("feeId", "==", feeId),
+      where("paymentType", "==", termType),
+      where("academicYearId", "==", savedYear.id)
+    );
+  
+    const snapshot = await getDocs(q);
+  
+    return !snapshot.empty;
+  };
   /* ---------- INCOME: OLD ADMISSION ---------- */
   const selectOldClass = cls=>{
     setOldClass(cls);
@@ -638,11 +653,20 @@ setOldPayAmount("");
     if (!stu || !oldPayType || !entryDate) return alert("Fill all fields");
   
     const fee = selectedFees[0];
-    if (alreadyPaidThisYear(stu.id, fee.id)) {
-      alert("This fee already paid for this academic year");
-      return;
-    }
+    if (oldPayType.startsWith("term")) {
+
+      const alreadyPaid = await isTermAlreadyPaid(
+        stu.id,
+        fee.id,
+        oldPayType
+      );
     
+      if (alreadyPaid) {
+        alert("This term already paid for this academic year");
+        return;
+      }
+    }
+   
     
     if (!fee) return alert("Select a fee");
     
@@ -754,12 +778,7 @@ if (oldPayType === "monthly") {
     if (final > balanceBefore) {
       return alert("Cannot pay more than balance");
     }
-    const alreadyPaid = isFeePaidInCurrentYear(stu.id, fee.id);
-
-    if (alreadyPaid) {
-      alert("This fee is already collected for this academic year");
-      return;
-    }
+   
     
     const balanceAfter = balanceBefore - final;    // 👈 correct
   
@@ -1109,7 +1128,10 @@ const getTermPaidCount = (studentId, feeId) =>
   
     const unsubYear = onSnapshot(yearRef, snap => {
       if (snap.exists()) {
-        setSavedYear(snap.data());
+        setSavedYear({
+          id: snap.id,
+          ...snap.data()
+        });
       }
     });
   

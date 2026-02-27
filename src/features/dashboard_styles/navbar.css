@@ -234,11 +234,7 @@
   padding-right:100px !important;
 }
 @media (max-width:767px){
-  .search-history-icon{
-    width:28px;
-    height:28px;
-    right:45px;
-  }
+ 
 
   .search-history-icon svg{
     font-size:14px;
@@ -335,13 +331,6 @@
 /* 🔥 MOBILE ICON FIX */
 @media (max-width: 768px){
 
-  /* Clock icon */
-  .search-history-icon{
-    width:34px !important;
-    height:34px !important;
-    right:52px !important;      /* 👈 corner-lendhu ulla */
-    background:#000;
-  }
 
   .mobile-back-btn{
     width: 60px;
@@ -387,7 +376,7 @@
   padding:0 95px 0 60px;   /* 👈 more gap */
 }
 /* ===== 360px SEARCH PERFECT ALIGNMENT ===== */
-@media (max-width: 480px){
+@media (max-width: 360px){
 
   .nav-search input{
     height: 62px !important;        /* reduce height */
@@ -401,17 +390,7 @@
     font-size: 16px !important;
   }
 
-  .search-history-icon{
-    right: 44px !important;         /* align properly */
-    width: 30px !important;
-    height: 30px !important;
-  }
-
-  .search-school-icon{
-    right: 10px !important;
-    width: 28px !important;
-    height: 28px !important;
-  }
+  
 }/* ===== PERFECT 360px FULL WIDTH FIX ===== */
 /* ===== CLEAN 360px SEARCH FULL WIDTH ===== */
 @media (max-width: 480px){
@@ -447,16 +426,112 @@
     font-size: 16px;
   }
 
-  .search-history-icon{
-    right: 44px;
-    width: 28px;
-    height: 28px;
-  }
 
-  .search-school-icon{
-    right: 12px;
-    width: 26px;
-    height: 26px;
-  }
+}
 
+/* ================= SEARCH INPUT GLASS ================= */
+.nav-search input{
+  background: rgba(255,255,255,0.30) !important;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  border: 1px solid rgba(255,255,255,0.35);
+  box-shadow: 
+    0 10px 30px rgba(0,0,0,0.12),
+    inset 0 1px 0 rgba(255,255,255,0.5);
+}
+
+/* Focus glow */
+.nav-search input:focus{
+  background: rgba(255,255,255,0.45) !important;
+  border-color: rgba(59,130,246,0.6);
+  box-shadow:
+    0 0 0 3px rgba(59,130,246,0.18),
+    0 10px 35px rgba(59,130,246,0.25);
+}
+.nav-search input::placeholder{
+  font-size:18px;
+  font-weight:500;
+  color:#6b7280;
+  letter-spacing:0.2px;
+}
+
+/* FOCUS */
+.nav-search input:focus{
+  outline:none;
+  background:rgba(255,255,255,0.55);
+  border-color:rgba(59,130,246,0.6);
+  box-shadow:
+    0 0 0 3px rgba(59,130,246,0.18),
+    0 12px 35px rgba(59,130,246,0.25);
+}
+
+/* LEFT SEARCH ICON */
+.search-icon-left{
+  position:absolute;
+  left:24px;
+  top:50%;
+  transform:translateY(-50%);
+  
+  font-size:18px;
+  color:#9ca3af;
+  pointer-events:none;
+}
+
+/* ================= HISTORY ICON BIG ================= */
+.search-history-icon{
+  width:34px;
+  height:34px;
+  right:52px;              /* adjust for bigger size */
+  
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.search-history-icon svg{
+  font-size:20px;          /* bigger clock icon */
+}
+
+/* ================= SCHOOL LOGO BIG ================= */
+.search-school-icon{
+  width:154px;
+  height:154px;
+  right:8px;
+}
+
+.search-school-icon img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  border-radius:50%;
+}
+.search-history-icon{ right:52px; }
+.search-school-icon{ right:8px; }
+/* SEARCH DROPDOWN CONTAINER */
+.search-dropdown {
+  padding: 20px;
+}
+/* SECTION TITLE FULL WIDTH */
+.quick-title {
+  grid-column: 1 / -1;   /* 🔥 VERY IMPORTANT */
+  font-size: 18px;
+  font-weight: 600;
+  margin: 10px 0 5px 0;
+}
+
+/* ICON INSIDE TILE */
+.tile-icon {
+  width: 50px;
+  height: 50px;
+  margin: 0 auto 10px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 18px;
+  color: #fff;
+  background: #3b82f6;
 }

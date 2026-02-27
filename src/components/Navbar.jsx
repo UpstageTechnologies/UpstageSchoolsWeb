@@ -51,14 +51,28 @@ const Navbar = ({
 
 const roleAccess = ROLE_ACCESS[role] || { pages: [] };
 const searchInputRef = useRef(null);
-
 const QUICK_TILES = [
+  { type: "section", title: "Pages" },
+  { title: "Home", page: "home" },
   { title: "Calendar", page: "calendar" },
   { title: "Applications", page: "applications" },
   { title: "Accounts", page: "accounts" },
+  { title: "Fees", page: "fees" },
+  { title: "Income", page: "income" },
+  { title: "Expenses", page: "expenses" },
+  { title: "Expense List", page: "expenseList" },
+  { title: "Journal", page: "journal" },
   { title: "Timetable", page: "timetable" },
-  { title: "Approvals", page: "approvals" },
+  { title: "Attendance", page: "attendance" },
   { title: "Courses", page: "courses" },
+  { title: "Inventory", page: "inventory" },
+  { title: "Approvals", page: "approvals" },
+  { title: "Profile", page: "profile" },
+  { title: "Settings", page: "settings" },
+  { title: "Upgrade", page: "payment" },
+
+  { type: "section", title: "Account Creation" },
+
   { title: "Admin", page: "admin", color: "#f08080" },
   { title: "Teacher", page: "teacher", color: "#add8e6" },
   { title: "Student", page: "student", color: "#90ee90" },
@@ -66,10 +80,8 @@ const QUICK_TILES = [
   { title: "Staff", page: "office_staff", color: "#ffa07a" }
 ];
 
-
-
 const filteredQuickTiles = QUICK_TILES.filter(tile =>
-  roleAccess.pages.includes(tile.page)
+  tile.type === "section" || roleAccess.pages.includes(tile.page)
 );
 
   const QuickTile = ({ title, page, onOpen, color }) => {
@@ -218,15 +230,25 @@ if (
   </div>
   {searchQuery === "" && (
   <div className="quick-row">
-    {filteredQuickTiles.map(tile => (
-      <QuickTile
-        key={tile.page}
-        title={tile.title}
-        page={tile.page}
-        color={tile.color}
-        onOpen={handleMenuClick}
-      />
-    ))}
+   {filteredQuickTiles.map((tile, index) => {
+  if (tile.type === "section") {
+    return (
+      <div key={index} className="quick-title">
+        {tile.title}
+      </div>
+    );
+  }
+
+  return (
+    <QuickTile
+      key={tile.page}
+      title={tile.title}
+      page={tile.page}
+      color={tile.color}
+      onOpen={handleMenuClick}
+    />
+  );
+})}
   </div>
 )}
 {pageResults.length > 0 && (
