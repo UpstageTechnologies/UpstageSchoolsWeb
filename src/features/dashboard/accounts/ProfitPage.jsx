@@ -759,7 +759,6 @@ if (oldPayType === "monthly") {
         }
         final = Number(oldPayAmount);
       } 
-      // 🔹 Term 1 & Term 2 → auto
       else {
         final = fixedTermAmount;
       }
