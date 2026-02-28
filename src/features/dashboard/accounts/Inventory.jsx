@@ -1195,10 +1195,10 @@ setNewStaffPhone("");
          <tbody>
          {sortedFees.map(i => (
   <tr key={i.id}>
-    <td>{i.className}</td>
-    <td>{i.name}</td>
-    <td>₹{i.amount}</td>
-    <td>{i.discount || 0}%</td>
+    <td data-label="ClassName">{i.className}</td>
+    <td data-label="Name">{i.name}</td>
+    <td data-label="Amount">₹{i.amount}</td>
+    <td data-label="Discount">{i.discount || 0}%</td>
     <td>
       <button className="edit-btn" onClick={() => startEdit(i)}>
         <FaEdit /> Edit
@@ -1269,9 +1269,9 @@ setNewStaffPhone("");
     <tbody>
       {competitionList.map(c => (
         <tr key={c.id}>
-          <td>{c.className}</td>
-          <td>{c.name}</td>
-          <td>₹{c.amount}</td>
+          <td data-label="ClassName">{c.className}</td>
+          <td data-label="Name">{c.name}</td>
+          <td data-label="Amount">₹{c.amount}</td>
         </tr>
       ))}
 

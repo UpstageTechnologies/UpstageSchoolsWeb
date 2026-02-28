@@ -2411,14 +2411,14 @@ all.sort((a, b) => {
           <tr>
             <td data-label="Description">{row.source}</td>
 
-            <td datalabel="Income"style={{ color: "green" }}>
+            <td data-label="Income"style={{ color: "green" }}>
   {row.income === "***" ? "***" : row.income ? `₹${row.income}` : ""}
 </td>
 
-<td datalabel="Expense"style={{ color: "red" }}>
+<td data-label="Expense"style={{ color: "red" }}>
   {row.expense === "***" ? "***" : row.expense ? `₹${row.expense}` : ""}
 </td>
-<td datalabel="Report" style={{ textAlign: "center" }}>
+<td data-label="Report" style={{ textAlign: "center" }}>
   {row.type === "income" && row.studentId && (
     <span
       style={{ cursor: "pointer", color: "#2140df", fontSize: 18 }}
@@ -2431,7 +2431,7 @@ all.sort((a, b) => {
     </span>
   )}
 </td>
-<td data-label="Actions" style={{ textAlign: "center" }}>
+<td  style={{ textAlign: "center" }}>
   <button
     className="delete-btn"
     onClick={() => deleteEntry(row)}
