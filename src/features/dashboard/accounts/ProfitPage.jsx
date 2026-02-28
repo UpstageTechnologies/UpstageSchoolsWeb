@@ -2334,8 +2334,6 @@ Save Fee</button>
         
       <div className="nice-table-wrapper">
 
-
-
 <table className="nice-table1">
 
           <thead>
