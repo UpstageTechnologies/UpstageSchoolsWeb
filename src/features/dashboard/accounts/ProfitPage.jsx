@@ -1,10 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState ,useMemo ,useCallback } from "react";
 import { collection, onSnapshot, addDoc, updateDoc,  deleteDoc, doc ,getDoc ,query, where, getDocs} from "firebase/firestore";
   import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
 import "../../dashboard_styles/studentSearch.css";
 import { useNavigate } from "react-router-dom";
 import OfficeStaff from "../OfficeStaff";
+import TodaySummary from "./components/TodaySummary";
+import EntriesTable from "./components/EntriesTable";
+import IncomeSection from "./income/IncomeSection";
+import ExpenseSection from "./expense/ExpenseSection";
 import BillPage from "./BillPage";   
 import "../../dashboard_styles/IE.css";
 import {  FaArrowLeft, FaTrash } from "react-icons/fa";
@@ -18,6 +22,14 @@ const [expenseLoaded, setExpenseLoaded] = useState(false);
 const [showStudentDropdown, setShowStudentDropdown] = useState(false);
 const [showClassDropdown, setShowClassDropdown] = useState(false);
 const [showExpenseType, setShowExpenseType] = useState(false);
+const [sourceList, setSourceList] = useState([]);
+const [expenseListMaster, setExpenseListMaster] = useState([]);
+
+const [sourceSearch, setSourceSearch] = useState("");
+const [showSourceDD, setShowSourceDD] = useState(false);
+
+const [expenseSearch, setExpenseSearch] = useState("");
+const [showExpenseDD, setShowExpenseDD] = useState(false);
 const [showSalaryRole, setShowSalaryRole] = useState(false);
 const [showSalaryPosition, setShowSalaryPosition] = useState(false);
 const [salaryRole, setSalaryRole] = useState("");          
@@ -80,7 +92,18 @@ const positions = {
 const [categorySearch, setCategorySearch] = useState("");
 const [positionSearch, setPositionSearch] = useState("");
 const [classes, setClasses] = useState([]);
+useEffect(() => {
+  if (entryType === "income") {
+    setExpenseMode("");
+    setShowExpenseType(false);
+  }
 
+  if (entryType === "expense") {
+    setIncomeMode("");
+    setStudentMode("");
+    setShowIncomeType(false);
+  }
+}, [entryType]);
 useEffect(() => {
   if (!adminUid) return;
   const ref = collection(db, "users", adminUid, "Classes");
@@ -134,6 +157,32 @@ const getClassFees = (cls) => {
       String(f.className).trim() === String(cls).trim()
   );
 };
+useEffect(() => {
+  if (!adminUid) return;
+
+  const unsubSource = onSnapshot(sourceMasterRef, snap => {
+    setSourceList(
+      snap.docs.map(d => ({
+        id: d.id,
+        ...d.data()
+      }))
+    );
+  });
+
+  const unsubExpense = onSnapshot(expenseMasterRef, snap => {
+    setExpenseListMaster(
+      snap.docs.map(d => ({
+        id: d.id,
+        ...d.data()
+      }))
+    );
+  });
+
+  return () => {
+    unsubSource();
+    unsubExpense();
+  };
+}, [adminUid]);
 useEffect(() => {
   if (!adminUid) return;
 
@@ -233,12 +282,15 @@ const filteredPaymentTypes = paymentTypes.filter(p =>
   const [studentSearch, setStudentSearch] = useState("");
   const [selectedStudentName, setSelectedStudentName] = useState("");
 
-  const allDates = [
+
+const allDates = useMemo(() => {
+  return [
     ...new Set([
       ...incomeList.map(i => i.date),
       ...expenseList.map(e => e.date)
     ])
   ].sort();
+}, [incomeList, expenseList]);
   const getClassTotal = (cls) =>
   feesMaster.filter(f => f.className === cls)
     .reduce((t, f) => t + (f.amount || 0), 0);
@@ -282,6 +334,27 @@ const getVisiblePages = () => {
   
   const incomesRef  = collection(db,"users",adminUid,"Account","accounts","Income");
   const expensesRef = collection(db,"users",adminUid,"Account","accounts","Expenses");
+  const sourceMasterRef = collection(
+    db,
+    "users",
+    adminUid,
+    "Account",
+    "accounts",
+    "Masters",
+    "Main",
+    "Sources"
+  );
+  
+  const expenseMasterRef = collection(
+    db,
+    "users",
+    adminUid,
+    "Account",
+    "accounts",
+    "Masters",
+    "Main",
+    "ExpenseNames"
+  );
   const studentsRef = collection(db, "users", adminUid, "students");
   const feesRef     = collection(db,"users",adminUid,"Account","accounts","FeesMaster");
 
@@ -342,11 +415,9 @@ useEffect(() => {
       return alert("Fill all source fields");
   
     try {
-  
-      // 1️⃣ Save Income
       await addDoc(incomesRef, {
-        source: true,
-        studentName: srcName,
+        type: "source",
+        name: srcName,              // 🔥 CHANGE HERE
         paidAmount: Number(srcAmt),
         date: entryDate,
         createdAt: new Date()
@@ -382,11 +453,7 @@ useEffect(() => {
     "Competition"
   );
   
-  const unsubCompetition = onSnapshot(competitionRef, snap => {
-    setCompetitionList(
-      snap.docs.map(d => ({ id: d.id, ...d.data() }))
-    );
-  });
+ 
   
   const safeRequirePremium = (cb, type) => {
     if (!loaded && !isOfficeStaff) return;
@@ -618,9 +685,7 @@ setOldPayAmount("");
     });
   };
   const isTermAlreadyPaid = async (studentId, feeId, termType) => {
-
     if (!savedYear?.id) return false;  // 🔥 prevent crash
-  
     const q = query(
       incomesRef,
       where("studentId", "==", studentId),
@@ -628,9 +693,7 @@ setOldPayAmount("");
       where("paymentType", "==", termType),
       where("academicYearId", "==", savedYear.id)
     );
-  
     const snapshot = await getDocs(q);
-  
     return !snapshot.empty;
   };
   /* ---------- INCOME: OLD ADMISSION ---------- */
@@ -823,19 +886,22 @@ setPaymentSearch("");
 setShowPaymentDD(false);
   };
   const selectedDate = entryDate;   // 👈 whatever date user selected
-
-const todayIncome = incomeList
-  .filter(i => i.date === selectedDate)
-  .reduce((t, i) => t + Number(i.paidAmount || 0), 0);
-
-const todayExpense = expenseList
-  .filter(e => e.date === selectedDate)
-  .reduce((t, e) => t + Number(e.amount || 0), 0);
-
-const todayProfit = todayIncome - todayExpense;
-  const navigate = useNavigate();
-
-  const saveExpense = async ()=>{
+  const { todayIncome, todayExpense, todayProfit } = useMemo(() => {
+    const income = incomeList
+      .filter(i => i.date === entryDate)
+      .reduce((t, i) => t + Number(i.paidAmount || 0), 0);
+  
+    const expense = expenseList
+      .filter(e => e.date === entryDate)
+      .reduce((t, e) => t + Number(e.amount || 0), 0);
+  
+    return {
+      todayIncome: income,
+      todayExpense: expense,
+      todayProfit: income - expense
+    };
+  }, [incomeList, expenseList, entryDate]);
+  const saveExpense = useCallback(async ()=>{
     if(!exName||!exAmt||!entryDate) return alert("Fill expense");
     await addDoc(expensesRef,{
       type: expenseMode,
@@ -855,7 +921,7 @@ const todayProfit = todayIncome - todayExpense;
     });
     
     setExName(""); setExAmt("");
-  };
+  },[exName, exAmt, entryDate]);
   const saveCompetitionIncome = async () => {
     if (
       !competitionClass ||
@@ -1202,45 +1268,13 @@ const getTermPaidCount = (studentId, feeId) =>
       <>
     
 <h2 className="page-title">Accounts Dashboard</h2>
-      {!isOfficeStaff && (
-      <div className="today-summary">
-
-      <div
-  className="today-card blue"
-  style={{ padding: "14px 20px", minHeight: "90px" }}
->
-
-    <span>Today Income</span>
-    <h2 style={{ fontSize: "22px", marginTop: "4px" }}>
-  ₹{todayIncome.toLocaleString("en-IN")}
-</h2>
-
-  </div>
-  <div
-  className="today-card yellow"
-  style={{ padding: "14px 20px", minHeight: "90px" }}
-> 
-
-    <span>Today Expense</span>
-    <h2>₹{todayExpense.toLocaleString("en-IN")}</h2>
-  </div>
-
-  <div
-  className="today-card green"
-  style={{ padding: "14px 20px", minHeight: "90px" }}
->
-
-    <span>Today Profit</span>
-    <h2>₹{todayProfit.toLocaleString("en-IN")}</h2>
-  </div>
-
-</div>
-      )}
-
-    
-
-
-
+{!isOfficeStaff && (
+  <TodaySummary
+    todayIncome={todayIncome}
+    todayExpense={todayExpense}
+    todayProfit={todayProfit}
+  />
+)}
 <div 
   className="section-card pop entries-card"
   style={{ marginTop: "40px" }}   // 👈 gap
@@ -1300,1013 +1334,184 @@ const getTermPaidCount = (studentId, feeId) =>
 
        {/* ================= INCOME ================= */}
        {entryType === "income" && (
-  <>
-    {/* ===== TOP ROW : SOURCE / STUDENT ===== */}
-    <div className="entry-row source">
+  <IncomeSection
+    incomeMode={incomeMode}
+    studentMode={studentMode}
+    incomeType={incomeType}
+    showIncomeType={showIncomeType}
+    setShowIncomeType={setShowIncomeType}
+    setIncomeType={setIncomeType}
+    setIncomeMode={setIncomeMode}
+    setStudentMode={setStudentMode}
+    showStudentType={showStudentType}
+    setShowStudentType={setShowStudentType}
 
+    saveSourceIncome={saveSourceIncome}
+    saveNewAdmission={saveNewAdmission}
+    saveOldAdmission={saveOldAdmission}
+    saveCompetitionIncome={saveCompetitionIncome}
+    safeRequirePremium={safeRequirePremium}
 
-      {/* Popup Select : Source / Student */}
-      <div className="popup-select">
-        <div
-          className="popup-input"
-          onClick={() => setShowIncomeType(!showIncomeType)}
-        >
-          {incomeType || "Select"}
-          <span>▾</span>
-        </div>
+    srcName={srcName}
+    setSrcName={setSrcName}
+    srcAmt={srcAmt}
+    setSrcAmt={setSrcAmt}
+    sourceSearch={sourceSearch}
+    setSourceSearch={setSourceSearch}
+    sourceList={sourceList}
+    showSourceDD={showSourceDD}
+    setShowSourceDD={setShowSourceDD}
 
-        {showIncomeType && (
-          <div className="popup-menu">
-            <div
-              onClick={() => {
-                setIncomeType("Source");
-                setIncomeMode("source");
-                setStudentMode("");
-                setShowIncomeType(false);
-              }}
-            >
-              Source
-            </div>
-
-            <div
-              onClick={() => {
-                setIncomeType("Student");
-                setIncomeMode("student");
-                setShowIncomeType(false);
-              }}
-            >
-              Student
-            </div>
-            <div
-      onClick={() => {
-        setIncomeType("Competition");
-        setIncomeMode("competition");
-        setShowIncomeType(false);
-      }}
-    >
-      Competition
-    </div>
-          </div>
-        )}
-      </div>
-
-      {/* Student Type */}
-      {incomeMode === "student" && (
-        <div className="popup-select">
-        <div
-          className="popup-input"
-          onClick={() => setShowStudentType(!showStudentType)}
-        >
-          {studentMode
-            ? studentMode === "new"
-              ? "New Admission"
-              : "Old Admission"
-            : "Type"}
-          <span>▾</span>
-        </div>
+    newName={newName}
+    setNewName={setNewName}
+    newParent={newParent}
+    setNewParent={setNewParent}
+    newClass={newClass}
+    setNewClass={setNewClass}
+    newClassSearch={newClassSearch}
+    setNewClassSearch={setNewClassSearch}
+    showNewClassDropdown={showNewClassDropdown}
+    setShowNewClassDropdown={setShowNewClassDropdown}
     
-        {showStudentType && (
-          <div className="popup-menu">
-            <div
-              onClick={() => {
-                setStudentMode("new");
-                setShowStudentType(false);
-              }}
-            >
-              New Admission
-            </div>
-    
-            <div
-             onClick={() => {
-              setStudentMode("old");
-              setShowStudentType(false);
-            
-              // 🔥 RESET old admission states
-              setSelectedFees([]); 
-              setOldPayType("");
-              setOldPayAmount("");
-              setOldClass("");
-              setOldStudent("");
-              setOldParent("");
-              setOldTotal(0);
-            }}
-            
-            >
-              Old Admission
-            </div>
-          </div>
-        )}
-      </div>
-      )}
-    </div>
 
-    {/* ================= SOURCE ================= */}
-    {incomeMode === "source" && (
-      <div className="entry-row source">
+    selectedFees={selectedFees}
+    setSelectedFees={setSelectedFees}
+    showFeesDropdown={showFeesDropdown}
+    setShowFeesDropdown={setShowFeesDropdown}
 
-        <input
-          placeholder="Source name"
-          value={srcName}
-          onChange={e => setSrcName(e.target.value)}
-        />
-        <input
-          type="number"
-          placeholder="Amount"
-          value={srcAmt}
-          onChange={e => setSrcAmt(e.target.value)}
-        />
-        <button className="save-btn" onClick={() => safeRequirePremium(saveSourceIncome, "income")}>
-          Save
-        </button>
-      </div>
-    )}
-    
-    {/* ================= NEW STUDENT ================= */}
-    {incomeMode === "student" && studentMode === "new" && (
-    <div className="entry-row source">
+    paymentType={paymentType}
+    setPaymentType={setPaymentType}
+    paymentSearch={paymentSearch}
+    setPaymentSearch={setPaymentSearch}
+    showPaymentDD={showPaymentDD}
+    setShowPaymentDD={setShowPaymentDD}
+    filteredPaymentTypes={filteredPaymentTypes}
 
-<input
-  placeholder="Student Name"
-  value={newName}
-  onChange={e => setNewName(e.target.value)}
+    newPayType={newPayType}
+    setNewPayType={setNewPayType}
+    newPayAmount={newPayAmount}
+    setNewPayAmount={setNewPayAmount}
+    discount={discount}
+    isFullPayment={isFullPayment}
+
+    oldClass={oldClass}
+    setOldClass={setOldClass}
+    oldStudent={oldStudent}
+    setOldStudent={setOldStudent}
+    oldParent={oldParent}
+    setOldParent={setOldParent}
+    oldPayType={oldPayType}
+    setOldTotal={setOldTotal}
+    setOldPayType={setOldPayType}
+    oldPayAmount={oldPayAmount}
+    setOldPayAmount={setOldPayAmount}
+    selectedStudentName={selectedStudentName}
+    setSelectedStudentName={setSelectedStudentName}
+    studentSearch={studentSearch}
+    setStudentSearch={setStudentSearch}
+    filteredStudents={filteredStudents}
+
+    competitionClass={competitionClass}
+    setCompetitionClass={setCompetitionClass}
+    competitionStudent={competitionStudent}
+    setCompetitionStudent={setCompetitionStudent}
+    competitionName={competitionName}
+    setCompetitionName={setCompetitionName}
+    competitionAmount={competitionAmount}
+    setCompetitionAmount={setCompetitionAmount}
+    competitionList={competitionList}
+    competitionSearch={competitionSearch}
+    setCompetitionSearch={setCompetitionSearch}
+    showCompetitionDropdown={showCompetitionDropdown}
+    setShowCompetitionDropdown={setShowCompetitionDropdown}
+    showClassDropdown={showClassDropdown}
+  setShowClassDropdown={setShowClassDropdown}
+  showStudentDropdown={showStudentDropdown}
+  setShowStudentDropdown={setShowStudentDropdown}
+    classes={classes}
+    students={students}
+
+    getClassTotal={getClassTotal}
+    getClassFees={getClassFees}
+    getFeePaid={getFeePaid}
+    getFeeBalance={getFeeBalance}
+    getTermAmountUI={getTermAmountUI}
+    getNewTermAmount={getNewTermAmount}
+  />
+)}
+{entryType === "expense" && (
+<ExpenseSection
+  expenseMode={expenseMode}
+  setExpenseMode={setExpenseMode}
+  showExpenseType={showExpenseType}
+  setShowExpenseType={setShowExpenseType}
+
+  salaryRole={salaryRole}
+  setSalaryRole={setSalaryRole}
+  salaryPosition={salaryPosition}
+  setSalaryPosition={setSalaryPosition}
+  categorySearch={categorySearch}
+  setCategorySearch={setCategorySearch}
+  showSalaryCategory={showSalaryCategory}
+  setShowSalaryCategory={setShowSalaryCategory}
+  positionSearch={positionSearch}
+  setPositionSearch={setPositionSearch}
+  showSalaryPositionDD={showSalaryPositionDD}
+  setShowSalaryPositionDD={setShowSalaryPositionDD}
+
+  selName={selName}
+  setSelName={setSelName}
+  manualSalary={manualSalary}
+  setManualSalary={setManualSalary}
+
+  teacherSearch={teacherSearch}
+  setTeacherSearch={setTeacherSearch}
+  showTeacherDropdown={showTeacherDropdown}
+  setShowTeacherDropdown={setShowTeacherDropdown}
+  filteredTeachers={filteredTeachers}
+
+  staffSearch={staffSearch}
+  setStaffSearch={setStaffSearch}
+  showStaffDropdown={showStaffDropdown}
+  setShowStaffDropdown={setShowStaffDropdown}
+  filteredNonTeachingStaff={filteredNonTeachingStaff}
+
+  filteredCategories={filteredCategories}
+  filteredPositions={filteredPositions}
+
+  getSalaryFromInventory={getSalaryFromInventory}
+
+  saveSalary={saveSalary}
+  safeRequirePremium={safeRequirePremium}
+
+  exName={exName}
+  setExName={setExName}
+  exAmt={exAmt}
+  setExAmt={setExAmt}
+  expenseSearch={expenseSearch}
+  setExpenseSearch={setExpenseSearch}
+  showExpenseDD={showExpenseDD}
+  setShowExpenseDD={setShowExpenseDD}
+  expenseListMaster={expenseListMaster}
+  expenseMasterRef={expenseMasterRef}
+  saveExpense={saveExpense}
+
+  miscName={miscName}
+  setMiscName={setMiscName}
+  miscSearch={miscSearch}
+  setMiscSearch={setMiscSearch}
+  showMiscDropdown={showMiscDropdown}
+  setShowMiscDropdown={setShowMiscDropdown}
+  expenseSubName={expenseSubName}
+  setExpenseSubName={setExpenseSubName}
+  expenseNameSearch={expenseNameSearch}
+  setExpenseNameSearch={setExpenseNameSearch}
+  showExpenseNameDD={showExpenseNameDD}
+  setShowExpenseNameDD={setShowExpenseNameDD}
+  expenseNames={expenseNames}
+  miscNames={miscNames}
+  saveStudentMiscExpense={saveStudentMiscExpense}
 />
-
-<input
-  placeholder="Parent Name"
-  value={newParent}
-  onChange={e => setNewParent(e.target.value)}
-/>{/* CLASS DROPDOWN (NEW ADMISSION) */}
-<div className="student-dropdown">
-
-  <input
-    placeholder="Select Class"
-    value={newClass || newClassSearch}
-    onChange={e => {
-      setNewClassSearch(e.target.value);
-      setNewClass("");
-      setShowNewClassDropdown(true);
-    }}
-    onFocus={() => setShowNewClassDropdown(true)}
-  />
-
-  {showNewClassDropdown && (
-    <div className="student-dropdown-list">
-
-      {classes
-        .filter(c =>
-          c.toLowerCase().includes(newClassSearch.toLowerCase())
-        )
-        .map(cls => (
-          <div
-            key={cls}
-            className="student-option"
-            onClick={() => {
-              setNewClass(cls);
-              setNewClassSearch("");
-              setShowNewClassDropdown(false);
-              setNewTotal(getClassTotal(cls));
-            }}
-          >
-            Class {cls}
-          </div>
-        ))}
-
-      {classes.length === 0 && (
-        <div className="student-option muted">
-          No classes found
-        </div>
-      )}
-
-    </div>
-  )}
-
-</div>
-
-        {/* ===== SELECT FEES FROM INVENTORY ===== */}
-<div className="student-dropdown">
-  <input
-    placeholder="Select Fees"
-    value={
-      selectedFees.length
-        ? selectedFees[0]?.name || ""
-        : ""
-    }
-    readOnly
-    onClick={()=>setShowFeesDropdown(!showFeesDropdown)}/>
-  {showFeesDropdown && (
-    <div className="student-dropdown-list">
-      {getClassFees(newClass || oldClass).map(fee => {
-        const already = selectedFees.some(x=>x.id===fee.id);
-        return (
-          <div
-            key={fee.id}
-            className="student-option"
-            style={{background: already ? "#eef7ff" : ""}}
-            onClick={()=>{
-              setSelectedFees([fee]);     // only one selection
-              setShowFeesDropdown(false); // auto close dropdown
-            }}>
-            {fee.name} — ₹{fee.amount}
-          </div>
-        );
-      })}
-    </div>
-  )}
-</div>
-{selectedFees[0] && (
-  <input readOnly value={`Fee Total ₹${selectedFees[0].amount}`} />
-)} <div className="student-dropdown">
-          
-  <input
-    placeholder="Select Payment Type"
-    value={paymentType || paymentSearch}
-    onChange={e => {
-      setPaymentSearch(e.target.value);
-      setPaymentType("");
-      setShowPaymentDD(true);
-    }}
-    onFocus={() => setShowPaymentDD(true)}
-  />
-
-  {showPaymentDD && (
-    <div className="student-dropdown-list">
-      {filteredPaymentTypes.map(type => (
-        <div
-          key={type}
-          className="student-option"
-          onClick={() => {
-            setPaymentType(type);
-            const lower = type.toLowerCase().replace(" ", "");
-            setNewPayType(lower);
-          
-            // 🔥 AUTO TERM AMOUNT
-            if (lower.startsWith("term")) {
-              const fee = selectedFees[0];
-              if (fee) {
-                setNewPayAmount(getNewTermAmount(fee));
-              }
-            }
-          
-            setPaymentSearch("");
-            setShowPaymentDD(false);
-          }}
-          
-          
-        >
-          {type}
-        </div>
-      ))}
-
-      {filteredPaymentTypes.length === 0 && (
-        <div className="student-option muted">No result</div>
-      )}
-    </div>
-  )}
-</div>
-
-{isFullPayment && selectedFees[0] && (
-  <input
-    readOnly
-    value={`Payable ₹${selectedFees[0].amount - discount}`}
-  />
-)}
-
-{newPayType === "partial" && (
-  <input
-    type="number"
-    placeholder="Enter Amount"
-    value={newPayAmount}
-    onChange={e => setNewPayAmount(e.target.value)}
-  />
-)}
-
-{newPayType.startsWith("term") && (
-  <input
-    readOnly
-    value={`Payable ₹${newPayAmount}`}
-  />
-)}
-
-
-
-        <button className="save-btn" onClick={() => safeRequirePremium(saveNewAdmission, "income")}>
-          Save
-        </button>
-
-
-      </div>
-    )}
-    
-
-{incomeMode === "student" && studentMode === "old" && (
-  <div className="entry-row source">
-
-   {/* CLASS DROPDOWN */}
-<div className="student-dropdown">
-
-<input
-  placeholder="Select Class"
-  value={oldClass}
-  readOnly
-  onClick={() => setShowClassDropdown(!showClassDropdown)}
-/>
-
-{showClassDropdown && (
-  <div className="student-dropdown-list">
-    {classes.map(cls => (
-      <div
-        key={cls}
-        className="student-option"
-        onClick={() => {
-          selectOldClass(cls);
-          setShowClassDropdown(false);   // 🔥 close after select
-          setShowStudentDropdown(true); // auto open student dropdown
-        }}
-      >
-        Class {cls}
-      </div>
-    ))}
-  </div>
-)}
-</div>
-
-
-    {/* Student Search */}
-    <div className="student-dropdown">
-    <input
-  placeholder="Select Student"
-  value={selectedStudentName || studentSearch}
-  onChange={e => {
-    setStudentSearch(e.target.value);
-    setSelectedStudentName("");
-    setShowStudentDropdown(true);
-  }}
-  onFocus={() => setShowStudentDropdown(true)}
-/>
-{showStudentDropdown && (
-  <div className="student-dropdown-list">
-
-        {filteredStudents.length === 0 && (
-          <div className="student-option muted">No students</div>
-        )}
-
-        {filteredStudents.map(s => (
-          <div
-            key={s.id}
-            className="student-option"
-            onClick={() => {
-              setOldStudent(s.id);
-              setSelectedStudentName(s.studentName);
-              setOldParent(s.parentName || "");
-              setStudentSearch("");
-              setOldClass(s.class);
-              setOldTotal(getClassTotal(s.class));   // 🔥 THIS LINE
-              setShowStudentDropdown(false);
-            }}            
-          >
-            <strong>{s.studentName}</strong>
-            <span>Class {s.class}</span>
-          </div>
-        ))}
-      
-      </div>
-)}
-    </div>
-    
-    <input readOnly value={oldParent ? `Parent: ${oldParent}` : ""} 
-    placeholder="Parent Name"/>
-    {/* ===== SELECT FEES FROM INVENTORY ===== */}
-<div className="student-dropdown">
-  <input
-    placeholder="Select Fees"
-    value={
-      selectedFees.length
-        ? selectedFees[0]?.name || ""
-
-        : ""
-    }
-    readOnly
-    onClick={()=>setShowFeesDropdown(!showFeesDropdown)}
-  />
-
-  {showFeesDropdown && (
-    <div className="student-dropdown-list">
-      {getClassFees(newClass || oldClass).map(fee => {
-        const already = selectedFees.some(x=>x.id===fee.id);
-
-        return (
-          <div
-            key={fee.id}
-            className="student-option"
-            style={{background: already ? "#eef7ff" : ""}}
-            onClick={()=>{
-              setSelectedFees([fee]);     // only one selection
-              setShowFeesDropdown(false); // auto close dropdown
-            }}
-            
-          >
-            {fee.name} — ₹{fee.amount}
-          </div>
-        );
-      })}
-    </div>
-  )}
-</div>
-{selectedFees[0] && (
-  <input readOnly value={`Fee Total ₹${selectedFees[0].amount}`} />
-)}
-    <div className="student-dropdown">
-  <input
-    placeholder="Select Payment Type"
-    value={paymentType || paymentSearch}
-    onChange={e => {
-      setPaymentSearch(e.target.value);
-      setPaymentType("");
-      setShowPaymentDD(true);
-    }}
-    onFocus={() => setShowPaymentDD(true)}
-  />
-
-  {showPaymentDD && (
-    <div className="student-dropdown-list">
-{["Full","Partial","Monthly","Term 1","Term 2","Term 3"]
-
-  .filter(p =>
-    p.toLowerCase().includes(paymentSearch.toLowerCase())
-  )
-  .map(type => (
-
-        <div
-          key={type}
-          className="student-option"
-          onClick={() => {
-            const lower = type.toLowerCase().replace(" ", "");
-          
-            setPaymentType(type);
-            setOldPayType(lower);
-            setPaymentSearch("");
-            setShowPaymentDD(false);
-          }}
-          
-        >
-          {type}
-        </div>
-      ))}
-    </div>
-  )}
-</div>
-{/* FULL PAYMENT */}
-{oldPayType === "full" && oldStudent && selectedFees[0] && (
-  <input
-    readOnly
-    value={`Payable ₹${
-      getFeePaid(oldStudent, selectedFees[0].id) === 0
-        ? Math.ceil(
-          selectedFees[0].amount -
-          selectedFees[0].amount *
-            ((selectedFees[0].discount || 0) / 100)
-        )
-        
-        : getFeeBalance(oldStudent, selectedFees[0])
-    }`}
-  />
-)}
-
-{/* TERM 1 & TERM 2 → READONLY */}
-{(oldPayType === "term1" || oldPayType === "term2") &&
-  oldStudent &&
-  selectedFees[0] && (
-    <input
-      readOnly
-      value={`Payable ₹${getTermAmountUI(oldStudent, selectedFees[0])}`}
-    />
-)}
-
-{/* 🔥 TERM 3 → MANUAL INPUT */}
-{oldPayType === "term3" && (
-  <input
-    type="number"
-    placeholder="Enter Term 3 Amount"
-    value={oldPayAmount}
-    onChange={e => setOldPayAmount(e.target.value)}
-  />
-)}
-
-{/* PARTIAL */}
-{oldPayType === "partial" && (
-  <input
-    type="number"
-    placeholder="Enter Amount"
-    value={oldPayAmount}
-    onChange={e => setOldPayAmount(e.target.value)}
-  />
-)}{oldPayType === "monthly" && (
-  <input
-    type="number"
-    placeholder="Enter First Month Amount"
-    value={oldPayAmount}
-    onChange={e => setOldPayAmount(e.target.value)}
-  />
-)}
-    <button className="save-btn" onClick={() => safeRequirePremium(saveOldAdmission, "income")}>
-      Save
-    </button>
-
-    {oldStudent && selectedFees[0] && (
-  <div className="balance-text">
-    Balance ₹{getFeeBalance(oldStudent, selectedFees[0])}
-  </div>
-)}
-  </div>
-)}
-{incomeMode === "competition" && (
-  <div className="entry-row source">
-
-    {/* CLASS */}
-    <div className="student-dropdown">
-      <input
-        placeholder="Select Class"
-        value={competitionClass}
-        readOnly
-        onClick={() => setShowClassDropdown(true)}
-      />
-
-      {showClassDropdown && (
-        <div className="student-dropdown-list">
-          {classes.map(cls => (
-            <div
-              key={cls}
-              className="student-option"
-              onClick={() => {
-                setCompetitionClass(cls);
-                setShowClassDropdown(false);
-                setShowStudentDropdown(true);
-              }}
-            >
-              Class {cls}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-
-    {/* STUDENT */}
-    <div className="student-dropdown">
-      <input
-        placeholder="Select Student"
-        value={competitionStudent || studentSearch}
-        onChange={e => {
-          setStudentSearch(e.target.value);
-          setCompetitionStudent("");
-          setShowStudentDropdown(true);
-        }}
-        onFocus={() => setShowStudentDropdown(true)}
-      />
-
-      {showStudentDropdown && (
-        <div className="student-dropdown-list">
-          {students
-            .filter(s =>
-              s.class === competitionClass &&
-              s.studentName
-                ?.toLowerCase()
-                .includes(studentSearch.toLowerCase())
-            )
-            .map(s => (
-              <div
-                key={s.id}
-                className="student-option"
-                onClick={() => {
-                  setCompetitionStudent(s.studentName);
-                  setStudentSearch("");
-                  setShowStudentDropdown(false);
-                }}
-              >
-                {s.studentName}
-              </div>
-            ))}
-        </div>
-      )}
-    </div>
-{/* COMPETITION NAME */}
-<div className="student-dropdown">
-
-  <input
-    placeholder="Competition Name"
-    value={competitionName || competitionSearch}
-    onChange={e => {
-      setCompetitionSearch(e.target.value);
-      setCompetitionName("");
-      setShowCompetitionDropdown(true);
-    }}
-    onFocus={() => setShowCompetitionDropdown(true)}
-  />
-
-  {showCompetitionDropdown && (
-    <div className="student-dropdown-list">
-
-{competitionList
-  .filter(c =>
-    c.name?.toLowerCase().includes(competitionSearch.toLowerCase())
-  )
-  .map(c => (
-    <div
-      key={c.id}
-      className="student-option"
-      onClick={() => {
-        setCompetitionName(c.name);     // ✅ correct
-        setCompetitionAmount(c.amount);
-        setCompetitionSearch("");
-        setShowCompetitionDropdown(false);
-      }}
-      
-    >
-      {c.name} – ₹{c.amount}
-    </div>
-  ))}
-
-
-      {competitionSearch && (
-        <div
-          className="student-option"
-          style={{ color: "#2563eb" }}
-          onClick={() => {
-            setCompetitionName(competitionSearch);
-            setShowCompetitionDropdown(false);
-          }}
-        >
-          ➕ Add "{competitionSearch}"
-        </div>
-      )}
-
-    </div>
-  )}
-
-</div>
-
-
-    {/* AMOUNT */}
-    <input
-      type="number"
-      placeholder="Amount"
-      value={competitionAmount}
-      onChange={e => setCompetitionAmount(e.target.value)}
-    />
-
-    <button
-      className="save-btn"
-      onClick={() => safeRequirePremium(saveCompetitionIncome,"income")}
-    >
-      Save
-    </button>
-
-  </div>
-)}
-</>
-
-)}
-
-{entryType==="expense" && (
-<>
-  {/* Expense Type */}
-  <div className="popup-select">
-    <div className="popup-input" onClick={() => setShowExpenseType(!showExpenseType)}>
-      {expenseMode || "Choose Expense"}
-      <span>▾</span>
-    </div>
-
-    {showExpenseType && (
-      <div className="popup-menu">
-        <div onClick={() => { setExpenseMode("salary"); setShowExpenseType(false); }}>
-          Salary
-        </div>
-        <div onClick={() => { setExpenseMode("others"); setShowExpenseType(false); }}>
-          Others
-        </div>
-        <div onClick={() => { setExpenseMode("student_misc"); setShowExpenseType(false); }}>
-  Student Miscellaneous
-</div>
-      </div>
-    )}
-  </div>
-  
-
-  {expenseMode === "salary" && (
-  <>
-    <div className="entry-row">
-<div className="student-dropdown">
-  <input
-    placeholder="Select Category"
-    value={salaryRole || categorySearch}
-    onChange={e=>{
-      setCategorySearch(e.target.value);
-      setSalaryRole("");
-      setShowSalaryCategory(true);
-    }}
-    onFocus={()=>setShowSalaryCategory(true)}
-  />
-  {showSalaryCategory && (
-    <div className="student-dropdown-list">
-      {filteredCategories.map(cat => (
-        <div
-          key={cat}
-          className="student-option"
-          onClick={()=>{
-            setSalaryRole(cat);
-            setCategorySearch("");
-            setShowSalaryCategory(false);
-            setSalaryPosition("");      // reset position
-            setPositionSearch("");
-          }}
-        >
-          {cat}
-        </div>
-      ))}
-    </div>
-  )}
-</div>
-
-
-
-
-
-      {/* Position */}
-      <div className="student-dropdown">
-  <input
-    placeholder="Select Position"
-    value={salaryPosition || positionSearch}
-    onChange={e => {
-      setPositionSearch(e.target.value);
-      setSalaryPosition("");
-      setShowSalaryPositionDD(true);
-    }}
-    onFocus={() => salaryRole && setShowSalaryPositionDD(true)}
-    disabled={!salaryRole}
-  />
-
-  {showSalaryPositionDD && (
-    <div className="student-dropdown-list">
-      {filteredPositions.map(pos => (
-        <div
-          key={pos}
-          className="student-option"
-          onClick={() => {
-            setSalaryPosition(pos);
-            setPositionSearch("");
-            setShowSalaryPositionDD(false);
-          }}
-        >
-          {pos}
-        </div>
-      ))}
-
-      {filteredPositions.length === 0 && (
-        <div className="student-option muted">
-          No positions found
-        </div>
-      )}
-    </div>
-  )}
-</div>
-{salaryRole === "Teaching Staff" &&
- salaryPosition === "Teacher" && (
-
-    <div className="student-dropdown">
-      <input
-        placeholder="Select Teacher"
-        value={selName || teacherSearch}
-        onChange={e => {
-          setTeacherSearch(e.target.value);
-          setSelName("");
-          setShowTeacherDropdown(true);
-        }}
-        onFocus={() => setShowTeacherDropdown(true)}
-      />
-
-      {showTeacherDropdown && (
-        <div className="student-dropdown-list">
-          {filteredTeachers.map(t => (
-            <div
-              key={t.id}
-              className="student-option"
-              onClick={() => {
-                setSelName(t.name);
-                setTeacherSearch("");
-                setShowTeacherDropdown(false);
-                const salaryItem = getSalaryFromInventory(
-                  salaryRole,
-                  salaryPosition,
-                  t.name
-                );
-
-                setManualSalary(salaryItem ? salaryItem.amount : "");
-              }}
-            >
-              <strong>{t.name}</strong>
-              <span>{t.teacherId}</span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-)}
-{salaryRole === "Non Teaching Staff" &&
- salaryPosition && (
-
-    <div className="student-dropdown">
-      <input
-        placeholder="Select Name"
-        value={selName || staffSearch}
-        onChange={e => {
-          setStaffSearch(e.target.value);
-          setSelName("");
-          setShowStaffDropdown(true);
-        }}
-        onFocus={() => setShowStaffDropdown(true)}
-      />
-
-      {showStaffDropdown && (
-        <div className="student-dropdown-list">
-          {filteredNonTeachingStaff.map(staff => (
-            <div
-              key={staff.id}
-              className="student-option"
-              onClick={() => {
-                setSelName(staff.name);
-                setStaffSearch("");
-                setShowStaffDropdown(false);
-
-                const salaryItem = getSalaryFromInventory(
-                  salaryRole,
-                  salaryPosition,
-                  staff.name
-                );
-
-                setManualSalary(salaryItem ? salaryItem.amount : "");
-              }}
-            >
-              {staff.name}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-)}
-      <input
-  type="number"
-  placeholder="Salary"
-  value={manualSalary}
-  onChange={e => setManualSalary(e.target.value)}
-  readOnly
-/>
-
-    </div>
-
-    {/* Save row */}
-    <div className="entry-row">
-      <button
-        className="save-btn"
-        
-        onClick={() => safeRequirePremium(saveSalary, "expense")}
-      >
-        Save
-      </button>
-    </div>
-  </>
-)}
-  {expenseMode==="others" && (
-    <div className="entry-row">
-      <input placeholder="Expense name" value={exName} onChange={e=>setExName(e.target.value)} />
-      <input type="number" placeholder="Amount" value={exAmt} onChange={e=>setExAmt(e.target.value)} />
-      <button className="save-btn" onClick={() => safeRequirePremium(saveExpense,"expense")}>
-        Save
-      </button>
-    </div>
-  )}
-  {expenseMode === "student_misc" && (
-  <div className="entry-row">
-
-    {/* 🔽 Miscellaneous Name */}
-    <div className="student-dropdown">
-      <input
-        placeholder="Miscellaneous Name"
-        value={miscName || miscSearch}
-        onChange={e => {
-          setMiscSearch(e.target.value);
-          setMiscName("");
-          setShowMiscDropdown(true);
-        }}
-        onFocus={() => setShowMiscDropdown(true)}
-      />
-
-      {showMiscDropdown && (
-        <div className="student-dropdown-list">
-
-          {miscNames
-            .filter(n =>
-              n?.toLowerCase().includes(miscSearch.toLowerCase())
-            )
-            .map(name => (
-              <div
-                key={name}
-                className="student-option"
-                onClick={() => {
-                  setMiscName(name);
-                  setMiscSearch("");
-                  setShowMiscDropdown(false);
-                }}
-              >
-                {name}
-              </div>
-            ))}
-
-          {miscSearch && (
-            <div
-              className="student-option"
-              style={{ color: "#2563eb" }}
-              onClick={() => {
-                setMiscName(miscSearch);
-                setShowMiscDropdown(false);
-              }}
-            >
-              ➕ Add "{miscSearch}"
-            </div>
-          )}
-
-        </div>
-      )}
-    </div>
-
-    <div className="student-dropdown">
-  <input
-    placeholder="Expense Name"
-    value={expenseSubName || expenseNameSearch}
-    onChange={e => {
-      setExpenseNameSearch(e.target.value);
-      setExpenseSubName("");
-      setShowExpenseNameDD(true);
-    }}
-    onFocus={() => setShowExpenseNameDD(true)}
-  />
-
-  {showExpenseNameDD && (
-    <div className="student-dropdown-list">
-
-      {expenseNames
-        .filter(n =>
-          n?.toLowerCase().includes(expenseNameSearch.toLowerCase())
-        )
-        .map(name => (
-          <div
-            key={name}
-            className="student-option"
-            onClick={() => {
-              setExpenseSubName(name);
-              setExpenseNameSearch("");
-              setShowExpenseNameDD(false);
-            }}
-          >
-            {name}
-          </div>
-        ))}
-
-      {expenseNameSearch && (
-        <div
-          className="student-option"
-          style={{ color: "#2563eb" }}
-          onClick={() => {
-            setExpenseSubName(expenseNameSearch);
-            setExpenseNameSearch("");
-            setShowExpenseNameDD(false);
-          }}
-        >
-          ➕ Add "{expenseNameSearch}"
-        </div>
-      )}
-
-    </div>
-  )}
-</div>
-
-
-    {/* 🔢 Amount */}
-    <input
-      type="number"
-      placeholder="Amount"
-      value={exAmt}
-      onChange={e => setExAmt(e.target.value)}
-    />
-
-    <button
-      className="save-btn"
-      onClick={() => safeRequirePremium(saveStudentMiscExpense, "expense")}
-    >
-      Save
-    </button>
-
-  </div>
-)}
-</>
 )}
         {entryType==="fees" && (
           <div className="form-grid">
@@ -2329,184 +1534,20 @@ Save Fee</button>
         )} 
 
       </div>
-
-        
-      <div className="nice-table-wrapper">
-
-<table className="nice-table1">
-
-          <thead>
-  <tr>
-    <th>Discription</th>
-    <th>Income</th>
-    <th>Expense</th>
-    <th>Bill</th>
-    <th>Actions</th>  
-  </tr>
-</thead>
-
-<tbody>
-  {(() => {
-   const all = [
-    ...incomeList
-      .filter(i => i.date === entryDate)
-      .map(i => ({
-        id: i.id,
-        type: "income",          // 👈 IMPORTANT
-        date: i.date,
-        source: i.competitionName || i.studentName || i.name || "Income",
-        income: isOfficeStaff ? "***" : (i.paidAmount || 0),
-        expense: "",
-        studentId: i.studentId || null
-      })),
-  
-    ...expenseList
-      .filter(e => e.date === entryDate)
-      .map(e => ({
-        id: e.id,
-        type: "expense",         // 👈 IMPORTANT
-        date: e.date,
-        source: e.name,
-        income: "",
-        expense: isOfficeStaff ? "***" : (e.amount || 0),
-        studentId: null
-      }))
-  ];
-all.sort((a, b) => {
-  if (a.date !== b.date) {
-    return a.date > b.date ? -1 : 1;   // latest date first
-  }
-  return a.source.localeCompare(b.source); // A-Z inside same date
-});
-
-    
-    let lastDate = null;
-    let dateIncomeTotal = 0;
-    let dateExpenseTotal = 0;
-
-    return all.map((row, index) => {
-      const nextRow = all[index + 1];
-      const isLastOfDate = !nextRow || nextRow.date !== row.date;
-
-      // totals add
-      dateIncomeTotal += Number(row.income) || 0;
-      dateExpenseTotal += Number(row.expense) || 0;
-      
-      return (
-        <React.Fragment key={row.id}>
-
-          {/* DATE */}
-          {lastDate !== row.date && (
-            <tr className="date-heading">
-              <td colSpan={5} style={{ fontWeight: "bold", background: "#f3f3f3" }}>
-                {lastDate = row.date}
-              </td>
-            </tr>
-          )}
-
-          {/* DATA ROW */}
-          <tr>
-            <td data-label="Description">{row.source}</td>
-
-            <td data-label="Income"style={{ color: "green" }}>
-  {row.income === "***" ? "***" : row.income ? `₹${row.income}` : ""}
-</td>
-
-<td data-label="Expense"style={{ color: "red" }}>
-  {row.expense === "***" ? "***" : row.expense ? `₹${row.expense}` : ""}
-</td>
-<td data-label="Report" style={{ textAlign: "center" }}>
-  {row.type === "income" && row.studentId && (
-    <span
-      style={{ cursor: "pointer", color: "#2140df", fontSize: 18 }}
-      title="View Bill"
-      onClick={() =>
-        setActivePage(`bill_${row.studentId}_${row.date}`)
-      }
-    >
-      invoice
-    </span>
-  )}
-</td>
-<td  style={{ textAlign: "center" }}>
-  <button
-    className="delete-btn"
-    onClick={() => deleteEntry(row)}
-  >
-    <FaTrash /> Delete
-  </button>
-</td>
-
-
-
-          </tr>
-
-          {/* TOTAL ROW */}
-          {isLastOfDate && (
-            <tr style={{ fontWeight: "bold", background: "#fafafa" }}>
-              <td data-label="Total"style={{ border: "1px solid #e5e7eb" }}>TOTAL</td>
-
-              <td data-label="Income"style={{ color: "green", border: "1px solid #e5e7eb" }}>
-              ₹{dateIncomeTotal}
-              </td>
-
-              <td data-label="Expense"style={{ color: "red", border: "1px solid #e5e7eb" }}>
-              ₹{dateExpenseTotal}
-              </td>
-
-              {/* Bill column empty but border needed */}
-              <td data-label="Report"style={{ border: "1px solid #e5e7eb" }}></td>
-
-              <td style={{ border: "1px solid #e5e7eb" }}></td> 
-            </tr>
-
-          )}
-
-          {/* RESET */}
-          {isLastOfDate && (() => {
-            dateIncomeTotal = 0;
-            dateExpenseTotal = 0;
-          })()}
-
-        </React.Fragment>
-      );
-    });
-  })()}
-</tbody>
-          </table>
-          <div className="pagination-bar">
-  <div className="tab-buttons">
-
-    <button
-      className="tab-btn"
-      disabled={currentPageIndex === 0}
-      onClick={prevPage}
-    >
-      Previous
-    </button>
-
-    {getVisiblePages().map(i => (
-  <button
-    key={i}
-    className={`tab-btn ${i === currentPageIndex ? "active" : ""}`}
-    onClick={() => goToPage(i)}
-  >
-    {i + 1}
-  </button>
-))}
-
-
-    <button
-      className="tab-btn"
-      disabled={currentPageIndex === totalPages - 1}
-      onClick={nextPage}
-    >
-      Next
-    </button>
-
-  </div>
-</div>
-        </div>
+      <EntriesTable
+  incomeList={incomeList}
+  expenseList={expenseList}
+  entryDate={entryDate}
+  isOfficeStaff={isOfficeStaff}
+  deleteEntry={deleteEntry}
+  setActivePage={setActivePage}
+  currentPageIndex={currentPageIndex}
+  totalPages={totalPages}
+  prevPage={prevPage}
+  nextPage={nextPage}
+  getVisiblePages={getVisiblePages}
+  goToPage={goToPage}
+/>
         </div>
         </>
     )}

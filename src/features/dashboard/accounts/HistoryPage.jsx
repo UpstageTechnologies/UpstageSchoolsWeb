@@ -9,7 +9,8 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
   const [historyList, setHistoryList] = useState([]);
   const [activeFilter, setActiveFilter] = useState("all"); 
   const filteredHistory = historyList.filter(h => {
-
+  
+    
     const entryType = h.entryType;
     const action = h.action;
   
@@ -164,7 +165,7 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
   const prevPage = () => goToPage(currentPageIndex - 1);
   const nextPage = () => goToPage(currentPageIndex + 1);
   
-  
+  const [tableSearch, setTableSearch] = useState("");
 
   return (
     <div className="accounts-wrapper">
@@ -214,6 +215,13 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
   onChange={e => setEntryDate(e.target.value)}
   style={{ marginBottom: 12 }}
 />
+<input
+  type="text"
+  placeholder="Search history..."
+  value={tableSearch}
+  onChange={(e) => setTableSearch(e.target.value)}
+  style={{ marginBottom: 12, marginLeft: 10 }}
+/>
 
         <table className="nice-table">
           <thead>
@@ -238,6 +246,7 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
             )}
 {filteredHistory
   .filter(h => {
+    console.log(tableSearch);
     if (!entryDate) return true;
 
     let hDate = "";
@@ -254,6 +263,19 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
     }
 
     return hDate === entryDate;
+  })
+  
+  .filter(h => {
+   
+    if (!tableSearch.trim()) return true;
+    const search = tableSearch.toLowerCase();
+    
+    return (
+      h.module?.toLowerCase().includes(search) ||
+      h.action?.toLowerCase().includes(search) ||
+      h.name?.toLowerCase().includes(search) ||
+      String(h.amount)?.includes(search)
+    );
   })
   .map(h => (
     <tr key={h.id}>

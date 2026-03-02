@@ -15,8 +15,18 @@ const [toDate, setToDate] = useState("");
 const [showTermDropdown, setShowTermDropdown] = useState(false);
 const [feeCategory, setFeeCategory] = useState("Tuition");
 const [filterClass, setFilterClass] = useState("All");
-const [showPendingPopup, setShowPendingPopup] = useState(false);
 
+const [showPendingPopup, setShowPendingPopup] = useState(false);
+const [tableSearch, setTableSearch] = useState("");
+const tableFilter = (...fields) => {
+  if (!tableSearch.trim()) return true;
+
+  const search = tableSearch.toLowerCase();
+
+  return fields.some(field =>
+    field?.toString().toLowerCase().includes(search)
+  );
+};
 const [pendingClass, setPendingClass] = useState("");
 const [pendingFee, setPendingFee] = useState(null);
 const [feesMaster, setFeesMaster] = useState([]);
@@ -55,7 +65,15 @@ const unsubCompetition = onSnapshot(competitionRef, snap => {
     }))
   );
 });
+// 🔍 Global Smart Search (Name + Class + Parent + PaymentType)
+const matchesSearch = (...fields) => {
+  const search = globalSearch?.toLowerCase().trim();
+  if (!search) return true;
 
+  return fields.some(field =>
+    field?.toString().toLowerCase().includes(search)
+  );
+};
 const [showOverviewDropdown, setShowOverviewDropdown] = useState(false);
 const historyRef = collection(
   db,
@@ -579,6 +597,12 @@ const competitionClasses = [
 </button>
 
 <button
+  className={incomeTab === "expenseAnalysis" ? "tab-btn active" : "tab-btn"}
+  onClick={() => setIncomeTab("expenseAnalysis")}
+>
+Competition
+</button>
+<button
   className={incomeTab === "other" ? "tab-btn active" : "tab-btn"}
   onClick={() => {
     setIncomeTab("other");
@@ -588,17 +612,11 @@ const competitionClasses = [
   Other
 </button>
 
-<button
-  className={incomeTab === "expenseAnalysis" ? "tab-btn active" : "tab-btn"}
-  onClick={() => setIncomeTab("expenseAnalysis")}
->
-  Expense Analysis
-</button>
 </div>
 {incomeTab === "expenseAnalysis" && (
   <div className="section-card pop">
 
-  <h3 className="section-title">Competition Expense Analysis</h3>
+  <h3 className="section-title">Competitions</h3>
 
   {/* ===== IF NO CARD SELECTED ===== */}
   {!selectedCompetition ? (
@@ -854,7 +872,15 @@ const competitionClasses = [
   <h3 className="section-title">
     {feeCategory} Fees Collection Details
   </h3>
-
+  <div style={{ marginBottom: 12 }}>
+    <input
+      type="text"
+      placeholder="Search in table..."
+      value={tableSearch}
+      onChange={(e) => setTableSearch(e.target.value)}
+      className="search-input"
+    />
+  </div>
   <div className="student-dropdown">
     <input
       placeholder="All Class"
@@ -910,9 +936,10 @@ const competitionClasses = [
 <tbody>
 {students
   .filter(s =>
-    s.studentName
-      ?.toLowerCase()
-      .includes(globalSearch.toLowerCase())
+    tableFilter(
+      s.studentName,
+      s.class
+    )
   )
   
   .map(student => (
@@ -1013,7 +1040,17 @@ const statusInfo = getStatusInfo(
 
 {incomeTab === "new" &&  (
   <div className="section-card pop ">
+        
               <h3 className="section-title">New Admission Payments</h3>
+              <div style={{ marginBottom: 12 }}>
+    <input
+      type="text"
+      placeholder="Search in table..."
+      value={tableSearch}
+      onChange={(e) => setTableSearch(e.target.value)}
+      className="search-input"
+    />
+  </div>
               <div className="nice-table1-wrapper">
                 <table className="nice-table1">
                   <thead>
@@ -1026,11 +1063,15 @@ const statusInfo = getStatusInfo(
                     </tr>
                   </thead>
                   <tbody>
-                    {incomeList
-.filter(i => i.isNew === true)
-.filter(i =>
-  i.studentName?.toLowerCase()
-    .includes(globalSearch.toLowerCase())
+                  {incomeList
+  .filter(i => i.isNew === true)
+  .filter(i =>
+    tableFilter(
+      i.studentName,
+      i.className,
+      i.parentName,
+      i.date,
+      i.paidAmount)
 )
                       .map(i => (
                         <tr key={i.id}>
@@ -1049,6 +1090,15 @@ const statusInfo = getStatusInfo(
           {incomeTab === "old" && (
   <div className="section-card pop">
 <h3 className="section-title">Old Admission Payments</h3>
+<div style={{ marginBottom: 12 }}>
+  <input
+    type="text"
+    placeholder="Search in table..."
+    value={tableSearch}
+    onChange={(e) => setTableSearch(e.target.value)}
+    className="search-input"
+  />
+</div>
               <div className="nice-table-wrapper1">
                 <table className="nice-table1">
                   <thead>
@@ -1061,7 +1111,15 @@ const statusInfo = getStatusInfo(
                   </thead>
                   <tbody>
                   {incomeList
-                      .filter(i => i.isNew === false)
+  .filter(i => i.isNew === false)
+  .filter(i =>
+    tableFilter(
+      i.studentName,
+      i.className,
+      i.parentName,
+      i.date
+    )
+  )
 
                       .map(i => (
                         <tr key={i.id}>
@@ -1078,35 +1136,99 @@ const statusInfo = getStatusInfo(
           )}
 {incomeTab==="full"&&(
 <div className="section-card pop"><h3 className="section-title">Full Payment Students</h3>
-
+<div style={{ marginBottom: 12 }}>
+    <input
+      type="text"
+      placeholder="Search in table..."
+      value={tableSearch}
+      onChange={(e) => setTableSearch(e.target.value)}
+      className="search-input"
+    />
+  </div>
 <div className="nice-table-wrapper1">
 <table className="nice-table1">
 <thead><tr><th>Name</th><th>Class</th><th>Paid</th><th>Date</th></tr></thead>
-<tbody>{incomeList.filter(i=>i.paymentType==="full").map(i=>(
+<tbody>{incomeList
+  .filter(i => i.paymentType === "full")
+  .filter(i =>
+    tableFilter(
+      i.studentName,
+      i.className,
+      i.date,
+      i.paidAmount
+    )
+  )
+  .map(i=>(
 <tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td>{i.date}</td></tr>
 ))}</tbody>
 </table></div></div>
 )}
 {incomeTab==="partial"&&(
 <div className="section-card pop"><h3 className="section-title">Partial Payment Students</h3>
+<div style={{ marginBottom: 12 }}>
+    <input
+      type="text"
+      placeholder="Search in table..."
+      value={tableSearch}
+      onChange={(e) => setTableSearch(e.target.value)}
+      className="search-input"
+    />
+  </div>
 <div className="nice-table-wrapper1"><table className="nice-table1">
 <thead><tr><th>Name</th><th>Class</th><th>Paid</th><th>Balance</th><th>Date</th></tr></thead>
-<tbody>{incomeList.filter(i=>i.paymentType==="partial").map(i=>(
+<tbody>{incomeList
+  .filter(i => i.paymentType === "partial")
+  .filter(i =>
+    tableFilter(
+      i.studentName,
+      i.className,
+      i.date,
+      i.paidAmount
+    )
+  
+  ).map(i=>(
 <tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td  data-label="Balance">₹{getFeeBalance(i.studentId,i.feeId)}</td><td  data-label="Date">{i.date}</td></tr>
 ))}</tbody>
 </table></div></div>
 )}
 {incomeTab==="term1"&&(
 <div className="section-card pop"><h3 className="section-title">Term 1 Payments</h3>
+<div style={{ marginBottom: 12 }}>
+    <input
+      type="text"
+      placeholder="Search in table..."
+      value={tableSearch}
+      onChange={(e) => setTableSearch(e.target.value)}
+      className="search-input"
+    />
+  </div>
 <table className="nice-table1">
 <thead><tr><th>Name</th><th>Class</th><th>Paid</th><th>Balance</th><th>Date</th></tr></thead>
-<tbody>{applyDateFilter(incomeList).filter(i=>i.paymentType==="term1").map(i=>(
+<tbody>{applyDateFilter(incomeList)
+  .filter(i => i.paymentType === "term1")
+  .filter(i =>
+    tableFilter(
+      i.studentName,
+      i.className,
+      i.date,
+      i.paidAmount
+    )
+  ).map(i=>(
 <tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td>₹{getFeeBalance(i.studentId,i.feeId)}</td><td>{i.date}</td></tr>
 ))}</tbody>
 </table></div>
 )}
 {incomeTab==="term2"&&(
 <div className="section-card pop"><h3 className="section-title">Term 2 Payments</h3>
+<div style={{ marginBottom: 12 }}>
+    <input
+      type="text"
+      placeholder="Search in table..."
+      value={tableSearch}
+      onChange={(e) => setTableSearch(e.target.value)}
+      className="search-input"
+    />
+  </div>
 <table className="nice-table1">
 <thead><tr><th>Name</th><th>Class</th><th>Paid</th><th>Balance</th><th>Date</th></tr></thead>
 <tbody>{incomeList.filter(i=>i.paymentType==="term2").map(i=>(
@@ -1116,7 +1238,15 @@ const statusInfo = getStatusInfo(
 )}
 {incomeTab==="term3"&&(
 <div className="section-card pop"><h3 className="section-title">Term 3 Payments</h3>
-<table className="nice-table1">
+<div style={{ marginBottom: 12 }}>
+    <input
+      type="text"
+      placeholder="Search in table..."
+      value={tableSearch}
+      onChange={(e) => setTableSearch(e.target.value)}
+      className="search-input"
+    />
+  </div><table className="nice-table1">
 <thead><tr><th>Name</th><th>Class</th><th>Paid</th><th>Balance</th><th>Date</th></tr></thead>
 <tbody>{incomeList.filter(i=>i.paymentType==="term3").map(i=>(
 <tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td>₹{getFeeBalance(i.studentId,i.feeId)}</td><td>{i.date}</td></tr>
@@ -1125,12 +1255,26 @@ const statusInfo = getStatusInfo(
 )}</>)}
       {mode==="expenses"&&(
 <div className="section-card pop"><h3 className="section-title">Expenses Details</h3>
+<div style={{ marginBottom: 12 }}>
+  <input
+    type="text"
+    placeholder="Search in table..."
+    value={tableSearch}
+    onChange={(e) => setTableSearch(e.target.value)}
+    className="search-input"
+  />
+</div>
 <div className="nice-table-wrapper1">
   <table className="nice-table1">
 <thead><tr><th>Type</th><th>Name</th><th>Amount</th><th>Date</th></tr></thead>
 <tbody>{expenseList
 .filter(e =>
-  e.name?.toLowerCase().includes(globalSearch.toLowerCase())
+  tableFilter(
+    e.name,
+    e.type,
+    e.amount,
+    e.date
+  )
 )
 .map(e => (
 <tr key={e.id}><td data-label="Type">{e.type}</td><td data-label="Name">{e.name}</td><td data-label="Amount">₹{e.amount}</td><td>{e.date}</td></tr>

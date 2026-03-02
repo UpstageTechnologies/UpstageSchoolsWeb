@@ -957,12 +957,51 @@ setNewStaffPhone("");
 {/* ✅ NEW STAFF INPUTS */}
 {staffMode === "new" && (
   <>
-    <input
-      placeholder="Staff Name"
-      value={newStaffName}
-      onChange={e => setNewStaffName(e.target.value)}
-    />
+    {staffMode === "new" && (
+  <>
+    {/* 🔽 Staff Name Dropdown */}
+    <div className="student-dropdown">
 
+      <input
+        placeholder="Staff Name"
+        value={newStaffName || staffSearch}
+        onChange={e => {
+          setStaffSearch(e.target.value);
+          setNewStaffName("");
+          setShowStaffDropdown(true);
+        }}
+        onFocus={() => setShowStaffDropdown(true)}
+      />
+
+      {showStaffDropdown && (
+        <div className="student-dropdown-list">
+          {/* ➕ Add New Staff */}
+          {staffSearch &&
+            !(salaryCategory === "Teaching Staff"
+              ? teachers
+              : officeStaffs
+            ).some(
+              s =>
+                s.name?.toLowerCase() ===
+                staffSearch.toLowerCase()
+            ) && (
+              <div
+                className="student-option"
+                style={{ color: "#2563eb", fontWeight: 600 }}
+                onClick={() => {
+                  setNewStaffName(staffSearch.trim());
+                  setStaffSearch("");
+                  setShowStaffDropdown(false);
+                }}
+              >
+                ➕ Add "{staffSearch}"
+              </div>
+            )}
+        </div>
+      )}
+    </div>
+  </>
+)}
     <input
       placeholder="Phone Number"
       value={newStaffPhone}
@@ -1199,7 +1238,7 @@ setNewStaffPhone("");
     <td data-label="Name">{i.name}</td>
     <td data-label="Amount">₹{i.amount}</td>
     <td data-label="Discount">{i.discount || 0}%</td>
-    <td>
+    <td className="action-cell">
       <button className="edit-btn" onClick={() => startEdit(i)}>
         <FaEdit /> Edit
       </button>
@@ -1263,6 +1302,7 @@ setNewStaffPhone("");
         <th>Class</th>
         <th>Name</th>
         <th>Amount</th>
+        <th>Action</th>
       </tr>
     </thead>
 
@@ -1272,9 +1312,16 @@ setNewStaffPhone("");
           <td data-label="ClassName">{c.className}</td>
           <td data-label="Name">{c.name}</td>
           <td data-label="Amount">₹{c.amount}</td>
+          <td className="action-cell">
+        <button
+          className="delete-btn"
+          onClick={() => deleteCompetition(c)}
+        >
+          <FaTrash /> Delete
+        </button>
+      </td>
         </tr>
       ))}
-
       {competitionList.length === 0 && (
         <tr>
           <td colSpan="3" style={{ textAlign: "center", opacity: 0.6 }}>
