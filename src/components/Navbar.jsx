@@ -177,7 +177,7 @@ if (
 
     <div className="nav-search">
   <FaSearch className="search-icon-left" />
-  <input style={{fontSize:"30px;"}}
+  <input 
   ref={searchInputRef}
   placeholder="Search..."
   value={searchQuery}

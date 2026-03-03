@@ -4,19 +4,14 @@ import { db } from "../../../services/firebase";
 import "../../dashboard_styles/History.css";
 import { FaUndo } from "react-icons/fa";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
-
 export default function HistoryPage({ adminUid, setActivePage , globalSearch = ""}) {
-
- 
   const [historyList, setHistoryList] = useState([]);
   const [activeFilter, setActiveFilter] = useState("all"); 
-   // ✅ ADD HERE
    const [sortField, setSortField] = useState("createdAt");
    const [sortDirection, setSortDirection] = useState("desc");
   const filteredHistory = historyList.filter(h => {
-    
     const entryType = h.entryType;
-    const action = h.action;
+    const action =   h.action;
   
     if (activeFilter === "income") {
       return entryType === "income" && action !== "DELETE";
@@ -29,7 +24,7 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
     else if (activeFilter === "inventory") {
       return entryType === "inventory" && action !== "DELETE";
     }
-  
+
     else if (activeFilter === "deleted") {
       return action === "DELETE";
     }
@@ -192,8 +187,6 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
     <div className="accounts-wrapper">
       <h2 className="page-title">History</h2>
       <div className="history-filters">
-
-
   <button
     className={activeFilter==="all" ? "tab-btn active" : "tab-btn"}
     onClick={()=>setActiveFilter("all")}
@@ -329,7 +322,6 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
     <FaUndo style={{ marginRight: 6 }}/>Undo
   </button>
   )}
-
   {h.action === "UNDO" && (
     <span style={{ color: "green" , fontWeight: "bold" }}>
       Restored

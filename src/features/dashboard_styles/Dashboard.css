@@ -77,6 +77,9 @@ html,body{overflow-x:hidden;}
 .dropdown-item:hover{background:#f2f2f2;}
 .dropdown-item.logout{color:#d32f2f;font-weight:500;}
 .dashboard-content{padding:0px 10px 30px 15px;}
+@media(max-width:768px){
+  .dashboard-content{padding:0px 3px 30px 3px;}
+}
 
 .sidebar{background:#ffffff;border-radius:18px;box-shadow:0 10px 25px rgba(0,0,0,0.08);top:8px;left:8px;height:calc(100vh - 16px);}
 .account-main{display:flex;align-items:center;justify-content:space-between;gap:10px;}
