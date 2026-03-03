@@ -3,7 +3,8 @@ import { collection, onSnapshot , addDoc, deleteDoc, doc , setDoc,query,orderBy}
 import { db } from "../../../services/firebase";
 import "../../dashboard_styles/History.css";
 import { FaUndo } from "react-icons/fa";
-import { FaArrowDown, FaArrowUp } from "react-icons/fa";
+import { FiChevronDown, FiChevronUp } from "react-icons/fi";
+
 export default function HistoryPage({ adminUid, setActivePage , globalSearch = ""}) {
 
  
@@ -184,8 +185,8 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
     if (sortField !== field) return null;
   
     return sortDirection === "asc" 
-      ? <FaArrowUp style={{ marginLeft: 6, fontSize: 12 }} />
-      : <FaArrowDown style={{ marginLeft: 6, fontSize: 12 }} />;
+      ?<FiChevronUp style={{ marginLeft: 6, fontSize: 12 }} />
+      : <FiChevronDown style={{ marginLeft: 6, fontSize: 12 }} />;
   };
   return (
     <div className="accounts-wrapper">
@@ -269,6 +270,7 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
 >
   Date {renderSortIcon("date")}
 </th>
+<th>Action</th>
             </tr>
           </thead>
 
