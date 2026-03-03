@@ -1,5 +1,6 @@
 import React from "react";
 import { FaTrash } from "react-icons/fa";
+import "../../Dashboard/dashboard_styles/"
 export default function EntriesTable({
   incomeList,
   expenseList,

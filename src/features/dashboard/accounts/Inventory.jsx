@@ -1009,7 +1009,6 @@ setNewStaffPhone("");
     />
   </>
 )}
-
     <div className="student-dropdown">
       <input
         placeholder="Select Category"
