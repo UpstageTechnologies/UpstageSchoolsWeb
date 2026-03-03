@@ -7,9 +7,9 @@ import { useNavigate } from "react-router-dom";
 import OfficeStaff from "../OfficeStaff";
 import TodaySummary from "./components/TodaySummary";
 import EntriesTable from "./components/EntriesTable";
-import IncomeSection from "./income/IncomeSection";
+import IncomeSection from "./Income/IncomeSection";
 import ExpenseSection from "./expense/ExpenseSection";
-import BillPage from "./BillPage";   
+import BillPage from "./BillPage";
 import "../../dashboard_styles/IE.css";
 import {  FaArrowLeft, FaTrash } from "react-icons/fa";
 export default function ProfitPage({adminUid,setActivePage,activePage = "",plan,trialAccess,trialExpiresAt,showUpgrade}) {
