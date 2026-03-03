@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { collection, onSnapshot , addDoc, deleteDoc, doc , setDoc} from "firebase/firestore";
+import { collection, onSnapshot , addDoc, deleteDoc, doc , setDoc,query,orderBy} from "firebase/firestore";
 import { db } from "../../../services/firebase";
 import "../../dashboard_styles/History.css";
 import { FaUndo } from "react-icons/fa";
+import { FaArrowDown, FaArrowUp } from "react-icons/fa";
 export default function HistoryPage({ adminUid, setActivePage , globalSearch = ""}) {
 
-
+ 
   const [historyList, setHistoryList] = useState([]);
   const [activeFilter, setActiveFilter] = useState("all"); 
+   // ✅ ADD HERE
+   const [sortField, setSortField] = useState("createdAt");
+   const [sortDirection, setSortDirection] = useState("desc");
   const filteredHistory = historyList.filter(h => {
-  
     
     const entryType = h.entryType;
     const action = h.action;
@@ -89,18 +92,20 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
       "accounts",
       "History"
     );
+    const q = query(
+      historyRef,
+      orderBy(sortField, sortDirection)
+    );
     
-
-    const unsub = onSnapshot(historyRef, snap => {
-        setHistoryList(
-            snap.docs
-              .map(d => ({ id: d.id, ...d.data() }))
-              .sort((a,b)=> b.createdAt?.seconds - a.createdAt?.seconds)
-          );          
+    const unsub = onSnapshot(q, snap => {
+      setHistoryList(
+        snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      );
     });
     return () => unsub();
 
-  }, [adminUid]);
+  }, [adminUid, sortField, sortDirection]);
+  
   const formatDate = (d) => {
     if (!d) return "";
   
@@ -131,6 +136,15 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
         .filter(Boolean)
     )
   ].sort();
+  const handleSort = (field) => {
+    console.log("Clicked:", field); 
+    if (sortField === field) {
+      setSortDirection(prev => prev === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
   const [entryDate, setEntryDate] = useState(() => {
     const today = new Date().toISOString().split("T")[0];
     return today;
@@ -166,7 +180,13 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
   const nextPage = () => goToPage(currentPageIndex + 1);
   
   const [tableSearch, setTableSearch] = useState("");
-
+  const renderSortIcon = (field) => {
+    if (sortField !== field) return null;
+  
+    return sortDirection === "asc" 
+      ? <FaArrowUp style={{ marginLeft: 6, fontSize: 12 }} />
+      : <FaArrowDown style={{ marginLeft: 6, fontSize: 12 }} />;
+  };
   return (
     <div className="accounts-wrapper">
       <h2 className="page-title">History</h2>
@@ -226,12 +246,29 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
         <table className="nice-table">
           <thead>
             <tr>
-            <th>Type</th>
-              <th>Action</th>
-              <th>Name</th>
-              <th>Amount</th>
-              <th>Date</th>
-              <th>Actions</th>
+            <th onClick={() => handleSort("module")}>Type</th>
+
+<th onClick={() => handleSort("action")}>Action</th>
+<th 
+  onClick={() => handleSort("name")}
+  style={{ cursor: "pointer" }}
+>
+  Name {renderSortIcon("name")}
+</th>
+
+<th 
+  onClick={() => handleSort("amount")}
+  style={{ cursor: "pointer" }}
+>
+  Amount {renderSortIcon("amount")}
+</th>
+
+<th 
+  onClick={() => handleSort("date")}
+  style={{ cursor: "pointer" }}
+>
+  Date {renderSortIcon("date")}
+</th>
             </tr>
           </thead>
 
