@@ -364,3 +364,25 @@
 .history-table td:nth-child(4){
   text-align:right;   /* Amount column */
 }
+/* ===============================
+   TABLE WRAPPER (SCROLL FIX)
+================================= */
+
+.intable-wrapper{
+  width:100%;
+  overflow-x:auto;
+  border-radius:16px;
+}
+
+/* Hide scrollbar (optional clean UI) */
+.intable-wrapper::-webkit-scrollbar{
+  height:6px;
+}
+
+.intable-wrapper::-webkit-scrollbar-thumb{
+  background:#d1d5db;
+  border-radius:10px;
+}
+.history-table{
+  table-layout:auto;
+}

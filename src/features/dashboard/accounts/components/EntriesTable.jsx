@@ -1,6 +1,8 @@
 import React from "react";
 import { FaTrash } from "react-icons/fa";
 import "../../../dashboard_styles/ios.css"
+import "../../../dashboard_styles/History.css"
+
 export default function EntriesTable({
   incomeList,
   expenseList,
@@ -54,8 +56,8 @@ export default function EntriesTable({
   let dateExpenseTotal = 0;
 
   return (
-    <div className="nice-table-wrapper">
-      <table className="nice-table1">
+    <div style={{marginTop:10}}className="section-card pop">
+      <table className="history-table">
         <thead>
           <tr>
             <th>Description</th>
@@ -78,8 +80,8 @@ export default function EntriesTable({
             return (
               <React.Fragment key={row.id}>
                 {lastDate !== row.date && (
-                  <tr className="date-heading">
-                    <td colSpan={5} style={{ fontWeight: "bold", background: "#f3f3f3" }}>
+                  <tr >
+                    <td colSpan={5} style={{ fontWeight: "bold", background: "white" }}>
                       {lastDate = row.date}
                     </td>
                   </tr>

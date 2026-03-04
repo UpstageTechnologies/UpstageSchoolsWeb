@@ -3,8 +3,10 @@ import { collection, addDoc, onSnapshot ,query,deleteDoc, doc, updateDoc ,getDoc
 import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
 import "../../dashboard_styles/studentSearch.css";
+import "../../dashboard_styles/history.css"
 import "../../dashboard_styles/IE.css";
 import {  FaEdit, FaTrash} from "react-icons/fa";
+import { FiChevronUp, FiChevronDown } from "react-icons/fi";
 export default function Inventory({ adminUid, setActivePage, plan, showUpgrade }) {
   const [feesMaster, setFeesMaster] = useState([]);
   const [feesLoaded, setFeesLoaded] = useState(false);
@@ -12,6 +14,8 @@ export default function Inventory({ adminUid, setActivePage, plan, showUpgrade }
 const [staffMode, setStaffMode] = useState("");
 const [officeStaffs, setOfficeStaffs] = useState([]);
 const [staffCategories, setStaffCategories] = useState([]);
+const [sortField, setSortField] = useState(null);
+const [sortDirection, setSortDirection] = useState("asc");
 const [newStaffName, setNewStaffName] = useState("");
 const [newStaffPhone, setNewStaffPhone] = useState("");
 const [showStaffType, setShowStaffType] = useState(false);
@@ -50,6 +54,33 @@ const entryTypes = ["Fees", "Salary", "Competition"];
 const [competitionName, setCompetitionName] = useState("");
 const [competitionAmount, setCompetitionAmount] = useState("");
 const [showCompetitionClassDD, setShowCompetitionClassDD] = useState(false);
+const handleSort = (field) => {
+  if (sortField === field) {
+    setSortDirection(prev => prev === "asc" ? "desc" : "asc");
+  } else {
+    setSortField(field);
+    setSortDirection("asc");
+  }
+};
+
+const getSortedData = (data) => {
+  if (!sortField) return data;
+
+  return [...data].sort((a, b) => {
+    const aVal = a[sortField] ?? "";
+    const bVal = b[sortField] ?? "";
+
+    if (typeof aVal === "number") {
+      return sortDirection === "asc"
+        ? aVal - bVal
+        : bVal - aVal;
+    }
+
+    return sortDirection === "asc"
+      ? aVal.toString().localeCompare(bVal.toString())
+      : bVal.toString().localeCompare(aVal.toString());
+  });
+};
 const handleSalarySubmit = () => {
   if (editId) {
     updateSalary();
@@ -1188,7 +1219,7 @@ setNewStaffPhone("");
 
 
       </div>
-      <div className="tab-buttons">
+      <div className="history-filters">
 
 <button
   className={
@@ -1227,11 +1258,30 @@ setNewStaffPhone("");
 
 
       {activeSummary === "fees" && (
-        <table className="nice-table">
-          <thead><tr><th>Class</th><th>Fee</th><th>Amount</th><th>Discount</th>
+        <div className="section-card pop">
+        <table className="history-table">
+          <thead><tr><th onClick={()=>handleSort("className")}>Class{sortField==="className" &&
+ (sortDirection==="asc"
+   ? <FiChevronUp size={14}/>
+   : <FiChevronDown size={14}/>
+)}
+</th>
+<th onClick={()=>handleSort("name")}>Fee{sortField==="name" &&
+ (sortDirection==="asc"
+   ? <FiChevronUp size={14}/>
+   : <FiChevronDown size={14}/>
+)}
+</th>
+<th onClick={()=>handleSort("amount")}>Amount{sortField==="amount" &&
+ (sortDirection==="asc"
+   ? <FiChevronUp size={14}/>
+   : <FiChevronDown size={14}/>
+)}
+</th>
+<th>Discount</th>
 <th>Action</th></tr></thead>
          <tbody>
-         {sortedFees.map(i => (
+         {getSortedData(sortedFees).map(i => (
   <tr key={i.id}>
     <td data-label="ClassName">{i.className}</td>
     <td data-label="Name">{i.name}</td>
@@ -1252,21 +1302,38 @@ setNewStaffPhone("");
 </tbody>
 
         </table>
+        </div>
       )}
 
 {activeSummary === "salary" && (
-  <table className="nice-table">
+  <div className="section-card pop">
+  <table className="history-table">
    <thead>
   <tr>
-    <th>Name</th>
-    <th>Amount</th>
-    <th>Date</th>
+  <th onClick={()=>handleSort("name")}>Name{sortField==="name" &&
+ (sortDirection==="asc"
+   ? <FiChevronUp size={14}/>
+   : <FiChevronDown size={14}/>
+)}
+</th>
+<th onClick={()=>handleSort("amount")}>Amount{sortField==="amount" &&
+ (sortDirection==="asc"
+   ? <FiChevronUp size={14}/>
+   : <FiChevronDown size={14}/>
+)}
+</th>
+<th onClick={()=>handleSort("createdAt")}>Date{sortField==="date" &&
+ (sortDirection==="asc"
+   ? <FiChevronUp size={14}/>
+   : <FiChevronDown size={14}/>
+)}
+</th>
     <th>Action</th>
   </tr>
 </thead>
 
     <tbody>
-      {salaryData.map(item => (
+    {getSortedData(salaryData).map(item => (
         <tr key={item.id}>
           <td data-label="Name">{item.name}</td>
           <td data-label="Amount">₹{item.amount}</td>
@@ -1293,20 +1360,37 @@ setNewStaffPhone("");
       ))}
     </tbody>
   </table>
+  </div>
 )}
 {activeSummary === "competition" && (
-  <table className="nice-table">
+  <div className="section-card pop">
+  <table className="history-table">
     <thead>
       <tr>
-        <th>Class</th>
-        <th>Name</th>
-        <th>Amount</th>
+      <th onClick={()=>handleSort("className")}>Class{sortField==="className" &&
+ (sortDirection==="asc"
+   ? <FiChevronUp size={14}/>
+   : <FiChevronDown size={14}/>
+)}
+</th>
+<th onClick={()=>handleSort("name")}>Name{sortField==="name" &&
+ (sortDirection==="asc"
+   ? <FiChevronUp size={14}/>
+   : <FiChevronDown size={14}/>
+)}
+</th>
+<th onClick={()=>handleSort("amount")}>Amount{sortField==="amount" &&
+ (sortDirection==="asc"
+   ? <FiChevronUp size={14}/>
+   : <FiChevronDown size={14}/>
+)}
+</th>
         <th>Action</th>
       </tr>
     </thead>
 
     <tbody>
-      {competitionList.map(c => (
+    {getSortedData(competitionList).map(c => (
         <tr key={c.id}>
           <td data-label="ClassName">{c.className}</td>
           <td data-label="Name">{c.name}</td>
@@ -1330,6 +1414,7 @@ setNewStaffPhone("");
       )}
     </tbody>
   </table>
+  </div>
 )} </div>
   );
 }

@@ -10,6 +10,24 @@ import "../features/dashboard_styles/navbar.css";
 import { ROLE_ACCESS } from "../config/roleAccess";
 import { useRef, useEffect , useState } from "react";
 
+const PARENT_PAGE = {
+  profit: "accounts",
+  income: "accounts",
+  expenses: "accounts",
+  inventory: "accounts",
+  expenseList: "accounts",
+
+  accounts: "home",
+
+  calendar: "home",
+  applications: "home",
+  timetable: "home",
+  attendance: "home",
+  courses: "home",
+  approvals: "home",
+  profile: "home",
+  settings: "home"
+};
 const Navbar = ({
   toggleSidebar,
   activePage,
@@ -147,7 +165,7 @@ if (
   className="mobile-back-btn"
   onClick={() => {
 
-    // If currently in Settings page and not in home section
+    // Settings internal navigation
     if (activePage === "settings") {
       const settingsSection = window.settingsSectionState;
   
@@ -157,16 +175,22 @@ if (
       }
     }
   
-    // Otherwise normal page back
+    // If history available
     setPageHistory(prev => {
-      if (prev.length <= 1) return prev;
+      if (prev.length > 1) {
+        const newHistory = [...prev];
+        newHistory.pop();
+        const previous = newHistory[newHistory.length - 1];
   
-      const newHistory = [...prev];
-      newHistory.pop();
-      const previous = newHistory[newHistory.length - 1];
+        setActivePage(previous);
+        return newHistory;
+      }
   
-      setActivePage(previous);
-      return newHistory;
+      // Fallback parent navigation
+      const parent = PARENT_PAGE[activePage] || "home";
+      setActivePage(parent);
+  
+      return ["home", parent];
     });
   
   }}

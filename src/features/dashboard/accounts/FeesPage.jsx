@@ -1387,22 +1387,54 @@ const statusInfo = getStatusInfo(
 </div>
 <div className="nice-table-wrapper1">
   <table className="nice-table2">
-<thead><tr><th>Type</th><th onClick={() => handleSort("studentName")}>
-  Student
-  {sortField === "studentName" &&
+<thead><tr>
+<th onClick={() => handleSort("type")}>
+  Type
+  {sortField === "type" &&
     (sortDirection === "asc"
       ? <FiChevronUp size={14}/>
       : <FiChevronDown size={14}/>
     )
   }
-</th><th>Amount</th><th>Date</th></tr></thead>
-<tbody>{expenseList
-.filter(e =>
-  tableFilter(
-    e.name,
-    e.type,
-    e.amount,
-    e.date
+</th><th onClick={() => handleSort("name")}>
+  Name
+  {sortField === "name" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )
+  }
+</th>
+
+
+<th onClick={() => handleSort("amount")}>
+  Amount
+  {sortField === "amount" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )
+  }
+</th>
+
+<th onClick={() => handleSort("date")}>
+  Date
+  {sortField === "date" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )
+  }
+</th></tr></thead>
+<tbody>
+{getSortedData(
+  expenseList.filter(e =>
+    tableFilter(
+      e.name,
+      e.type,
+      e.amount,
+      e.date
+    )
   )
 )
 .map(e => (
