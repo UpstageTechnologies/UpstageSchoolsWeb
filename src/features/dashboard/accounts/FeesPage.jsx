@@ -502,7 +502,7 @@ const competitionClasses = [
       Income Report – {reportFilter.toUpperCase()}
     </h3>
 
-    <table className="nice-table1">
+    <table className="nice-table2">
   <thead>
     <tr>
       <th onClick={() => handleSort("studentName") }>Student</th>
@@ -560,7 +560,7 @@ const competitionClasses = [
 )}
       {mode === "income" && (
         <>
-         <div className="tab-buttons">
+         <div className="history-filters">
 
   <button
     className={incomeTab === "new" ? "tab-btn active" : "tab-btn"}
@@ -780,7 +780,7 @@ Competition
 
 </div>
 
-      <table className="nice-table1">
+      <table className="nice-table2">
         <thead>
           <tr>
             <th>Date</th>
@@ -955,7 +955,7 @@ Competition
   </div>
   
 </div>  
-<table className="nice-table1">
+<table className="nice-table2">
 <thead>
 <tr>
 <th onClick={() => handleSort("studentName")}>
@@ -1097,8 +1097,8 @@ const statusInfo = getStatusInfo(
       className="search-input"
     />
   </div>
-              <div className="nice-table1-wrapper">
-                <table className="nice-table1">
+              <div className="nice-table2-wrapper">
+                <table className="nice-table2">
                   <thead>
                     <tr>
                       <th onClick={()=>handleSort("studentName")} >Student
@@ -1155,7 +1155,7 @@ const statusInfo = getStatusInfo(
   />
 </div>
               <div className="nice-table-wrapper1">
-                <table className="nice-table1">
+                <table className="nice-table2">
                   <thead>
                     <tr>
                     <th onClick={() => handleSort("studentName")}>
@@ -1212,7 +1212,7 @@ const statusInfo = getStatusInfo(
     />
   </div>
 <div className="nice-table-wrapper1">
-<table className="nice-table1">
+<table className="nice-table2">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
   {sortField === "studentName" &&
@@ -1251,7 +1251,7 @@ const statusInfo = getStatusInfo(
       className="search-input"
     />
   </div>
-<div className="nice-table-wrapper1"><table className="nice-table1">
+<div className="nice-table-wrapper1"><table className="nice-table2">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
   {sortField === "studentName" &&
@@ -1290,7 +1290,7 @@ const statusInfo = getStatusInfo(
       className="search-input"
     />
   </div>
-<table className="nice-table1">
+<table className="nice-table2">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
   {sortField === "studentName" &&
@@ -1328,7 +1328,7 @@ const statusInfo = getStatusInfo(
       className="search-input"
     />
   </div>
-<table className="nice-table1">
+<table className="nice-table2">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
   {sortField === "studentName" &&
@@ -1356,7 +1356,7 @@ const statusInfo = getStatusInfo(
       onChange={(e) => setTableSearch(e.target.value)}
       className="search-input"
     />
-  </div><table className="nice-table1">
+  </div><table className="nice-table2">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
   {sortField === "studentName" &&
@@ -1386,7 +1386,7 @@ const statusInfo = getStatusInfo(
   />
 </div>
 <div className="nice-table-wrapper1">
-  <table className="nice-table1">
+  <table className="nice-table2">
 <thead><tr><th>Type</th><th onClick={() => handleSort("studentName")}>
   Student
   {sortField === "studentName" &&

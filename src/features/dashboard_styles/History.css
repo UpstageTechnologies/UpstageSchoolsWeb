@@ -21,14 +21,65 @@
   /* ===============================
      FILTER TABS
   ================================= */
-  
+  /* ===============================
+   FILTER BUTTONS
+================================= */
+
+.history-filters{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:18px;
+}
+
+/* Default button */
+.history-filters .tab-btn{
+  padding:8px 18px;
+  border-radius:20px;
+  border:1px solid #e5e7eb;
+  background:#ffffff;
+  color:#374151;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all .25s ease;
+}
+
+/* Hover */
+.history-filters .tab-btn:hover{
+  background:#f1f5ff;
+  border-color:#4f6df5;
+  color:#4f6df5;
+}
+
+/* Active button */
+.history-filters .tab-btn.active{
+  background:linear-gradient(135deg,#4f6df5,#3b5bdb);
+  color:#ffffff;
+  border:none;
+  box-shadow:0 4px 12px rgba(79,109,245,0.35);
+}
+
+/* Mobile responsive */
+@media (max-width:768px){
+
   .history-filters{
-    display:flex;
-    gap:12px;
-    flex-wrap:wrap;
-    margin-bottom:18px;
+    overflow-x:auto;
+    flex-wrap:nowrap;
+    padding-bottom:5px;
   }
-  
+
+  .history-filters::-webkit-scrollbar{
+    display:none;
+  }
+
+  .history-filters .tab-btn{
+    white-space:nowrap;
+    font-size:13px;
+    padding:7px 14px;
+  }
+
+}
   .tab-btn{
     height:42px;
     padding:0 18px;
@@ -108,7 +159,7 @@
      TABLE STYLE
   ================================= */
   
-  .nice-table{
+  .history-table{
     width:100%;
     border-collapse:separate;
     border-spacing:0;
@@ -116,11 +167,11 @@
     overflow:hidden;
   }
   
-  .nice-table thead{
+  .history-table thead{
     background:#f1f4ff;
   }
   
-  .nice-table th{
+  .history-table th{
     padding:14px 16px;
     font-size:14px;
     font-weight:700;
@@ -128,23 +179,23 @@
     text-align:left;
   }
   
-  .nice-table td{
+  .history-table td{
     padding:14px 16px;
     font-size:14px;
     border-top:1px solid #f0f0f0;
     color:#111827;
   }
   
-  .nice-table tbody tr{
+  .history-table tbody tr{
     transition:.2s ease;
   }
   
-  .nice-table tbody tr:hover{
+  .history-table tbody tr:hover{
     background:#f9faff;
   }
   
   /* Amount alignment */
-  .nice-table td:nth-child(4){
+  .history-table td:nth-child(4){
     text-align:right;
     font-weight:600;
   }
@@ -153,7 +204,7 @@
      UNDO BUTTON
   ================================= */
   
-  .nice-table button{
+  .history-table button{
     padding:6px 14px;
     border-radius:10px;
     border:none;
@@ -165,13 +216,13 @@
     transition:.2s ease;
   }
   
-  .nice-table button:hover{
+  .history-table button:hover{
     background:#dc2626;
     transform:translateY(-2px);
   }
   
   /* Restored text */
-  .nice-table span{
+  .history-table span{
     font-size:13px;
     font-weight:700;
     color:#16a34a;
@@ -203,15 +254,15 @@
 
    
   
-    .nice-table th,
-    .nice-table td{
+    .history-table th,
+    .history-table td{
       font-size:12px;
       padding:8px 6px;
       white-space:normal;     
       word-break:break-word;
     }
   
-    .nice-table button{
+    .history-table button{
       font-size:11px;
       padding:4px 6px;
     }
@@ -224,14 +275,14 @@
       padding:14px;
     }
   
-    .nice-table{
+    .history-table{
       width:100%;
       min-width:520px;      /* Adjust based on columns */
       table-layout:fixed;   /* Important for equal columns */
     }
   
-    .nice-table th,
-    .nice-table td{
+    .history-table th,
+    .history-table td{
       font-size:12px;
       padding:8px 6px;
       white-space:normal;
@@ -241,13 +292,13 @@
   }
   /* ===== COLUMN SEPARATORS ===== */
 
-.nice-table th,
-.nice-table td{
+.history-table th,
+.history-table td{
   border-right:1px solid #e5e7eb;
 }
 
-.nice-table th:last-child,
-.nice-table td:last-child{
+.history-table th:last-child,
+.history-table td:last-child{
   border-right:none;
 }
 /* ===============================
@@ -302,47 +353,14 @@
   opacity:.5;
   cursor:not-allowed;
 }
-.nice-table thead th{
+.history-table thead th{
   text-align:center;
 }
 
-.nice-table td{
+.history-table td{
   text-align:left;
 }
 
-.nice-table td:nth-child(4){
+.history-table td:nth-child(4){
   text-align:right;   /* Amount column */
-}
-/* =========================================
-   FORCE DESKTOP TABLE ON MOBILE (FINAL FIX)
-========================================= */
-
-@media (max-width:768px){
-
-  /* Force real table layout */
-  .nice-table1,
-  .nice-table1 thead,
-  .nice-table1 tbody,
-  .nice-table1 tr{
-    display:table;
-    width:100%;
-  }
-
-  .nice-table1{
-    min-width:950px;   /* adjust if more columns */
-    border-collapse:separate;
-  }
-
-  .nice-table1-wrapper{
-    width:100%;
-    overflow-x:auto !important;
-    -webkit-overflow-scrolling:touch;
-  }
-
-  /* Prevent shrink */
-  .nice-table1 th,
-  .nice-table1 td{
-    white-space:nowrap !important;
-  }
-
 }

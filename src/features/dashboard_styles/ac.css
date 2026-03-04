@@ -422,3 +422,24 @@
     white-space:nowrap;   /* text break aagadha */
   }
 }
+/* 🔥 iOS SAFARI INPUT ZOOM FIX */
+@supports (-webkit-touch-callout: none) {
+
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+    transform: translateZ(0);
+    -webkit-text-size-adjust: 100%;
+  }
+
+}
+@supports (-webkit-touch-callout: none) {
+
+  .student-dropdown input,
+  .popup-input,
+  .entry-row input {
+    font-size: 16px !important;
+  }
+
+}

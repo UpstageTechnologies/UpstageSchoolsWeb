@@ -237,7 +237,7 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
   style={{ marginBottom: 12, marginLeft: 10 }}
 />
 
-        <table className="nice-table">
+        <table className="history-table">
           <thead>
             <tr>
             <th onClick={() => handleSort("module")}>Type</th>

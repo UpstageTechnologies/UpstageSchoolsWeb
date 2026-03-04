@@ -1,5 +1,6 @@
 import React from "react";
 import { FaTrash } from "react-icons/fa";
+import "../../../dashboard_styles/hikzz"
 export default function EntriesTable({
   incomeList,
   expenseList,

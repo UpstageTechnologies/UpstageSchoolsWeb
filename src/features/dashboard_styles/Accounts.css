@@ -1,4 +1,62 @@
+/* ===============================
+   FILTER BUTTONS
+================================= */
 
+.history-filters{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:18px;
+}
+
+/* Default button */
+.history-filters .tab-btn{
+  padding:8px 18px;
+  border-radius:20px;
+  border:1px solid #e5e7eb;
+  background:#ffffff;
+  color:#374151;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all .25s ease;
+}
+
+/* Hover */
+.history-filters .tab-btn:hover{
+  background:#f1f5ff;
+  border-color:#4f6df5;
+  color:#4f6df5;
+}
+
+/* Active button */
+.history-filters .tab-btn.active{
+  background:linear-gradient(135deg,#4f6df5,#3b5bdb);
+  color:#ffffff;
+  border:none;
+  box-shadow:0 4px 12px rgba(79,109,245,0.35);
+}
+
+/* Mobile responsive */
+@media (max-width:768px){
+
+  .history-filters{
+    overflow-x:auto;
+    flex-wrap:nowrap;
+    padding-bottom:5px;
+  }
+
+  .history-filters::-webkit-scrollbar{
+    display:none;
+  }
+
+  .history-filters .tab-btn{
+    white-space:nowrap;
+    font-size:13px;
+    padding:7px 14px;
+  }
+
+}
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;color:black;margin-bottom:16px;}
 .info-card1{background:linear-gradient(135deg,#9feef1,#52c2ff);border-radius:18px;padding:16px 18px;box-shadow:0 6px 18px rgba(0,0,0,0.08);color:#033;}
 .info-card2{background:linear-gradient(135deg,#e9d7e8,#c69ad3);border-radius:18px;padding:16px 18px;box-shadow:0 6px 18px rgba(0,0,0,0.08);color:#2c0d2b;}
@@ -325,6 +383,148 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0) !importan
   
   .class-card:hover {
     transform: translateY(-6px);
+  }/* ===============================
+   MODERN TABLE – NICE TABLE 2
+================================= */
+
+.nice-table2{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  border-radius:16px;
+  overflow:hidden;
+  background:#fff;
+  box-shadow:0 10px 25px rgba(0,0,0,0.05);
+}
+
+/* HEADER */
+
+.nice-table2 thead{
+  background:linear-gradient(135deg,#f6f8ff,#eef2ff);
+}
+
+.nice-table2 th{
+  padding:14px 16px;
+  font-size:14px;
+  font-weight:700;
+  color:#374151;
+  text-align:center;
+  border-bottom:1px solid #e5e7eb;
+}
+
+/* BODY */
+
+.nice-table2 td{
+  padding:14px 16px;
+  font-size:14px;
+  color:#111827;
+  border-bottom:1px solid #f1f5f9;
+}
+
+/* COLUMN DIVIDERS */
+
+.nice-table2 th,
+.nice-table2 td{
+  border-right:1px solid #eef2f7;
+}
+
+.nice-table2 th:last-child,
+.nice-table2 td:last-child{
+  border-right:none;
+}
+
+/* ROW HOVER */
+
+.nice-table2 tbody tr{
+  transition:all .2s ease;
+}
+
+.nice-table2 tbody tr:hover{
+  background:#f9fbff;
+  transform:scale(1.002);
+}
+
+/* AMOUNT ALIGN */
+
+.nice-table2 td:nth-child(4),
+.nice-table2 td:nth-child(5){
+  text-align:right;
+  font-weight:600;
+}
+
+/* MOBILE SCROLL */
+
+@media (max-width:768px){
+
+  .section-card{
+    overflow-x:auto;
   }
- 
-  
+
+  .nice-table2{
+    min-width:650px;
+  }
+
+}@media (max-width:768px){
+
+  .section-card{
+    overflow-x:auto;
+    padding:10px;
+  }
+
+  .nice-table{
+    min-width:650px;
+  }
+
+  .nice-table th{
+    font-size:12px;
+    padding:8px 8px;
+  }
+
+  .nice-table td{
+    font-size:12px;
+    padding:8px 8px;
+  }
+
+}@media (max-width:768px){
+
+  .section-card{
+    overflow-x:auto;
+    padding:14px;
+  }
+
+  .nice-table2{
+    width:100%;
+    min-width:520px;      /* Adjust based on columns */
+    table-layout:fixed;   /* Important for equal columns */
+  }
+
+  .nice-table2 th,
+  .nice-table2 td{
+    font-size:12px;
+    padding:8px 6px;
+    white-space:normal;
+    word-break:break-word;
+  }
+
+}
+/* 🔥 iOS SAFARI INPUT ZOOM FIX */
+@supports (-webkit-touch-callout: none) {
+
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+    transform: translateZ(0);
+    -webkit-text-size-adjust: 100%;
+  }
+
+}
+@supports (-webkit-touch-callout: none) {
+
+  .student-dropdown input,
+  .popup-input,
+  .entry-row input {
+    font-size: 16px !important;
+  }
+
+}
