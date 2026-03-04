@@ -703,3 +703,8 @@ html,body{overflow-x:hidden;}
   }
 
 }
+.dashboard-content{
+  background:transparent !important;
+  box-shadow:none !important;
+  border-radius:0 !important;
+}
