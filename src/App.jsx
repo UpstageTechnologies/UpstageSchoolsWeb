@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Landing from "./useTheme/pages/Landing";
-// import Login from "./useTheme/pages/Login";
+
 import Register from "./useTheme/pages/Register";
 import Dashboard from "./features/dashboard/Dashboard";
 import PaymentSelection from "./features/payment/PaymentSelection";
@@ -74,3 +74,4 @@ function App() {
 }
 
 export default App;
+  
