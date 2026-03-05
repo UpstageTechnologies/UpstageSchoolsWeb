@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { collection, onSnapshot ,getDoc , doc } from "firebase/firestore";
 import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
+import "../../dashboard_styles/History.css"
 import { FiChevronUp, FiChevronDown } from "react-icons/fi";
 export default function FeesPage({ adminUid, mode, setActivePage , globalSearch = ""}) {
 const [incomeList, setIncomeList] = useState([]);
@@ -18,7 +19,8 @@ const [feeCategory, setFeeCategory] = useState("Tuition");
 const [filterClass, setFilterClass] = useState("All");
 const [sortField, setSortField] = useState(null);
 const [sortDirection, setSortDirection] = useState("asc");
-
+const [currentPage, setCurrentPage] = useState(1);
+const rowsPerPage = 10;
 const handleSort = (field) => {
   if (sortField === field) {
     setSortDirection(prev => prev === "asc" ? "desc" : "asc");
@@ -43,6 +45,11 @@ const getSortedData = (data) => {
       ? aVal.toString().localeCompare(bVal.toString())
       : bVal.toString().localeCompare(aVal.toString());
   });
+};
+const paginate = (data) => {
+  const start = (currentPage - 1) * rowsPerPage;
+  const end = start + rowsPerPage;
+  return data.slice(start, end);
 };
 const [showPendingPopup, setShowPendingPopup] = useState(false);
 const [tableSearch, setTableSearch] = useState("");
@@ -355,45 +362,71 @@ const getPendingTerms = (studentId, feeId) => {
     .map(t => t.replace("term", "Term "))
     .join(" & ") + " Not Paid";
 };
-const getStatusInfo = (paid, balance, endDate, pendingLabel) => {
+const getStatusInfo = (paid, balance, startDate, pendingLabel) => {
 
-  if (!endDate) {
+  const isMobile = window.innerWidth < 768;
+  const getShortTitle = (label) => {
+
+    if (!isMobile) return label;
+  
+    const text = (label || "").toLowerCase().trim();
+  
+    if (text === "fully not paid") return "FNP";
+    if (text === "not paid") return "NP";
+  
+    if (text.includes("term2") && text.includes("term3")) {
+      console.log("label value:", label);
+      return "T2 & T3 NP";
+    }
+  
+    if (text.includes("term3")) {
+      return "T3 NP";
+    }
+  
+    return label;
+  };
+
+  const title = getShortTitle(pendingLabel || "Fully Not Paid");
+  const OVERDUE = isMobile ? "Od" : "Overdue";
+
+  if (!startDate) {
     return {
-      title: pendingLabel || "Fully Not Paid",
+      title,
       sub: "",
-      color: "red"
+      color: "yellow"
     };
   }
 
   const today = new Date();
-  const due = new Date(endDate);
-  const diff = Math.ceil((due - today) / 86400000);
+  const start = new Date(startDate);
 
-  // FULLY PAID
+  const diff = Math.floor((today - start) / 86400000);
+
+  // Fully Paid
   if (balance <= 0) {
     return {
       title: "Paid",
-      sub: "On Time",
+      sub: "",
       color: "green"
     };
   }
 
-  // 🔴 OVERDUE
-  if (diff < 0) {
+  // Overdue
+  if (diff > 0) {
     return {
-      title: pendingLabel || "Fully Not Paid",
-      sub: `Overdue – ${Math.abs(diff)} days`,
+      title,
+      sub: `${OVERDUE} – ${diff}${isMobile ? "d" : " days"}`,
       color: "red"
     };
   }
 
-  // 🟠 NOT YET DUE
   return {
-    title: pendingLabel || "Fully Not Paid",
-    sub: `Due in ${diff} days`,
+    title,
+    sub: "Recently Started",
     color: "orange"
   };
-};const competitionCards = competitionList.map((comp) => {
+};
+const competitionCards = competitionList.map((comp) => {
 
   const totalIncome = incomeList
     .filter(i =>
@@ -417,6 +450,7 @@ const getStatusInfo = (paid, balance, endDate, pendingLabel) => {
 });
 const competitionClasses = [
   ...new Set(
+
     getSortedData(
     incomeList
       .filter(i =>
@@ -427,7 +461,20 @@ const competitionClasses = [
       .map(i => i.className)
   )
 ];
-
+const filteredNewPayments = getSortedData(
+  incomeList
+    .filter(i => i.isNew === true)
+    .filter(i =>
+      tableFilter(
+        i.studentName,
+        i.className,
+        i.parentName,
+        i.date,
+        i.paidAmount
+      )
+    )
+);
+const totalPages = Math.ceil(filteredNewPayments.length / rowsPerPage);
   return (
     <div className="accounts-wrapper fade-in">
 
@@ -502,15 +549,62 @@ const competitionClasses = [
       Income Report – {reportFilter.toUpperCase()}
     </h3>
 
-    <table className="nice-table2">
+    <table className="history-table">
   <thead>
     <tr>
-      <th onClick={() => handleSort("studentName") }>Student</th>
-      <th onClick={() => handleSort("className")}>Class</th>
-      <th >Payment Type</th>
-      <th onClick={()=> handleSort("paidAmount")}>Paid</th>
-      <th>Balance</th>
-      <th onClick={() => handleSort("date")}>Date</th>
+    <th onClick={() => handleSort("studentName")}>
+  Student
+  {sortField === "studentName" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )}
+</th>
+
+<th onClick={() => handleSort("className")}>
+  Class
+  {sortField === "className" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )}
+</th>
+
+<th onClick={() => handleSort("paymentType")}>
+  Payment Type
+  {sortField === "paymentType" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )}
+</th>
+
+<th onClick={() => handleSort("paidAmount")}>
+  Paid
+  {sortField === "paidAmount" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )}
+</th>
+
+<th onClick={() => handleSort("balance")}>
+  Balance
+  {sortField === "balance" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )}
+</th>
+
+<th onClick={() => handleSort("date")}>
+  Date
+  {sortField === "date" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )}
+</th>
     </tr>
   </thead>
 
@@ -522,7 +616,7 @@ const competitionClasses = [
         </td>
       </tr>
     ) : (
-      reportData.map(i => {
+      paginate(reportData).map(i => {
         const balance =
           i.paymentType === "pending"
             ? i.balance
@@ -530,6 +624,7 @@ const competitionClasses = [
 
         return (
           <tr key={i.id}>
+            
             <td data-label="Student">{i.studentName}</td>
             <td data-label="Class">{i.className}</td>
 
@@ -780,10 +875,17 @@ Competition
 
 </div>
 
-      <table className="nice-table2">
+      <table className="history-table">
         <thead>
           <tr>
-            <th>Date</th>
+          <th onClick={() => handleSort("date")}>
+  Date
+  {sortField === "date" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )}
+</th>
             <th onClick={() => handleSort("className")}>
   Class {sortField === "className" && (sortDirection === "asc" ? <FiChevronUp size={14}/> : <FiChevronDown size={14}/>)}
 </th>
@@ -914,50 +1016,11 @@ Competition
       className="search-input"
     />
   </div>
-  <div className="student-dropdown">
-    <input
-      placeholder="All Class"
-      value={filterClass === "All" ? classSearchText : filterClass}
-      onChange={(e) => {
-        setClassSearchText(e.target.value);
-        setFilterClass("All");
-        setShowClassFilterDropdown(true);
-      }}
-      onFocus={() => setShowClassFilterDropdown(true)}
-    />
-    {showClassFilterDropdown && (
-      <div className="student-dropdown-list">
-        <div
-          className="student-option"
-          onClick={() => {
-            setFilterClass("All");
-            setClassSearchText("");
-            setShowClassFilterDropdown(false);
-          }}>
-          All Classes
-        </div>
-
-        {classes.map(c => (
-          <div
-            key={c.id}
-            className="student-option"
-            onClick={() => {
-              setFilterClass(c.name);
-              setClassSearchText("");
-              setShowClassFilterDropdown(false);
-            }}
-          >
-            Class {c.name}
-          </div>
-        ))}
-      </div>
-    )}
-  </div>
+  
   
 </div>  
-<table className="nice-table2">
-<thead>
-<tr>
+<table className="history-table">
+<thead><tr>
 <th onClick={() => handleSort("studentName")}>
   Student
   {sortField === "studentName" &&
@@ -967,14 +1030,54 @@ Competition
     )
   }
 </th>
+
 <th onClick={() => handleSort("className")}>
-  Class {sortField === "className" && (sortDirection === "asc" ? <FiChevronUp size={14}/> : <FiChevronDown size={14}/>)}
+  Class
+  {sortField === "className" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )
+  }
 </th>
 
-  <th>Fee Name</th>
-  <th>Paid</th>
-  <th>Balance</th>
-  <th>Status</th>
+<th onClick={() => handleSort("feeName")}>
+  Fee Name
+  {sortField === "feeName" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )
+  }
+</th>
+<th onClick={() => handleSort("paidAmount")}>
+  Paid
+  {sortField === "paidAmount" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )}
+</th>
+
+<th onClick={() => handleSort("balance")}>
+  Balance
+  {sortField === "balance" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )
+  }
+</th>
+
+<th onClick={() => handleSort("status")}>
+  Status
+  {sortField === "status" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )
+  }
+</th>
 </tr>
 </thead>
 <tbody>
@@ -1020,11 +1123,10 @@ if (paid === 0 && balance > 0) {
 else if (paid > 0 && balance > 0) {
   pendingLabel = getPendingTerms(student.id, fee.id);
 }
-
 const statusInfo = getStatusInfo(
   paid,
   balance,
-  savedYear?.endDate,
+  savedYear?.startDate,
   pendingLabel
 );
 
@@ -1098,7 +1200,7 @@ const statusInfo = getStatusInfo(
     />
   </div>
               <div className="nice-table2-wrapper">
-                <table className="nice-table2">
+                <table className="history-table">
                   <thead>
                     <tr>
                       <th onClick={()=>handleSort("studentName")} >Student
@@ -1107,17 +1209,53 @@ const statusInfo = getStatusInfo(
       ? <FiChevronUp size={14}/>
       : <FiChevronDown size={14}/>
     )
-  }</th>
+  }</th><th onClick={()=>handleSort("parentName")}>
+  Parent
+  {sortField === "parentName" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )
+  }
+</th>
 
-                      <th>Parent</th>
-                      <th onClick={()=>handleSort("className")}>Class</th>
-                      <th onClick={()=>handleSort("paidAmount")}>Paid</th>
-                      <th onClick={()=>handleSort("date")}>Date</th>
+
+<th onClick={()=>handleSort("className")}>
+  Class
+  {sortField === "className" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )
+  }
+</th>
+
+<th onClick={()=>handleSort("paidAmount")}>
+  Paid
+  {sortField === "paidAmount" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )
+  }
+</th>
+
+<th onClick={()=>handleSort("date")}>
+  Date
+  {sortField === "date" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )
+  }
+</th>
                     </tr>
                   </thead>
+                  
                   <tbody>
                     
                   {
+                    paginate(
                   getSortedData( incomeList
   .filter(i => i.isNew === true)
   .filter(i =>
@@ -1127,7 +1265,7 @@ const statusInfo = getStatusInfo(
       i.parentName,
       i.date,
       i.paidAmount)
-)
+))
                      ) .map(i => (
                         <tr key={i.id}>
                           <td data-label="Student">{i.studentName}</td>
@@ -1139,6 +1277,45 @@ const statusInfo = getStatusInfo(
                       ))}
                   </tbody>
                 </table>
+                <div className="pagination-bar">
+
+<button
+  className="tab-btn"
+  disabled={currentPage === 1}
+  onClick={() => setCurrentPage(currentPage - 1)}
+>
+Previous
+</button>
+
+{Array.from(
+  { length: Math.ceil(
+      incomeList.filter(i => i.isNew === true).length / rowsPerPage
+    ) },
+  (_, i) => (
+    <button
+      key={i}
+      className={`tab-btn ${currentPage === i + 1 ? "active" : ""}`}
+      onClick={() => setCurrentPage(i + 1)}
+    >
+      {i + 1}
+    </button>
+  )
+)}
+
+<button
+  className="tab-btn"
+  disabled={
+    currentPage ===
+    Math.ceil(
+      incomeList.filter(i => i.isNew === true).length / rowsPerPage
+    )
+  }
+  onClick={() => setCurrentPage(currentPage + 1)}
+>
+Next
+</button>
+
+</div>
               </div>
             </div>
           )}
@@ -1155,7 +1332,7 @@ const statusInfo = getStatusInfo(
   />
 </div>
               <div className="nice-table-wrapper1">
-                <table className="nice-table2">
+                <table className="history-table">
                   <thead>
                     <tr>
                     <th onClick={() => handleSort("studentName")}>
@@ -1171,8 +1348,24 @@ const statusInfo = getStatusInfo(
   Class {sortField === "className" && (sortDirection === "asc" ? <FiChevronUp size={14}/> : <FiChevronDown size={14}/>)}
 </th>
 
-                      <th>Paid</th>
-                      <th>Date</th>
+<th onClick={()=>handleSort("paidAmount")}>
+  Paid
+  {sortField === "paidAmount" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )
+  }
+</th>
+                      
+<th onClick={() => handleSort("date")}>
+  Date
+  {sortField === "date" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )}
+</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1212,7 +1405,7 @@ const statusInfo = getStatusInfo(
     />
   </div>
 <div className="nice-table-wrapper1">
-<table className="nice-table2">
+<table className="history-table">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
   {sortField === "studentName" &&
@@ -1224,7 +1417,21 @@ const statusInfo = getStatusInfo(
 </th><th onClick={() => handleSort("className")}>
   Class {sortField === "className" && (sortDirection === "asc" ? <FiChevronUp size={14}/> : <FiChevronDown size={14}/>)}
 </th>
-<th>Paid</th><th>Date</th></tr></thead>
+<th onClick={() => handleSort("paidAmount")}>
+  Paid
+  {sortField === "paidAmount" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )}
+</th><th onClick={() => handleSort("date")}>
+  Date
+  {sortField === "date" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )}
+</th></tr></thead>
 <tbody>{ getSortedData(incomeList
   .filter(i => i.paymentType === "full")
   .filter(i =>
@@ -1251,7 +1458,7 @@ const statusInfo = getStatusInfo(
       className="search-input"
     />
   </div>
-<div className="nice-table-wrapper1"><table className="nice-table2">
+<div className="nice-table-wrapper1"><table className="history-table">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
   {sortField === "studentName" &&
@@ -1263,7 +1470,32 @@ const statusInfo = getStatusInfo(
 </th><th onClick={() => handleSort("className")}>
   Class {sortField === "className" && (sortDirection === "asc" ? <FiChevronUp size={14}/> : <FiChevronDown size={14}/>)}
 </th>
-<th>Paid</th><th>Balance</th><th>Date</th></tr></thead>
+<th onClick={() => handleSort("paidAmount")}>
+  Paid
+  {sortField === "paidAmount" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )}
+</th>
+
+<th onClick={() => handleSort("balance")}>
+  Balance
+  {sortField === "balance" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )}
+</th>
+
+<th onClick={() => handleSort("date")}>
+  Date
+  {sortField === "date" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )}
+</th></tr></thead>
 <tbody>{getSortedData(incomeList
   .filter(i => i.paymentType === "partial")
   .filter(i =>
@@ -1290,7 +1522,7 @@ const statusInfo = getStatusInfo(
       className="search-input"
     />
   </div>
-<table className="nice-table2">
+<table className="history-table">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
   {sortField === "studentName" &&
@@ -1302,7 +1534,33 @@ const statusInfo = getStatusInfo(
 </th><th onClick={() => handleSort("className")}>
   Class {sortField === "className" && (sortDirection === "asc" ? <FiChevronUp size={14}/> : <FiChevronDown size={14}/>)}
 </th>
-<th>Paid</th><th>Balance</th><th>Date</th></tr></thead>
+
+<th onClick={() => handleSort("paidAmount")}>
+  Paid
+  {sortField === "paidAmount" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )}
+</th>
+
+<th onClick={() => handleSort("balance")}>
+  Balance
+  {sortField === "balance" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )}
+</th>
+
+<th onClick={() => handleSort("date")}>
+  Date
+  {sortField === "date" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )}
+</th></tr></thead>
 <tbody>{getSortedData(applyDateFilter(incomeList)
   .filter(i => i.paymentType === "term1")
   .filter(i =>
@@ -1328,7 +1586,7 @@ const statusInfo = getStatusInfo(
       className="search-input"
     />
   </div>
-<table className="nice-table2">
+<table className="history-table">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
   {sortField === "studentName" &&
@@ -1340,7 +1598,32 @@ const statusInfo = getStatusInfo(
 </th><th onClick={() => handleSort("className")}>
   Class {sortField === "className" && (sortDirection === "asc" ? <FiChevronUp size={14}/> : <FiChevronDown size={14}/>)}
 </th>
-<th>Paid</th><th>Balance</th><th>Date</th></tr></thead>
+<th onClick={() => handleSort("paidAmount")}>
+  Paid
+  {sortField === "paidAmount" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )}
+</th>
+
+<th onClick={() => handleSort("balance")}>
+  Balance
+  {sortField === "balance" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )}
+</th>
+
+<th onClick={() => handleSort("date")}>
+  Date
+  {sortField === "date" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )}
+</th></tr></thead>
 <tbody>{getSortedData(incomeList.filter(i=>i.paymentType==="term2")).map(i=>(
 <tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td>₹{getFeeBalance(i.studentId,i.feeId)}</td><td>{i.date}</td></tr>
 ))}</tbody>
@@ -1356,7 +1639,7 @@ const statusInfo = getStatusInfo(
       onChange={(e) => setTableSearch(e.target.value)}
       className="search-input"
     />
-  </div><table className="nice-table2">
+  </div><table className="history-table">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
   {sortField === "studentName" &&
@@ -1368,7 +1651,32 @@ const statusInfo = getStatusInfo(
 </th><th onClick={() => handleSort("className")}>
   Class {sortField === "className" && (sortDirection === "asc" ? <FiChevronUp size={14}/> : <FiChevronDown size={14}/>)}
 </th>
-<th>Paid</th><th>Balance</th><th>Date</th></tr></thead>
+<th onClick={() => handleSort("paidAmount")}>
+  Paid
+  {sortField === "paidAmount" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )}
+</th>
+
+<th onClick={() => handleSort("balance")}>
+  Balance
+  {sortField === "balance" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )}
+</th>
+
+<th onClick={() => handleSort("date")}>
+  Date
+  {sortField === "date" &&
+    (sortDirection === "asc"
+      ? <FiChevronUp size={14}/>
+      : <FiChevronDown size={14}/>
+    )}
+</th></tr></thead>
 <tbody>{getSortedData(incomeList.filter(i=>i.paymentType==="term3")).map(i=>(
 <tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td>₹{getFeeBalance(i.studentId,i.feeId)}</td><td>{i.date}</td></tr>
 ))}</tbody>
@@ -1386,7 +1694,7 @@ const statusInfo = getStatusInfo(
   />
 </div>
 <div className="nice-table-wrapper1">
-  <table className="nice-table2">
+  <table className="history-table">
 <thead><tr>
 <th onClick={() => handleSort("type")}>
   Type

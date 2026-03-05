@@ -1,5 +1,5 @@
 import React from "react";
-import { FaTrash } from "react-icons/fa";
+import { FaFileInvoice, FaTrash } from "react-icons/fa";
 import "../../../dashboard_styles/ios.css"
 import "../../../dashboard_styles/History.css"
 
@@ -57,7 +57,8 @@ export default function EntriesTable({
 
   return (
     <div style={{marginTop:10}}className="section-card pop">
-      <table className="history-table">
+      <table className="journal-table
+">
         <thead>
           <tr>
             <th>Description</th>
@@ -120,18 +121,28 @@ export default function EntriesTable({
                           )
                         }
                       >
-                        invoice
+                        <span
+  className="invoice-btn"
+  onClick={() =>
+    setActivePage(`bill_${row.studentId}_${row.date}`)
+  }
+>
+  <FaFileInvoice className="icon" />
+  <span className="label">invoice</span>
+</span>
                       </span>
                     )}
                   </td>
 
                   <td className="action-cell">
-                    <button
-                      className="delete-btn"
-                      onClick={() => deleteEntry(row)}
-                    >
-                      <FaTrash /> Delete
-                    </button>
+                  <button
+  className="dele-btn"
+  onClick={() => deleteEntry(row)}
+  aria-label="Delete"
+>
+  <FaTrash className="icon" />
+  <span className="label">Delete</span>
+</button>
                   </td>
                 </tr>
 

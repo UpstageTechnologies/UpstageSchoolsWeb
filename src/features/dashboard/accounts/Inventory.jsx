@@ -1288,13 +1288,15 @@ setNewStaffPhone("");
     <td data-label="Amount">₹{i.amount}</td>
     <td data-label="Discount">{i.discount || 0}%</td>
     <td className="action-cell">
-      <button className="edit-btn" onClick={() => startEdit(i)}>
-        <FaEdit /> Edit
-      </button>
+    <button className="edit-btn" onClick={() => startEdit(i)}>
+  <FaEdit />
+  <span className="label">Edit</span>
+</button>
 
-      <button className="delete-btn" onClick={() => deleteFee(i)}>
-        <FaTrash /> Delete
-      </button>
+<button className="delete-btn" onClick={() => deleteFee(i)}>
+  <FaTrash />
+  <span className="label">Delete</span>
+</button>
     </td>
   </tr>
 ))}
