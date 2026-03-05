@@ -3,7 +3,7 @@ import { collection, addDoc, onSnapshot ,query,deleteDoc, doc, updateDoc ,getDoc
 import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
 import "../../dashboard_styles/studentSearch.css";
-import "../../dashboard_styles/history.css"
+import "../../dashboard_styles/History.css"
 import "../../dashboard_styles/IE.css";
 import {  FaEdit, FaTrash} from "react-icons/fa";
 import { FiChevronUp, FiChevronDown } from "react-icons/fi";
