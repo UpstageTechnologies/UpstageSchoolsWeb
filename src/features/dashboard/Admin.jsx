@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { FaPlus, FaSearch, FaEdit, FaTrash } from "react-icons/fa";
 import "../dashboard_styles/Teacher.css"; // reuse same CSS
+import CreateAccountModal from "../../components/CreateAccountModal"
+import "../dashboard_styles/CreateAccountModal.css"
 import {
   collection,
   addDoc,
@@ -16,7 +18,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const role = localStorage.getItem("role");
 const isAdmin = role === "master";
-const Admin = ({ requirePremium, globalSearch = "", setActivePage }) => {
+const Admin = ({ formOnly = false, requirePremium, globalSearch = "", setActivePage }) => {
 
   const [showModal, setShowModal] = useState(false);
   const [admins, setAdmins] = useState([]);
@@ -177,23 +179,22 @@ if (!/^\d{10}$/.test(phoneClean)) {
   }, []);
   
   return (
-    <div className="teacher-page">
-      {/* ===== HEADER ===== */}
-  
-      <div className="teacher-header">
-        <h2>Admins</h2>
+    <div className="teacher-page
+    
+">
+      
 
         <div className="teacher-actions">
           
-
-          <button className="add-btn" onClick={() => setShowModal(true)}>
-            <FaPlus />
-          </button>
+        {!formOnly && (
+<button className="add-btn" onClick={() => setShowModal(true)}>
+  <FaPlus />
+</button>
+)}
         </div>
-      </div>
-
-      {/* ===== TABLE ===== */}
-      <table className="teacher-table">
+     
+      {!formOnly && (
+<table className="teacher-table">
         <thead>
           <tr>
           <th>Photo</th>
@@ -311,11 +312,9 @@ if (!/^\d{10}$/.test(phoneClean)) {
 </tbody>
 
       </table>
-
-      {/* ===== MODAL ===== */}
-      {showModal && (
-        <div className="modal-overlay">
-          <div className="modal">
+      )}
+     {(showModal || formOnly) && (
+<div className="entries-box">
             <h3>{editId ? "Edit Admin" : "Add Admin"}</h3>
             <div style={{ textAlign: "center", marginBottom: 10 }}>
   <label
@@ -476,10 +475,10 @@ if (!/^\d{10}$/.test(phoneClean)) {
               </button>
             </div>
           </div>
-        </div>
+       
       )}
-    </div>
-  );
-};
+      </div>
+  )}
+   
 
 export default Admin;

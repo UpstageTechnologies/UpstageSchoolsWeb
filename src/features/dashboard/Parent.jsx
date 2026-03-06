@@ -21,7 +21,7 @@ const handleViewParent = (p) => {
 
   window.open("/dashboard", "_blank");   // 👈 new tab
 };
-const Parent = ({ requirePremium, globalSearch="", setActivePage }) => {
+const Parent = ({ formOnly=false, requirePremium, globalSearch="", setActivePage }) => {
 
   /* ================= BASIC ================= */
   const adminUid =
@@ -407,13 +407,15 @@ if (editId) {
 
         <div className="teacher-actions">
 
-          <button className="add-btn" onClick={() => setShowModal(true)}>
-            <FaPlus />
-          </button>
+        {!formOnly && (
+<button className="add-btn" onClick={() => setShowModal(true)}>
+  <FaPlus />
+</button>
+)}
         </div>
       </div>
-
-      <table className="teacher-table">
+      {!formOnly && (
+<table className="teacher-table">
         <thead>
           <tr>
           <th>Photo</th>
@@ -521,12 +523,10 @@ if (editId) {
 </tbody>
 
       </table>
-
+      )}
       {/* MODAL same as before */}
-      {showModal && (
-        <div className="modal-overlay ">
-           
-          <div className="modal">
+      {(showModal || formOnly) && (
+        <div className="entries-box">
             <h3>{editId ? "Edit Parent" : "Add Parent"}</h3>
 
             <div style={{ textAlign: "center", marginBottom: 10 }}>
@@ -697,7 +697,7 @@ if (editId) {
                 Cancel
               </button>
             </div>
-          </div></div>
+          </div>
         
       )}
       

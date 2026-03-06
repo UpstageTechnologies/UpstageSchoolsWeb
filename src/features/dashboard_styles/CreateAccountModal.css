@@ -1,0 +1,129 @@
+/* ===============================
+   CREATE ACCOUNT WRAPPER
+================================= */
+
+.create-account-wrapper{
+    margin-bottom:20px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  
+  /* ===============================
+     CREATE ACCOUNT BUTTON
+  ================================= */
+  
+  .create-account-btn{
+    padding:10px 18px;
+    border-radius:10px;
+    border:none;
+    background:linear-gradient(135deg,#4f6df5,#3b5bdb);
+    color:#fff;
+    font-weight:600;
+    cursor:pointer;
+    box-shadow:0 6px 18px rgba(79,109,245,.25);
+    transition:all .25s ease;
+  }
+  
+  .create-account-btn:hover{
+    transform:translateY(-1px);
+    box-shadow:0 10px 22px rgba(79,109,245,.35);
+  }
+  
+  /* ===============================
+     DROPDOWN CARD
+  ================================= */
+  
+  .create-account-card{
+    width:320px;
+    background:#fff;
+    border-radius:18px;
+    padding:16px;
+    box-shadow:0 14px 30px rgba(0,0,0,.08);
+    margin-top:10px;
+    animation:fadeAccount .25s ease;
+  }
+  
+  /* animation */
+  
+  @keyframes fadeAccount{
+    from{
+      opacity:0;
+      transform:translateY(8px);
+    }
+    to{
+      opacity:1;
+      transform:none;
+    }
+  }
+  
+  /* ===============================
+     SEARCH INPUT
+  ================================= */
+  
+  .create-search{
+    width:100%;
+    padding:11px 12px;
+    border-radius:12px;
+    border:1px solid #e5e7eb;
+    font-size:14px;
+    transition:.2s ease;
+  }
+  
+  .create-search:focus{
+    outline:none;
+    border-color:#4f6df5;
+    box-shadow:0 0 0 2px rgba(79,109,245,.18);
+  }
+  
+  /* ===============================
+     OPTIONS LIST
+  ================================= */
+  
+  .create-options{
+    display:flex;
+    flex-direction:column;
+    margin-top:8px;
+  }
+  
+  /* each option */
+  
+  .create-option{
+    padding:12px 12px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:600;
+    color:#374151;
+    transition:.2s ease;
+  }
+  
+  /* divider */
+  
+  .create-option + .create-option{
+    border-top:1px solid #f1f5f9;
+  }
+  
+  /* hover */
+  
+  .create-option:hover{
+    background:#f3f6ff;
+    color:#4f6df5;
+    padding-left:16px;
+  }
+  
+  /* ===============================
+     RESPONSIVE
+  ================================= */
+  
+  @media (max-width:600px){
+  
+    .create-account-card{
+      width:100%;
+    }
+  
+    .create-option{
+      padding:14px 12px;
+      font-size:15px;
+    }
+  
+  }

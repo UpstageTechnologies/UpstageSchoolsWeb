@@ -54,7 +54,7 @@ const RegularTimetable = lazy (() => import("./RegularTimetable"))
 const Teacher = lazy(() => import("./Teacher"));
 const Parent = lazy(() => import("./Parent"));
 const Student = lazy(() => import("./Student"));
-
+const AccountCreation = lazy(() => import("./AccountCreation"));
   const Dashboard = () => {
    
     const [user, setUser] = useState(null);
@@ -612,13 +612,12 @@ useEffect(() => {
         role === "admin"
       ) && (
         <>
-          <li 
-            className="account-main"
-            onClick={() => setAccountMenuOpen(!accountMenuOpen)}
-          >
-            <FaUserCircle /> Account Creation
-            {accountMenuOpen ? <FaChevronUp /> : <FaChevronDown />}
-          </li>
+          <li
+className={activePage === "account_creation" ? "active" : ""}
+onClick={() => handleMenuClick("account_creation")}
+>
+<FaUserCircle /> Account Creation
+</li>
 
           {accountMenuOpen && (
             <ul className="account-submenu">
@@ -936,6 +935,13 @@ useEffect(() => {
  setActivePage={setActivePage}
  plan={plan}
  showUpgrade={() => setShowUpgrade(true)}
+/>
+)}
+{(role === "master" || role === "admin") && activePage === "account_creation" && (
+<AccountCreation
+  requirePremium={requirePremium}
+  globalSearch={searchQuery}
+  setActivePage={handleMenuClick}
 />
 )}{isAdminOrSubAdmin && activePage === "teacher" && (
   <Teacher 

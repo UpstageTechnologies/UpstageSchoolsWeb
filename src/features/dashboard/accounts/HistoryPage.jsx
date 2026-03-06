@@ -3,12 +3,14 @@ import { collection, onSnapshot , addDoc, deleteDoc, doc , setDoc,query,orderBy}
 import { db } from "../../../services/firebase";
 import "../../dashboard_styles/History.css";
 import { FaArrowLeft,FaArrowRight, FaUndo } from "react-icons/fa";
+import { BsThreeDotsVertical } from "react-icons/bs";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 export default function HistoryPage({ adminUid, setActivePage , globalSearch = ""}) {
   const [historyList, setHistoryList] = useState([]);
   const [activeFilter, setActiveFilter] = useState("all"); 
    const [sortField, setSortField] = useState("createdAt");
    const [sortDirection, setSortDirection] = useState("desc");
+   const [openMenuId, setOpenMenuId] = useState(null);
   const filteredHistory = historyList.filter(h => {
     const entryType = h.entryType;
     const action =   h.action;
@@ -316,17 +318,45 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
       <td data-label="Name">{h.name}</td>
       <td data-label="Amount">₹{h.amount}</td>
       <td data-label="Date">{formatDate(h.date)}</td>
-      <td>
+      <td className="action-cell">
+
   {h.action === "DELETE" && (
-   <button onClick={() => handleUndo(h)}>
-    <FaUndo style={{ marginRight: 6 }}/>Undo
-  </button>
+    <>
+      {/* Desktop Undo */}
+      <button
+        className="undo-btn"
+        onClick={() => handleUndo(h)}
+      >
+        <FaUndo style={{ marginRight: 6 }} /> Undo
+      </button>
+
+      {/* Mobile 3 dots */}
+      <button
+        className="menu-dots"
+        onClick={() =>
+          setOpenMenuId(openMenuId === h.id ? null : h.id)
+        }
+      >
+        <BsThreeDotsVertical />
+      </button>
+
+      {openMenuId === h.id && (
+        <div className="menu-popup">
+          <button onClick={() => handleUndo(h)}>
+            <FaUndo style={{ marginRight: 6 }} />
+            Undo
+          </button>
+        </div>
+      )}
+    </>
   )}
+
   {h.action === "UNDO" && (
-    <span style={{ color: "green" , fontWeight: "bold" }}>
+    <span style={{ color: "green", fontWeight: "bold" }}>
       Restored
     </span>
   )}
+
 </td>
     </tr>
   ))}

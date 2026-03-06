@@ -571,3 +571,101 @@
 .in-table td:last-child{
   border-right:none;
 }
+/* ===============================
+   ACTION CELL
+================================= */
+
+.action-cell{
+  position: relative;
+  text-align: center;
+}
+
+/* ===============================
+   3 DOTS BUTTON
+================================= */
+
+.menu-dots{
+  display: none;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: #ef4444;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+
+  align-items: center;
+  justify-content: center;
+
+  transition: all .2s ease;
+}
+
+.menu-dots:hover{
+  background: #dc2626;
+  transform: scale(1.05);
+}
+
+/* ===============================
+   POPUP MENU
+================================= */
+.menu-popup{
+  position:absolute;
+  top:50%;
+  right:65px;        /* dots button distance */
+
+  transform:translateY(-50%);
+
+  min-width:120px;
+  background:#fff;
+  border-radius:10px;
+  border:1px solid #e5e7eb;
+  box-shadow:0 8px 18px rgba(0,0,0,.12);
+
+  padding:6px 0;
+  z-index:1000;
+}
+/* popup button */
+
+.menu-popup button{
+  width: 100%;
+  border: none;
+  background: none;
+
+  padding: 8px 12px;
+  font-size: 13px;
+  text-align: left;
+
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color:#ef4444;   /* 🔴 undo color */
+  transition: background .2s ease;
+}
+
+.menu-popup button:hover{
+  background: #f3f4f6;
+}
+
+/* ===============================
+   MOBILE BEHAVIOR
+================================= */
+
+@media (max-width:768px){
+
+  .undo-btn{
+    display: none;
+  }
+
+  .menu-dots{
+    display: flex;
+  }
+
+}
+.history-table{
+  overflow:visible;
+}
+.in-table{
+  overflow:visible;
+}

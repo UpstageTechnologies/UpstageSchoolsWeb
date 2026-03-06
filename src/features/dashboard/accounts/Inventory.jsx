@@ -5,12 +5,14 @@ import "../../dashboard_styles/Accounts.css";
 import "../../dashboard_styles/studentSearch.css";
 import "../../dashboard_styles/History.css"
 import "../../dashboard_styles/IE.css";
+
 import {  FaEdit, FaTrash} from "react-icons/fa";
 import { FiChevronUp, FiChevronDown } from "react-icons/fi";
 export default function Inventory({ adminUid, setActivePage, plan, showUpgrade }) {
   const [feesMaster, setFeesMaster] = useState([]);
   const [feesLoaded, setFeesLoaded] = useState(false);
   const [showEntryType, setShowEntryType] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState(null);
 const [staffMode, setStaffMode] = useState("");
 const [officeStaffs, setOfficeStaffs] = useState([]);
 const [staffCategories, setStaffCategories] = useState([]);
@@ -1288,16 +1290,41 @@ setNewStaffPhone("");
     <td data-label="Amount">₹{i.amount}</td>
     <td data-label="Discount">{i.discount || 0}%</td>
     <td className="action-cell">
-    <button className="edit-btn" onClick={() => startEdit(i)}>
-  <FaEdit />
-  <span className="label">Edit</span>
-</button>
 
-<button className="delete-btn" onClick={() => deleteFee(i)}>
-  <FaTrash />
-  <span className="label">Delete</span>
-</button>
-    </td>
+  {/* Desktop buttons */}
+  <button className="edit-btn undo-btn" onClick={() => startEdit(i)}>
+    <FaEdit />
+    <span className="label">Edit</span>
+  </button>
+
+  <button className="delete-btn undo-btn" onClick={() => deleteFee(i)}>
+    <FaTrash />
+    <span className="label">Delete</span>
+  </button>
+
+  {/* Mobile 3 dots */}
+  <button
+    className="menu-dots"
+    onClick={() =>
+      setOpenMenuId(openMenuId === i.id ? null : i.id)
+    }
+  >
+    ⋮
+  </button>
+
+  {openMenuId === i.id && (
+    <div className="menu-popup">
+      <button onClick={() => startEdit(i)}>
+        <FaEdit /> Edit
+      </button>
+
+      <button onClick={() => deleteFee(i)}>
+        <FaTrash /> Delete
+      </button>
+    </div>
+  )}
+
+</td>
   </tr>
 ))}
 
@@ -1344,20 +1371,47 @@ setNewStaffPhone("");
           </td>
 
           <td className="action-cell">
-            <button
-              className="edit-btn"
-              onClick={() => editSalary(item)}
-            >
-              <FaEdit /> Edit
-            </button>
 
-            <button
-              className="delete-btn"
-              onClick={() => deleteSalary(item.id)}
-            >
-              <FaTrash /> Delete
-            </button>
-          </td>
+  {/* Desktop buttons */}
+  <button
+    className="edit-btn undo-btn"
+    onClick={() => editSalary(item)}
+  >
+    <FaEdit /> 
+    <span className="label">Edit</span>
+  </button>
+
+  <button
+    className="delete-btn undo-btn"
+    onClick={() => deleteSalary(item.id)}
+  >
+    <FaTrash /> 
+    <span className="label">Delete</span>
+  </button>
+
+  {/* Mobile 3 dots */}
+  <button
+    className="menu-dots"
+    onClick={() =>
+      setOpenMenuId(openMenuId === item.id ? null : item.id)
+    }
+  >
+    ⋮
+  </button>
+
+  {openMenuId === item.id && (
+    <div className="menu-popup">
+      <button onClick={() => editSalary(item)}>
+        <FaEdit /> Edit
+      </button>
+
+      <button onClick={() => deleteSalary(item.id)}>
+        <FaTrash /> Delete
+      </button>
+    </div>
+  )}
+
+</td>
         </tr>
       ))}
     </tbody>

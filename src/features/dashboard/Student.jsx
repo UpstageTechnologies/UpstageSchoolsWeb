@@ -16,8 +16,7 @@ const classes = Array.from({ length: 12 }, (_, i) => i + 1);
 const sections = Array.from({ length: 26 }, (_, i) =>
   String.fromCharCode(65 + i)
 );
-
-const Student = ({ requirePremium , globalSearch = ""}) => {
+const Student = ({ formOnly=false, requirePremium , globalSearch = ""}) => {
   const adminUid =
     auth.currentUser?.uid || localStorage.getItem("adminUid");
 
@@ -191,13 +190,15 @@ const Student = ({ requirePremium , globalSearch = ""}) => {
         <h2>Students</h2>
 
         <div className="teacher-actions">
-          <button className="add-btn" onClick={() => setShowModal(true)}>
-            <FaPlus />
-          </button>
+        {!formOnly && (
+<button className="add-btn" onClick={() => setShowModal(true)}>
+  <FaPlus />
+</button>
+)}
         </div>
       </div>
-
-      <table className="teacher-table">
+      {!formOnly && (
+<table className="teacher-table">
         <thead>
           <tr>
             <th>Photo</th>
@@ -300,6 +301,7 @@ const Student = ({ requirePremium , globalSearch = ""}) => {
             ))}
         </tbody>
       </table>
+      )}
       {viewStudent && (
   <div className="modal-overlay">
     <div className="modal">
@@ -352,12 +354,8 @@ const Student = ({ requirePremium , globalSearch = ""}) => {
     </div>
   </div>
 )}
-
-
-      {showModal && (
-        <div className="modal-overlay">
-          
-          <div className="modal">
+{(showModal || formOnly) && (
+       <div className="entries-box">
             <h3>{editId ? "Edit Student" : "Add Student"}</h3>
             <div style={{ textAlign: "center", marginBottom: 10 }}>
   <label
@@ -470,9 +468,7 @@ const Student = ({ requirePremium , globalSearch = ""}) => {
                 Cancel
               </button>
             </div>
-          </div>
-          </div>
-        
+          </div> 
       )}
     </div>
   );

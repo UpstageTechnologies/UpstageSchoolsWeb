@@ -34,7 +34,7 @@
     "Manager",
     "Supervisor"
   ];
-  const OfficeStaff = ({ globalSearch = "", setActivePage }) => {
+  const OfficeStaff = ({ formOnly=false, requirePremium, globalSearch="", setActivePage }) => {
 
     const selectedOfficeStaffId =
       localStorage.getItem("selectedOfficeStaffId");
@@ -227,14 +227,17 @@
 
           <div className="teacher-actions">
            
-            <button className="add-btn" onClick={() => setShowModal(true)}>
-              <FaPlus />
-            </button>
+          {!formOnly && (
+<button className="add-btn" onClick={() => setShowModal(true)}>
+  <FaPlus />
+</button>
+)}
           </div>
         </div>
 
         {/* TABLE */}
-        <table className="teacher-table">
+        {!formOnly && (
+<table className="teacher-table">
           <thead>
             <tr>
               <th>Photo</th>
@@ -334,11 +337,11 @@
               ))}
           </tbody>
         </table>
-
+        )}
         {/* MODAL */}
-        {showModal && (
-          <div className="modal-overlay">
-            <div className="modal popup-box">
+        {(showModal || formOnly) && (
+         <div className="entries-box">
+            
               <h3>{editId ? "Edit Staff" : "Add Staff"}</h3>
 
               <input
@@ -398,7 +401,7 @@
                 <button className="cancel" onClick={resetForm}>Cancel</button>
               </div>
             </div>
-          </div>
+         
         )}
       </div>
     );

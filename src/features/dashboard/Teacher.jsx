@@ -77,7 +77,7 @@ const FloatingInput = ({
     )}
   </div>
 );
-const Teacher = ({ requirePremium, globalSearch = "", setActivePage }) => {
+const Teacher = ({ formOnly = false, requirePremium, globalSearch = "", setActivePage }) => {
 
   const adminUid =
     auth.currentUser?.uid || localStorage.getItem("adminUid");
@@ -328,15 +328,16 @@ useEffect(() => {
         <h2>Teachers</h2>
 
         <div className="teacher-actions">
-
-          <button className="add-btn" onClick={() => setShowModal(true)}>
-            <FaPlus />
-          </button>
+        {!formOnly && (
+<button className="add-btn" onClick={() => setShowModal(true)}>
+  <FaPlus />
+</button>
+)}
         </div>
       </div>
 
-      {/* TABLE */}
-      <table className="teacher-table">
+      {!formOnly && (
+<table className="teacher-table">
         <thead>
           <tr>
           <th>Photo</th>
@@ -459,10 +460,8 @@ useEffect(() => {
             ))}
         </tbody>
       </table>
-      {showModal && (
-        <div className="modal-overlay " >
-          
-          <div className="modal popup-box"  >
+      )}
+     <div className="entries-box">
             <h3>{editId ? "Edit Teacher" : "Add Teacher"}</h3>
             <div style={{ textAlign: "center", marginBottom: 10 }}>
   <label
@@ -718,8 +717,6 @@ useEffect(() => {
           </div>
       
       )}
-    </div>
-  );
-};
+    
 
 export default Teacher;
