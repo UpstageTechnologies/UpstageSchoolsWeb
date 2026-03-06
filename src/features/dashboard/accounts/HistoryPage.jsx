@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { collection, onSnapshot , addDoc, deleteDoc, doc , setDoc,query,orderBy} from "firebase/firestore";
 import { db } from "../../../services/firebase";
 import "../../dashboard_styles/History.css";
-import { FaUndo } from "react-icons/fa";
+import { FaArrowLeft,FaArrowRight, FaUndo } from "react-icons/fa";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 export default function HistoryPage({ adminUid, setActivePage , globalSearch = ""}) {
   const [historyList, setHistoryList] = useState([]);
@@ -340,7 +340,7 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
       disabled={currentPageIndex === 0}
       onClick={prevPage}
     >
-      Previous
+      <span><FaArrowLeft/></span>
     </button>
 
     {getVisiblePages().map(i => (
@@ -358,7 +358,7 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
       disabled={currentPageIndex === totalPages - 1}
       onClick={nextPage}
     >
-      Next
+      <span><FaArrowRight/></span>
     </button>
 
   </div>

@@ -549,7 +549,7 @@ const totalPages = Math.ceil(filteredNewPayments.length / rowsPerPage);
       Income Report – {reportFilter.toUpperCase()}
     </h3>
 
-    <table className="history-table">
+    <table className="in-table">
   <thead>
     <tr>
     <th onClick={() => handleSort("studentName")}>
@@ -875,7 +875,7 @@ Competition
 
 </div>
 
-      <table className="history-table">
+      <table className="in-table">
         <thead>
           <tr>
           <th onClick={() => handleSort("date")}>
@@ -1019,7 +1019,7 @@ Competition
   
   
 </div>  
-<table className="history-table">
+<table className="in-table">
 <thead><tr>
 <th onClick={() => handleSort("studentName")}>
   Student
@@ -1200,7 +1200,7 @@ const statusInfo = getStatusInfo(
     />
   </div>
               <div className="nice-table2-wrapper">
-                <table className="history-table">
+                <table className="in-table">
                   <thead>
                     <tr>
                       <th onClick={()=>handleSort("studentName")} >Student
@@ -1332,7 +1332,7 @@ Next
   />
 </div>
               <div className="nice-table-wrapper1">
-                <table className="history-table">
+                <table className="in-table">
                   <thead>
                     <tr>
                     <th onClick={() => handleSort("studentName")}>
@@ -1405,7 +1405,7 @@ Next
     />
   </div>
 <div className="nice-table-wrapper1">
-<table className="history-table">
+<table className="in-table">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
   {sortField === "studentName" &&
@@ -1458,7 +1458,7 @@ Next
       className="search-input"
     />
   </div>
-<div className="nice-table-wrapper1"><table className="history-table">
+<div className="nice-table-wrapper1"><table className="in-table">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
   {sortField === "studentName" &&
@@ -1522,7 +1522,7 @@ Next
       className="search-input"
     />
   </div>
-<table className="history-table">
+<table className="in-table">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
   {sortField === "studentName" &&
@@ -1586,7 +1586,7 @@ Next
       className="search-input"
     />
   </div>
-<table className="history-table">
+<table className="in-table">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
   {sortField === "studentName" &&
@@ -1639,7 +1639,7 @@ Next
       onChange={(e) => setTableSearch(e.target.value)}
       className="search-input"
     />
-  </div><table className="history-table">
+  </div><table className="in-table">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
   {sortField === "studentName" &&
@@ -1694,7 +1694,7 @@ Next
   />
 </div>
 <div className="nice-table-wrapper1">
-  <table className="history-table">
+  <table className="in-table">
 <thead><tr>
 <th onClick={() => handleSort("type")}>
   Type
