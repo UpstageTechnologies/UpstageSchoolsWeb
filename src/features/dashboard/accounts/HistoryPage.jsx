@@ -151,7 +151,7 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
   const currentPageIndex = allDates.indexOf(entryDate);
   const totalPages = allDates.length;
   
-  const maxVisiblePages = 4;
+  const maxVisiblePages = 3;
   
   const getVisiblePages = () => {
     let start = Math.max(

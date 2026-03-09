@@ -308,7 +308,7 @@ const getStudentBalance = (studentId, className) => {
   const currentPageIndex = allDates.indexOf(entryDate);
   const totalPages = allDates.length;
 
-  const maxVisiblePages = 4;
+  const maxVisiblePages = 3;
 
 const getVisiblePages = () => {
   let start = Math.max(0, currentPageIndex - Math.floor(maxVisiblePages / 2));

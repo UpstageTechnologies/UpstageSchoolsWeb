@@ -4,6 +4,7 @@ import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
 import "../../dashboard_styles/History.css"
 import { FiChevronUp, FiChevronDown } from "react-icons/fi";
+import { FaBible, FaFileInvoice } from "react-icons/fa";
 export default function FeesPage({ adminUid, mode, setActivePage , globalSearch = ""}) {
 const [incomeList, setIncomeList] = useState([]);
 const [expenseList, setExpenseList] = useState([]);
@@ -476,17 +477,9 @@ const filteredNewPayments = getSortedData(
 );
 const totalPages = Math.ceil(filteredNewPayments.length / rowsPerPage);
   return (
-    <div className="accounts-wrapper fade-in">
+    <div className="income-wrapper">
 
-  <div className="table-header">
  
-      <button style={{marginLeft:"30%"}}
-    className="report-btn"
-    onClick={() => setShowReport(true)}
-  >
-    📄 Report
-  </button>
-</div>
 {showReport && (
   <div className="report-box">
     <h3>{mode === "income" ? "Income Report" : "Expense Report"}</h3>
@@ -1003,20 +996,31 @@ Competition
 <div className="section-card pop">
 
   <div className="feesmaster-topbar">
+  <div className="table-header">
 
-  <h3 className="section-title">
-    {feeCategory} Fees Collection Details
-  </h3>
-  <div className="history-controls">
-    <input
-      type="text"
-      placeholder="Search in table..."
-      value={tableSearch}
-      onChange={(e) => setTableSearch(e.target.value)}
-      className="search-input"
-    />
-  </div>
-  
+<h3 className="section-title">
+  {feeCategory} Fees Collection Details
+</h3>
+
+<button
+  className="report-btn"
+  onClick={() => setShowReport(true)}
+>
+  <FaFileInvoice />
+  <span className="report-text">Report</span>
+</button>
+
+</div>
+
+<div style={{marginTop:"18px", marginBottom:"20px"}}>
+<input
+  type="text"
+  placeholder="Search in table..."
+  value={tableSearch}
+  onChange={(e) => setTableSearch(e.target.value)}
+  className="table-search"
+/>
+</div>
   
 </div>  
 <table className="history-table">
@@ -1189,16 +1193,29 @@ const statusInfo = getStatusInfo(
 {incomeTab === "new" &&  (
   <div className="section-card pop ">
         
-              <h3 className="section-title">New Admission Payments</h3>
-              <div className="history-controls">
-    <input
-      type="text"
-      placeholder="Search in table..."
-      value={tableSearch}
-      onChange={(e) => setTableSearch(e.target.value)}
-      className="search-input"
-    />
-  </div>
+        <div className="table-header">
+
+<h3 className="section-title">
+  New Admission Payments
+</h3>
+
+<button
+  className="report-btn"
+  onClick={() => setShowReport(true)}
+>
+  <FaFileInvoice />
+  <span className="report-text">Report</span>
+</button>
+
+</div>
+
+<input
+type="text"
+placeholder="Search in table..."
+value={tableSearch}
+onChange={(e) => setTableSearch(e.target.value)}
+className="table-search"
+/>
               <div className="nice-table2-wrapper">
                 <table className="history-table">
                   <thead>
@@ -1321,16 +1338,29 @@ Next
           )}
           {incomeTab === "old" && (
   <div className="section-card pop">
-<h3 className="section-title">Old Admission Payments</h3>
-<div className="history-controls">
-  <input
-    type="text"
-    placeholder="Search in table..."
-    value={tableSearch}
-    onChange={(e) => setTableSearch(e.target.value)}
-    className="search-input"
-  />
+<div className="table-header">
+
+<h3 className="section-title">
+  Old Admission Payments
+</h3>
+
+<button
+  className="report-btn"
+  onClick={() => setShowReport(true)}
+>
+  <FaFileInvoice />
+  <span className="report-text">Report</span>
+</button>
+
 </div>
+
+<input
+type="text"
+placeholder="Search in table..."
+value={tableSearch}
+onChange={(e) => setTableSearch(e.target.value)}
+className="table-search"
+/>
               <div className="nice-table-wrapper1">
                 <table className="history-table">
                   <thead>
@@ -1394,16 +1424,30 @@ Next
             </div>
           )}
 {incomeTab==="full"&&(
-<div className="section-card pop"><h3 className="section-title">Full Payment Students</h3>
-<div className="history-controls">
-    <input
-      type="text"
-      placeholder="Search in table..."
-      value={tableSearch}
-      onChange={(e) => setTableSearch(e.target.value)}
-      className="search-input"
-    />
-  </div>
+<div className="section-card pop"><div className="table-header">
+
+<h3 className="section-title">
+  Full Payment Students
+</h3>
+
+<button
+  className="report-btn"
+  onClick={() => setShowReport(true)}
+>
+  <FaFileInvoice />
+  <span className="report-text">Report</span>
+</button>
+
+</div>
+
+<input
+type="text"
+placeholder="Search in table..."
+value={tableSearch}
+onChange={(e) => setTableSearch(e.target.value)}
+className="table-search"
+/>
+
 <div className="nice-table-wrapper1">
 <table className="history-table">
 <thead><tr><th onClick={() => handleSort("studentName")}>
@@ -1448,16 +1492,29 @@ Next
 </table></div></div>
 )}
 {incomeTab==="partial"&&(
-<div className="section-card pop"><h3 className="section-title">Partial Payment Students</h3>
-<div className="history-controls">
-    <input
-      type="text"
-      placeholder="Search in table..."
-      value={tableSearch}
-      onChange={(e) => setTableSearch(e.target.value)}
-      className="search-input"
-    />
-  </div>
+<div className="section-card pop"><div className="table-header">
+
+  <h3 className="section-title">
+    Partial Payment Students
+  </h3>
+
+  <button
+    className="report-btn"
+    onClick={() => setShowReport(true)}
+  >
+    <FaFileInvoice />
+    <span className="report-text">Report</span>
+  </button>
+
+</div>
+
+<input
+  type="text"
+  placeholder="Search in table..."
+  value={tableSearch}
+  onChange={(e) => setTableSearch(e.target.value)}
+  className="table-search"
+/>
 <div className="nice-table-wrapper1"><table className="history-table">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
@@ -1513,6 +1570,15 @@ Next
 )}
 {incomeTab==="term1"&&(
 <div className="section-card pop"><h3 className="section-title">Term 1 Payments</h3>
+<div className="table-header">
+ 
+ <button style={{marginLeft:"30%"}}
+className="report-btn"
+onClick={() => setShowReport(true)}
+>
+<FaFileInvoice />
+</button>
+</div>
 <div className="history-controls">
     <input
       type="text"
@@ -1577,6 +1643,15 @@ Next
 )}
 {incomeTab==="term2"&&(
 <div className="section-card pop"><h3 className="section-title">Term 2 Payments</h3>
+<div className="table-header">
+ 
+ <button style={{marginLeft:"30%"}}
+className="report-btn"
+onClick={() => setShowReport(true)}
+>
+<FaFileInvoice />
+</button>
+</div>
 <div className="history-controls">
     <input
       type="text"
@@ -1631,6 +1706,15 @@ Next
 )}
 {incomeTab==="term3"&&(
 <div className="section-card pop"><h3 className="section-title">Term 3 Payments</h3>
+<div className="table-header">
+ 
+ <button style={{marginLeft:"30%"}}
+className="report-btn"
+onClick={() => setShowReport(true)}
+>
+<FaFileInvoice />
+</button>
+</div>
 <div className="history-controls">
     <input
       type="text"
@@ -1684,6 +1768,15 @@ Next
 )}</>)}
       {mode==="expenses"&&(
 <div className="section-card pop"><h3 className="section-title">Expenses Details</h3>
+<div className="table-header">
+ 
+ <button style={{marginLeft:"30%"}}
+className="report-btn"
+onClick={() => setShowReport(true)}
+>
+<FaFileInvoice />
+</button>
+</div>
 <div className="history-controls">
   <input
     type="text"

@@ -45,7 +45,12 @@
     background:#f5f7fb;
     min-height:100%;
   }
-  
+  .income-wrapper{
+    margin: -15px;
+    padding:1px;
+    background:#f5f7fb;
+    min-height:100%;
+  }
   /* Title */
   .page-title{
     font-size:26px;
@@ -800,3 +805,55 @@
   }
   
   }
+  .table-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .table-search{
+    width:100%;
+    height:42px;
+    margin-bottom: 10px;
+    padding:0 14px;
+    border-radius:12px;
+    border:2px solid #e5e7eb;   /* default border */
+    font-size:14px;
+    transition:all .2s ease;
+  }
+  
+  /* focus color */
+  .table-search:focus{
+    outline:none;
+    border-color:#7b4be0;   /* purple border */
+    box-shadow:0 0 0 2px rgba(123,75,224,.25);
+  }
+  
+  /* report button */
+  .report-btn{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:8px 14px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(135deg,#7b4be0,#5b2bbf);
+    color:#fff;
+    cursor:pointer;
+  }
+  
+  /* mobile */
+  @media (max-width:768px){
+  
+    .report-text{
+      display:none;
+    }
+  
+    .report-btn{
+      width:42px;
+      height:42px;
+      justify-content:center;
+    }
+  
+  }
+  
