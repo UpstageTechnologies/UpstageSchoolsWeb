@@ -1012,7 +1012,7 @@ Competition
 
 </div>
 
-<div style={{marginTop:"18px", marginBottom:"20px"}}>
+<div style={{marginTop:"0px", marginBottom:"10px"}}>
 <input
   type="text"
   placeholder="Search in table..."
