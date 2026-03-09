@@ -441,6 +441,7 @@
   }
 
 }
+
 .journal-table{
   width:100%;
   border-collapse:separate;
@@ -675,11 +676,9 @@
     overflow:visible;
     background:#fff;
     z-index:10;
-
     display:inline-block;
     width:max-content;     /* box = text width */
     max-width:250px;
-
     padding:6px 8px;
     border-radius:6px;
     box-shadow:0 4px 12px rgba(0,0,0,0.15);
@@ -692,6 +691,36 @@
     overflow:hidden;
     text-overflow:ellipsis;
     white-space:nowrap;
+  }
+
+}
+@media (max-width:768px){
+
+  .history-filters{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+
+  /* All button full width */
+  .history-filters .tab-btn:first-child{
+    grid-column:1 / -1;
+  }
+
+  .history-filters .tab-btn{
+    width:100%;
+    text-align:center;
+  }
+
+}
+@media (max-width:480px){
+
+  .section-card input[type="date"]{
+    width:45%;
+  }
+
+  .section-card input[type="text"]{
+    width:50%;
   }
 
 }
