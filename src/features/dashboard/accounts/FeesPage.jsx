@@ -549,7 +549,7 @@ const totalPages = Math.ceil(filteredNewPayments.length / rowsPerPage);
       Income Report – {reportFilter.toUpperCase()}
     </h3>
 
-    <table className="in-table">
+    <table className="history-table">
   <thead>
     <tr>
     <th onClick={() => handleSort("studentName")}>
@@ -875,7 +875,7 @@ Competition
 
 </div>
 
-      <table className="in-table">
+      <table className="history-table">
         <thead>
           <tr>
           <th onClick={() => handleSort("date")}>
@@ -952,25 +952,25 @@ Competition
         <td>{cls}</td>
 
         {/* Income Names */}
-        <td>
-          {studentIncomeList.map((s, i) => (
-            <div key={i}>{s}</div>
-          ))}
-        </td>
+<td className="cell-list">
+  {studentIncomeList.map((s,i)=>
+    <div key={i} className="tag">{s}</div>
+  )}
+</td>
 
-        {/* Income Total */}
-        <td style={{ color: "green", fontWeight: 600 }}>
-          ₹{totalIncome}
-        </td>
+{/* Income Total */}
+<td className="amount-income">
+  ₹{totalIncome}
+</td>
 
-        {/* Expense Name + Amount */}
-        <td>
-          {Object.entries(expenseGrouped).map(([name, amt], i) => (
-            <div key={i}>
-              {name} - ₹{amt}
-            </div>
-          ))}
-        </td>
+{/* Expense Name + Amount */}
+<td className="cell-list">
+  {Object.entries(expenseGrouped).map(([name, amt], i) => (
+    <div key={i} className="tag-expense">
+      {name} - ₹{amt}
+    </div>
+  ))}
+</td>
 
         {/* Expense Total */}
         <td style={{ fontWeight: 600 }}>
@@ -1007,7 +1007,7 @@ Competition
   <h3 className="section-title">
     {feeCategory} Fees Collection Details
   </h3>
-  <div style={{ marginBottom: 12 }}>
+  <div className="history-controls">
     <input
       type="text"
       placeholder="Search in table..."
@@ -1019,7 +1019,7 @@ Competition
   
   
 </div>  
-<table className="in-table">
+<table className="history-table">
 <thead><tr>
 <th onClick={() => handleSort("studentName")}>
   Student
@@ -1190,7 +1190,7 @@ const statusInfo = getStatusInfo(
   <div className="section-card pop ">
         
               <h3 className="section-title">New Admission Payments</h3>
-              <div style={{ marginBottom: 12 }}>
+              <div className="history-controls">
     <input
       type="text"
       placeholder="Search in table..."
@@ -1200,7 +1200,7 @@ const statusInfo = getStatusInfo(
     />
   </div>
               <div className="nice-table2-wrapper">
-                <table className="in-table">
+                <table className="history-table">
                   <thead>
                     <tr>
                       <th onClick={()=>handleSort("studentName")} >Student
@@ -1322,7 +1322,7 @@ Next
           {incomeTab === "old" && (
   <div className="section-card pop">
 <h3 className="section-title">Old Admission Payments</h3>
-<div style={{ marginBottom: 12 }}>
+<div className="history-controls">
   <input
     type="text"
     placeholder="Search in table..."
@@ -1332,7 +1332,7 @@ Next
   />
 </div>
               <div className="nice-table-wrapper1">
-                <table className="in-table">
+                <table className="history-table">
                   <thead>
                     <tr>
                     <th onClick={() => handleSort("studentName")}>
@@ -1395,7 +1395,7 @@ Next
           )}
 {incomeTab==="full"&&(
 <div className="section-card pop"><h3 className="section-title">Full Payment Students</h3>
-<div style={{ marginBottom: 12 }}>
+<div className="history-controls">
     <input
       type="text"
       placeholder="Search in table..."
@@ -1405,7 +1405,7 @@ Next
     />
   </div>
 <div className="nice-table-wrapper1">
-<table className="in-table">
+<table className="history-table">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
   {sortField === "studentName" &&
@@ -1449,7 +1449,7 @@ Next
 )}
 {incomeTab==="partial"&&(
 <div className="section-card pop"><h3 className="section-title">Partial Payment Students</h3>
-<div style={{ marginBottom: 12 }}>
+<div className="history-controls">
     <input
       type="text"
       placeholder="Search in table..."
@@ -1458,7 +1458,7 @@ Next
       className="search-input"
     />
   </div>
-<div className="nice-table-wrapper1"><table className="in-table">
+<div className="nice-table-wrapper1"><table className="history-table">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
   {sortField === "studentName" &&
@@ -1513,7 +1513,7 @@ Next
 )}
 {incomeTab==="term1"&&(
 <div className="section-card pop"><h3 className="section-title">Term 1 Payments</h3>
-<div style={{ marginBottom: 12 }}>
+<div className="history-controls">
     <input
       type="text"
       placeholder="Search in table..."
@@ -1522,7 +1522,7 @@ Next
       className="search-input"
     />
   </div>
-<table className="in-table">
+<table className="history-table">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
   {sortField === "studentName" &&
@@ -1577,7 +1577,7 @@ Next
 )}
 {incomeTab==="term2"&&(
 <div className="section-card pop"><h3 className="section-title">Term 2 Payments</h3>
-<div style={{ marginBottom: 12 }}>
+<div className="history-controls">
     <input
       type="text"
       placeholder="Search in table..."
@@ -1586,7 +1586,7 @@ Next
       className="search-input"
     />
   </div>
-<table className="in-table">
+<table className="history-table">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
   {sortField === "studentName" &&
@@ -1631,7 +1631,7 @@ Next
 )}
 {incomeTab==="term3"&&(
 <div className="section-card pop"><h3 className="section-title">Term 3 Payments</h3>
-<div style={{ marginBottom: 12 }}>
+<div className="history-controls">
     <input
       type="text"
       placeholder="Search in table..."
@@ -1639,7 +1639,7 @@ Next
       onChange={(e) => setTableSearch(e.target.value)}
       className="search-input"
     />
-  </div><table className="in-table">
+  </div><table className="history-table">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
   {sortField === "studentName" &&
@@ -1684,7 +1684,7 @@ Next
 )}</>)}
       {mode==="expenses"&&(
 <div className="section-card pop"><h3 className="section-title">Expenses Details</h3>
-<div style={{ marginBottom: 12 }}>
+<div className="history-controls">
   <input
     type="text"
     placeholder="Search in table..."
@@ -1694,7 +1694,7 @@ Next
   />
 </div>
 <div className="nice-table-wrapper1">
-  <table className="in-table">
+  <table className="history-table">
 <thead><tr>
 <th onClick={() => handleSort("type")}>
   Type

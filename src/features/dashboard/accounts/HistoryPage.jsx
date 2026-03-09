@@ -151,7 +151,7 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
   const currentPageIndex = allDates.indexOf(entryDate);
   const totalPages = allDates.length;
   
-  const maxVisiblePages = 5;
+  const maxVisiblePages = 4;
   
   const getVisiblePages = () => {
     let start = Math.max(
@@ -224,20 +224,24 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
 </button>
 </div>
 
-      <div className="section-card pop">
-      <input
-  type="date"
-  value={entryDate}
-  onChange={e => setEntryDate(e.target.value)}
-  style={{ marginBottom: 12 }}
-/>
-<input
-  type="text"
-  placeholder="Search history..."
-  value={tableSearch}
-  onChange={(e) => setTableSearch(e.target.value)}
-  style={{ marginBottom: 12, marginLeft: 10 }}
-/>
+<div className="section-card pop">
+
+<div className="history-controls">
+
+  <input
+    type="date"
+    value={entryDate}
+    onChange={e => setEntryDate(e.target.value)}
+  />
+
+  <input
+    type="text"
+    placeholder="Search history..."
+    value={tableSearch}
+    onChange={(e) => setTableSearch(e.target.value)}
+  />
+
+</div>
 
         <table className="history-table">
           <thead>
@@ -271,13 +275,41 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
 
           <tbody>
 
-            {historyList.length === 0 && (
-              <tr>
-                <td colSpan="5" style={{ textAlign: "center" }}>
-                  No history found
-                </td>
-              </tr>
-            )}
+          {filteredHistory
+  .filter(h => {
+    if (!entryDate) return true;
+
+    let hDate = "";
+
+    if (h.date?.seconds) {
+      hDate = new Date(h.date.seconds * 1000)
+        .toISOString()
+        .split("T")[0];
+    } else {
+      hDate = h.date;
+    }
+
+    return hDate === entryDate;
+  })
+  .filter(h => {
+    if (!tableSearch.trim()) return true;
+    const search = tableSearch.toLowerCase();
+
+    return (
+      h.module?.toLowerCase().includes(search) ||
+      h.action?.toLowerCase().includes(search) ||
+      h.name?.toLowerCase().includes(search) ||
+      String(h.amount)?.includes(search)
+    );
+  }).length === 0 && (
+
+<tr>
+  <td colSpan="6" style={{ textAlign:"center", padding:"20px" }}>
+  No history available for this date
+  </td>
+</tr>
+
+)}
 {filteredHistory
   .filter(h => {
     console.log(tableSearch);

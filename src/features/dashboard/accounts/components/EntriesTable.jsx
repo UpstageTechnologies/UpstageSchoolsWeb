@@ -1,5 +1,5 @@
 import React from "react";
-import { FaFileInvoice, FaTrash } from "react-icons/fa";
+import { FaArrowLeft, FaArrowRight, FaFileInvoice, FaTrash } from "react-icons/fa";
 import "../../../dashboard_styles/ios.css"
 import "../../../dashboard_styles/History.css"
 
@@ -57,7 +57,7 @@ export default function EntriesTable({
 
   return (
     <div style={{marginTop:10}}className="section-card pop">
-      <table className="journal-table
+      <table className="history-table
 ">
         <thead>
           <tr>
@@ -179,7 +179,7 @@ export default function EntriesTable({
             disabled={currentPageIndex === 0}
             onClick={prevPage}
           >
-            Previous
+            <FaArrowLeft/>
           </button>
 
           {getVisiblePages().map(i => (
@@ -197,7 +197,7 @@ export default function EntriesTable({
             disabled={currentPageIndex === totalPages - 1}
             onClick={nextPage}
           >
-            Next
+            <FaArrowRight/>
           </button>
 
         </div>

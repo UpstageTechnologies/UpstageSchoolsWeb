@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 export default function CommonTable({
     columns,
     data,
@@ -84,7 +85,7 @@ export default function CommonTable({
           <div className="pagination-bar">
             <button disabled={pageIndex === 0}
               onClick={() => setPageIndex(p => p - 1)}>
-              Prev
+              <FaArrowLeft/>
             </button>
   
             <span style={{ margin: "0 8px" }}>
@@ -93,7 +94,7 @@ export default function CommonTable({
   
             <button disabled={pageIndex === totalPages - 1}
               onClick={() => setPageIndex(p => p + 1)}>
-              Next
+              <FaArrowRight/>
             </button>
           </div>
         )}

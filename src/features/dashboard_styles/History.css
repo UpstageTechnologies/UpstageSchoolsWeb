@@ -9,6 +9,11 @@
   gap: 5px;
   font-size: 18px;
 }
+:root{
+  --primary-purple: #7b4be0;
+  --primary-purple-dark:#5b2bbf;
+  --primary-gradient: linear-gradient(135deg,#7b4be0,#5b2bbf);
+}
 
 .dele-btn{
   cursor: pointer;
@@ -75,22 +80,17 @@
   cursor:pointer;
   transition:all .25s ease;
 }
-
-/* Hover */
 .history-filters .tab-btn:hover{
-  background:#f1f5ff;
-  border-color:#4f6df5;
-  color:#4f6df5;
+  background:#eef2ff;
+  border-color:#7b4be0;
+  color:#7b4be0;
 }
-
-/* Active button */
 .history-filters .tab-btn.active{
-  background:linear-gradient(135deg,#4f6df5,#3b5bdb);
-  color:#ffffff;
+  background: linear-gradient(135deg,#7b4be0,#5b2bbf);
+  color:#fff;
   border:none;
-  box-shadow:0 4px 12px rgba(79,109,245,0.35);
+  box-shadow:0 6px 16px rgba(123,75,224,0.35);
 }
-
 /* Mobile responsive */
 @media (max-width:768px){
 
@@ -123,10 +123,9 @@
     transition:all .25s ease;
     white-space:nowrap;
   }
-  
   .tab-btn:hover{
-    background:#eef2ff;
-    border-color:#dbe3ff;
+    border-color:#7b4be0;
+    color:#7b4be0;
   }
   
   .tab-btn.active{
@@ -197,19 +196,16 @@
     border-radius:16px;
     overflow:hidden;
   }
-  
   .history-table thead{
-    background:#f1f4ff;
+    background: linear-gradient(135deg,#f3edff,#e7ddff);
   }
-  
   .history-table th{
     padding:14px 16px;
     font-size:14px;
     font-weight:700;
-    color:#374151;
-    text-align:left;
+    color:#4b3bbd;   /* purple text */
+    text-align:center;
   }
-  
   .history-table td{
     padding:14px 16px;
     font-size:14px;
@@ -255,8 +251,8 @@
   /* Restored text */
   .history-table span{
     font-size:13px;
-    font-weight:700;
-    color:#16a34a;
+    
+    
   }
   
   /* ===============================
@@ -368,15 +364,11 @@
 .tab-buttons .tab-btn:hover{
   background:#f3f4f6;
 }
-
-/* Active */
 .tab-buttons .tab-btn.active{
-  background:linear-gradient(135deg,#4f6df5,#3b5bdb);
+  background: linear-gradient(135deg,#7b4be0,#5b2bbf);
   color:#fff;
   border:none;
-  box-shadow:0 4px 12px rgba(79,109,245,.35);
 }
-
 /* Disabled */
 .tab-buttons .tab-btn:disabled{
   opacity:.5;
@@ -712,15 +704,99 @@
     text-align:center;
   }
 
+}.history-controls{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:12px;
 }
-@media (max-width:480px){
 
-  .section-card input[type="date"]{
+/* date left */
+.history-controls input[type="date"]{
+  width:180px;
+}
+
+/* search right corner */
+.history-controls input[type="text"]{
+  margin-left:auto;
+  width:260px;
+}
+.history-controls input[type="text"]:focus{
+  outline:none;
+  border-color:#7b4be0;   /* purple border */
+  box-shadow:0 0 0 3px rgba(123,75,224,0.25); /* soft glow */
+}
+
+/* MOBILE */
+@media (max-width:768px){
+
+  .history-controls{
+    display:flex;
+    justify-content:space-between;
+  }
+
+  .history-controls input[type="date"]{
     width:45%;
   }
 
-  .section-card input[type="text"]{
+  .history-controls input[type="text"]{
     width:50%;
   }
 
 }
+/* desktop normal list */
+.income-preview{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  font-size:13px;
+}
+
+/* hide popup */
+.income-popup{
+  display:none;
+}
+@media (max-width:768px){
+
+  .income-preview{
+    max-width:90px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  
+  /* popup */
+  .income-cell{
+    position:relative;
+  }
+  
+  .income-popup{
+    display:none;
+    position:absolute;
+    left:0;
+    top:100%;
+    background:#fff;
+    border-radius:8px;
+    padding:8px;
+    min-width:150px;
+    box-shadow:0 6px 18px rgba(0,0,0,.15);
+    z-index:20;
+  }
+  
+  /* show popup on click/hover */
+  .income-cell:hover .income-popup{
+    display:block;
+  }
+  
+  /* popup items */
+  .popup-item{
+    font-size:13px;
+    padding:4px 0;
+    border-bottom:1px solid #eee;
+  }
+  
+  .popup-item:last-child{
+    border-bottom:none;
+  }
+  
+  }
