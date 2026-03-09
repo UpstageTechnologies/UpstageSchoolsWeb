@@ -289,8 +289,7 @@
     .history-table td{
       font-size:12px;
       padding:8px 6px;
-      white-space:normal;     
-      word-break:break-word;
+       
     }
   
     .history-table button{
@@ -308,16 +307,15 @@
   
     .history-table{
       width:100%;
-      min-width:370px;      /* Adjust based on columns */
-      table-layout:auto;   /* Important for equal columns */
+      min-width:300px;      /* Adjust based on columns */
+      table-layout:fixed;   /* Important for equal columns */
     }
   
     .history-table th,
     .history-table td{
       font-size:12px;
       padding:8px 6px;
-      white-space:normal;
-      word-break:break-word;
+      
     }
   
   }
@@ -417,10 +415,10 @@
   border-radius:10px;
 }
 .history-table{
-  table-layout:auto;
+  table-layout:fixed;
 }
 .journal-table{
-  table-layout :auto;
+  table-layout :fixed;
 }
 @media (max-width:768px){
 
@@ -439,8 +437,7 @@
   .journal-table td{
     font-size:12px;
     padding:8px 6px;
-    white-space:normal;
-    word-break:break-word;
+   
   }
 
 }
@@ -496,7 +493,7 @@
   border-right:none;
 }
 .in-table{
-  table-layout :auto;
+  table-layout :fixed;
 }
 @media (max-width:768px){
 
@@ -508,15 +505,14 @@
   .in-table{
     width:100%;
     min-width:350px;      /* Adjust based on columns */
-    table-layout:auto;   /* Important for equal columns */
+    table-layout:fixed;   /* Important for equal columns */
   }
 
   .in-table th,
   .in-table td{
     font-size:12px;
     padding:8px 6px;
-    white-space:normal;
-    word-break:break-word;
+    
   }
 
 }
@@ -586,8 +582,8 @@
 
 .menu-dots{
   display: none;
-  width: 32px;
-  height: 32px;
+  width: 22px;
+  height: 22px;
   border: none;
   border-radius: 50%;
   background: #ef4444;
@@ -610,20 +606,15 @@
    POPUP MENU
 ================================= */
 .menu-popup{
-  position:absolute;
-  top:50%;
-  right:65px;        /* dots button distance */
-
-  transform:translateY(-50%);
-
-  min-width:120px;
+  position: fixed;        /* important */
   background:#fff;
   border-radius:10px;
+  right: 10px;
   border:1px solid #e5e7eb;
   box-shadow:0 8px 18px rgba(0,0,0,.12);
-
   padding:6px 0;
-  z-index:1000;
+  min-width:100px;
+  z-index:9999;
 }
 /* popup button */
 
@@ -668,4 +659,39 @@
 }
 .in-table{
   overflow:visible;
+}
+.history-table td{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  position:relative;
+}
+
+/* popup */
+@media (max-width:768px){
+
+  .history-table td:hover{
+    white-space:normal;
+    overflow:visible;
+    background:#fff;
+    z-index:10;
+
+    display:inline-block;
+    width:max-content;     /* box = text width */
+    max-width:250px;
+
+    padding:6px 8px;
+    border-radius:6px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.15);
+  }
+
+}
+@media (max-width:768px){
+
+  .history-table td{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
 }
