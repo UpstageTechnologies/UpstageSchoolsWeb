@@ -60,6 +60,13 @@ export default function Course({ handleMenuClick }) {
 >
   Timetable Planner <FaArrowRight />
 </button>
+<button
+  className="button"
+  onClick={() => handleMenuClick(`timetable-planner-${c.id}`)}
+
+>
+  Calender Planner <FaArrowRight />
+</button>
 
             </div>
           ))}

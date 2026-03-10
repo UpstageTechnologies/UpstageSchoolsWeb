@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../../services/firebase";
 import "../../dashboard_styles/ac.css";
+import "../../dashboard_styles/accountwrapper.css"
 export default function ExpensesPage({ adminUid, setActivePage }) {
 
   const [incomeList, setIncomeList] = useState([]);
@@ -123,7 +124,8 @@ const todayProfit = todayIncome - todayExpense;
   const POINT_GAP = 160; 
   const chartWidth = monthlyProfit.length * POINT_GAP;
   return (
-    <>
+
+    <div className="account-wrapper"><>
     
       {!isOfficeStaff && (
         <>
@@ -281,5 +283,7 @@ const y = getY(m.profit);
       </div>
 
     </>
+    </div>
   );
 }
+ 

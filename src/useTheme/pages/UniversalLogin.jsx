@@ -10,6 +10,7 @@ import {
 } from "firebase/firestore";
 import {
   signInWithEmailAndPassword,
+  sendPasswordResetEmail
 } from "firebase/auth";
 import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 

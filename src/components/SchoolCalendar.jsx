@@ -168,7 +168,7 @@ useEffect(() => {
       
         return Object.values(events)
           .filter(e =>
-            e.date.startsWith(`${yearStr}-${monthStr}`)   // only this month
+            e?.date && e.date.startsWith(`${yearStr}-${monthStr}`)
           )
           .sort((a, b) => a.date.localeCompare(b.date));
       }, [events, year, month]);

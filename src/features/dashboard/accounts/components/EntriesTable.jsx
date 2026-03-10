@@ -136,9 +136,9 @@ export default function EntriesTable({
 
                   <td className="table-actions">
   <button
-    className="table-delete-btn"
+    className="entry-delete-btn"
     onClick={() => deleteEntry(row)}
-    aria-label="Delete"
+    aria-label="Delete entry"
   >
     <FaTrash className="icon" />
     <span className="label">Delete</span>

@@ -371,10 +371,6 @@
   flex:0 0 auto;
 }
 
-/* Hover */
-.tab-buttons .tab-btn:hover{
-  background:#f3f4f6;
-}
 .tab-buttons .tab-btn.active{
   background: linear-gradient(135deg,#7b4be0,#5b2bbf);
   color:#fff;
@@ -676,7 +672,7 @@
 /* popup */
 /* REMOVE THIS */
 @media (max-width:768px){
-  .history-table td:hover{
+  .history-table td:not(.table-actions):hover{
     white-space:normal;
     overflow:visible;
     background:#fff;
@@ -883,62 +879,74 @@
   width:20px;
   height:20px;
   color:#374151;
+}/* MOBILE – icon only */
+@media (max-width:768px){
+
+  .entry-delete-btn{
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .entry-delete-btn .icon{
+    color: #ef4444;  
+    margin: 10px; 
+    margin-left: 20px;/* red icon */
+    font-size: 20px;
+    align-items: center;
+  }
+
+  .entry-delete-btn .label{
+    display: none;
+  }
+
 }
-
-/* =========================
-   TABLE ACTIONS
-========================= */
-
-.table-actions{
-  text-align:center;
-  vertical-align:middle;
-}
-
-/* Delete Button */
-
-.table-delete-btn{
-  display:inline-flex;
+.entry-delete-btn{
+  display:flex;
   align-items:center;
   justify-content:center;
+}
+.entry-delete-btn{
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+/* DELETE BUTTON - DESKTOP */
+
+.entry-delete-btn{
+  display:inline-flex;
+  align-items:center;
   gap:6px;
 
-  padding:6px 14px;
+  background:transparent;
   border:none;
-  border-radius:999px;
-
-  background:#ef4444;
-  color:#fff;
-
-  font-size:13px;
-  font-weight:600;
-
   cursor:pointer;
-  transition:all .2s ease;
+
+  color:#ef4444;          /* text red */
+  font-weight:600;
 }
 
-.table-delete-btn:hover{
-  background:#dc2626;
-  transform:translateY(-1px);
+/* icon red */
+
+.entry-delete-btn .icon{
+  color:#ef4444;
+  font-size:16px;
 }
 
-/* Icon */
-
-.table-delete-btn .icon{
-  font-size:14px;
-}
-
-/* =========================
+/* ======================
    MOBILE
-========================= */
+====================== */
 
 @media (max-width:768px){
 
-  .table-delete-btn{
-    padding:6px 10px;
+  .entry-delete-btn .label{
+    display:none;      /* hide Delete text */
   }
 
-  .table-delete-btn .label{
-    display:none;
+  .entry-delete-btn .icon{
+    font-size:20px;
   }
 
-}
+} 

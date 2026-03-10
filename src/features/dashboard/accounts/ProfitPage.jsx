@@ -24,7 +24,7 @@ const [showClassDropdown, setShowClassDropdown] = useState(false);
 const [showExpenseType, setShowExpenseType] = useState(false);
 const [sourceList, setSourceList] = useState([]);
 const [expenseListMaster, setExpenseListMaster] = useState([]);
-
+const [openDropdown, setOpenDropdown] = useState(null);
 const [sourceSearch, setSourceSearch] = useState("");
 const [showSourceDD, setShowSourceDD] = useState(false);
 
@@ -1336,6 +1336,8 @@ const getTermPaidCount = (studentId, feeId) =>
        {entryType === "income" && (
   <IncomeSection
     incomeMode={incomeMode}
+    openDropdown={openDropdown}
+    setOpenDropdown={setOpenDropdown}
     studentMode={studentMode}
     incomeType={incomeType}
     showIncomeType={showIncomeType}
