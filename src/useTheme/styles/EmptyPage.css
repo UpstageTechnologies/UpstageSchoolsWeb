@@ -263,3 +263,65 @@ html,body,#root{
   }
 
 }
+/* =========================
+   ULTRA WIDE SCREENS
+========================= */
+
+@media(min-width:1800px){
+
+  .hero-wrapper{
+    max-width:2000px;
+    gap:120px;
+  }
+
+  .hero-left h1{
+    font-size:64px;
+  }
+
+  .hero-left p{
+    font-size:20px;
+    max-width:650px;
+  }
+
+  .hero-form{
+    max-width:620px;
+    padding:30px;
+    gap:18px;
+  }
+
+  .hero-form input,
+  .hero-form select{
+    padding:16px;
+    font-size:16px;
+  }
+
+  .hero-form button{
+    padding:16px 32px;
+    font-size:16px;
+  }
+
+  .image-circle{
+    width:600px;
+    height:600px;
+  }
+}
+@media(min-width:2400px){
+
+  .hero-wrapper{
+    max-width:2400px;
+  }
+
+  .hero-left h1{
+    font-size:72px;
+  }
+
+  .hero-left p{
+    font-size:22px;
+  }
+
+  .image-circle{
+    width:700px;
+    height:700px;
+  }
+
+}

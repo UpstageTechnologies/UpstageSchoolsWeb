@@ -3,8 +3,9 @@ import { collection, addDoc, onSnapshot ,query,deleteDoc, doc, updateDoc ,getDoc
 import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
 import "../../dashboard_styles/studentSearch.css";
-import "../../dashboard_styles/History.css"
+import "../../dashboard_styles/History.css";
 import "../../dashboard_styles/IE.css";
+import "../../dashboard_styles/ios.css";
 
 import {  FaEdit, FaTrash} from "react-icons/fa";
 import { FiChevronUp, FiChevronDown } from "react-icons/fi";
@@ -377,6 +378,7 @@ setNewStaffPhone("");
     )
   );
   const deleteFee = async (id) => {
+    console.log("Delete id:", id, typeof id);
     if (!window.confirm("Delete this item?")) return;
   
     const docRef = doc(
@@ -642,7 +644,7 @@ setNewStaffPhone("");
   );
   
   return (
-    <div className="accounts-wrapper fade-in">
+    <div className="inventry-wrapper">
       <h2 className="page-title">Inventory</h2>
       <div className="section-card entries-card">
         <h3 className="section-title">Add Item</h3>
@@ -1297,7 +1299,7 @@ setNewStaffPhone("");
     <span className="label">Edit</span>
   </button>
 
-  <button className="delete-btn undo-btn" onClick={() => deleteFee(i)}>
+  <button className="delete-btn undo-btn" onClick={() => deleteFee(i.id)}>
     <FaTrash />
     <span className="label">Delete</span>
   </button>
@@ -1318,7 +1320,7 @@ setNewStaffPhone("");
         <FaEdit /> Edit
       </button>
 
-      <button onClick={() => deleteFee(i)}>
+      <button onClick={() => deleteFee(i.id)}>
         <FaTrash /> Delete
       </button>
     </div>

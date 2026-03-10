@@ -51,6 +51,12 @@
     background:#f5f7fb;
     min-height:100%;
   }
+  .inventry-wrapper{
+    margin: -15px;
+    padding:1px;
+    background:#f5f7fb;
+    min-height:100%;
+  }
   /* Title */
   .page-title{
     font-size:26px;
@@ -424,11 +430,6 @@
     padding:14px;
   }
 
-  .journal-table{
-    width:100%;
-    min-width:400px;      /* Adjust based on columns */
-    table-layout:fixed;   /* Important for equal columns */
-  }
 
   .journal-table th,
   .journal-table td{
@@ -500,11 +501,6 @@
     padding:14px;
   }
 
-  .in-table{
-    width:100%;
-    min-width:350px;      /* Adjust based on columns */
-    table-layout:fixed;   /* Important for equal columns */
-  }
 
   .in-table th,
   .in-table td{
@@ -573,6 +569,18 @@
   position: relative;
   text-align: center;
 }
+.action-popup{
+  position: absolute;
+  right: 0;
+  top: 35px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  z-index: 999;
+  min-width: 130px;
+}
+
+
 
 /* ===============================
    3 DOTS BUTTON
@@ -666,21 +674,20 @@
 }
 
 /* popup */
+/* REMOVE THIS */
 @media (max-width:768px){
-
   .history-table td:hover{
     white-space:normal;
     overflow:visible;
     background:#fff;
     z-index:10;
     display:inline-block;
-    width:max-content;     /* box = text width */
+    width:max-content;
     max-width:250px;
     padding:6px 8px;
     border-radius:6px;
     box-shadow:0 4px 12px rgba(0,0,0,0.15);
   }
-
 }
 @media (max-width:768px){
 
@@ -856,4 +863,82 @@
     }
   
   }
-  
+  /* Mobile: only 3 dots */
+@media (max-width:768px){
+
+  .menu-dots{
+    background:transparent !important;
+    border:none !important;
+    padding:0 !important;
+    width:auto !important;
+    min-width:auto !important;
+    box-shadow:none !important;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+}
+.menu-dots svg{
+  width:20px;
+  height:20px;
+  color:#374151;
+}
+
+/* =========================
+   TABLE ACTIONS
+========================= */
+
+.table-actions{
+  text-align:center;
+  vertical-align:middle;
+}
+
+/* Delete Button */
+
+.table-delete-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+
+  padding:6px 14px;
+  border:none;
+  border-radius:999px;
+
+  background:#ef4444;
+  color:#fff;
+
+  font-size:13px;
+  font-weight:600;
+
+  cursor:pointer;
+  transition:all .2s ease;
+}
+
+.table-delete-btn:hover{
+  background:#dc2626;
+  transform:translateY(-1px);
+}
+
+/* Icon */
+
+.table-delete-btn .icon{
+  font-size:14px;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width:768px){
+
+  .table-delete-btn{
+    padding:6px 10px;
+  }
+
+  .table-delete-btn .label{
+    display:none;
+  }
+
+}

@@ -12,16 +12,32 @@ const [showReport, setShowReport] = useState(false);
 const [reportType, setReportType] = useState("month"); 
 const [printMode, setPrintMode] = useState(false);
 const [reportData, setReportData] = useState([]);
+const [activeTable, setActiveTable] = useState(null)
+const [loadingTable, setLoadingTable] = useState(false)
 const [selectedFeeFilter, setSelectedFeeFilter] = useState("");
 const [fromDate, setFromDate] = useState("");
 const [toDate, setToDate] = useState("");
 const [showTermDropdown, setShowTermDropdown] = useState(false);
 const [feeCategory, setFeeCategory] = useState("Tuition");
 const [filterClass, setFilterClass] = useState("All");
+const [activeTab, setActiveTab] = useState("new")
+const [loadingTab, setLoadingTab] = useState(false)
 const [sortField, setSortField] = useState(null);
 const [sortDirection, setSortDirection] = useState("asc");
 const [currentPage, setCurrentPage] = useState(1);
+const openTab = (tab) => {
+
+  setLoadingTab(true)
+
+  setTimeout(() => {
+    setActiveTab(tab)
+    setIncomeTab(tab)   // existing logic
+    setLoadingTab(false)
+  }, 100)
+
+}
 const rowsPerPage = 10;
+
 const handleSort = (field) => {
   if (sortField === field) {
     setSortDirection(prev => prev === "asc" ? "desc" : "asc");
@@ -652,28 +668,28 @@ const totalPages = Math.ceil(filteredNewPayments.length / rowsPerPage);
 
   <button
     className={incomeTab === "new" ? "tab-btn active" : "tab-btn"}
-    onClick={() => setIncomeTab("new")}
+    onClick={() => openTab("new")}
   >
     New Admission
   </button>
 
   <button
     className={incomeTab === "old" ? "tab-btn active" : "tab-btn"}
-    onClick={() => setIncomeTab("old")}
+    onClick={() => openTab("old")}
   >
     Old Admission
   </button>
 
   <button
     className={incomeTab === "full" ? "tab-btn active" : "tab-btn"}
-    onClick={() => setIncomeTab("full")}
+    onClick={() => openTab("full")}
   >
     Full Payment
   </button>
 
   <button
     className={incomeTab === "partial" ? "tab-btn active" : "tab-btn"}
-    onClick={() => setIncomeTab("partial")}
+    onClick={() => openTab("partial")}
   >
     Partial Payment
   </button>
@@ -691,13 +707,13 @@ const totalPages = Math.ceil(filteredNewPayments.length / rowsPerPage);
 
   {showTermDropdown && (
     <div className="term-dropdown">
-      <div onClick={() => { setIncomeTab("term1"); setShowTermDropdown(false); }}>
+      <div onClick={() => { openTab("term1"); setShowTermDropdown(false); }}>
         Term 1
       </div>
-      <div onClick={() => { setIncomeTab("term2"); setShowTermDropdown(false); }}>
+      <div onClick={() => { openTab("term2"); setShowTermDropdown(false); }}>
         Term 2
       </div>
-      <div onClick={() => { setIncomeTab("term3"); setShowTermDropdown(false); }}>
+      <div onClick={() => { openTab("term3"); setShowTermDropdown(false); }}>
         Term 3
       </div>
     </div>
@@ -715,14 +731,14 @@ const totalPages = Math.ceil(filteredNewPayments.length / rowsPerPage);
 
 <button
   className={incomeTab === "expenseAnalysis" ? "tab-btn active" : "tab-btn"}
-  onClick={() => setIncomeTab("expenseAnalysis")}
+  onClick={() => openTab("expenseAnalysis")}
 >
 Competition
 </button>
 <button
   className={incomeTab === "other" ? "tab-btn active" : "tab-btn"}
   onClick={() => {
-    setIncomeTab("other");
+    openTab("other");
     setFeeCategory("Other");
   }}
 >
@@ -995,7 +1011,6 @@ Competition
 
 <div className="section-card pop">
 
-  <div className="feesmaster-topbar">
   <div className="table-header">
 
 <h3 className="section-title">
@@ -1022,7 +1037,6 @@ Competition
 />
 </div>
   
-</div>  
 <table className="history-table">
 <thead><tr>
 <th onClick={() => handleSort("studentName")}>
@@ -1190,7 +1204,7 @@ const statusInfo = getStatusInfo(
 </div>
 )}
 
-{incomeTab === "new" &&  (
+{activeTab === "new" &&  (
   <div className="section-card pop ">
         
         <div className="table-header">
@@ -1338,6 +1352,7 @@ Next
           )}
           {incomeTab === "old" && (
   <div className="section-card pop">
+    
 <div className="table-header">
 
 <h3 className="section-title">
@@ -1569,25 +1584,31 @@ className="table-search"
 </table></div></div>
 )}
 {incomeTab==="term1"&&(
-<div className="section-card pop"><h3 className="section-title">Term 1 Payments</h3>
-<div className="table-header">
- 
- <button style={{marginLeft:"30%"}}
-className="report-btn"
-onClick={() => setShowReport(true)}
+<div className="section-card pop"><div className="table-header">
+
+<h3 className="section-title">
+  Term 1 Payments
+</h3>
+
+<button
+  className="report-btn"
+  onClick={() => setShowReport(true)}
 >
-<FaFileInvoice />
+  <FaFileInvoice />
+  <span className="report-text">Report</span>
 </button>
+
 </div>
-<div className="history-controls">
-    <input
-      type="text"
-      placeholder="Search in table..."
-      value={tableSearch}
-      onChange={(e) => setTableSearch(e.target.value)}
-      className="search-input"
-    />
-  </div>
+
+<input
+type="text"
+placeholder="Search in table..."
+value={tableSearch}
+onChange={(e) => setTableSearch(e.target.value)}
+className="table-search"
+style={{ marginTop: "18px", marginBottom: "20px" }}
+/>
+
 <table className="history-table">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
@@ -1642,25 +1663,30 @@ onClick={() => setShowReport(true)}
 </table></div>
 )}
 {incomeTab==="term2"&&(
-<div className="section-card pop"><h3 className="section-title">Term 2 Payments</h3>
-<div className="table-header">
- 
- <button style={{marginLeft:"30%"}}
-className="report-btn"
-onClick={() => setShowReport(true)}
+<div className="section-card pop"><div className="table-header">
+
+<h3 className="section-title">
+  Term 2 Payments
+</h3>
+
+<button
+  className="report-btn"
+  onClick={() => setShowReport(true)}
 >
-<FaFileInvoice />
+  <FaFileInvoice />
+  <span className="report-text">Report</span>
 </button>
+
 </div>
-<div className="history-controls">
-    <input
-      type="text"
-      placeholder="Search in table..."
-      value={tableSearch}
-      onChange={(e) => setTableSearch(e.target.value)}
-      className="search-input"
-    />
-  </div>
+
+<input
+type="text"
+placeholder="Search in table..."
+value={tableSearch}
+onChange={(e) => setTableSearch(e.target.value)}
+className="table-search"
+style={{ marginTop: "18px", marginBottom: "20px" }}
+/>
 <table className="history-table">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
@@ -1705,25 +1731,31 @@ onClick={() => setShowReport(true)}
 </table></div>
 )}
 {incomeTab==="term3"&&(
-<div className="section-card pop"><h3 className="section-title">Term 3 Payments</h3>
-<div className="table-header">
- 
- <button style={{marginLeft:"30%"}}
-className="report-btn"
-onClick={() => setShowReport(true)}
+<div className="section-card pop"><div className="table-header">
+
+<h3 className="section-title">
+  Term 3 Payments
+</h3>
+
+<button
+  className="report-btn"
+  onClick={() => setShowReport(true)}
 >
-<FaFileInvoice />
+  <FaFileInvoice />
+  <span className="report-text">Report</span>
 </button>
+
 </div>
+
 <div className="history-controls">
-    <input
-      type="text"
-      placeholder="Search in table..."
-      value={tableSearch}
-      onChange={(e) => setTableSearch(e.target.value)}
-      className="search-input"
-    />
-  </div><table className="history-table">
+<input
+  type="text"
+  placeholder="Search in table..."
+  value={tableSearch}
+  onChange={(e) => setTableSearch(e.target.value)}
+  className="search-input"
+/>
+</div><table className="history-table">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
   {sortField === "studentName" &&
@@ -1767,25 +1799,30 @@ onClick={() => setShowReport(true)}
 </table></div>
 )}</>)}
       {mode==="expenses"&&(
-<div className="section-card pop"><h3 className="section-title">Expenses Details</h3>
-<div className="table-header">
- 
- <button style={{marginLeft:"30%"}}
-className="report-btn"
-onClick={() => setShowReport(true)}
+<div className="section-card pop"><div className="table-header">
+
+<h3 className="section-title">
+  Expenses Details
+</h3>
+
+<button
+  className="report-btn"
+  onClick={() => setShowReport(true)}
 >
-<FaFileInvoice />
+  <FaFileInvoice />
+  <span className="report-text">Report</span>
 </button>
+
 </div>
-<div className="history-controls">
-  <input
-    type="text"
-    placeholder="Search in table..."
-    value={tableSearch}
-    onChange={(e) => setTableSearch(e.target.value)}
-    className="search-input"
-  />
-</div>
+
+<input
+type="text"
+placeholder="Search in table..."
+value={tableSearch}
+onChange={(e) => setTableSearch(e.target.value)}
+className="table-search"
+style={{ marginTop: "18px", marginBottom: "20px" }}
+/>
 <div className="nice-table-wrapper1">
   <table className="history-table">
 <thead><tr>

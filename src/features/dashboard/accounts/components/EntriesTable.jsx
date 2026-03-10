@@ -134,16 +134,16 @@ export default function EntriesTable({
                     )}
                   </td>
 
-                  <td className="action-cell">
-                  <button
-  className="dele-btn"
-  onClick={() => deleteEntry(row)}
-  aria-label="Delete"
->
-  <FaTrash className="icon" />
-  <span className="label">Delete</span>
-</button>
-                  </td>
+                  <td className="table-actions">
+  <button
+    className="table-delete-btn"
+    onClick={() => deleteEntry(row)}
+    aria-label="Delete"
+  >
+    <FaTrash className="icon" />
+    <span className="label">Delete</span>
+  </button>
+</td>
                 </tr>
 
                 {isLastOfDate && (
