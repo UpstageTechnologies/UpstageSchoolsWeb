@@ -103,8 +103,12 @@ setShowStudentDropdown,
             getFeePaid,
             getFeeBalance,
             getTermAmountUI,
-            getNewTermAmount
-        
+            getNewTermAmount,
+          
+            paymentMode,
+            setPaymentMode,
+            showPaymentMode,
+            setShowPaymentMode,   
         } = props;
 
     return (
@@ -262,12 +266,38 @@ setShowStudentDropdown,
         </div>
     )}
     </div>
-            <input
-            type="number"
-            placeholder="Amount"
-            value={srcAmt}
-            onChange={e => setSrcAmt(e.target.value)}
-            />
+    <input
+  type="number"
+  placeholder="Amount"
+  value={srcAmt}
+  onChange={e => setSrcAmt(e.target.value)}
+/>
+
+{/* PAYMENT MODE */}
+<div className="popup-select">
+  <div
+    className="popup-input"
+    onClick={() => setShowPaymentMode(!showPaymentMode)}
+  >
+    {paymentMode || "Payment"}
+    <span>▾</span>
+  </div>
+
+  {showPaymentMode && (
+    <div className="popup-menu">
+      <div onClick={()=>{
+        setPaymentMode("Cash");
+        setShowPaymentMode(false);
+      }}>Cash</div>
+
+      <div onClick={()=>{
+        setPaymentMode("Account");
+        setShowPaymentMode(false);
+      }}>Account</div>
+    </div>
+  )}
+</div>
+
             <button className="save-btn" onClick={() => safeRequirePremium(saveSourceIncome, "income")}>
             Save
             </button>

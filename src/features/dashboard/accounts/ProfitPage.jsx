@@ -44,7 +44,8 @@ const [competitionList, setCompetitionList] = useState([]);
 const [competitionSearch, setCompetitionSearch] = useState("");
 const [showCompetitionDropdown, setShowCompetitionDropdown] = useState(false);
 const [savedYear, setSavedYear] = useState(null);
-
+const [paymentMode,setPaymentMode] = useState("");
+const [showPaymentMode,setShowPaymentMode] = useState(false);
 const [competitionClass, setCompetitionClass] = useState("");
 const [competitionStudent, setCompetitionStudent] = useState("");
 const [entryType, setEntryType] = useState("");
@@ -419,6 +420,7 @@ useEffect(() => {
         type: "source",
         name: srcName,              // 🔥 CHANGE HERE
         paidAmount: Number(srcAmt),
+        paymentMode: paymentMode,
         date: entryDate,
         createdAt: new Date()
       });
@@ -1432,7 +1434,10 @@ const getTermPaidCount = (studentId, feeId) =>
   setShowStudentDropdown={setShowStudentDropdown}
     classes={classes}
     students={students}
-
+      paymentMode={paymentMode}
+      setPaymentMode={setPaymentMode}
+      showPaymentMode={showPaymentMode}
+      setShowPaymentMode={setShowPaymentMode}
     getClassTotal={getClassTotal}
     getClassFees={getClassFees}
     getFeePaid={getFeePaid}
