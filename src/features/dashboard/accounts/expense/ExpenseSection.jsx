@@ -10,6 +10,13 @@ export default function ExpenseSection({
   setShowExpenseType,
   ...props
 }) {
+
+  const EXPENSE_TYPES = [
+    { value:"salary", label:"Salary"},
+    { value:"others", label:"Others"},
+    { value:"student_misc", label:"Competition Misc"}
+   ];
+
   return (
     <>
       {/* Expense Type Selector */}
@@ -18,21 +25,26 @@ export default function ExpenseSection({
           className="popup-input"
           onClick={() => setShowExpenseType(!showExpenseType)}
         >
-          {expenseMode || "Choose Expense"}
+         {
+  EXPENSE_TYPES.find(t => t.value === expenseMode)?.label
+  || "Choose Expense"
+}
           <span>▾</span>
         </div>
 
         {showExpenseType && (
           <div className="popup-menu">
-            <div onClick={() => { setExpenseMode("salary"); setShowExpenseType(false); }}>
-              Salary
-            </div>
-            <div onClick={() => { setExpenseMode("others"); setShowExpenseType(false); }}>
-              Others
-            </div>
-            <div onClick={() => { setExpenseMode("student_misc"); setShowExpenseType(false); }}>
-              Student Miscellaneous
-            </div>
+            {EXPENSE_TYPES.map(type => (
+  <div
+    key={type.value}
+    onClick={() => {
+      setExpenseMode(type.value);
+      setShowExpenseType(false);
+    }}
+  >
+    {type.label}
+  </div>
+))}
           </div>
         )}
       </div>

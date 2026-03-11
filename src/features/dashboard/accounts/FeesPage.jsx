@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 import { collection, onSnapshot ,getDoc , doc } from "firebase/firestore";
 import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
-import "../../dashboard_styles/History.css"
+import "../../dashboard_styles/History.css";
+import "../../dashboard_styles/ios.css";
 import { FiChevronUp, FiChevronDown } from "react-icons/fi";
-import { FaBible, FaFileInvoice } from "react-icons/fa";
+import { FaBible, FaFileInvoice ,FaPrint } from "react-icons/fa";
 export default function FeesPage({ adminUid, mode, setActivePage , globalSearch = ""}) {
 const [incomeList, setIncomeList] = useState([]);
 const [expenseList, setExpenseList] = useState([]);
@@ -25,6 +26,9 @@ const [loadingTab, setLoadingTab] = useState(false)
 const [sortField, setSortField] = useState(null);
 const [sortDirection, setSortDirection] = useState("asc");
 const [currentPage, setCurrentPage] = useState(1);
+const [reportSearch,setReportSearch]= useState("");
+const [filterSearch,setFilterSearch] = useState("")
+const [showFilterList,setShowFilterList] = useState(false)
 const openTab = (tab) => {
 
   setLoadingTab(true)
@@ -229,6 +233,7 @@ const applyDateFilter = (list) => {
   return list;
 };
   const [incomeTab, setIncomeTab] = useState("new"); 
+  const [expenseTab, setExpenseTab] = useState("all");
   const [feesMasterTab, setFeesMasterTab] = useState(false);
   const incomeRef = collection(
     db,
@@ -323,24 +328,57 @@ const unsubClasses = onSnapshot(classesRef, snap => {
   
   
   const isPrintActive = (tab) => incomeTab === tab
-const getFeePaid = (studentId, feeId) =>
-incomeList
-  .filter(i => i.studentId === studentId && i.feeId === feeId)
-  .reduce((t, i) => t + Number(i.paidAmount || 0), 0);
+  const getFeePaid = (studentId, fee) => {
 
-// balance using payableAmount (after discount)
-const getFeeBalance = (studentId, fee) => {
-const payments = incomeList.filter(
-  i => i.studentId === studentId && i.feeId === fee
-);
+    if (!fee) return 0;   // 🔥 prevent crash
+  
+    const payments = incomeList.filter(i => {
+  
+      if (fee.feeType === "Tuition") {
+        return i.studentId === studentId && i.feeType === "Tuition";
+      }
+  
+      return i.studentId === studentId && i.feeId === fee.id;
+  
+    });
+  
+    return payments.reduce(
+      (t, i) => t + Number(i.paidAmount || 0),
+      0
+    );
+  };
+  
+  const getFeeBalance = (studentId, fee) => {
 
-if (!payments.length) return 0;
-
-const payable = payments[0].payableAmount || payments[0].totalFees || 0;
-const paid = getFeePaid(studentId, fee);
-
-return Math.max(0, payable - paid);
-};
+    if (!fee) return 0;
+  
+    const payments = incomeList.filter(i => {
+  
+      // 🔥 Tuition fees → ignore feeId
+      if (fee.feeType === "Tuition") {
+        return i.studentId === studentId && i.feeType === "Tuition";
+      }
+  
+      // Other fees → normal check
+      return i.studentId === studentId && i.feeId === fee.id;
+  
+    });
+  
+    // no payment yet
+    if (!payments.length) return fee.amount;
+  
+    const payable =
+      payments[0].payableAmount ||
+      payments[0].totalFees ||
+      fee.amount;
+  
+    const paid = payments.reduce(
+      (t, p) => t + Number(p.paidAmount || 0),
+      0
+    );
+  
+    return Math.max(0, payable - paid);
+  };
 const getPaidAmount = (studentId, feeId) =>
   incomeList
     .filter(i => i.studentId === studentId && i.feeId === feeId)
@@ -496,64 +534,209 @@ const totalPages = Math.ceil(filteredNewPayments.length / rowsPerPage);
     <div className="income-wrapper">
 
  
-{showReport && (
-  <div className="report-box">
-    <h3>{mode === "income" ? "Income Report" : "Expense Report"}</h3>
-    <select
-      value={reportType}
-      onChange={e => setReportType(e.target.value)}
-    >
-      <option value="year">Yearly</option>
-      <option value="month">Monthly</option>
-      <option value="day">Daily</option>
-      <option value="custom">Custom</option>
-    </select>
-{reportType === "custom" && (
-      <>
-        <input type="date" value={fromDate} onChange={e=>setFromDate(e.target.value)} />
-        <input type="date" value={toDate} onChange={e=>setToDate(e.target.value)} />
-      </> )}
-    <select
-  value={reportFilter}
-  onChange={(e) => {
-    setReportFilter(e.target.value);
-    if (e.target.value === "pending") {
-      setShowPendingPopup(true); // same popup
-    }
-  }}>
-  <option value="all">All</option>
-  <option value="new">New Admission</option>
-  <option value="full">Full Payment</option>
-  <option value="partial">Partial Payment</option>
-  <option value="term1">Term 1</option>
-  <option value="term2">Term 2</option>
-  <option value="term3">Term 3</option>
-  <option value="pending">Pending Payment</option>
-</select>
-    <button onClick={generateReport} style={{marginLeft:12}}>Generate</button>
-    <button onClick={() => {
-  setShowReport(false);
-  setShowGeneratedReport(false);
-  setReportData([]);
-}}>
-  Close
-</button>
 
-
-    <button   onClick={() => {
-    window.print();
-    setPrintMode(false);
-  }} style={{marginLeft:12,margin:10}}>
-      🖨 Print
-    </button>
-
-  </div>
-)}
       <h2 className="page-title">
         {mode === "income" ? "Income Details" : "Expenses Details"}
       </h2>
-      {showGeneratedReport && (
-  <div className="section-card pop print-area">
+      
+      {mode === "income" && (
+        <>
+         <div className="history-filters">
+
+  <button
+    className={incomeTab === "new" ? "tab-btn active" : "tab-btn"}
+    onClick={() => openTab("new")}
+  >
+    New Admission
+  </button>
+
+  <button
+    className={incomeTab === "old" ? "tab-btn active" : "tab-btn"}
+    onClick={() => openTab("old")}
+  >
+    Old Admission
+  </button>
+
+  <button
+    className={incomeTab === "full" ? "tab-btn active" : "tab-btn"}
+    onClick={() => openTab("full")}
+  >
+    Full Payment
+  </button>
+
+  <button
+    className={incomeTab === "partial" ? "tab-btn active" : "tab-btn"}
+    onClick={() => openTab("partial")}
+  >
+    Partial Payment
+  </button>
+
+  {/* 🔽 TERMS DROPDOWN */}
+  <div className="term-dropdown-wrapper">
+  <button
+    className={`tab-btn ${
+      incomeTab.startsWith("term") ? "active" : ""
+    }`}
+    onClick={() => setShowTermDropdown(!showTermDropdown)}
+  >
+    Terms ▾
+  </button>
+
+  {showTermDropdown && (
+    <div className="term-dropdown">
+      <div onClick={() => { openTab("term1"); setShowTermDropdown(false); }}>
+        Term 1
+      </div>
+      <div onClick={() => { openTab("term2"); setShowTermDropdown(false); }}>
+        Term 2
+      </div>
+      <div onClick={() => { openTab("term3"); setShowTermDropdown(false); }}>
+        Term 3
+      </div>
+    </div>
+  )}
+</div>
+<button
+  className={incomeTab === "tuition" ? "tab-btn active" : "tab-btn"}
+  onClick={() => {
+    setIncomeTab("tuition");
+    setFeeCategory("Tuition");
+  }}
+>
+  Tuition
+</button>
+
+<button
+  className={incomeTab === "expenseAnalysis" ? "tab-btn active" : "tab-btn"}
+  onClick={() => openTab("expenseAnalysis")}
+>
+Competition
+</button>
+<button
+  className={incomeTab === "other" ? "tab-btn active" : "tab-btn"}
+  onClick={() => {
+    openTab("other");
+    setFeeCategory("Other");
+  }}
+>
+  Other
+</button>
+
+<button
+  className="report-btn"
+  onClick={() => {setShowReport(true) 
+  setIncomeTab("report") }}
+>
+  <FaFileInvoice />
+  <span className="report-text">Report</span>
+</button>
+
+</div>
+{incomeTab === "report" && (
+<div className="section-card pop">
+<h3 className="section-title">Income Report</h3>
+
+{/* TOP ACTION BAR */}
+
+
+
+{/* FILTER SEARCH */}
+
+<div className="report-toolbar">
+
+<div className="filter-dropdown">
+
+<input
+type="text"
+placeholder="Search filter..."
+value={filterSearch}
+onChange={(e)=>setFilterSearch(e.target.value)}
+onFocus={()=>setShowFilterList(true)}
+className="report-search"
+/>
+
+{showFilterList && (
+
+<div className="filter-list">
+<div className="report-actions">
+
+<select
+value={reportType}
+onChange={(e)=>setReportType(e.target.value)}
+className="report-select"
+>
+<option value="year">Yearly</option>
+<option value="month">Monthly</option>
+<option value="day">Daily</option>
+<option value="custom">Custom</option>
+</select>
+
+<button className="action-btn" onClick={generateReport}>
+Generate
+</button>
+
+<button
+className="action-btn"
+onClick={()=>{
+setShowGeneratedReport(false)
+setReportData([])
+}}
+>
+Close
+</button>
+
+<button
+className="action-btn"
+onClick={()=>{
+window.print()
+setPrintMode(false)
+}}
+>
+<FaPrint/> Print
+</button>
+
+</div>
+{[
+{label:"All",value:"all"},
+{label:"New Admission",value:"new"},
+{label:"Old Admission",value:"old"},
+{label:"Full Payment",value:"full"},
+{label:"Partial Payment",value:"partial"},
+{label:"Term 1",value:"term1"},
+{label:"Term 2",value:"term2"},
+{label:"Term 3",value:"term3"}
+]
+.filter(i =>
+i.label.toLowerCase().includes(filterSearch.toLowerCase())
+)
+.map(i => (
+
+<div
+key={i.value}
+className="filter-item"
+onClick={()=>{
+setReportFilter(i.value)
+setFilterSearch(i.label)
+setShowFilterList(false)
+}}
+>
+{i.label}
+</div>
+
+))}
+
+</div>
+
+)}
+
+</div>
+
+</div>
+
+<div style={{marginTop:15}}>
+
+{showGeneratedReport && (
+  <>
     <h3 className="section-title">
       Income Report – {reportFilter.toUpperCase()}
     </h3>
@@ -660,92 +843,12 @@ const totalPages = Math.ceil(filteredNewPayments.length / rowsPerPage);
   </tbody>
 </table>
 
-  </div>
+  </>
 )}
-      {mode === "income" && (
-        <>
-         <div className="history-filters">
-
-  <button
-    className={incomeTab === "new" ? "tab-btn active" : "tab-btn"}
-    onClick={() => openTab("new")}
-  >
-    New Admission
-  </button>
-
-  <button
-    className={incomeTab === "old" ? "tab-btn active" : "tab-btn"}
-    onClick={() => openTab("old")}
-  >
-    Old Admission
-  </button>
-
-  <button
-    className={incomeTab === "full" ? "tab-btn active" : "tab-btn"}
-    onClick={() => openTab("full")}
-  >
-    Full Payment
-  </button>
-
-  <button
-    className={incomeTab === "partial" ? "tab-btn active" : "tab-btn"}
-    onClick={() => openTab("partial")}
-  >
-    Partial Payment
-  </button>
-
-  {/* 🔽 TERMS DROPDOWN */}
-  <div className="term-dropdown-wrapper">
-  <button
-    className={`tab-btn ${
-      incomeTab.startsWith("term") ? "active" : ""
-    }`}
-    onClick={() => setShowTermDropdown(!showTermDropdown)}
-  >
-    Terms ▾
-  </button>
-
-  {showTermDropdown && (
-    <div className="term-dropdown">
-      <div onClick={() => { openTab("term1"); setShowTermDropdown(false); }}>
-        Term 1
-      </div>
-      <div onClick={() => { openTab("term2"); setShowTermDropdown(false); }}>
-        Term 2
-      </div>
-      <div onClick={() => { openTab("term3"); setShowTermDropdown(false); }}>
-        Term 3
-      </div>
-    </div>
-  )}
 </div>
-<button
-  className={incomeTab === "tuition" ? "tab-btn active" : "tab-btn"}
-  onClick={() => {
-    setIncomeTab("tuition");
-    setFeeCategory("Tuition");
-  }}
->
-  Tuition
-</button>
-
-<button
-  className={incomeTab === "expenseAnalysis" ? "tab-btn active" : "tab-btn"}
-  onClick={() => openTab("expenseAnalysis")}
->
-Competition
-</button>
-<button
-  className={incomeTab === "other" ? "tab-btn active" : "tab-btn"}
-  onClick={() => {
-    openTab("other");
-    setFeeCategory("Other");
-  }}
->
-  Other
-</button>
 
 </div>
+)}
 {incomeTab === "expenseAnalysis" && (
   <div className="section-card pop">
 
@@ -1017,13 +1120,6 @@ Competition
   {feeCategory} Fees Collection Details
 </h3>
 
-<button
-  className="report-btn"
-  onClick={() => setShowReport(true)}
->
-  <FaFileInvoice />
-  <span className="report-text">Report</span>
-</button>
 
 </div>
 
@@ -1109,16 +1205,21 @@ getSortedData(students
     )
   )
   
-  ).map(student => (
+  ).map(student => {
 
-    feesMaster
-      .filter(fee =>
-        fee.type === "fees" &&
-        fee.feeType === feeCategory &&
-        fee.className === student.class &&
-        (filterClass === "All" || student.class === filterClass)
-      )
-      .map(fee => {
+    const feesForClass = feesMaster.filter(fee =>
+      fee.type === "fees" &&
+      fee.feeType === feeCategory &&
+      fee.className === student.class &&
+      (filterClass === "All" || student.class === filterClass)
+    );
+    
+    let feesToShow = feesForClass;
+
+    if (feeCategory === "Tuition" && feesForClass.length > 0) {
+      feesToShow = [feesForClass[0]];
+    }
+    return feesToShow.map(fee => {
 
         const paid = getPaidAmount(student.id, fee.id);
 const balance = getBalance(student.id, fee);
@@ -1198,13 +1299,13 @@ const statusInfo = getStatusInfo(
         </tr>
       );
     })
-))}
+  })}
 </tbody>
 </table>
 </div>
 )}
 
-{activeTab === "new" &&  (
+{incomeTab === "new" &&  (
   <div className="section-card pop ">
         
         <div className="table-header">
@@ -1212,17 +1313,7 @@ const statusInfo = getStatusInfo(
 <h3 className="section-title">
   New Admission Payments
 </h3>
-
-<button
-  className="report-btn"
-  onClick={() => setShowReport(true)}
->
-  <FaFileInvoice />
-  <span className="report-text">Report</span>
-</button>
-
 </div>
-
 <input
 type="text"
 placeholder="Search in table..."
@@ -1359,13 +1450,6 @@ Next
   Old Admission Payments
 </h3>
 
-<button
-  className="report-btn"
-  onClick={() => setShowReport(true)}
->
-  <FaFileInvoice />
-  <span className="report-text">Report</span>
-</button>
 
 </div>
 
@@ -1445,13 +1529,6 @@ className="table-search"
   Full Payment Students
 </h3>
 
-<button
-  className="report-btn"
-  onClick={() => setShowReport(true)}
->
-  <FaFileInvoice />
-  <span className="report-text">Report</span>
-</button>
 
 </div>
 
@@ -1513,13 +1590,6 @@ className="table-search"
     Partial Payment Students
   </h3>
 
-  <button
-    className="report-btn"
-    onClick={() => setShowReport(true)}
-  >
-    <FaFileInvoice />
-    <span className="report-text">Report</span>
-  </button>
 
 </div>
 
@@ -1590,13 +1660,6 @@ className="table-search"
   Term 1 Payments
 </h3>
 
-<button
-  className="report-btn"
-  onClick={() => setShowReport(true)}
->
-  <FaFileInvoice />
-  <span className="report-text">Report</span>
-</button>
 
 </div>
 
@@ -1669,13 +1732,6 @@ style={{ marginTop: "18px", marginBottom: "20px" }}
   Term 2 Payments
 </h3>
 
-<button
-  className="report-btn"
-  onClick={() => setShowReport(true)}
->
-  <FaFileInvoice />
-  <span className="report-text">Report</span>
-</button>
 
 </div>
 
@@ -1737,13 +1793,6 @@ style={{ marginTop: "18px", marginBottom: "20px" }}
   Term 3 Payments
 </h3>
 
-<button
-  className="report-btn"
-  onClick={() => setShowReport(true)}
->
-  <FaFileInvoice />
-  <span className="report-text">Report</span>
-</button>
 
 </div>
 
@@ -1798,23 +1847,59 @@ style={{ marginTop: "18px", marginBottom: "20px" }}
 ))}</tbody>
 </table></div>
 )}</>)}
-      {mode==="expenses"&&(
-<div className="section-card pop"><div className="table-header">
+      {mode==="expenses" && (
+
+<>
+
+
+{/* FILTER BUTTONS */}
+<div className="history-filters">
+
+<button
+  className={expenseTab === "all" ? "tab-btn active" : "tab-btn"}
+  onClick={() => setExpenseTab("all")}
+>
+All
+</button>
+
+<button
+  className={expenseTab === "salary" ? "tab-btn active" : "tab-btn"}
+  onClick={() => setExpenseTab("salary")}
+>
+Salary
+</button>
+
+<button
+  className={expenseTab === "competition" ? "tab-btn active" : "tab-btn"}
+  onClick={() => setExpenseTab("competition")}
+>
+Competition
+</button>
+
+<button
+  className={expenseTab === "others" ? "tab-btn active" : "tab-btn"}
+  onClick={() => setExpenseTab("others")}
+>
+Other
+</button>
+
+</div>
+
+
+{/* CARD */}
+<div className="section-card pop">
+
+{/* HEADER */}
+<div className="table-header">
 
 <h3 className="section-title">
   Expenses Details
 </h3>
 
-<button
-  className="report-btn"
-  onClick={() => setShowReport(true)}
->
-  <FaFileInvoice />
-  <span className="report-text">Report</span>
-</button>
 
 </div>
 
+{/* SEARCH */}
 <input
 type="text"
 placeholder="Search in table..."
@@ -1866,7 +1951,26 @@ style={{ marginTop: "18px", marginBottom: "20px" }}
 </th></tr></thead>
 <tbody>
 {getSortedData(
-  expenseList.filter(e =>
+  expenseList
+  .filter(e => {
+  
+    if (expenseTab === "all") return true;
+  
+    if (expenseTab === "salary") {
+      return e.type === "salary";
+    }
+  
+    if (expenseTab === "competition") {
+      return e.type === "student_misc";
+    }
+  
+    if (expenseTab === "others") {
+      return e.type === "others";
+    }
+  
+    return true;
+  })
+  .filter(e =>
     tableFilter(
       e.name,
       e.type,
@@ -1879,7 +1983,7 @@ style={{ marginTop: "18px", marginBottom: "20px" }}
 <tr key={e.id}><td data-label="Type">{e.type}</td><td data-label="Name">{e.name}</td><td data-label="Amount">₹{e.amount}</td><td>{e.date}</td></tr>
 ))}</tbody>
 </table>
-</div></div>
+</div></div></>
 )}</div>
   );
 }

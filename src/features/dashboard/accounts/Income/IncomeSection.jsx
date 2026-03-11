@@ -1,8 +1,11 @@
     import React from "react";
-
+   
+    import { addDoc, collection } from "firebase/firestore";
+    import { db } from "../../../../services/firebase";
     function IncomeSection(props) {
 
         const {
+          adminUid,
             incomeMode,
             studentMode,
             incomeType,
@@ -111,6 +114,16 @@ setShowStudentDropdown,
             setShowPaymentMode,   
         } = props;
 
+        const sourceMasterRef = collection(
+          db,
+          "users",
+          adminUid,
+          "Account",
+          "accounts",
+          "Masters",
+          "Main",
+          "Sources"
+        );
     return (
         <>
         {/* ===== TOP SELECT ROW ===== */}
@@ -272,30 +285,41 @@ setShowStudentDropdown,
   value={srcAmt}
   onChange={e => setSrcAmt(e.target.value)}
 />
+<div className="student-dropdown">
 
-{/* PAYMENT MODE */}
-<div className="popup-select">
-  <div
-    className="popup-input"
-    onClick={() => setShowPaymentMode(!showPaymentMode)}
-  >
-    {paymentMode || "Payment"}
-    <span>▾</span>
-  </div>
+<input
+  placeholder="Payment Mode"
+  value={paymentMode || ""}
+  readOnly
+  onClick={() => setShowPaymentMode(!showPaymentMode)}
+/>
 
-  {showPaymentMode && (
-    <div className="popup-menu">
-      <div onClick={()=>{
+{showPaymentMode && (
+  <div className="student-dropdown-list">
+
+    <div
+      className="student-option"
+      onClick={()=>{
         setPaymentMode("Cash");
         setShowPaymentMode(false);
-      }}>Cash</div>
+      }}
+    >
+      Cash
+    </div>
 
-      <div onClick={()=>{
+    <div
+      className="student-option"
+      onClick={()=>{
         setPaymentMode("Account");
         setShowPaymentMode(false);
-      }}>Account</div>
+      }}
+    >
+      Account
     </div>
-  )}
+
+  </div>
+)}
+
 </div>
 
             <button className="save-btn" onClick={() => safeRequirePremium(saveSourceIncome, "income")}>
@@ -436,7 +460,42 @@ setShowStudentDropdown,
       value={competitionAmount}
       onChange={e => setCompetitionAmount(e.target.value)}
     />
+<div className="student-dropdown">
 
+<input
+  placeholder="Payment Mode"
+  value={paymentMode || ""}
+  readOnly
+  onClick={() => setShowPaymentMode(!showPaymentMode)}
+/>
+
+{showPaymentMode && (
+  <div className="student-dropdown-list">
+
+    <div
+      className="student-option"
+      onClick={()=>{
+        setPaymentMode("Cash");
+        setShowPaymentMode(false);
+      }}
+    >
+      Cash
+    </div>
+
+    <div
+      className="student-option"
+      onClick={()=>{
+        setPaymentMode("Account");
+        setShowPaymentMode(false);
+      }}
+    >
+      Account
+    </div>
+
+  </div>
+)}
+
+</div>
     <button
       className="save-btn"
       onClick={() => safeRequirePremium(saveCompetitionIncome,"income")}
@@ -648,6 +707,42 @@ setShowStudentDropdown,
     value={`Payable ₹${newPayAmount}`}
   />
 )}
+<div className="student-dropdown">
+
+<input
+  placeholder="Payment Mode"
+  value={paymentMode || ""}
+  readOnly
+  onClick={() => setShowPaymentMode(!showPaymentMode)}
+/>
+
+{showPaymentMode && (
+  <div className="student-dropdown-list">
+
+    <div
+      className="student-option"
+      onClick={()=>{
+        setPaymentMode("Cash");
+        setShowPaymentMode(false);
+      }}
+    >
+      Cash
+    </div>
+
+    <div
+      className="student-option"
+      onClick={()=>{
+        setPaymentMode("Account");
+        setShowPaymentMode(false);
+      }}
+    >
+      Account
+    </div>
+
+  </div>
+)}
+
+</div>
         <button className="save-btn" onClick={() => safeRequirePremium(saveNewAdmission, "income")}>
           Save
         </button>
@@ -865,6 +960,42 @@ setShowStudentDropdown,
     onChange={e => setOldPayAmount(e.target.value)}
   />
 )}
+<div className="student-dropdown">
+
+<input
+  placeholder="Payment Mode"
+  value={paymentMode || ""}
+  readOnly
+  onClick={() => setShowPaymentMode(!showPaymentMode)}
+/>
+
+{showPaymentMode && (
+  <div className="student-dropdown-list">
+
+    <div
+      className="student-option"
+      onClick={()=>{
+        setPaymentMode("Cash");
+        setShowPaymentMode(false);
+      }}
+    >
+      Cash
+    </div>
+
+    <div
+      className="student-option"
+      onClick={()=>{
+        setPaymentMode("Account");
+        setShowPaymentMode(false);
+      }}
+    >
+      Account
+    </div>
+
+  </div>
+)}
+
+</div>
     <button className="save-btn" onClick={() => safeRequirePremium(saveOldAdmission, "income")}>
       Save
     </button>

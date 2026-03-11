@@ -26,8 +26,10 @@ export default function EntriesTable({
         type: "income",
         date: i.date,
         source: i.competitionName || i.studentName || i.name || "Income",
-        income: isOfficeStaff ? "***" : (i.paidAmount || 0),
+        income: i.paidAmount || 0,
         expense: "",
+        mode: i.paymentMode || "",
+        hidden: isOfficeStaff,
         studentId: i.studentId || null
       })),
 
@@ -39,7 +41,9 @@ export default function EntriesTable({
         date: e.date,
         source: e.name,
         income: "",
-        expense: isOfficeStaff ? "***" : (e.amount || 0),
+        expense: e.amount || 0,
+        mode: e.paymentMode || "",
+        hidden: isOfficeStaff,
         studentId: null
       }))
   ];
@@ -75,8 +79,8 @@ export default function EntriesTable({
             const isLastOfDate =
               !nextRow || nextRow.date !== row.date;
 
-            dateIncomeTotal += Number(row.income) || 0;
-            dateExpenseTotal += Number(row.expense) || 0;
+              dateIncomeTotal += row.hidden ? 0 : Number(row.income || 0);
+              dateExpenseTotal += row.hidden ? 0 : Number(row.expense || 0);
 
             return (
               <React.Fragment key={row.id}>
@@ -92,20 +96,19 @@ export default function EntriesTable({
                   <td>{row.source}</td>
 
                   <td style={{ color: "green" }}>
-                    {row.income === "***"
-                      ? "***"
-                      : row.income
-                      ? `₹${row.income}`
-                      : ""}
-                  </td>
-
-                  <td style={{ color: "red" }}>
-                    {row.expense === "***"
-                      ? "***"
-                      : row.expense
-                      ? `₹${row.expense}`
-                      : ""}
-                  </td>
+  {row.income
+    ? row.hidden
+      ? `***(${row.mode === "Cash" ? "C" : "A"})`
+      : `₹${row.income}(${row.mode === "Cash" ? "C" : "A"})`
+    : ""}
+</td>
+<td style={{ color: "red" }}>
+  {row.expense
+    ? row.hidden
+      ? `***(${row.mode === "Cash" ? "C" : "A"})`
+      : `₹${row.expense}(${row.mode === "Cash" ? "C" : "A"})`
+    : ""}
+</td>
 
                   <td style={{ textAlign: "center" }}>
                     {row.type === "income" && row.studentId && (

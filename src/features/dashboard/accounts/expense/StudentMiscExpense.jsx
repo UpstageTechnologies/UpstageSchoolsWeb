@@ -22,16 +22,19 @@ export default function StudentMiscExpense({
   setExAmt,
 
   saveStudentMiscExpense,
-  safeRequirePremium
+  safeRequirePremium,
+  paymentMode,
+setPaymentMode,
+showPaymentMode,
+setShowPaymentMode
 }) {
   return (
     
         <div className="entry-row">
       
-          {/* 🔽 Miscellaneous Name */}
           <div className="student-dropdown">
             <input
-              placeholder="Miscellaneous Name"
+              placeholder="competition Name"
               value={miscName || miscSearch}
               onChange={e => {
                 setMiscSearch(e.target.value);
@@ -81,7 +84,7 @@ export default function StudentMiscExpense({
       
           <div className="student-dropdown">
         <input
-          placeholder="Expense Name"
+          placeholder="competition Expense Name"
           value={expenseSubName || expenseNameSearch}
           onChange={e => {
             setExpenseNameSearch(e.target.value);
@@ -138,7 +141,42 @@ export default function StudentMiscExpense({
             value={exAmt}
             onChange={e => setExAmt(e.target.value)}
           />
-      
+          <div className="student-dropdown">
+
+<input
+  placeholder="Payment Mode"
+  value={paymentMode || ""}
+  readOnly
+  onClick={() => setShowPaymentMode(!showPaymentMode)}
+/>
+
+{showPaymentMode && (
+  <div className="student-dropdown-list">
+
+    <div
+      className="student-option"
+      onClick={()=>{
+        setPaymentMode("Cash");
+        setShowPaymentMode(false);
+      }}
+    >
+      Cash
+    </div>
+
+    <div
+      className="student-option"
+      onClick={()=>{
+        setPaymentMode("Account");
+        setShowPaymentMode(false);
+      }}
+    >
+      Account
+    </div>
+
+  </div>
+)}
+
+</div>
           <button
             className="save-btn"
             onClick={() => safeRequirePremium(saveStudentMiscExpense, "expense")}

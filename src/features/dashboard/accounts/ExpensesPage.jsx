@@ -3,6 +3,7 @@ import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../../services/firebase";
 import "../../dashboard_styles/ac.css";
 import "../../dashboard_styles/accountwrapper.css"
+import "../../dashboard_styles/design.css"
 export default function ExpensesPage({ adminUid, setActivePage }) {
 
   const [incomeList, setIncomeList] = useState([]);
@@ -50,7 +51,73 @@ const totalBase = Math.max(
   Math.abs(profit),
   1
 );
+// ---------- CASH / ACCOUNT BALANCE ----------
 
+// Cash income
+const cashIncome = incomeList
+  .filter(i => i.paymentMode === "Cash")
+  .reduce((s, i) => s + Number(i.paidAmount || 0), 0);
+
+// Account income
+const accountIncome = incomeList
+  .filter(i => i.paymentMode === "Account")
+  .reduce((s, i) => s + Number(i.paidAmount || 0), 0);
+
+// Cash expense
+const cashExpense = expenseList
+  .filter(e => e.paymentMode === "Cash")
+  .reduce((s, e) => s + Number(e.amount || 0), 0);
+
+// Account expense
+const accountExpense = expenseList
+  .filter(e => e.paymentMode === "Account")
+  .reduce((s, e) => s + Number(e.amount || 0), 0);
+
+// Final balances
+const cashBalance = cashIncome - cashExpense;
+const accountBalance = accountIncome - accountExpense;
+// ---------- INCOME BREAKDOWN ----------
+const sourceIncome = incomeList
+  .filter(i => i.type === "source")
+  .reduce((s, i) => s + Number(i.paidAmount || 0), 0);
+
+const newAdmission = incomeList
+  .filter(i => i.paymentStage === "Admission")
+  .reduce((s, i) => s + Number(i.paidAmount || 0), 0);
+
+const oldAdmission = incomeList
+  .filter(i => i.paymentStage === "Term")
+  .reduce((s, i) => s + Number(i.paidAmount || 0), 0);
+
+const competitionIncome = incomeList
+  .filter(i => i.incomeType === "competition")
+  .reduce((s, i) => s + Number(i.paidAmount || 0), 0);
+
+
+// ---------- EXPENSE BREAKDOWN ----------
+const salaryExpense = expenseList
+  .filter(e => e.type === "salary")
+  .reduce((s, e) => s + Number(e.amount || 0), 0);
+
+const miscExpense = expenseList
+  .filter(e => e.type === "student_misc")
+  .reduce((s, e) => s + Number(e.amount || 0), 0);
+
+const otherExpense = expenseList
+  .filter(e => e.type === "others")
+  .reduce((s, e) => s + Number(e.amount || 0), 0);
+  const donutData = [
+    { label: "Source Income", value: sourceIncome, color: "#8e44ad" },
+    { label: "New Admission", value: newAdmission, color: "#a569bd" },
+    { label: "Old Admission", value: oldAdmission, color: "#6c3483" },
+    { label: "Competition Income", value: competitionIncome, color: "#e67e22" },
+  
+    { label: "Salary Expense", value: salaryExpense, color: "#3498db" },
+    { label: "Student Misc", value: miscExpense, color: "#5dade2" },
+    { label: "Other Expense", value: otherExpense, color: "#27ae60" }
+  ];
+  const totalBalance = cashBalance + accountBalance;
+  const totalDonut = donutData.reduce((s,d)=>s+d.value,0);
 const pillData = [
   { label: "Fees Income", value: totalFees, color: "fill-purple", icon: "fa-graduation-cap" },
   { label: "Total Income", value: totalIncome, color: "fill-blue", icon: "fa-arrow-up" },
@@ -134,90 +201,105 @@ const todayProfit = todayIncome - todayExpense;
   <div className="summary2-scroll">
 
   <div className="summary2-layout">
+  <div className="summary2-wrapper">
 
 
-{/* ---------- LEFT SIDE : MONTHLY PROFIT FLOW ---------- */}
-<div className="summary2-left">
 
-  {/* Top small stats */}
-  <div className="attendance-panel">
-    <div>
-      <h4>Total Months</h4>
-      <h2>{monthlyProfit.length}</h2>
-    </div>
 
-    <div>
-      <h4>Current Profit</h4>
-      <h1>₹{profit.toLocaleString("en-IN")}</h1>
-    </div>
-  </div>
+<div className="summary2-title">Balance Overview</div>
+<div className="donut-wrapper">
+<div className="donut-header">
+<div className="donut-top-values">
 
-  {/* Monthly Profit Flow */}
-  <div className="monthly-flow2">
-  <svg
-  className="trend-line"
-  viewBox={`0 0 ${chartWidth} 120`}
-  width={chartWidth}
-  preserveAspectRatio="none"
-><line
-  x1="0"
-  y1="80"
-  x2={chartWidth}
-  y2="80"
-  stroke="#ddd"
-  strokeWidth="2"
-/><path
-  d={
-    monthlyProfit.map((m, i) => {
-      const x = i * POINT_GAP;
-      const y = getY(m.profit);
+<div className="donut-stat cash">
+Cash
+<b>₹{cashBalance.toLocaleString("en-IN")}</b>
+</div>
 
-      const boxWidth = 110;   // same as CSS
-      const boxHalf = boxWidth / 2;
+<div className="donut-stat account">
+Account
+<b>₹{accountBalance.toLocaleString("en-IN")}</b>
+</div>
 
-      if (i === 0) {
-        // Start from BOTTOM CENTER of first box
-        return `M ${x} ${y + 24}`;
-      }
+</div>
 
-      const prevX = (i - 1) * POINT_GAP;
-      const prevY = getY(monthlyProfit[i - 1].profit);
+</div>
+<div className="donut-chart">
+<svg viewBox="0 0 240 240">
 
-      return `
-        L ${prevX} ${prevY + 24}
-        L ${prevX} ${y + 24}
-        L ${x} ${y + 24}
-      `;
-    }).join(" ")
-  }
-  fill="none"
-  stroke="#6fa8ff"
-  strokeWidth="3"
-  strokeLinecap="square"
-  strokeLinejoin="miter"
+{(() => {
+
+let startAngle = -90;
+const radius = 90;
+const center = 120;
+
+const polarToCartesian = (cx, cy, r, angle) => {
+  const rad = (angle * Math.PI) / 180;
+  return {
+    x: cx + r * Math.cos(rad),
+    y: cy + r * Math.sin(rad)
+  };
+};
+
+return donutData.map((d,i)=>{
+
+const percent = d.value / totalDonut;
+const angle = percent * 360;
+
+const start = polarToCartesian(center, center, radius, startAngle);
+const end = polarToCartesian(center, center, radius, startAngle + angle);
+
+const largeArc = angle > 180 ? 1 : 0;
+
+const pathData = `
+M ${start.x} ${start.y}
+A ${radius} ${radius} 0 ${largeArc} 1 ${end.x} ${end.y}
+`;
+
+startAngle += angle;
+
+return (
+<path
+key={i}
+className="donut-segment"
+d={pathData}
+fill="none"
+stroke={d.color}
+strokeWidth="34"
+strokeLinecap="round"
 />
+);
+
+});
+
+})()}
 
 </svg>
-{monthlyProfit.map((m, i) => {
-const y = getY(m.profit);
-  return (
-    <div
-      key={i}
-      className={`flow-item ${m.profit >= 0 ? "green" : "orange"}`}
-      style={{
-        left: `${i * POINT_GAP - 45}px`,
-        top: `${y - 5}px`        
-      }}
-    >
-      <small>{m.month}</small>
-      <b>₹{m.profit.toLocaleString("en-IN")}</b>
-    </div>
-  );
-})}
-  </div>
+<div className="donut-center">
+₹{totalBalance.toLocaleString("en-IN")}
+</div>
+
+</div>
+
+
+<div className="donut-legend">
+
+{donutData.map((d,i)=>(
+<div key={i} className="legend-item">
+<span
+className="legend-dot"
+style={{background:d.color}}
+></span>
+{d.label}
+</div>
+))}
+
+</div>
+
+</div>
 </div>
 <div className="summary2-wrapper">
-  <div className="summary2-title">Overall Accounts</div>
+  <div className="summary2-title">Financial Overview</div>
 
   <div className="summary2-cards">
   {pillData.map((p, i) => (

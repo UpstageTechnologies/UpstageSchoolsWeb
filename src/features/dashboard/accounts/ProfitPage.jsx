@@ -342,6 +342,7 @@ const getVisiblePages = () => {
     "Account",
     "accounts",
     "Masters",
+
     "Main",
     "Sources"
   );
@@ -432,6 +433,7 @@ useEffect(() => {
         module: "INCOME",
         name: srcName,
         amount: Number(srcAmt),
+        paymentMode: paymentMode,   // 🔥 ADD
         date: entryDate,
         createdAt: new Date()
       });
@@ -629,7 +631,8 @@ const generatedParentId = `P-${Date.now()}`;
     );
     await addDoc(incomesRef, {
       studentId: studentDocRef.id,   // ✅ new student id
-      studentName: newName,          // ✅ from input
+      studentName: newName,      
+      parentName: newParent,    // ✅ from input
       className: newClass,           // ✅ from input
     
       feeId: fee.id,
@@ -645,8 +648,9 @@ const generatedParentId = `P-${Date.now()}`;
       balanceAfter: balanceAfter,
     
       paymentType: newPayType,
-    
+      paymentMode:paymentMode,
       paymentStage: "Admission",
+      isNew: true,
       academicYearId: savedYear?.id || null, 
       date: entryDate,
       createdAt: new Date()
@@ -853,6 +857,7 @@ if (oldPayType === "monthly") {
       isNew: false,
 
       feeId: selectedFees[0]?.id || null,
+      feeType: selectedFees[0].feeType, 
 feeName: selectedFees[0]?.name || "",
 feeAmount: selectedFees[0]?.amount || 0,
       totalFees: total,
@@ -862,6 +867,7 @@ feeAmount: selectedFees[0]?.amount || 0,
       balanceBefore,
       balanceAfter,
       paymentType: oldPayType,
+      paymentMode:paymentMode,
       paymentStage: paidSoFar === 0 ? "Admission" : "Term",
       date: entryDate,
       createdAt: new Date()
@@ -943,6 +949,7 @@ setShowPaymentDD(false);
       studentName: competitionStudent,
       competitionName,
       paidAmount: Number(competitionAmount),
+      paymentMode:paymentMode, 
       date: entryDate,
       createdAt: new Date()
     });
@@ -1002,6 +1009,7 @@ const saveSalary = async () => {
     position: salaryPosition,
     name: selName,
     amount: Number(manualSalary),
+    paymentMode:paymentMode,
     date: entryDate,
     createdAt: new Date()
   });
@@ -1029,33 +1037,32 @@ const getFeePaid = (studentId, feeId) =>
   incomeList
     .filter(i => i.studentId === studentId && i.feeId === feeId)
     .reduce((t, i) => t + Number(i.paidAmount || 0), 0);
+    const getFeeBalance = (studentId, fee) => {
 
-// balance for that fee only
-const getFeeBalance = (studentId, fee) => {
-  const payments = incomeList.filter(
-    i => i.studentId === studentId && i.feeId === fee.id
-  );
-
-  if (!payments.length) return fee.amount;
-
-  // Find payable from any admission entry (not first)
-  const admission = payments.find(
-    p => p.paymentStage === "Admission" && p.feeId === fee.id
-  );
-  
-  const payable = admission
-  ? admission.payableAmount
-  : payments[0].payableAmount || fee.amount;
-
-  const paid = payments.reduce(
-    (t, p) => t + Number(p.paidAmount || 0),
-    0
-  );
-
-  return Math.max(0, payable - paid);   // 🚫 never go negative
-};
-
-
+      if (!fee) return 0;
+    
+      const payments = incomeList.filter(i => {
+    
+        if (fee.feeType === "Tuition") {
+          return i.studentId === studentId &&
+                 (i.feeType === "Tuition" || i.feeName?.includes("Tuition"));
+        }
+    
+        return i.studentId === studentId && i.feeId === fee.id;
+    
+      });
+    
+      if (!payments.length) return fee.amount;
+    
+      const paid = payments.reduce(
+        (t,p)=> t + Number(p.paidAmount || 0),
+        0
+      );
+    
+      const payable = payments[0].payableAmount || fee.amount;
+    
+      return Math.max(0, payable - paid);
+    };
 const saveStudentMiscExpense = async () => {
 
   if (!miscName || !expenseSubName || !exAmt || !entryDate) {
@@ -1068,7 +1075,8 @@ const saveStudentMiscExpense = async () => {
     miscName: miscName,        // Competition / Sports Day
     name: expenseSubName,      // Decoration / Prize
     amount: Number(exAmt),
-    className: competitionClass,   // or selected class
+    className: competitionClass, 
+    paymentMode:paymentMode,   // 🔥 add this  // or selected class
     date: entryDate,
     createdAt: new Date()
   });
@@ -1337,6 +1345,7 @@ const getTermPaidCount = (studentId, feeId) =>
        {/* ================= INCOME ================= */}
        {entryType === "income" && (
   <IncomeSection
+  adminUid={adminUid}   // 🔥 THIS LINE ADD
     incomeMode={incomeMode}
     openDropdown={openDropdown}
     setOpenDropdown={setOpenDropdown}
@@ -1518,6 +1527,11 @@ const getTermPaidCount = (studentId, feeId) =>
   expenseNames={expenseNames}
   miscNames={miscNames}
   saveStudentMiscExpense={saveStudentMiscExpense}
+
+  paymentMode={paymentMode}
+setPaymentMode={setPaymentMode}
+showPaymentMode={showPaymentMode}
+setShowPaymentMode={setShowPaymentMode}
 />
 )}
         {entryType==="fees" && (
@@ -1554,6 +1568,7 @@ Save Fee</button>
   nextPage={nextPage}
   getVisiblePages={getVisiblePages}
   goToPage={goToPage}
+
 />
         </div>
         </>

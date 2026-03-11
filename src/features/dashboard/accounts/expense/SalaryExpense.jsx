@@ -31,7 +31,11 @@ export default function SalaryExpense({
   setManualSalary,
   getSalaryFromInventory,
   saveSalary,
-  safeRequirePremium
+  safeRequirePremium,
+  paymentMode,
+setPaymentMode,
+showPaymentMode,
+setShowPaymentMode
 }) {
   return (
     <>
@@ -67,12 +71,6 @@ export default function SalaryExpense({
     </div>
   )}
 </div>
-
-
-
-
-
-      {/* Position */}
       <div className="student-dropdown">
   <input
     placeholder="Select Position"
@@ -200,7 +198,42 @@ export default function SalaryExpense({
   value={manualSalary}
   onChange={e => setManualSalary(e.target.value)}
   readOnly
+/><div className="student-dropdown">
+
+<input
+  placeholder="Payment Mode"
+  value={paymentMode || ""}
+  readOnly
+  onClick={() => setShowPaymentMode(!showPaymentMode)}
 />
+
+{showPaymentMode && (
+  <div className="student-dropdown-list">
+
+    <div
+      className="student-option"
+      onClick={()=>{
+        setPaymentMode("Cash");
+        setShowPaymentMode(false);
+      }}
+    >
+      Cash
+    </div>
+
+    <div
+      className="student-option"
+      onClick={()=>{
+        setPaymentMode("Account");
+        setShowPaymentMode(false);
+      }}
+    >
+      Account
+    </div>
+
+  </div>
+)}
+
+</div>
 
     </div>
 
