@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState , useRef} from "react";
 import { collection, onSnapshot ,getDoc , doc } from "firebase/firestore";
 import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
@@ -6,6 +6,8 @@ import "../../dashboard_styles/History.css";
 import "../../dashboard_styles/ios.css";
 import { FiChevronUp, FiChevronDown } from "react-icons/fi";
 import { FaBible, FaFileInvoice ,FaPrint } from "react-icons/fa";
+
+
 export default function FeesPage({ adminUid, mode, setActivePage , globalSearch = ""}) {
 const [incomeList, setIncomeList] = useState([]);
 const [expenseList, setExpenseList] = useState([]);
@@ -29,6 +31,23 @@ const [currentPage, setCurrentPage] = useState(1);
 const [reportSearch,setReportSearch]= useState("");
 const [filterSearch,setFilterSearch] = useState("")
 const [showFilterList,setShowFilterList] = useState(false)
+
+const dropdownRef = useRef(null);
+useEffect(() => {
+
+  const handleClickOutside = (event) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      setShowFilterList(false);
+    }
+  };
+  
+  document.addEventListener("mousedown", handleClickOutside);
+  
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+  
+  }, []);
 const openTab = (tab) => {
 
   setLoadingTab(true)
@@ -50,22 +69,36 @@ const handleSort = (field) => {
     setSortDirection("asc");
   }
 };
-
 const getSortedData = (data) => {
+
   if (!sortField) return data;
 
   return [...data].sort((a, b) => {
-    const aVal = a[sortField] ?? "";
-    const bVal = b[sortField] ?? "";
 
-    if (typeof aVal === "number") {
-      return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
+    const aVal =
+      a[sortField] ??
+      a.student?.[sortField] ??
+      a.fee?.[sortField] ??
+      "";
+
+    const bVal =
+      b[sortField] ??
+      b.student?.[sortField] ??
+      b.fee?.[sortField] ??
+      "";
+
+    if (typeof aVal === "number" && typeof bVal === "number") {
+      return sortDirection === "asc"
+        ? aVal - bVal
+        : bVal - aVal;
     }
 
     return sortDirection === "asc"
       ? aVal.toString().localeCompare(bVal.toString())
       : bVal.toString().localeCompare(aVal.toString());
+
   });
+
 };
 const paginate = (data) => {
   const start = (currentPage - 1) * rowsPerPage;
@@ -104,23 +137,32 @@ const [analysisYear, setAnalysisYear] = useState(currentYear);
 const [savedYear, setSavedYear] = useState(null);
 const [selectedCompetition, setSelectedCompetition] = useState(null);
 const [competitionList, setCompetitionList] = useState([]);
-const competitionRef = collection(
-  db,
-  "users",
-  adminUid,
-  "Account",
-  "accounts",
-  "Competition"
-);
+useEffect(() => {
 
-const unsubCompetition = onSnapshot(competitionRef, snap => {
-  setCompetitionList(
-    snap.docs.map(d => ({
-      id: d.id,
-      ...d.data()
-    }))
+  if (!adminUid) return;
+
+  const competitionRef = collection(
+    db,
+    "users",
+    adminUid,
+    "Account",
+    "accounts",
+    "Competition"
   );
-});
+
+  const unsubCompetition = onSnapshot(competitionRef, snap => {
+    setCompetitionList(
+      snap.docs.map(d => ({
+        id: d.id,
+        ...d.data()
+      }))
+    );
+  });
+
+  // 🔥 important cleanup
+  return () => unsubCompetition();
+
+}, [adminUid]);
 // 🔍 Global Smart Search (Name + Class + Parent + PaymentType)
 const matchesSearch = (...fields) => {
   const search = globalSearch?.toLowerCase().trim();
@@ -148,28 +190,49 @@ const normalizePaymentType = (i) => {
     .replace(/\s+/g, "");
 };
 const generateReport = () => {
+
   let data = filterIncomeByDate().map(i => ({
     ...i,
     paymentType: normalizePaymentType(i)
   }));
-
+  
+  /* DATE FILTER */
+  
+  if (fromDate) {
+    data = data.filter(i => i.date >= fromDate);
+  }
+  
+  if (toDate) {
+    data = data.filter(i => i.date <= toDate);
+  }
+  
+  /* REPORT FILTER */
+  
   if (reportFilter === "new") {
     data = data.filter(i => i.isNew === true);
   }
+  
   else if (reportFilter !== "all" && reportFilter !== "pending") {
     data = data.filter(i => i.paymentType === reportFilter);
   }
+  
+  /* PENDING FILTER */
+  
   if (reportFilter === "pending") {
+  
     if (!reportPendingClass || !reportPendingFee) {
       alert("Please select class and fees");
       return;
     }
+  
     data = students
       .filter(s => s.class === reportPendingClass)
       .map(s => {
+  
         const balance = getBalance(s.id, reportPendingFee);
+  
         if (balance <= 0) return null;
-
+  
         return {
           id: s.id,
           studentName: s.studentName,
@@ -178,13 +241,15 @@ const generateReport = () => {
           paidAmount: getPaidAmount(s.id, reportPendingFee.id),
           paymentType: "pending"
         };
+  
       })
       .filter(Boolean);
   }
+  
   setReportData(data);
   setShowGeneratedReport(true);
-};
-
+  
+  };
 
 const filterIncomeByDate = () => {
   const today = new Date();
@@ -260,9 +325,7 @@ const applyDateFilter = (list) => {
     "FeesMaster"
   );
   const studentsRef = collection(db, "users", adminUid, "students");
-const unsubStudents = onSnapshot(studentsRef, snap => {
-  setStudents(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-});
+
 useEffect(() => {
     if (!adminUid) return;
     let unsubIncome = () => {};
@@ -530,6 +593,66 @@ const filteredNewPayments = getSortedData(
     )
 );
 const totalPages = Math.ceil(filteredNewPayments.length / rowsPerPage);
+const feeRows = React.useMemo(() => {
+
+  return students
+    .filter(s =>
+      tableFilter(
+        s.studentName,
+        s.class
+      )
+    )
+    .flatMap(student => {
+
+      const feesForClass = feesMaster.filter(fee =>
+        fee.type === "fees" &&
+        fee.feeType === feeCategory &&
+        fee.className === student.class &&
+        (filterClass === "All" || student.class === filterClass)
+      );
+
+      let feesToShow = feesForClass;
+
+      if (feeCategory === "Tuition" && feesForClass.length > 0) {
+        feesToShow = [feesForClass[0]];
+      }
+
+      return feesToShow.map(fee => {
+
+        const paid = getPaidAmount(student.id, fee.id);
+        const balance = getBalance(student.id, fee);
+
+        if (balance <= 0) return null;
+
+        let pendingLabel = "";
+
+        if (paid === 0 && balance > 0) {
+          pendingLabel = "Fully Not Paid";
+        } 
+        else if (paid > 0 && balance > 0) {
+          pendingLabel = getPendingTerms(student.id, fee.id);
+        }
+
+        const statusInfo = getStatusInfo(
+          paid,
+          balance,
+          savedYear?.startDate,
+          pendingLabel
+        );
+
+        return {
+          student,
+          fee,
+          paid,
+          balance,
+          statusInfo
+        };
+
+      }).filter(Boolean);
+
+    });
+
+}, [students, feesMaster, incomeList, feeCategory, filterClass, savedYear,tableSearch]);
   return (
     <div className="income-wrapper">
 
@@ -625,6 +748,8 @@ Competition
 <button
   className="report-btn"
   onClick={() => {setShowReport(true) 
+  setReportFilter("all")
+  generateReport()         // auto generate
   setIncomeTab("report") }}
 >
   <FaFileInvoice />
@@ -633,18 +758,12 @@ Competition
 
 </div>
 {incomeTab === "report" && (
-<div className="section-card pop">
+  <div className="section-card pop" key={incomeTab}>
 <h3 className="section-title">Income Report</h3>
-
-{/* TOP ACTION BAR */}
-
-
-
-{/* FILTER SEARCH */}
 
 <div className="report-toolbar">
 
-<div className="filter-dropdown">
+<div className="filter-dropdown" ref={dropdownRef}>
 
 <input
 type="text"
@@ -655,84 +774,74 @@ onFocus={()=>setShowFilterList(true)}
 className="report-search"
 />
 
-{showFilterList && (
+    {showFilterList && (
 
-<div className="filter-list">
-<div className="report-actions">
+      <div className="filter-list">
 
-<select
-value={reportType}
-onChange={(e)=>setReportType(e.target.value)}
-className="report-select"
->
-<option value="year">Yearly</option>
-<option value="month">Monthly</option>
-<option value="day">Daily</option>
-<option value="custom">Custom</option>
-</select>
+        <div className="report-actions">
 
-<button className="action-btn" onClick={generateReport}>
-Generate
-</button>
+          <input
+            type="date"
+            value={fromDate}
+            onChange={(e)=>setFromDate(e.target.value)}
+            className="report-date"
+          />
 
-<button
-className="action-btn"
-onClick={()=>{
-setShowGeneratedReport(false)
-setReportData([])
-}}
->
-Close
-</button>
+          <input
+            type="date"
+            value={toDate}
+            onChange={(e)=>setToDate(e.target.value)}
+            className="report-date"
+          />
 
-<button
-className="action-btn"
-onClick={()=>{
-window.print()
-setPrintMode(false)
-}}
->
-<FaPrint/> Print
-</button>
+          <select
+            value={reportFilter}
+            onChange={(e)=>setReportFilter(e.target.value)}
+            className="report-dropdown"
+          >
+            <option value="all">All</option>
+            <option value="new">New Admission</option>
+            <option value="old">Old Admission</option>
+            <option value="full">Full Payment</option>
+            <option value="partial">Partial Payment</option>
+            <option value="term1">Term 1</option>
+            <option value="term2">Term 2</option>
+            <option value="term3">Term 3</option>
+          </select>
 
-</div>
-{[
-{label:"All",value:"all"},
-{label:"New Admission",value:"new"},
-{label:"Old Admission",value:"old"},
-{label:"Full Payment",value:"full"},
-{label:"Partial Payment",value:"partial"},
-{label:"Term 1",value:"term1"},
-{label:"Term 2",value:"term2"},
-{label:"Term 3",value:"term3"}
-]
-.filter(i =>
-i.label.toLowerCase().includes(filterSearch.toLowerCase())
-)
-.map(i => (
+          <button className="action-btn generate" onClick={generateReport}>
+            Generate
+          </button>
 
-<div
-key={i.value}
-className="filter-item"
-onClick={()=>{
-setReportFilter(i.value)
-setFilterSearch(i.label)
-setShowFilterList(false)
-}}
->
-{i.label}
-</div>
+          <button
+            className="action-btn close"
+            onClick={()=>{
+              setShowGeneratedReport(false)
+              setReportData([])
+            }}
+          >
+            Close
+          </button>
 
-))}
+          <button
+            className="action-btn print"
+            onClick={()=>{
+              window.print()
+              setPrintMode(false)
+            }}
+          >
+            <FaPrint/> Print
+          </button>
+
+        </div>
+
+      </div>
+
+    )}
+
+  </div>
 
 </div>
-
-)}
-
-</div>
-
-</div>
-
 <div style={{marginTop:15}}>
 
 {showGeneratedReport && (
@@ -850,7 +959,7 @@ setShowFilterList(false)
 </div>
 )}
 {incomeTab === "expenseAnalysis" && (
-  <div className="section-card pop">
+ <div className="section-card pop" key={incomeTab}>
 
   <h3 className="section-title">Competitions</h3>
 
@@ -1112,7 +1221,7 @@ setShowFilterList(false)
 
 {(incomeTab === "tuition" || incomeTab === "other") && (
 
-<div className="section-card pop">
+<div className="section-card pop" key={incomeTab}>
 
   <div className="table-header">
 
@@ -1195,62 +1304,10 @@ setShowFilterList(false)
 </tr>
 </thead>
 <tbody>
-
 {
-getSortedData(students
-  .filter(s =>
-    tableFilter(
-      s.studentName,
-      s.class
-    )
-  )
-  
-  ).map(student => {
+getSortedData(feeRows).map(row => {
 
-    const feesForClass = feesMaster.filter(fee =>
-      fee.type === "fees" &&
-      fee.feeType === feeCategory &&
-      fee.className === student.class &&
-      (filterClass === "All" || student.class === filterClass)
-    );
-    
-    let feesToShow = feesForClass;
-
-    if (feeCategory === "Tuition" && feesForClass.length > 0) {
-      feesToShow = [feesForClass[0]];
-    }
-    return feesToShow.map(fee => {
-
-        const paid = getPaidAmount(student.id, fee.id);
-const balance = getBalance(student.id, fee);
-
-if (balance <= 0) return null;
-
-let status = "Not Paid";
-
-if (paid === 0 && balance > 0) {
-  status = "Fully Not Paid";
-}
-else if (paid > 0 && balance > 0) {
-  status = getPendingTerms(student.id, fee.id);
-}
-let pendingLabel = "";
-
-if (paid === 0 && balance > 0) {
-  pendingLabel = "Fully Not Paid";
-}
-else if (paid > 0 && balance > 0) {
-  pendingLabel = getPendingTerms(student.id, fee.id);
-}
-const statusInfo = getStatusInfo(
-  paid,
-  balance,
-  savedYear?.startDate,
-  pendingLabel
-);
-
-
-      
+  const { student, fee, paid, balance, statusInfo } = row;
       return (
         <tr key={`${student.id}_${fee.id}`}>
           <td data-label="StudentName">{student.studentName}</td>
@@ -1299,7 +1356,7 @@ const statusInfo = getStatusInfo(
         </tr>
       );
     })
-  })}
+}
 </tbody>
 </table>
 </div>
@@ -1399,50 +1456,12 @@ className="table-search"
                       ))}
                   </tbody>
                 </table>
-                <div className="pagination-bar">
-
-<button
-  className="tab-btn"
-  disabled={currentPage === 1}
-  onClick={() => setCurrentPage(currentPage - 1)}
->
-Previous
-</button>
-
-{Array.from(
-  { length: Math.ceil(
-      incomeList.filter(i => i.isNew === true).length / rowsPerPage
-    ) },
-  (_, i) => (
-    <button
-      key={i}
-      className={`tab-btn ${currentPage === i + 1 ? "active" : ""}`}
-      onClick={() => setCurrentPage(i + 1)}
-    >
-      {i + 1}
-    </button>
-  )
-)}
-
-<button
-  className="tab-btn"
-  disabled={
-    currentPage ===
-    Math.ceil(
-      incomeList.filter(i => i.isNew === true).length / rowsPerPage
-    )
-  }
-  onClick={() => setCurrentPage(currentPage + 1)}
->
-Next
-</button>
-
-</div>
+                
               </div>
             </div>
           )}
           {incomeTab === "old" && (
-  <div className="section-card pop">
+            <div className="section-card pop" key={incomeTab}>
     
 <div className="table-header">
 
@@ -1523,7 +1542,7 @@ className="table-search"
             </div>
           )}
 {incomeTab==="full"&&(
-<div className="section-card pop"><div className="table-header">
+  <div className="section-card pop" key={incomeTab}><div className="table-header">
 
 <h3 className="section-title">
   Full Payment Students
@@ -1584,7 +1603,7 @@ className="table-search"
 </table></div></div>
 )}
 {incomeTab==="partial"&&(
-<div className="section-card pop"><div className="table-header">
+  <div className="section-card pop" key={incomeTab}><div className="table-header">
 
   <h3 className="section-title">
     Partial Payment Students
@@ -1654,7 +1673,7 @@ className="table-search"
 </table></div></div>
 )}
 {incomeTab==="term1"&&(
-<div className="section-card pop"><div className="table-header">
+  <div className="section-card pop" key={incomeTab}><div className="table-header">
 
 <h3 className="section-title">
   Term 1 Payments
@@ -1726,7 +1745,7 @@ style={{ marginTop: "18px", marginBottom: "20px" }}
 </table></div>
 )}
 {incomeTab==="term2"&&(
-<div className="section-card pop"><div className="table-header">
+  <div className="section-card pop" key={incomeTab}><div className="table-header">
 
 <h3 className="section-title">
   Term 2 Payments
@@ -1787,7 +1806,7 @@ style={{ marginTop: "18px", marginBottom: "20px" }}
 </table></div>
 )}
 {incomeTab==="term3"&&(
-<div className="section-card pop"><div className="table-header">
+  <div className="section-card pop" key={incomeTab}><div className="table-header">
 
 <h3 className="section-title">
   Term 3 Payments
@@ -1885,9 +1904,7 @@ Other
 
 </div>
 
-
-{/* CARD */}
-<div className="section-card pop">
+<div className="section-card pop" key={incomeTab}>
 
 {/* HEADER */}
 <div className="table-header">

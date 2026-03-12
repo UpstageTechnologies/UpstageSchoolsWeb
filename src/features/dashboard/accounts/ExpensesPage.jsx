@@ -8,7 +8,7 @@ export default function ExpensesPage({ adminUid, setActivePage }) {
 
   const [incomeList, setIncomeList] = useState([]);
   const [expenseList, setExpenseList] = useState([]);
-  
+  const [hoverItem, setHoverItem] = useState(null);
   const today = new Date().toISOString().split("T")[0];
   const role = localStorage.getItem("role");
   const isOfficeStaff = role === "office_staff";
@@ -107,7 +107,7 @@ const otherExpense = expenseList
   .filter(e => e.type === "others")
   .reduce((s, e) => s + Number(e.amount || 0), 0);
   const donutData = [
-    { label: "Source Income", value: sourceIncome, color: "#8e44ad" },
+    { label: "Source Income", value: sourceIncome, color: "#f1c40f" },
     { label: "New Admission", value: newAdmission, color: "#a569bd" },
     { label: "Old Admission", value: oldAdmission, color: "#6c3483" },
     { label: "Competition Income", value: competitionIncome, color: "#e67e22" },
@@ -241,7 +241,9 @@ const polarToCartesian = (cx, cy, r, angle) => {
   };
 };
 
-return donutData.map((d,i)=>{
+return donutData
+  .filter(d => d.value > 0)
+  .map((d,i)=>{
 
 const percent = d.value / totalDonut;
 const angle = percent * 360;
@@ -267,6 +269,8 @@ fill="none"
 stroke={d.color}
 strokeWidth="34"
 strokeLinecap="round"
+onMouseEnter={() => setHoverItem(d)}
+onMouseLeave={() => setHoverItem(null)}
 />
 );
 
@@ -276,7 +280,15 @@ strokeLinecap="round"
 
 </svg>
 <div className="donut-center">
-₹{totalBalance.toLocaleString("en-IN")}
+
+<div className="donut-center-title">
+{hoverItem ? hoverItem.label : "Total"}
+</div>
+
+<div className="donut-center-value">
+₹{(hoverItem ? hoverItem.value : totalBalance).toLocaleString("en-IN")}
+</div>
+
 </div>
 
 </div>
