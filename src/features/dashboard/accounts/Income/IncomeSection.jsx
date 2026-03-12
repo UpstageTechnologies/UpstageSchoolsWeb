@@ -111,7 +111,8 @@ setShowStudentDropdown,
             paymentMode,
             setPaymentMode,
             showPaymentMode,
-            setShowPaymentMode,   
+            setShowPaymentMode, 
+            feeType  
         } = props;
 
         const sourceMasterRef = collection(
@@ -609,7 +610,7 @@ setShowStudentDropdown,
     placeholder="Select Fees"
     value={
       selectedFees.length
-        ? selectedFees[0]?.name || ""
+        ? `${selectedFees[0].name} — ₹${selectedFees[0].amount}`
         : ""
     }
     readOnly
@@ -635,8 +636,15 @@ setShowStudentDropdown,
   )}
 </div>
 {selectedFees[0] && (
-  <input readOnly value={`Fee Total ₹${selectedFees[0].amount}`} />
-)} <div className="student-dropdown">
+  <input
+    readOnly
+    value={`Fee Total ₹${
+      selectedFees[0].amount -
+      selectedFees[0].amount *
+        ((selectedFees[0].discount || 0) / 100)
+    }`}
+  />
+)}<div className="student-dropdown">
           
   <input
     placeholder="Select Payment Type"
@@ -833,8 +841,7 @@ setShowStudentDropdown,
     placeholder="Select Fees"
     value={
       selectedFees.length
-        ? selectedFees[0]?.name || ""
-
+        ? `${selectedFees[0].name} — ₹${selectedFees[0].amount}`
         : ""
     }
     readOnly
@@ -865,7 +872,14 @@ setShowStudentDropdown,
   )}
 </div>
 {selectedFees[0] && (
-  <input readOnly value={`Fee Total ₹${selectedFees[0].amount}`} />
+  <input
+    readOnly
+    value={`Fee Total ₹${
+      selectedFees[0].amount -
+      selectedFees[0].amount *
+        ((selectedFees[0].discount || 0) / 100)
+    }`}
+  />
 )}
     <div className="student-dropdown">
   <input
@@ -912,7 +926,7 @@ setShowStudentDropdown,
   <input
     readOnly
     value={`Payable ₹${
-      getFeePaid(oldStudent, selectedFees[0].id) === 0
+      getFeePaid(oldStudent, selectedFees[0]) === 0
         ? Math.ceil(
           selectedFees[0].amount -
           selectedFees[0].amount *

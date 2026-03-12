@@ -809,11 +809,8 @@ if (oldPayType === "monthly") {
 }
 
     const termPaidCount = getTermPaidCount(stu.id, fee.id);
+    const fixedTermAmount = Math.ceil(payable / 3);
 
-    const fixedTermAmount = Math.ceil(total / 3);
-
-    
-    
     if (oldPayType.startsWith("term")) {
       if (termPaidCount >= 3) {
         alert("All 3 terms already paid");
@@ -1123,10 +1120,14 @@ const getTermPaidCount = (studentId, feeId) =>
   ).length;
 
   const getTermAmountUI = (studentId, fee) => {
-    if (!studentId || !fee) return 0;
+
+    if (!fee) return 0;
   
-    const total = fee.amount;
-    const paid = getFeePaid(studentId, fee.id);
+    const total =
+      fee.amount -
+      fee.amount * ((fee.discount || 0) / 100);   // 🔥 discount applied
+  
+    const paid = getFeePaid(studentId, fee);
     const balance = total - paid;
   
     const termPaid = getTermPaidCount(studentId, fee.id);
@@ -1145,13 +1146,15 @@ const getTermPaidCount = (studentId, feeId) =>
       i.paymentType === "monthly" &&
       i.monthsTotal
   );
-
-  
   const getNewTermAmount = (fee) => {
     if (!fee) return 0;
   
-    const total = fee.amount;
+    const total =
+      fee.amount -
+      fee.amount * ((fee.discount || 0) / 100);
+  
     const termAmount = Math.ceil(total / 3);
+  
     return termAmount;
   };
   useEffect(() => {
