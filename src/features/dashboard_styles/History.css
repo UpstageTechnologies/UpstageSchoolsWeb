@@ -162,18 +162,15 @@
     box-shadow:0 20px 40px rgba(0,0,0,0.06);
     transition:.3s ease;
   }
-  
   .section-card:hover{
-    transform:translateY(-3px);
+    box-shadow:0 20px 40px rgba(0,0,0,0.08);
   }
-  
   .section-card.pop{
-    animation:fadeIn .4s ease;
+    animation:none;
   }
-  
   @keyframes fadeIn{
-    from{opacity:0; transform:translateY(8px);}
-    to{opacity:1; transform:none;}
+    from{opacity:0;}
+    to{opacity:1;}
   }
   
   /* ===============================
