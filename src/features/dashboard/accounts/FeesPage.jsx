@@ -758,7 +758,7 @@ Competition
 
 </div>
 {incomeTab === "report" && (
-  <div className="section-card pop" key={incomeTab}>
+  <div className="section-card pop">
 <h3 className="section-title">Income Report</h3>
 
 <div className="report-toolbar">
@@ -959,7 +959,7 @@ className="report-search"
 </div>
 )}
 {incomeTab === "expenseAnalysis" && (
- <div className="section-card pop" key={incomeTab}>
+ <div className="section-card pop">
 
   <h3 className="section-title">Competitions</h3>
 
@@ -1221,7 +1221,7 @@ className="report-search"
 
 {(incomeTab === "tuition" || incomeTab === "other") && (
 
-<div className="section-card pop" key={incomeTab}>
+<div className="section-card pop">
 
   <div className="table-header">
 
@@ -1461,7 +1461,7 @@ className="table-search"
             </div>
           )}
           {incomeTab === "old" && (
-            <div className="section-card pop" key={incomeTab}>
+            <div className="section-card pop">
     
 <div className="table-header">
 
@@ -1542,7 +1542,7 @@ className="table-search"
             </div>
           )}
 {incomeTab==="full"&&(
-  <div className="section-card pop" key={incomeTab}><div className="table-header">
+  <div className="section-card pop"><div className="table-header">
 
 <h3 className="section-title">
   Full Payment Students
@@ -1603,7 +1603,7 @@ className="table-search"
 </table></div></div>
 )}
 {incomeTab==="partial"&&(
-  <div className="section-card pop" key={incomeTab}><div className="table-header">
+  <div className="section-card pop"><div className="table-header">
 
   <h3 className="section-title">
     Partial Payment Students
@@ -1673,7 +1673,7 @@ className="table-search"
 </table></div></div>
 )}
 {incomeTab==="term1"&&(
-  <div className="section-card pop" key={incomeTab}><div className="table-header">
+  <div className="section-card pop"><div className="table-header">
 
 <h3 className="section-title">
   Term 1 Payments
@@ -1745,7 +1745,7 @@ style={{ marginTop: "18px", marginBottom: "20px" }}
 </table></div>
 )}
 {incomeTab==="term2"&&(
-  <div className="section-card pop" key={incomeTab}><div className="table-header">
+  <div className="section-card pop"><div className="table-header">
 
 <h3 className="section-title">
   Term 2 Payments
@@ -1806,7 +1806,7 @@ style={{ marginTop: "18px", marginBottom: "20px" }}
 </table></div>
 )}
 {incomeTab==="term3"&&(
-  <div className="section-card pop" key={incomeTab}><div className="table-header">
+  <div className="section-card pop"><div className="table-header">
 
 <h3 className="section-title">
   Term 3 Payments
@@ -1904,7 +1904,7 @@ Other
 
 </div>
 
-<div className="section-card pop" key={incomeTab}>
+<div className="section-card pop">
 
 {/* HEADER */}
 <div className="table-header">
