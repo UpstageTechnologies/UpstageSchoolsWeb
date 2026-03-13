@@ -1,5 +1,5 @@
 import React, { useEffect, useState , useRef} from "react";
-import { collection, onSnapshot ,getDoc , doc } from "firebase/firestore";
+import { collection, onSnapshot ,getDoc , doc ,query ,where } from "firebase/firestore";
 import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
 import "../../dashboard_styles/History.css";
@@ -31,7 +31,12 @@ const [currentPage, setCurrentPage] = useState(1);
 const [reportSearch,setReportSearch]= useState("");
 const [filterSearch,setFilterSearch] = useState("")
 const [showFilterList,setShowFilterList] = useState(false)
-
+const [incomeTab, setIncomeTab] = useState("new"); 
+const [tableSearch, setTableSearch] = useState("");
+const [allDates, setAllDates] = useState([]);
+const [tableData, setTableData] = useState([]);
+const [currentDateIndex,setCurrentDateIndex] = useState(0)
+const currentDate = allDates[currentDateIndex]
 const dropdownRef = useRef(null);
 useEffect(() => {
 
@@ -59,8 +64,103 @@ const openTab = (tab) => {
   }, 100)
 
 }
-const rowsPerPage = 10;
+const rowsPerPage =10;
 
+useEffect(() => {
+
+  if (!adminUid) return;
+
+  const incomeRef = collection(
+    db,
+    "users",
+    adminUid,
+    "Account",
+    "accounts",
+    "Income"
+  );
+
+  const q = query(
+    incomeRef,
+    where("isNew","==",true)
+  );
+
+  const unsub = onSnapshot(q, snap => {
+
+    const dates = [
+      ...new Set(
+        snap.docs.map(d => d.data().date).filter(Boolean)
+      )
+    ].sort((a,b)=>b.localeCompare(a));
+
+    setAllDates(dates);
+
+  });
+
+  return () => unsub();
+
+}, [adminUid]);
+useEffect(() => {
+
+  if (!adminUid || !currentDate) return;
+
+  const incomeRef = collection(
+    db,
+    "users",
+    adminUid,
+    "Account",
+    "accounts",
+    "Income"
+  );
+
+  const q = query(
+    incomeRef,
+    where("isNew","==",true),
+    where("date","==",currentDate)
+  );
+
+  const unsub = onSnapshot(q, snap => {
+
+    setTableData(
+      snap.docs.map(d => ({
+        id:d.id,
+        ...d.data()
+      }))
+    );
+
+  });
+
+  return () => unsub();
+
+}, [adminUid,currentDate]);
+
+
+
+
+useEffect(() => {
+  setCurrentDateIndex(0);
+}, [incomeTab, incomeList]);
+const tableFilter = (...fields) => {
+  if (!tableSearch.trim()) return true;
+
+  const search = tableSearch.toLowerCase();
+
+  return fields.some(field =>
+    field?.toString().toLowerCase().includes(search)
+  );
+};
+const newAdmissionData =
+  incomeList
+    .filter(i => i.isNew === true)
+    .filter(i => i.date === currentDate)
+    .filter(i =>
+      tableFilter(
+        i.studentName,
+        i.className,
+        i.parentName,
+        i.date,
+        i.paidAmount
+      )
+    );
 const handleSort = (field) => {
   if (sortField === field) {
     setSortDirection(prev => prev === "asc" ? "desc" : "asc");
@@ -100,22 +200,33 @@ const getSortedData = (data) => {
   });
 
 };
+const maxVisiblePages = 3;
+
+const getVisiblePages = () => {
+
+  let start = Math.max(
+    0,
+    currentDateIndex - Math.floor(maxVisiblePages/2)
+  );
+
+  let end = start + maxVisiblePages;
+
+  if(end > allDates.length){
+    end = allDates.length;
+    start = Math.max(0,end-maxVisiblePages);
+  }
+
+  return Array.from({length:end-start},(_,i)=>start+i)
+
+}
 const paginate = (data) => {
   const start = (currentPage - 1) * rowsPerPage;
   const end = start + rowsPerPage;
   return data.slice(start, end);
 };
 const [showPendingPopup, setShowPendingPopup] = useState(false);
-const [tableSearch, setTableSearch] = useState("");
-const tableFilter = (...fields) => {
-  if (!tableSearch.trim()) return true;
 
-  const search = tableSearch.toLowerCase();
 
-  return fields.some(field =>
-    field?.toString().toLowerCase().includes(search)
-  );
-};
 const [pendingClass, setPendingClass] = useState("");
 const [pendingFee, setPendingFee] = useState(null);
 const [feesMaster, setFeesMaster] = useState([]);
@@ -297,7 +408,7 @@ const applyDateFilter = (list) => {
   }
   return list;
 };
-  const [incomeTab, setIncomeTab] = useState("new"); 
+  
   const [expenseTab, setExpenseTab] = useState("all");
   const [feesMasterTab, setFeesMasterTab] = useState(false);
   const incomeRef = collection(
@@ -759,7 +870,10 @@ Competition
 </div>
 {incomeTab === "report" && (
   <div className="section-card pop">
-<h3 className="section-title">Income Report</h3>
+<div className="history-controls">
+<h3 className="section-title">
+      Income Report – {reportFilter.toUpperCase()}
+    </h3>
 
 <div className="report-toolbar">
 
@@ -777,16 +891,16 @@ className="report-search"
     {showFilterList && (
 
       <div className="filter-list">
-
+        <h5 className="filter-section-title">Date Range</h5>
         <div className="report-actions">
-
+        <label>From:</label>
           <input
             type="date"
             value={fromDate}
             onChange={(e)=>setFromDate(e.target.value)}
             className="report-date"
           />
-
+          <label>To:</label>
           <input
             type="date"
             value={toDate}
@@ -794,6 +908,7 @@ className="report-search"
             className="report-date"
           />
 
+<label>Activity type</label>
           <select
             value={reportFilter}
             onChange={(e)=>setReportFilter(e.target.value)}
@@ -808,7 +923,7 @@ className="report-search"
             <option value="term2">Term 2</option>
             <option value="term3">Term 3</option>
           </select>
-
+          <label>Actions</label>
           <button className="action-btn generate" onClick={generateReport}>
             Generate
           </button>
@@ -824,21 +939,18 @@ className="report-search"
           </button>
 
           <button
-            className="action-btn print"
-            onClick={()=>{
-              window.print()
-              setPrintMode(false)
-            }}
-          >
-            <FaPrint/> Print
-          </button>
+className="action-btn print"
+onClick={() => window.print()}
+>
+<FaPrint/> Print
+</button>
 
         </div>
 
       </div>
 
     )}
-
+</div>
   </div>
 
 </div>
@@ -846,10 +958,8 @@ className="report-search"
 
 {showGeneratedReport && (
   <>
-    <h3 className="section-title">
-      Income Report – {reportFilter.toUpperCase()}
-    </h3>
-
+    
+    <div className="print-area">
     <table className="history-table">
   <thead>
     <tr>
@@ -951,7 +1061,7 @@ className="report-search"
     )}
   </tbody>
 </table>
-
+</div>
   </>
 )}
 </div>
@@ -1223,6 +1333,9 @@ className="report-search"
 
 <div className="section-card pop">
 
+  
+
+<div className="history-controls">
   <div className="table-header">
 
 <h3 className="section-title">
@@ -1231,8 +1344,6 @@ className="report-search"
 
 
 </div>
-
-<div style={{marginTop:"0px", marginBottom:"10px"}}>
 <input
   type="text"
   placeholder="Search in table..."
@@ -1364,7 +1475,7 @@ getSortedData(feeRows).map(row => {
 
 {incomeTab === "new" &&  (
   <div className="section-card pop ">
-        
+          <div className="history-controls">
         <div className="table-header">
 
 <h3 className="section-title">
@@ -1377,7 +1488,7 @@ placeholder="Search in table..."
 value={tableSearch}
 onChange={(e) => setTableSearch(e.target.value)}
 className="table-search"
-/>
+/>  </div>
               <div className="nice-table2-wrapper">
                 <table className="history-table">
                   <thead>
@@ -1432,37 +1543,58 @@ className="table-search"
                   </thead>
                   
                   <tbody>
-                    
-                  {
-                    paginate(
-                  getSortedData( incomeList
-  .filter(i => i.isNew === true)
-  .filter(i =>
-    tableFilter(
-      i.studentName,
-      i.className,
-      i.parentName,
-      i.date,
-      i.paidAmount)
-))
-                     ) .map(i => (
-                        <tr key={i.id}>
-                          <td data-label="Student">{i.studentName}</td>
-                          <td data-label="Parent">{i.parentName}</td>
-                          <td data-label="Class">{i.className}</td>
-                          <td data-label="Paid">₹{i.paidAmount}</td>
-                          <td>{i.date}</td>
-                        </tr>
-                      ))}
-                  </tbody>
+
+{getSortedData(tableData).map(i => (
+
+<tr key={i.id}>
+  <td data-label="Student">{i.studentName}</td>
+  <td data-label="Parent">{i.parentName}</td>
+  <td data-label="Class">{i.className}</td>
+  <td data-label="Paid">₹{i.paidAmount}</td>
+  <td>{i.date}</td>
+</tr>
+
+))}
+
+</tbody>
                 </table>
-                
+                <div className="pagination-bar">
+  <div className="tab-buttons">
+
+<button
+className="tab-btn"
+disabled={currentDateIndex===0}
+onClick={()=>setCurrentDateIndex(p=>p-1)}
+>
+←
+</button>
+
+{getVisiblePages().map(i=>(
+<button
+key={i}
+className={`tab-btn ${i===currentDateIndex?"active":""}`}
+onClick={()=>setCurrentDateIndex(i)}
+>
+{i+1}
+</button>
+))}
+
+<button
+className="tab-btn"
+disabled={currentDateIndex===allDates.length-1}
+onClick={()=>setCurrentDateIndex(p=>p+1)}
+>
+→
+</button>
+
+  </div>
+</div>
               </div>
             </div>
           )}
           {incomeTab === "old" && (
             <div className="section-card pop">
-    
+      <div className="history-controls">
 <div className="table-header">
 
 <h3 className="section-title">
@@ -1478,7 +1610,7 @@ placeholder="Search in table..."
 value={tableSearch}
 onChange={(e) => setTableSearch(e.target.value)}
 className="table-search"
-/>
+/></div>
               <div className="nice-table-wrapper1">
                 <table className="history-table">
                   <thead>
@@ -1542,7 +1674,9 @@ className="table-search"
             </div>
           )}
 {incomeTab==="full"&&(
-  <div className="section-card pop"><div className="table-header">
+  <div className="section-card pop">
+      <div className="history-controls">
+    <div className="table-header">
 
 <h3 className="section-title">
   Full Payment Students
@@ -1558,7 +1692,7 @@ value={tableSearch}
 onChange={(e) => setTableSearch(e.target.value)}
 className="table-search"
 />
-
+</div>
 <div className="nice-table-wrapper1">
 <table className="history-table">
 <thead><tr><th onClick={() => handleSort("studentName")}>
@@ -1603,7 +1737,9 @@ className="table-search"
 </table></div></div>
 )}
 {incomeTab==="partial"&&(
-  <div className="section-card pop"><div className="table-header">
+  <div className="section-card pop">
+    <div className="history-controls">
+    <div className="table-header">
 
   <h3 className="section-title">
     Partial Payment Students
@@ -1619,7 +1755,8 @@ className="table-search"
   onChange={(e) => setTableSearch(e.target.value)}
   className="table-search"
 />
-<div className="nice-table-wrapper1"><table className="history-table">
+</div>
+<table className="history-table">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
   {sortField === "studentName" &&
@@ -1670,10 +1807,10 @@ className="table-search"
   )).map(i=>(
 <tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td  data-label="Balance">₹{getFeeBalance(i.studentId,i.feeId)}</td><td  data-label="Date">{i.date}</td></tr>
 ))}</tbody>
-</table></div></div>
+</table></div>
 )}
 {incomeTab==="term1"&&(
-  <div className="section-card pop"><div className="table-header">
+  <div className="section-card pop">  <div className="history-controls"><div className="table-header">
 
 <h3 className="section-title">
   Term 1 Payments
@@ -1690,7 +1827,7 @@ onChange={(e) => setTableSearch(e.target.value)}
 className="table-search"
 style={{ marginTop: "18px", marginBottom: "20px" }}
 />
-
+</div>
 <table className="history-table">
 <thead><tr><th onClick={() => handleSort("studentName")}>
   Student
@@ -1744,69 +1881,71 @@ style={{ marginTop: "18px", marginBottom: "20px" }}
 ))}</tbody>
 </table></div>
 )}
-{incomeTab==="term2"&&(
-  <div className="section-card pop"><div className="table-header">
+  {incomeTab==="term2"&&(
+    <div className="section-card pop"><div className="history-controls"><div className="table-header">
 
-<h3 className="section-title">
-  Term 2 Payments
-</h3>
+  <h3 className="section-title">
+    Term 2 Payments
+  </h3>
 
 
-</div>
+  </div>
 
-<input
-type="text"
-placeholder="Search in table..."
-value={tableSearch}
-onChange={(e) => setTableSearch(e.target.value)}
-className="table-search"
-style={{ marginTop: "18px", marginBottom: "20px" }}
-/>
-<table className="history-table">
-<thead><tr><th onClick={() => handleSort("studentName")}>
-  Student
-  {sortField === "studentName" &&
-    (sortDirection === "asc"
-      ? <FiChevronUp size={14}/>
-      : <FiChevronDown size={14}/>
-    )
-  }
-</th><th onClick={() => handleSort("className")}>
-  Class {sortField === "className" && (sortDirection === "asc" ? <FiChevronUp size={14}/> : <FiChevronDown size={14}/>)}
-</th>
-<th onClick={() => handleSort("paidAmount")}>
-  Paid
-  {sortField === "paidAmount" &&
-    (sortDirection === "asc"
-      ? <FiChevronUp size={14}/>
-      : <FiChevronDown size={14}/>
-    )}
-</th>
+  <input
+  type="text"
+  placeholder="Search in table..."
+  value={tableSearch}
+  onChange={(e) => setTableSearch(e.target.value)}
+  className="table-search"
+  style={{ marginTop: "18px", marginBottom: "20px" }}
+  />
+  </div>
+  <table className="history-table">
+  <thead><tr><th onClick={() => handleSort("studentName")}>
+    Student
+    {sortField === "studentName" &&
+      (sortDirection === "asc"
+        ? <FiChevronUp size={14}/>
+        : <FiChevronDown size={14}/>
+      )
+    }
+  </th><th onClick={() => handleSort("className")}>
+    Class {sortField === "className" && (sortDirection === "asc" ? <FiChevronUp size={14}/> : <FiChevronDown size={14}/>)}
+  </th>
+  <th onClick={() => handleSort("paidAmount")}>
+    Paid
+    {sortField === "paidAmount" &&
+      (sortDirection === "asc"
+        ? <FiChevronUp size={14}/>
+        : <FiChevronDown size={14}/>
+      )}
+  </th>
 
-<th onClick={() => handleSort("balance")}>
-  Balance
-  {sortField === "balance" &&
-    (sortDirection === "asc"
-      ? <FiChevronUp size={14}/>
-      : <FiChevronDown size={14}/>
-    )}
-</th>
+  <th onClick={() => handleSort("balance")}>
+    Balance
+    {sortField === "balance" &&
+      (sortDirection === "asc"
+        ? <FiChevronUp size={14}/>
+        : <FiChevronDown size={14}/>
+      )}
+  </th>
 
-<th onClick={() => handleSort("date")}>
-  Date
-  {sortField === "date" &&
-    (sortDirection === "asc"
-      ? <FiChevronUp size={14}/>
-      : <FiChevronDown size={14}/>
-    )}
-</th></tr></thead>
-<tbody>{getSortedData(incomeList.filter(i=>i.paymentType==="term2")).map(i=>(
-<tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td>₹{getFeeBalance(i.studentId,i.feeId)}</td><td>{i.date}</td></tr>
-))}</tbody>
-</table></div>
-)}
+  <th onClick={() => handleSort("date")}>
+    Date
+    {sortField === "date" &&
+      (sortDirection === "asc"
+        ? <FiChevronUp size={14}/>
+        : <FiChevronDown size={14}/>
+      )}
+  </th></tr></thead>
+  <tbody>{getSortedData(incomeList.filter(i=>i.paymentType==="term2")).map(i=>(
+  <tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td>₹{getFeeBalance(i.studentId,i.feeId)}</td><td>{i.date}</td></tr>
+  ))}</tbody>
+  </table></div>
+  )}
 {incomeTab==="term3"&&(
-  <div className="section-card pop"><div className="table-header">
+  <div className="section-card pop">
+  <div className="history-controls"><div className="table-header">
 
 <h3 className="section-title">
   Term 3 Payments
@@ -1815,7 +1954,6 @@ style={{ marginTop: "18px", marginBottom: "20px" }}
 
 </div>
 
-<div className="history-controls">
 <input
   type="text"
   placeholder="Search in table..."
@@ -1905,7 +2043,7 @@ Other
 </div>
 
 <div className="section-card pop">
-
+ <div className="history-controls">
 {/* HEADER */}
 <div className="table-header">
 
@@ -1925,7 +2063,8 @@ onChange={(e) => setTableSearch(e.target.value)}
 className="table-search"
 style={{ marginTop: "18px", marginBottom: "20px" }}
 />
-<div className="nice-table-wrapper1">
+</div>
+
   <table className="history-table">
 <thead><tr>
 <th onClick={() => handleSort("type")}>
@@ -2000,7 +2139,7 @@ style={{ marginTop: "18px", marginBottom: "20px" }}
 <tr key={e.id}><td data-label="Type">{e.type}</td><td data-label="Name">{e.name}</td><td data-label="Amount">₹{e.amount}</td><td>{e.date}</td></tr>
 ))}</tbody>
 </table>
-</div></div></>
+</div></>
 )}</div>
   );
 }

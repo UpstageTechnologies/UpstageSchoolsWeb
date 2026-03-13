@@ -731,21 +731,20 @@
   border-color:#7b4be0;   /* purple border */
   box-shadow:0 0 0 3px rgba(123,75,224,0.25); /* soft glow */
 }
-
-/* MOBILE */
 @media (max-width:768px){
 
   .history-controls{
     display:flex;
-    justify-content:space-between;
+    flex-direction:column;   /* முக்கியம் */
+    gap:10px;
   }
 
   .history-controls input[type="date"]{
-    width:45%;
+    width:100%;
   }
 
   .history-controls input[type="text"]{
-    width:50%;
+    width:100%;
   }
 
 }
@@ -946,4 +945,36 @@
     font-size:20px;
   }
 
-} 
+} @media print {
+
+  /* hide everything */
+  
+  body *{
+  visibility:hidden;
+  }
+  
+  /* show only report */
+  
+  .print-area,
+  .print-area *{
+  visibility:visible;
+  }
+  
+  /* move report to top */
+  
+  .print-area{
+  position:absolute;
+  left:0;
+  top:0;
+  width:100%;
+  background:white;
+  padding:20px;
+  }
+  
+  /* hide buttons */
+  
+  button{
+  display:none !important;
+  }
+  
+  }

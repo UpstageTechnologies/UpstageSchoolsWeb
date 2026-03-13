@@ -124,9 +124,8 @@ useEffect(() => {
       const type = prompt("Type: holiday / exam / meeting / birthday");
       if (!EVENT_COLORS[type]) return alert("Invalid type");
 
-      const data = { title, type, date: dateStr, createdAt: new Date() };
+      const data = { title, type, date: dateStr, createdAt: Timestamp.now() };
 
-      if (role === "admin") return requestEventApproval(dateStr, data);
 
       await setDoc(doc(db, "users", adminUid, "calendar", dateStr), data);
 

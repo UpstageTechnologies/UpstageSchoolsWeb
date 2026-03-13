@@ -5,6 +5,7 @@ import Teacher from "./Teacher";
 import Parent from "./Parent";
 import Student from "./Student";
 import OfficeStaff from "./OfficeStaff";
+import "../dashboard_styles/History.css"
 
 import CreateAccountModal from "../../components/CreateAccountModal";
 
@@ -14,13 +15,13 @@ const [activeTab,setActiveTab] = useState("admin")
 
 return(
 
-<div className="teacher-page">
+<div className="">
 
 <h2>Account Creation</h2>
 
 {/* Tabs */}
 
-<div className="account-tabs">
+<div className="history-filters">
 
 <button onClick={()=>setActiveTab("admin")}>Admin</button>
 <button onClick={()=>setActiveTab("teacher")}>Teacher</button>

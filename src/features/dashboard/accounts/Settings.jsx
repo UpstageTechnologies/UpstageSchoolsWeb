@@ -423,7 +423,24 @@ if (slotErrors.length > 0) {
         new Date(`1970-01-01T${b.start}`)
     );
   };
+  const addHoliday = async (dateStr) => {
+
+    const title = prompt("Enter holiday name");
   
+    if (!title) return;
+  
+    const data = {
+      title: title,
+      type: "holiday",
+      date: dateStr,
+      createdAt: new Date()
+    };
+  
+    await setDoc(
+      doc(db, "users", adminUid, "calendar", dateStr),
+      data
+    );
+  };
   return (
     <div className="settings-wrapper">
   

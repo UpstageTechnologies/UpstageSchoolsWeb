@@ -698,7 +698,7 @@ onClick={() => handleMenuClick("account_creation")}
       )}
 
       <li className={activePage === "courses" ? "active" : ""}onClick={() => handleMenuClick("courses")}>
-        <FaBookOpen /> Courses
+        <FaBookOpen /> Planner
       </li>
 
       {role === "master" && (

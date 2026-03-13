@@ -556,35 +556,34 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0) !importan
   to{transform:rotate(360deg)}
  }
  .report-toolbar{
-  width:100%;
-  margin-bottom:20px;
+  margin-left:auto;   /* search right corner */
+  width:auto;
   }
-  
   .filter-dropdown{
-  position:relative;
-  width:100%;
-  }
-  
-  .report-search{
-  width:100%;
-  padding:14px 16px;
-  border-radius:12px;
-  border:1px solid #d9dee7;
-  font-size:15px;
-  outline:none;
-  }
-  
-  .filter-list{
-  position:absolute;
-  top:55px;
-  left:0;
-  width:100%;
-  background:white;
-  border-radius:14px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.1);
-  padding:18px;
-  z-index:20;
-  }
+    position:relative;
+    display:inline-block;
+    }
+    
+    .report-search{
+    width:260px;
+    padding:14px 16px;
+    border-radius:12px;
+    border:1px solid #d9dee7;
+    font-size:15px;
+    outline:none;
+    }
+    
+    .filter-list{
+    position:absolute;
+    top:55px;
+    left:0;
+    width:100%;   /* search width match */
+    background:white;
+    border-radius:14px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.1);
+    padding:18px;
+    z-index:20;
+    }
   
   .report-actions{
   display:flex;
@@ -661,3 +660,91 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0) !importan
   }
   
   }
+  @media (max-width:768px){
+
+    /* header center */
+    .section-card .section-title{
+    text-align:center;
+    width:100%;
+    }
+    
+    /* search wrapper center */
+    .report-toolbar{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    }
+    
+    /* dropdown wrapper */
+    .filter-dropdown{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    }
+    
+    /* search input same as table search */
+    .report-search{
+    width:100%;
+    max-width:none;
+    }
+    
+    }
+
+      @media (max-width:768px){
+
+        .section-card .section-title{
+        text-align:center !important;
+        width:100%;
+        margin:0 auto;
+        display:block;
+        }
+        
+        }
+        
+.report-actions label{
+  font-size:13px;
+  font-weight:600;
+  color:#6b7280;
+  grid-column:span 1;
+  }
+  /* Date row layout */
+
+.report-actions label:nth-of-type(1),
+.report-actions label:nth-of-type(2){
+display:inline-block;
+width:48%;
+}
+
+/* date inputs side by side */
+
+.report-date{
+width:48%;
+display:inline-block;
+}
+
+/* space between */
+
+.report-date:first-of-type{
+margin-right:4%;
+} 
+/* Activity type label full row */
+
+.report-actions label:nth-of-type(3){
+  display:block;
+  width:100%;
+  margin-bottom:4px;
+  }
+  
+  /* dropdown full width */
+  
+  .report-dropdown{
+  width:100%;
+  display:block;
+  padding:12px 14px;
+  border-radius:12px;
+  border:1px solid #e5e7eb;
+  font-size:14px;
+  box-sizing:border-box;
+  }
+  
+ 
