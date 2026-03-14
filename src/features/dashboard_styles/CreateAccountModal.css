@@ -1,129 +1,191 @@
 /* ===============================
-   CREATE ACCOUNT WRAPPER
+   ACCOUNT TYPE DROPDOWN
 ================================= */
+.adminpopup-select{
+  position:relative;
+  width:220px;
+  z-index:1000;
+}
 
-.create-account-wrapper{
-    margin-bottom:20px;
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-  }
-  
-  /* ===============================
-     CREATE ACCOUNT BUTTON
-  ================================= */
-  
-  .create-account-btn{
-    padding:10px 18px;
-    border-radius:10px;
-    border:none;
-    background:linear-gradient(135deg,#4f6df5,#3b5bdb);
-    color:#fff;
-    font-weight:600;
-    cursor:pointer;
-    box-shadow:0 6px 18px rgba(79,109,245,.25);
-    transition:all .25s ease;
-  }
-  
-  .create-account-btn:hover{
-    transform:translateY(-1px);
-    box-shadow:0 10px 22px rgba(79,109,245,.35);
-  }
-  
-  /* ===============================
-     DROPDOWN CARD
-  ================================= */
-  
-  .create-account-card{
-    width:320px;
-    background:#fff;
-    border-radius:18px;
-    padding:16px;
-    box-shadow:0 14px 30px rgba(0,0,0,.08);
-    margin-top:10px;
-    animation:fadeAccount .25s ease;
-  }
-  
-  /* animation */
-  
-  @keyframes fadeAccount{
-    from{
-      opacity:0;
-      transform:translateY(8px);
-    }
-    to{
-      opacity:1;
-      transform:none;
-    }
-  }
-  
-  /* ===============================
-     SEARCH INPUT
-  ================================= */
-  
-  .create-search{
-    width:100%;
-    padding:11px 12px;
-    border-radius:12px;
-    border:1px solid #e5e7eb;
-    font-size:14px;
-    transition:.2s ease;
-  }
-  
-  .create-search:focus{
-    outline:none;
-    border-color:#4f6df5;
-    box-shadow:0 0 0 2px rgba(79,109,245,.18);
-  }
-  
-  /* ===============================
-     OPTIONS LIST
-  ================================= */
-  
-  .create-options{
-    display:flex;
-    flex-direction:column;
-    margin-top:8px;
-  }
-  
-  /* each option */
-  
-  .create-option{
-    padding:12px 12px;
-    border-radius:10px;
-    cursor:pointer;
-    font-weight:600;
-    color:#374151;
-    transition:.2s ease;
-  }
-  
-  /* divider */
-  
-  .create-option + .create-option{
-    border-top:1px solid #f1f5f9;
-  }
-  
-  /* hover */
-  
-  .create-option:hover{
-    background:#f3f6ff;
-    color:#4f6df5;
-    padding-left:16px;
-  }
-  
-  /* ===============================
-     RESPONSIVE
-  ================================= */
-  
-  @media (max-width:600px){
-  
-    .create-account-card{
-      width:100%;
-    }
-  
-    .create-option{
-      padding:14px 12px;
-      font-size:15px;
-    }
-  
-  }
+.adminpopup-input{
+  position:relative;
+  z-index:1001;
+}
+
+.account-form{
+  position:relative;
+  z-index:1;
+}
+.create.area{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+.adminpopup-input{
+  height:44px;
+  padding:0 16px;
+  border-radius:12px;
+  border:2px solid #6c63ff;
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  font-weight:600;
+  color:#6c63ff;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.adminpopup-input:hover{
+  border-color:#4e73df;
+}
+
+.adminpopup-input span{
+  font-size:13px;
+}
+
+/* dropdown */
+
+.adminpopup-menu{
+  position:absolute;
+  top:52px;
+  left:0;
+  right:0;
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 8px 20px rgba(0,0,0,.12);
+  overflow:hidden;
+  z-index:100;
+}
+
+.adminpopup-menu div{
+  padding:12px 16px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.adminpopup-menu div:hover{
+  background:#eef0ff;
+}
+.entry-row{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}/* GRID */
+/* GRID */
+.admin-fields{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:6px;
+}
+
+.admin-fields > :nth-child(-n+4){
+  transform:translate(250px,-50px);
+}
+
+.admin-fields input[placeholder="Address"]{
+  grid-column:1;
+}
+
+.admin-fields input[placeholder="Experience (years)"]{
+  grid-column:span 2;
+}
+
+
+
+/* ADDRESS START FROM FIRST COLUMN */
+.admin-fields input[placeholder="Address"]{
+  grid-column:1;
+}
+
+/* EXPERIENCE LITTLE WIDER */
+.admin-fields input[placeholder="Experience (years)"]{
+  grid-column:span 2;
+}
+
+
+/* second row start from first column */
+.admin-fields input[placeholder="Address"]{
+  grid-column:1;
+}
+
+/* experience little wider */
+.admin-fields input[placeholder="Experience (years)"]{
+  grid-column:span 2;
+}
+/* inputs */
+
+.admin-fields input,
+.admin-fields select{
+  height:44px;
+  padding:0 14px;
+  border-radius:12px;
+  border:1px solid #dcdcdc;
+  font-size:14px;
+  background:#fff;
+  outline:none;
+  transition:.2s;
+}
+
+.admin-fields input:focus,
+.admin-fields select:focus{
+  border-color:#6c63ff;
+}
+
+/* password */
+
+.password-field{
+  position:relative;
+}
+
+.password-field input{
+  width:100%;
+  padding-right:38px;
+}
+
+.password-field span{
+  position:absolute;
+  right:12px;
+  top:50%;
+  transform:translateY(-50%);
+  cursor:pointer;
+}
+
+/* experience wider */
+
+.admin-fields input:last-child{
+  grid-column:span 2;
+}
+.address-field{
+  grid-column:1;
+  grid-row: 2;
+}
+/* ===============================
+   PHOTO
+================================= */
+.photo-box{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  margin-top:4px;
+}
+
+.photo-upload{
+  width:90px;
+  height:90px;
+  border-radius:50%;
+  border:2px dashed #d0d0d0;
+  background:#f5f5f5;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  overflow:hidden;
+}
+
+.photo-upload img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}

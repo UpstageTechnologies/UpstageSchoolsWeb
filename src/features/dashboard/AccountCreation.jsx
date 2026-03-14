@@ -14,39 +14,67 @@ export default function AccountCreation() {
 const [activeTab,setActiveTab] = useState("admin")
 
 return(
-
-<div className="">
+<div className="accountcreationtitle">
 
 <h2>Account Creation</h2>
 
-{/* Tabs */}
+<div className="account-card">
 
-<div className="history-filters">
+<div className="accountcreationbuttons">
 
-<button onClick={()=>setActiveTab("admin")}>Admin</button>
-<button onClick={()=>setActiveTab("teacher")}>Teacher</button>
-<button onClick={()=>setActiveTab("parent")}>Parent</button>
-<button onClick={()=>setActiveTab("student")}>Student</button>
-<button onClick={()=>setActiveTab("staff")}>Office Staff</button>
+<button 
+className={activeTab==="admin" ? "tab active" : "tab"}
+onClick={()=>setActiveTab("admin")}
+>
+Admin
+</button>
+
+<button 
+className={activeTab==="teacher" ? "tab active" : "tab"}
+onClick={()=>setActiveTab("teacher")}
+>
+Teacher
+</button>
+
+<button 
+className={activeTab==="parent" ? "tab active" : "tab"}
+onClick={()=>setActiveTab("parent")}
+>
+Parent
+</button>
+
+<button 
+className={activeTab==="student" ? "tab active" : "tab"}
+onClick={()=>setActiveTab("student")}
+>
+Student
+</button>
+
+<button 
+className={activeTab==="staff" ? "tab active" : "tab"}
+onClick={()=>setActiveTab("staff")}
+>
+Office Staff
+</button>
 
 </div>
 
+  {/* Card content */}
+  <div className="account-card-body">
 
-{/* ⭐ Create Account Button (COMMON) */}
+    <CreateAccountModal />
 
-<CreateAccountModal />
+    {activeTab==="admin" && <Admin/>}
+    {activeTab==="teacher" && <Teacher/>}
+    {activeTab==="parent" && <Parent/>}
+    {activeTab==="student" && <Student/>}
+    {activeTab==="staff" && <OfficeStaff/>}
 
-
-{/* Tables */}
-
-{activeTab==="admin" && <Admin/>}
-{activeTab==="teacher" && <Teacher/>}
-{activeTab==="parent" && <Parent/>}
-{activeTab==="student" && <Student/>}
-{activeTab==="staff" && <OfficeStaff/>}
+  </div>
 
 </div>
 
+</div>
 )
 
 }

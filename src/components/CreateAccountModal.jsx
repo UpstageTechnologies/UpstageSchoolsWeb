@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState , useEffect} from "react";
 
 import Admin from "../features/dashboard/Admin";
 import Teacher from "../features/dashboard/Teacher";
@@ -15,10 +15,13 @@ const accountOptions = [
 ];
 
 function CreateAccountSection() {
-
-  const [showForm, setShowForm] = useState(false);
+  useEffect(()=>{
+    const close=()=>setShowDropdown(false);
+    window.addEventListener("click",close);
+    return()=>window.removeEventListener("click",close);
+  },[]);
   const [accountType, setAccountType] = useState("");
-
+  const [showDropdown,setShowDropdown] = useState(false);
   const renderForm = () => {
     switch (accountType) {
       case "admin":
@@ -37,43 +40,62 @@ function CreateAccountSection() {
   };
 
   return (
-    <div className="section-card entries-card">
+    <div className="create area">
 
-      {/* CREATE ACCOUNT BUTTON */}
-      <button
-        className="primary-btn glow"
-        onClick={() => setShowForm(prev => !prev)}
-      >
-        Create Account
-      </button>
+      <h3>Create Account</h3>
 
-      {showForm && (
-        <div className="entry-box">
+      <div className="entry-row">
 
-          {/* ACCOUNT TYPE SELECT */}
-          <div className="entry-row">
+        {/* CHOOSE DROPDOWN */}
+        <div className="adminpopup-select">
+        <div
+  className="adminpopup-input"
+  onClick={(e)=>{
+    e.stopPropagation();
 
-            <select
-              value={accountType}
-              onChange={(e) => setAccountType(e.target.value)}
-            >
-              <option value="">Select Account</option>
+    // 🔥 if form open -> close it
+    if(accountType){
+      setAccountType("");
+      setShowDropdown(false);
+    }else{
+      setShowDropdown(prev=>!prev);
+    }
+  }}
+>
+{accountType
+  ? accountOptions.find(o=>o.value===accountType)?.label
+  : "Choose"}
+  <span>▼</span>
+</div>
 
-              {accountOptions.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
+{showDropdown && (
+  <div className="adminpopup-menu">
 
-            </select>
+{accountOptions.map(option => (
+  <div
+    key={option.value}
+    onClick={()=>{
+      setAccountType(option.value);
+      setShowDropdown(false);
+    }}
+  >
+    {option.label}
+  </div>
+))}
 
-          </div>
+  </div>
+)}
 
-          {/* FORM RENDER */}
-          {renderForm()}
+</div>
 
-        </div>
-      )}
+        {/* FORM SIDE */}
+        {accountType && (
+  <div className="account-form">
+    {renderForm()}
+  </div>
+)}
+
+      </div>
 
     </div>
   );

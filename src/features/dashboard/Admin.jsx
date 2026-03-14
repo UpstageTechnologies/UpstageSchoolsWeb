@@ -179,19 +179,12 @@ if (!/^\d{10}$/.test(phoneClean)) {
   }, []);
   
   return (
-    <div className="teacher-page
-    
-">
-      
-
-        <div className="teacher-actions">
-          
+  
+          <>
         {!formOnly && (
-<button className="add-btn" onClick={() => setShowModal(true)}>
-  <FaPlus />
-</button>
+<></>
 )}
-        </div>
+      
      
       {!formOnly && (
 <table className="teacher-table">
@@ -313,171 +306,151 @@ if (!/^\d{10}$/.test(phoneClean)) {
 
       </table>
       )}
-     {(showModal || formOnly) && (
+    {(showModal || formOnly) && (
 <div className="entries-box">
-            <h3>{editId ? "Edit Admin" : "Add Admin"}</h3>
-            <div style={{ textAlign: "center", marginBottom: 10 }}>
-  <label
-    style={{
-      width: 90,
-      height: 90,
-      borderRadius: "50%",
-      background: "#f3f3f3",
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
-      cursor: "pointer",
-      position: "relative",
-      overflow: "hidden",
-      border: "2px dashed #ccc"
-    }}
-  >
-    {/* show image OR + sign */}
-    {form.photoURL ? (
-      <img
-        src={form.photoURL}
-        alt="admin"
-        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-      />
-    ) : (
-      <span style={{ fontSize: 32, color: "#888" }}>+</span>
-    )}
-
-    <input
-      type="file"
-      accept="image/*"
-      style={{ display: "none" }}
-      onChange={(e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onloadend = () =>
-          setForm(prev => ({ ...prev, photoURL: reader.result }));
-
-        reader.readAsDataURL(file);
-      }}
-    />
-  </label>
-
-  <p style={{ fontSize: 12, color: "#777" }}>Select profile photo</p>
-</div>
 
 
-            <input
-              placeholder="Admin Name"
-              value={form.name}
-              onChange={e =>
-                setForm({ ...form, name: e.target.value })
-              }
-            />
-
-            <input
-              placeholder="Admin ID"
-              value={form.adminId}
-              onChange={e =>
-                setForm({ ...form, adminId: e.target.value })
-              }
-            />
-
-<div style={{ position: "relative" }}>
-  <input
-    type={showPassword ? "text" : "password"}
-    placeholder={editId ? "New Password (optional)" : "Password"}
-    value={password}
-    onChange={e => setPassword(e.target.value)}
-    style={{ width: "100%", paddingRight: 40 }}
-  />
-
-  <span
-    onClick={() => setShowPassword(prev => !prev)}
-    style={{
-      position: "absolute",
-      right: 10,
-      top: 28,
-      transform: "translateY(-50%)",
-      cursor: "pointer",
-      color: "#555"
-    }}
-  >
-    {showPassword ? <FaEyeSlash /> : <FaEye />}
-  </span>
-</div>
+<div className="admin-form-layout">
 
 
-            <input
-              placeholder="Email"
-              value={form.email}
-              onChange={e =>
-                setForm({ ...form, email: e.target.value })
-              }
-            />
+
+{/* INPUT GRID */}
+<div className="admin-fields">
 
 <input
-  placeholder="Phone"
-  value={form.phone}
-  maxLength={10}
-  onChange={e => {
-    const v = e.target.value.replace(/\D/g, "");   // remove non-digits
-    setForm({ ...form, phone: v.slice(0, 10) });   // max 10 digits
-  }}
+placeholder="Admin Name"
+value={form.name}
+onChange={e=>setForm({...form,name:e.target.value})}
 />
 
+<input
+placeholder="Admin ID"
+value={form.adminId}
+onChange={e=>setForm({...form,adminId:e.target.value})}
+/>
 
-            <input
-              placeholder="Address"
-              value={form.address}
-              onChange={e =>
-                setForm({ ...form, address: e.target.value })
-              }
-            />
+{/* PASSWORD */}
+<div className="password-field">
 
-            <select
-              value={form.gender}
-              onChange={e =>
-                setForm({ ...form, gender: e.target.value })
-              }
-            >
-              <option value="">Gender</option>
-              <option>Male</option>
-              <option>Female</option>
-              <option>Other</option>
-            </select>
+<input
+type={showPassword ? "text":"password"}
+placeholder={editId ? "New Password (optional)" : "Password"}
+value={password}
+onChange={e=>setPassword(e.target.value)}
+/>
 
-            <input
-              placeholder="Qualification"
-              value={form.qualification}
-              onChange={e =>
-                setForm({
-                  ...form,
-                  qualification: e.target.value
-                })
-              }
-            />
+<span onClick={()=>setShowPassword(prev=>!prev)}>
+{showPassword ? <FaEyeSlash/> : <FaEye/>}
+</span>
 
-            <input
-              placeholder="Experience (years)"
-              value={form.experience}
-              onChange={e =>
-                setForm({
-                  ...form,
-                  experience: e.target.value
-                })
-              }
-            />
+</div>
 
-            <div className="modal-actions">
-              <button className="save" onClick={() => requirePremium(handleSaveAdmin)}>
-                Save
-              </button>
-              <button className="cancel" onClick={resetForm}>
-                Cancel
-              </button>
-            </div>
-          </div>
-       
-      )}
-      </div>
+<input
+placeholder="Email"
+value={form.email}
+onChange={e=>setForm({...form,email:e.target.value})}
+/>
+
+<input
+placeholder="Phone"
+value={form.phone}
+maxLength={10}
+onChange={e=>{
+const v=e.target.value.replace(/\D/g,"");
+setForm({...form,phone:v.slice(0,10)});
+}}
+/>
+<input
+className="address-field"
+placeholder="Address"
+value={form.address}
+onChange={e=>setForm({...form,address:e.target.value})}
+/>
+<select
+value={form.gender}
+onChange={e=>setForm({...form,gender:e.target.value})}
+>
+<option value="">Gender</option>
+<option>Male</option>
+<option>Female</option>
+<option>Other</option>
+</select>
+
+<input
+placeholder="Qualification"
+value={form.qualification}
+onChange={e=>setForm({...form,qualification:e.target.value})}
+/>
+
+<input
+placeholder="Experience (years)"
+value={form.experience}
+onChange={e=>setForm({...form,experience:e.target.value})}
+/>
+
+</div>
+
+{/* PHOTO */}
+<div className="photo-box">
+
+<label className="photo-upload">
+
+{form.photoURL ? (
+<img
+src={form.photoURL}
+alt="admin"
+style={{ width:"100%", height:"100%", objectFit:"cover" }}
+/>
+) : (
+<span style={{ fontSize:32,color:"#888" }}>+</span>
+)}
+
+<input
+type="file"
+accept="image/*"
+style={{ display:"none" }}
+onChange={(e)=>{
+const file = e.target.files?.[0];
+if(!file) return;
+
+const reader = new FileReader();
+reader.onloadend = () =>
+setForm(prev => ({...prev,photoURL:reader.result}));
+
+reader.readAsDataURL(file);
+}}
+/>
+
+</label>
+
+<p>Select profile photo</p>
+
+</div>
+</div>
+
+
+{/* BUTTONS */}
+<div className="modal-actions">
+
+<button
+className="save"
+onClick={()=>requirePremium(handleSaveAdmin)}
+>
+Save
+</button>
+
+<button
+className="cancel"
+onClick={resetForm}
+>
+Cancel
+</button>
+
+</div>
+
+</div>
+)}</> 
+      
   )}
    
 

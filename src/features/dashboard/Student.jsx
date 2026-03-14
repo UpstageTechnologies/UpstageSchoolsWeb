@@ -186,17 +186,14 @@ const Student = ({ formOnly=false, requirePremium , globalSearch = ""}) => {
 
   return (
     <div className="teacher-page">
-      <div className="teacher-header">
-        <h2>Students</h2>
+     
 
         <div className="teacher-actions">
         {!formOnly && (
-<button className="add-btn" onClick={() => setShowModal(true)}>
-  <FaPlus />
-</button>
+<></>
 )}
         </div>
-      </div>
+     
       {!formOnly && (
 <table className="teacher-table">
         <thead>
@@ -238,27 +235,11 @@ const Student = ({ formOnly=false, requirePremium , globalSearch = ""}) => {
             <img
               src={s.photoURL}
               alt=""
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: "50%",
-                objectFit: "cover"
-              }}
+              
             />
           ) : (
             <div
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: "50%",
-                background: "#e5e7eb",
-                color: "#374151",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontWeight: 600,
-                textTransform: "uppercase"
-              }}
+             
             >
               {s.studentName?.charAt(0) || "S"}
             </div>
@@ -312,25 +293,11 @@ const Student = ({ formOnly=false, requirePremium , globalSearch = ""}) => {
           <img
             src={viewStudent.photoURL}
             alt=""
-            style={{
-              width: 90,
-              height: 90,
-              borderRadius: "50%",
-              objectFit: "cover"
-            }}
+           
           />
         ) : (
           <div
-            style={{
-              width: 90,
-              height: 90,
-              borderRadius: "50%",
-              background: "#e5e7eb",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 32
-            }}
+           
           >
             {viewStudent.studentName?.charAt(0)}
           </div>
@@ -356,22 +323,9 @@ const Student = ({ formOnly=false, requirePremium , globalSearch = ""}) => {
 )}
 {(showModal || formOnly) && (
        <div className="entries-box">
-            <h3>{editId ? "Edit Student" : "Add Student"}</h3>
+           
             <div style={{ textAlign: "center", marginBottom: 10 }}>
   <label
-    style={{
-      width: 90,
-      height: 90,
-      borderRadius: "50%",
-      background: "#f3f3f3",
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
-      cursor: "pointer",
-      position: "relative",
-      overflow: "hidden",
-      border: "2px dashed #ccc"
-    }}
   >
     {form.photoURL ? (
       <img

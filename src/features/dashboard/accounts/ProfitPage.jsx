@@ -630,30 +630,36 @@ const generatedParentId = `P-${Date.now()}`;
       }
     );
     await addDoc(incomesRef, {
-      studentId: studentDocRef.id,   // ✅ new student id
-      studentName: newName,      
-      parentName: newParent,    // ✅ from input
-      className: newClass,           // ✅ from input
+
+      studentId: studentDocRef.id,
+      studentName: newName,
+      parentName: newParent,
+      className: newClass,
     
       feeId: fee.id,
       feeName: fee.name,
-      feeAmount: total,
     
       totalFees: total,
       discountApplied: discountAmount,
       payableAmount: payableAmount,
     
       paidAmount: final,
-      balanceBefore: payableAmount,      // admission first payment
+      balanceBefore: payableAmount,
       balanceAfter: balanceAfter,
     
-      paymentType: newPayType,
-      paymentMode:paymentMode,
+      paymentType: newPayType.toLowerCase(),
+      paymentMode: paymentMode,
+    
       paymentStage: "Admission",
+    
       isNew: true,
-      academicYearId: savedYear?.id || null, 
-      date: entryDate,
+    
+      academicYearId: savedYear?.id || null,
+    
+      date: entryDate || new Date().toISOString().slice(0,10),
+    
       createdAt: new Date()
+    
     });
     await addDoc(historyRef,{
       entryType: "income",

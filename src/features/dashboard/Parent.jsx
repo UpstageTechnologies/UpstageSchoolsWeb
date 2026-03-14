@@ -225,9 +225,6 @@ for (const s of cleanStudents) {
       return;
     }
 
-  /* 🟢 MAIN ADMIN → DIRECT SAVE */
-/* 🟢 MAIN ADMIN → DIRECT SAVE */
-/* 🟢 MAIN ADMIN → DIRECT SAVE */
 if (editId) {
 
   // 1️⃣ update parent document
@@ -401,19 +398,14 @@ if (editId) {
 
   /* ================= UI ================= */
   return (
-    <div className="teacher-page">
-      <div className="teacher-header">
-        <h2>Parents</h2>
-
-        <div className="teacher-actions">
+    <>
+        <div className="">
 
         {!formOnly && (
-<button className="add-btn" onClick={() => setShowModal(true)}>
-  <FaPlus />
-</button>
+          <></>
 )}
         </div>
-      </div>
+      
       {!formOnly && (
 <table className="teacher-table">
         <thead>
@@ -466,18 +458,7 @@ if (editId) {
     />
   ) : (
     <div
-      style={{
-        width: 40,
-        height: 40,
-        borderRadius: "50%",
-        background: "#e5e7eb",
-        color: "#374151",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontWeight: 600,
-        textTransform: "uppercase"
-      }}
+     
     >
       {p.parentName?.charAt(0) || "P"}
     </div>
@@ -527,55 +508,8 @@ if (editId) {
       {/* MODAL same as before */}
       {(showModal || formOnly) && (
         <div className="entries-box">
-            <h3>{editId ? "Edit Parent" : "Add Parent"}</h3>
-
-            <div style={{ textAlign: "center", marginBottom: 10 }}>
-  <label
-    style={{
-      width: 90,
-      height: 90,
-      borderRadius: "50%",
-      background: "#f3f3f3",
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
-      cursor: "pointer",
-      position: "relative",
-      overflow: "hidden",
-      border: "2px dashed #ccc"
-    }}
-  >
-    {form.photoURL ? (
-      <img
-        src={form.photoURL}
-        alt="parent"
-        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-      />
-    ) : (
-      <span style={{ fontSize: 32, color: "#888" }}>+</span>
-    )}
-
-    <input
-      type="file"
-      accept="image/*"
-      style={{ display: "none" }}
-      onChange={(e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onloadend = () =>
-          setForm(prev => ({ ...prev, photoURL: reader.result }));
-
-        reader.readAsDataURL(file);
-      }}
-    />
-  </label>
-
-  <p style={{ fontSize: 12, color: "#777" }}>Select profile photo</p>
-</div>
-
-
+            <div className="admin-form-layout">
+            <div className="admin-fields">
             <input
               placeholder="Parent Name"
               value={form.parentName}
@@ -613,20 +547,13 @@ if (editId) {
                  placeholder= "Password"
                  value={password}
                  onChange={e => setPassword(e.target.value)}
-                 style={{ width: "100%", paddingRight: 40 }}
+                
              />
 
                {/* 👁️ toggle button */}
                <span
                  onClick={() => setShowPassword(prev => !prev)}
-                 style={{
-                  position: "absolute",
-                  right: 10,
-                  top: 28,
-                  transform: "translateY(-50%)",
-                  cursor: "pointer",
-                  color: "#555"
-                }}
+                 
               >
              {showPassword ?  <FaEyeSlash /> : <FaEye />}
              </span>
@@ -639,11 +566,7 @@ if (editId) {
               <button
                 key={n}
                 onClick={() => handleStudentCountChange(n)}
-                style={{
-                  margin: 5,
-                  background: studentsCount === n ? "#2140df" : "#ccc",
-                  color: "#fff"
-                }}
+                
               >
                 {n}
               </button>
@@ -682,12 +605,42 @@ if (editId) {
                   }
                   />
      
+     
                </div>
+
                </React.Fragment>
              ))}
+<div className="photo-box">
 
+<label className="photo-upload">
 
-          
+{form.photoURL ? (
+<img src={form.photoURL} alt="parent"/>
+) : (
+<span>+</span>
+)}
+
+<input
+type="file"
+accept="image/*"
+style={{display:"none"}}
+onChange={(e)=>{
+const file=e.target.files?.[0];
+if(!file) return;
+
+const reader=new FileReader();
+reader.onloadend=()=>setForm(prev=>({...prev,photoURL:reader.result}));
+reader.readAsDataURL(file);
+}}
+/>
+
+</label>
+
+<p>Select profile photo</p>
+
+</div>
+
+          </div>
 
             <div className="modal-actions">
               <button className="save" onClick={() => requirePremium(handleSave)}>
@@ -698,10 +651,10 @@ if (editId) {
               </button>
             </div>
           </div>
-        
+          </div>
       )}
       
-    </div>
+    </>
   );
 };
 

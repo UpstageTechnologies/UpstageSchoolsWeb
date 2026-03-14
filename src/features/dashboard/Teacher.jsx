@@ -324,17 +324,13 @@ useEffect(() => {
 }, []);
   return (
     <div className="teacher-page">
-      <div className="teacher-header">
-        <h2>Teachers</h2>
-
+   
         <div className="teacher-actions">
         {!formOnly && (
-<button className="add-btn" onClick={() => setShowModal(true)}>
-  <FaPlus />
-</button>
+<></>
 )}
         </div>
-      </div>
+    
 
       {!formOnly && (
 <table className="teacher-table">
@@ -462,27 +458,16 @@ useEffect(() => {
       </table>
       )}
      <div className="entries-box">
-            <h3>{editId ? "Edit Teacher" : "Add Teacher"}</h3>
-            <div style={{ textAlign: "center", marginBottom: 10 }}>
+           
+     <div className="admin-form-layout">
+     <div className="admin-fields">
   <label
-    style={{
-      width: 90,
-      height: 90,
-      borderRadius: "50%",
-      background: "#f3f3f3",
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
-      cursor: "pointer",
-      overflow: "hidden",
-      border: "2px dashed #ccc"
-    }}
   >
     {form.photoURL ? (
       <img
         src={form.photoURL}
         alt="teacher"
-        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        
       />
     ) : (
       <span style={{ fontSize: 32, color: "#888" }}>+</span>
@@ -505,7 +490,7 @@ useEffect(() => {
     />
   </label>
 
-  <p style={{ fontSize: 12, color: "#777" }}>Select profile photo</p>
+  <p >Select profile photo</p>
 </div>
 <FloatingInput
   name="name"
@@ -535,20 +520,11 @@ useEffect(() => {
   focused={focused}
   setFocused={setFocused}
     onChange={e => setPassword(e.target.value)}
-    style={{ width: "100%", paddingRight: 40 }}
+   
   />
 
   <span
-    onClick={() => setShowPassword(prev => !prev)}
-    style={{
-      position: "absolute",
-      right: 10,
-      top: 28,
-      transform: "translateY(-50%)",
-      cursor: "pointer",
-      color: "#555"
-    }}
-  >
+    onClick={() => setShowPassword(prev => !prev)} >
     {showPassword ? <FaEyeSlash /> : <FaEye />}
   </span>
 </div>
@@ -657,12 +633,7 @@ useEffect(() => {
   {(form.assignedClasses || []).map((c, i) => (
     <li
       key={i}
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: "6px"
-      }}
+     
     >
       <span>
         {c.class}-{c.section} ({c.subject})
@@ -675,13 +646,7 @@ useEffect(() => {
           e.stopPropagation();
           removeAssignedClass(i);
         }}
-        style={{
-          color: "red",
-          cursor: "pointer",
-          background: "none",
-          border: "none",
-          fontWeight: "bold"
-        }}
+      
       >
         ❌ Remove
       </button>
@@ -704,7 +669,7 @@ useEffect(() => {
     <option value="Helper">Helper</option>
     <option value="ECA Staff">ECA Staff</option>
   </select>
-)}
+)}</div>
             <div className="modal-actions">
               <button className="save" onClick={() => requirePremium(handleSaveTeacher)}>
                 Save
