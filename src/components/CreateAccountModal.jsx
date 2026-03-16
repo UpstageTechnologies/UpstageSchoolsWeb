@@ -40,11 +40,11 @@ function CreateAccountSection() {
   };
 
   return (
-    <div className="create area">
+    <div className="create-area">
 
       <h3>Create Account</h3>
 
-      <div className="entry-row">
+      <div className="create-row">
 
         {/* CHOOSE DROPDOWN */}
         <div className="adminpopup-select">
@@ -89,11 +89,7 @@ function CreateAccountSection() {
 </div>
 
         {/* FORM SIDE */}
-        {accountType && (
-  <div className="account-form">
-    {renderForm()}
-  </div>
-)}
+        {accountType && renderForm()}
 
       </div>
 

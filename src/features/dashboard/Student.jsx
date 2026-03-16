@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { FaPlus, FaSearch, FaEdit, FaTrash, FaEye } from "react-icons/fa";
+import { FaPlus, FaSearch, FaEdit, FaTrash, FaEye ,FaUser } from "react-icons/fa";
 import "../dashboard_styles/Teacher.css";
+import FloatingInput from "../../components/FloatingInput";
 import {
   collection,
   addDoc,
@@ -12,7 +13,7 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "../../services/firebase";
 const selectedStudentId = localStorage.getItem("selectedStudentId");
-const classes = Array.from({ length: 12 }, (_, i) => i + 1);
+
 const sections = Array.from({ length: 26 }, (_, i) =>
   String.fromCharCode(65 + i)
 );
@@ -26,8 +27,10 @@ const Student = ({ formOnly=false, requirePremium , globalSearch = ""}) => {
   const [students, setStudents] = useState([]);
   const [editId, setEditId] = useState(null);
   const [viewStudent, setViewStudent] = useState(null);
-
-
+  const [focused, setFocused] = useState(null);
+  const [showClass, setShowClass] = useState(false);
+const [showSection, setShowSection] = useState(false);
+const [classes, setClasses] = useState([]);
   const [form, setForm] = useState({
     studentName: "",
     studentId: "",
@@ -59,7 +62,26 @@ const Student = ({ formOnly=false, requirePremium , globalSearch = ""}) => {
     )
     );
   };
+  useEffect(() => {
 
+    const fetchClasses = async () => {
+    
+    const snap = await getDocs(
+    collection(db,"users",adminUid,"Classes")
+    )
+    
+    const list = snap.docs.map(d => ({
+    id:d.id,
+    ...d.data()
+    }))
+    
+    setClasses(list)
+    
+    }
+    
+    fetchClasses()
+    
+    },[adminUid])
   useEffect(() => {
     fetchStudents();
   }, [adminUid]);
@@ -185,14 +207,11 @@ const Student = ({ formOnly=false, requirePremium , globalSearch = ""}) => {
   };
 
   return (
-    <div className="teacher-page">
+    <>
      
-
-        <div className="teacher-actions">
         {!formOnly && (
 <></>
 )}
-        </div>
      
       {!formOnly && (
 <table className="teacher-table">
@@ -322,109 +341,179 @@ const Student = ({ formOnly=false, requirePremium , globalSearch = ""}) => {
   </div>
 )}
 {(showModal || formOnly) && (
-       <div className="entries-box">
-           
-            <div style={{ textAlign: "center", marginBottom: 10 }}>
-  <label
-  >
-    {form.photoURL ? (
-      <img
-        src={form.photoURL}
-        alt="student"
-        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-      />
-    ) : (
-      <span style={{ fontSize: 32, color: "#888" }}>+</span>
-    )}
+<div className="account-grid">
 
-    <input
-      type="file"
-      accept="image/*"
-      style={{ display: "none" }}
-      onChange={(e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
 
-        const reader = new FileReader();
-        reader.onloadend = () =>
-          setForm(prev => ({ ...prev, photoURL: reader.result }));
 
-        reader.readAsDataURL(file);
-      }}
-    />
-  </label>
+<input
+placeholder="Student Name"
+value={form.studentName}
+onChange={e =>
+setForm({ ...form, studentName: e.target.value })
+}
+/>
 
-  <p style={{ fontSize: 12, color: "#777" }}>Select profile photo</p>
+<input
+placeholder="Student ID"
+value={form.studentId}
+onChange={e =>
+setForm({ ...form, studentId: e.target.value })
+}
+/>
+
+<input
+placeholder="Parent ID"
+value={form.parentId}
+onChange={e =>
+setForm({ ...form, parentId: e.target.value })
+}
+/>
+
+<input
+placeholder="Parent Name"
+value={form.parentName}
+onChange={e =>
+setForm({ ...form, parentName: e.target.value })
+}
+/>
+<div className="popup-select">
+
+<div
+className="popup-input"
+onClick={() => setShowClass(!showClass)}
+>
+{form.class || "Class"}
+<span>▾</span>
 </div>
 
+{showClass && (
 
-            <input
-              placeholder="Student Name"
-              value={form.studentName}
-              onChange={e =>
-                setForm({ ...form, studentName: e.target.value })
-              }
-            />
+<div className="popup-menu">
 
-            <input
-              placeholder="Student ID"
-              value={form.studentId}
-              onChange={e =>
-                setForm({ ...form, studentId: e.target.value })
-              }
-            />
+{classes.map(c => (
 
-            <input
-              placeholder="Parent ID"
-              value={form.parentId}
-              onChange={e =>
-                setForm({ ...form, parentId: e.target.value })
-              }
-            />
+<div
+key={c.id}
+className="popup-item"
+onClick={()=>{
+setForm({...form,class:c.name,section:""})
+setShowClass(false)
+}}
+>
 
-            <input
-              placeholder="Parent Name"
-              value={form.parentName}
-              onChange={e =>
-                setForm({ ...form, parentName: e.target.value })
-              }
-            />
+Class {c.name}
 
-            <select
-              value={form.class}
-              onChange={e =>
-                setForm({ ...form, class: e.target.value })
-              }
-            >
-              <option value="">Class</option>
-              {classes.map(c => (
-                <option key={c}>{c}</option>
-              ))}
-            </select>
+</div>
 
-            <select
-              value={form.section}
-              onChange={e =>
-                setForm({ ...form, section: e.target.value })
-              }
-            >
-              <option value="">Section</option>
-              {sections.map(s => (
-                <option key={s}>{s}</option>
-              ))}
-            </select>
+))}
 
-            <div className="modal-actions">
-              <button className="save" onClick={() => requirePremium(handleSaveStudent)}>
-                Save
-              </button>
-              <button className="cancel" onClick={resetForm}>
-                Cancel
-              </button>
-            </div>
-          </div> 
-      )}
+</div>
+
+)}
+
+</div>
+<div className="popup-select">
+
+  <div
+    className="popup-input"
+    onClick={() => setShowSection(!showSection)}
+  >
+    {form.section || "Section"}
+    <span>▾</span>
+  </div>
+
+  {showSection && (
+
+    <div className="popup-menu">
+
+      {sections.map(s => (
+
+        <div
+          key={s}
+          className={`popup-item ${form.section === s ? "active" : ""}`}
+          onClick={() => {
+            setForm({ ...form, section: s });
+            setShowSection(false);
+          }}
+        >
+          {s}
+        </div>
+
+      ))}
+
     </div>
+
+  )}
+
+</div>
+{/* PHOTO */}
+<div className="photo-box">
+
+<label className="photo-upload">
+
+{form.photoURL ? (
+<div className="photo-placeholder uploaded">
+
+<img
+src={form.photoURL}
+alt="student"
+className="photo-preview"
+/>
+
+<span className="photo-text success">
+✔ Profile uploaded
+</span>
+
+</div>
+) : (
+<div className="photo-placeholder">
+<FaUser className="photo-icon"/>
+<span className="photo-text">
+Upload profile picture
+</span>
+</div>
+)}
+
+<input
+type="file"
+accept="image/*"
+onChange={(e)=>{
+const file = e.target.files?.[0];
+if(!file) return;
+
+const reader = new FileReader();
+
+reader.onloadend = () =>
+setForm(prev => ({
+...prev,
+photoURL: reader.result
+}));
+
+reader.readAsDataURL(file);
+}}
+hidden
+/>
+
+</label>
+
+</div>
+<button
+className="save"
+onClick={()=>requirePremium(handleSaveStudent)}
+>
+Save
+</button>
+
+<button
+className="cancel"
+onClick={resetForm}
+>
+Cancel
+</button>
+
+</div>
+)}
+    </>
   );
 };
 

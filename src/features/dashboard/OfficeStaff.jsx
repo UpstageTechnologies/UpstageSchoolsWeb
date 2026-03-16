@@ -221,19 +221,13 @@
     }, []);
     
     return (
-      <div className="teacher-page">
-        <div className="teacher-header">
-          <h2>Office Staff</h2>
-
-          <div className="teacher-actions">
+<>
+       
            
           {!formOnly && (
-<button className="add-btn" onClick={() => setShowModal(true)}>
-  <FaPlus />
-</button>
+<></>
 )}
-          </div>
-        </div>
+       
 
         {/* TABLE */}
         {!formOnly && (
@@ -340,9 +334,7 @@
         )}
         {/* MODAL */}
         {(showModal || formOnly) && (
-         <div className="entries-box">
-            
-              <h3>{editId ? "Edit Staff" : "Add Staff"}</h3>
+        <div className="account-grid">
 
               <input
                 placeholder="Staff Name"
@@ -356,7 +348,6 @@
                 onChange={e => setForm({ ...form, staffId: e.target.value })}
               />
 
-              <div style={{ position: "relative" }}>
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="Password"
@@ -365,11 +356,11 @@
                 />
                 <span
                   onClick={() => setShowPassword(p => !p)}
-                  style={{ position: "absolute", right: 10, top: 14, cursor: "pointer" }}
+                  
                 >
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
                 </span>
-              </div>
+              
 
               <input
                 placeholder="Phone"
@@ -396,14 +387,13 @@
                 {roles.map(r => <option key={r}>{r}</option>)}
               </select>
 
-              <div className="modal-actions">
                 <button className="save" onClick={handleSaveStaff}>Save</button>
                 <button className="cancel" onClick={resetForm}>Cancel</button>
-              </div>
+             
             </div>
          
         )}
-      </div>
+    </>
     );
   };
   export default OfficeStaff;

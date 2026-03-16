@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaPlus, FaSearch, FaEdit, FaTrash } from "react-icons/fa";
+import { FaPlus, FaSearch, FaEdit, FaTrash ,FaUser } from "react-icons/fa";
 import {
   collection,
   addDoc,
@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "../../services/firebase";
 import "../dashboard_styles/Teacher.css";
+import FloatingInput from "../../components/FloatingInput";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 
@@ -34,15 +35,14 @@ const Parent = ({ formOnly=false, requirePremium, globalSearch="", setActivePage
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState(null);
   const [password, setPassword] = useState("");
-
+  const [studentCount, setStudentCount] = useState(0);
+const [students, setStudents] = useState([]);
   const [studentsCount, setStudentsCount] = useState(1);
-  const [students, setStudents] = useState([
-    { studentId: "", studentName: "", class: "", section: ""}
-  ]);
-
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [classes, setClasses] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
-
-
+  const [focused, setFocused] = useState(null);
+  const [openClassIndex, setOpenClassIndex] = useState(null);
   const [form, setForm] = useState({
     parentName: "",
     parentId: "",
@@ -79,14 +79,11 @@ const Parent = ({ formOnly=false, requirePremium, globalSearch="", setActivePage
       localStorage.removeItem("selectedParentId");
     };
   }, []);
-  
-  /* ================= STUDENT HANDLERS ================= */
   const handleStudentChange = (index, field, value) => {
     const updated = [...students];
     updated[index][field] = value;
     setStudents(updated);
   };
-
   const handleStudentCountChange = (count) => {
     setStudentsCount(count);
     setStudents(prev => {
@@ -101,7 +98,24 @@ const Parent = ({ formOnly=false, requirePremium, globalSearch="", setActivePage
       return copy;
     });
   };
-
+  useEffect(() => {
+    if (!adminUid) return;
+  
+    const fetchClasses = async () => {
+      const snap = await getDocs(
+        collection(db, "users", adminUid, "Classes")
+      );
+  
+      const list = snap.docs.map(d => ({
+        id: d.id,
+        ...d.data()
+      }));
+  
+      setClasses(list);
+    };
+  
+    fetchClasses();
+  }, [adminUid]);
   /* ================= SAVE (ADMIN / SUB ADMIN) ================= */
   const handleSave = async () => {
     if (
@@ -399,12 +413,11 @@ if (editId) {
   /* ================= UI ================= */
   return (
     <>
-        <div className="">
 
         {!formOnly && (
           <></>
 )}
-        </div>
+       
       
       {!formOnly && (
 <table className="teacher-table">
@@ -507,153 +520,285 @@ if (editId) {
       )}
       {/* MODAL same as before */}
       {(showModal || formOnly) && (
-        <div className="entries-box">
-            <div className="admin-form-layout">
-            <div className="admin-fields">
-            <input
-              placeholder="Parent Name"
-              value={form.parentName}
-              onChange={e => setForm({ ...form,parentName: e.target.value })}
-            />
-            <input
-              placeholder="Parent ID"
-              value={form.parentId}
-              onChange={e =>
-                setForm({ ...form, parentId: e.target.value })
-              }
-            />
-            <input
-              placeholder="Email"
-              value={form.email}
-              onChange={e => setForm({ ...form, email: e.target.value })}
-            />
-           <input
-              placeholder="Phone"
-              value={form.phone}
-              maxLength={10}
-              onChange={e => {
-                const v = e.target.value.replace(/\D/g, "");   // remove non-digits
-                setForm({ ...form, phone: v.slice(0, 10) });   // max 10 digits
-              }}             
-            />
-            <input
-              placeholder="Address"
-              value={form.address}
-              onChange={e => setForm({ ...form, address: e.target.value })}
-            />
+       <>
+          <div className="account-grid">
+ 
+          <FloatingInput
+name="parentName"
+label="Parent Name"
+value={form.parentName}
+focused={focused}
+setFocused={setFocused}
+onChange={e =>
+setForm({ ...form, parentName: e.target.value })
+}
+/>
+<FloatingInput
+name="parentId"
+label="Parent ID"
+value={form.parentId}
+focused={focused}
+setFocused={setFocused}
+onChange={e =>
+  setForm({ ...form, parentId: e.target.value })
+}
+/>
+<FloatingInput
+name="email"
+label="Email"
+value={form.email}
+focused={focused}
+setFocused={setFocused}
+onChange={e =>
+  setForm({ ...form, email: e.target.value })
+}
+/><FloatingInput
+name="phone"
+label="Phone"
+value={form.phone}
+focused={focused}
+setFocused={setFocused}
+onChange={e => {
+  const v = e.target.value.replace(/\D/g, "");
+  setForm({ ...form, phone: v.slice(0,10) });
+}}
+/>
+<FloatingInput
+name="address"
+label="Address"
+value={form.address}
+focused={focused}
+setFocused={setFocused}
+onChange={e =>
+  setForm({ ...form, address: e.target.value })
+}
+/>
             <div style={{ position: "relative" }}>
-            <input
-                 type={showPassword ? "text" : "password"}
-                 placeholder= "Password"
-                 value={password}
-                 onChange={e => setPassword(e.target.value)}
-                
-             />
-
-               {/* 👁️ toggle button */}
-               <span
-                 onClick={() => setShowPassword(prev => !prev)}
-                 
-              >
-             {showPassword ?  <FaEyeSlash /> : <FaEye />}
-             </span>
+            <FloatingInput
+name="password"
+label="Password"
+type={showPassword ? "text" : "password"}
+value={password}
+focused={focused}
+setFocused={setFocused}
+onChange={e => setPassword(e.target.value)}
+rightIcon={showPassword ? <FaEyeSlash /> : <FaEye />}
+onRightIconClick={() => setShowPassword(prev => !prev)}
+/>
          </div>
 
-            
+         <FloatingInput
+name="studentCount"
+label="Number of Students"
+type="number"
+value={studentCount}
+focused={focused}
+setFocused={setFocused}
+onChange={(e) => {
+  const count = parseInt(e.target.value) || 0;
 
-            <p>Number of Students</p>
-            {[1, 2, 3, 4, 5].map(n => (
-              <button
-                key={n}
-                onClick={() => handleStudentCountChange(n)}
-                
-              >
-                {n}
-              </button>
-            ))}
+  setStudentCount(count);
 
-           {students.map((s, i) => (
-            <React.Fragment key={i}>
-               <div key={i} style={{ display: "flex", gap: 8 }}>
-                 <input
-                   placeholder={`Student ${i + 1} ID`}
-                   value={s.studentId}
-                   onChange={e =>
-                    handleStudentChange(i, "studentId", e.target.value)
-                  }
-                  />
+  setStudents(
+    Array.from({ length: count }, () => ({
+      studentName: "",
+      studentId: ""
+    }))
+  );
+}}
+/>
 
-                 <input
-                   placeholder={`Student ${i + 1} Name`}
-                   value={s.studentName}
-                   onChange={e =>
-                    handleStudentChange(i, "studentName", e.target.value)
-                  }
-                  /></div> <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                   <input
-                   placeholder={`Student ${i + 1} Class`}
-                   value={s.class}
-                   onChange={e =>
-                    handleStudentChange(i, "class", e.target.value)
-                  }
-                  />
-                   <input
-                   placeholder={`Student ${i + 1} Section`}
-                   value={s.section}
-                   onChange={e =>
-                    handleStudentChange(i, "section", e.target.value)
-                  }
-                  />
-     
-     
-               </div>
+{students.map((s, i) => (
+  <React.Fragment key={i}>
 
-               </React.Fragment>
-             ))}
+
+<FloatingInput
+name={`studentId${i}`}
+label={`Student ${i + 1} ID`}
+value={s.studentId}
+focused={focused}
+setFocused={setFocused}
+onChange={e =>
+  handleStudentChange(i, "studentId", e.target.value)
+}
+/>
+
+<FloatingInput
+name={`studentName${i}`}
+label={`Student ${i + 1} Name`}
+value={s.studentName}
+focused={focused}
+setFocused={setFocused}
+onChange={e =>
+  handleStudentChange(i, "studentName", e.target.value)
+}
+/>
+
+
+<div className="popup-select">
+
+  <div
+    className="popup-input"
+    onClick={() =>
+      setOpenClassIndex(openClassIndex === i ? null : i)
+    }
+  >
+    {s.class || "Class"}
+    <span>▾</span>
+  </div>
+
+  {openClassIndex === i && (
+    <div className="popup-menu">
+
+      {classes.map(c => (
+
+        <div
+          key={c.id}
+          className="popup-item"
+          onClick={()=>{
+            handleStudentChange(i, "class", c.name);
+            setOpenClassIndex(null);
+          }}
+        >
+          {c.name}
+        </div>
+
+      ))}
+
+    </div>
+  )}
+
+</div>
+<div className="popup-select">
+
+  <div
+    className="popup-input"
+    onClick={() =>
+      setOpenSectionIndex(openSectionIndex === i ? null : i)
+    }
+  >
+    {s.section || "Section"}
+    <span>▾</span>
+  </div>
+
+  {openSectionIndex === i && (
+    <div className="popup-menu">
+
+      {classes
+        .find(c => c.name === s.class)
+        ?.sections?.map(sec => (
+
+        <div
+          key={sec}
+          className="popup-item"
+          onClick={()=>{
+            handleStudentChange(i, "section", sec);
+            setOpenSectionIndex(null);
+          }}
+        >
+          {sec}
+        </div>
+
+      ))}
+
+    </div>
+  )}
+
+</div>
+
+
+  </React.Fragment>
+))}
+{/* PHOTO */}
 <div className="photo-box">
 
 <label className="photo-upload">
 
 {form.photoURL ? (
-<img src={form.photoURL} alt="parent"/>
+<div className="photo-placeholder uploaded">
+
+<img
+src={form.photoURL}
+alt="parent"
+className="photo-preview"
+onClick={(e)=>{
+e.preventDefault();
+setPreviewOpen(true);
+}}
+/>
+
+<span className="photo-text success">
+✔ Profile uploaded
+</span>
+
+</div>
 ) : (
-<span>+</span>
+<div className="photo-placeholder">
+<FaUser className="photo-icon"/>
+<span className="photo-text">
+Upload profile picture
+</span>
+</div>
 )}
 
 <input
 type="file"
 accept="image/*"
-style={{display:"none"}}
 onChange={(e)=>{
-const file=e.target.files?.[0];
+const file = e.target.files?.[0];
 if(!file) return;
 
-const reader=new FileReader();
-reader.onloadend=()=>setForm(prev=>({...prev,photoURL:reader.result}));
+const reader = new FileReader();
+
+reader.onloadend = () =>
+setForm(prev => ({
+...prev,
+photoURL: reader.result
+}));
+
 reader.readAsDataURL(file);
 }}
+hidden
 />
 
 </label>
 
-<p>Select profile photo</p>
+</div>
+
+{/* IMAGE PREVIEW MODAL */}
+
+{previewOpen && (
+<div
+className="photo-modal"
+onClick={()=>setPreviewOpen(false)}
+>
+
+<div
+className="photo-modal-box"
+onClick={(e)=>e.stopPropagation()}
+>
+
+<img
+src={form.photoURL}
+alt="preview"
+className="photo-modal-img"
+/>
 
 </div>
 
-          </div>
-
-            <div className="modal-actions">
+</div>
+)}
               <button className="save" onClick={() => requirePremium(handleSave)}>
                 Save
               </button>
               <button className="cancel" onClick={resetForm}>
                 Cancel
               </button>
+          
             </div>
-          </div>
-          </div>
+          </>
+          
       )}
-      
     </>
   );
 };

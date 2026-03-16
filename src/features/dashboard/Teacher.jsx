@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaPlus, FaSearch, FaEdit, FaTrash } from "react-icons/fa";
+import { FaPlus, FaSearch, FaEdit, FaTrash , FaUser} from "react-icons/fa";
 import "../dashboard_styles/Teacher.css";
 import {
   collection,
@@ -28,13 +28,6 @@ const handleViewTeacher = (t) => {
 
 
 
-/* 🔢 Class 1–12 */
-const classes = Array.from({ length: 12 }, (_, i) => i + 1);
-
-/* 🔤 Section A–Z */
-const sections = Array.from({ length: 26 }, (_, i) =>
-  String.fromCharCode(65 + i)
-);
 const FloatingInput = ({
   name,
   label,
@@ -89,6 +82,7 @@ const Teacher = ({ formOnly = false, requirePremium, globalSearch = "", setActiv
   const [editId, setEditId] = useState(null);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [classes, setClasses] = useState([]);
   // 🔥 MOVE THIS ABOVE Teacher COMPONENT
 
   /* ================= FORM ================= */
@@ -161,7 +155,24 @@ const Teacher = ({ formOnly = false, requirePremium, globalSearch = "", setActiv
 
     setClassForm({ class: "", section: "", subject: "" });
   };
-
+  useEffect(() => {
+    if (!adminUid) return;
+  
+    const fetchClasses = async () => {
+      const snap = await getDocs(
+        collection(db, "users", adminUid, "Classes")
+      );
+  
+      const list = snap.docs.map(d => ({
+        id: d.id,
+        ...d.data()
+      }));
+  
+      setClasses(list);
+    };
+  
+    fetchClasses();
+  }, [adminUid]);
 
   /* ================= SAVE ================= */
   const handleSaveTeacher = async () => {
@@ -323,13 +334,12 @@ useEffect(() => {
   );
 }, []);
   return (
-    <div className="teacher-page">
+    <>
    
-        <div className="teacher-actions">
         {!formOnly && (
 <></>
 )}
-        </div>
+        
     
 
       {!formOnly && (
@@ -457,230 +467,302 @@ useEffect(() => {
         </tbody>
       </table>
       )}
-     <div className="entries-box">
-           
-     <div className="admin-form-layout">
-     <div className="admin-fields">
-  <label
-  >
-    {form.photoURL ? (
-      <img
-        src={form.photoURL}
-        alt="teacher"
-        
-      />
-    ) : (
-      <span style={{ fontSize: 32, color: "#888" }}>+</span>
-    )}
+     {(showModal || formOnly) && (
 
-    <input
-      type="file"
-      accept="image/*"
-      style={{ display: "none" }}
-      onChange={e => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+<div className="account-grid">
 
-        const reader = new FileReader();
-        reader.onloadend = () =>
-          setForm(prev => ({ ...prev, photoURL: reader.result }));
 
-        reader.readAsDataURL(file);
-      }}
-    />
-  </label>
 
-  <p >Select profile photo</p>
-</div>
 <FloatingInput
-  name="name"
-  label="Teacher Name"
-  value={form.name}
-  focused={focused}
-  setFocused={setFocused}
-              onChange={e => setForm({ ...form, name: e.target.value })}
-            />
-<FloatingInput
-  name="teacherId"
-  label="Teacher ID"
-  value={form.teacherId}
-  focused={focused}
-  setFocused={setFocused}
-              onChange={e =>
-                setForm({ ...form, teacherId: e.target.value })
-              }
-            />
-
-<div style={{ position: "relative" }}>
-<FloatingInput
-  name="password"
-  label="Password"
-  type={showPassword ? "text" : "password"}
-  value={password}
-  focused={focused}
-  setFocused={setFocused}
-    onChange={e => setPassword(e.target.value)}
-   
-  />
-
-  <span
-    onClick={() => setShowPassword(prev => !prev)} >
-    {showPassword ? <FaEyeSlash /> : <FaEye />}
-  </span>
-</div>
-<FloatingInput
-  name="email"
-  label="Email"
-  value={form.email}
-  focused={focused}
-  setFocused={setFocused}
-  onChange={(e) =>
-               setForm({ ...form, email: e.target.value })}
-            />
-<FloatingInput
-  name="phone"
-  label="Phone"
-  value={form.phone}
-  focused={focused}
-  setFocused={setFocused}
-  maxLength={10}
-  onChange={e => {
-    const v = e.target.value.replace(/\D/g, "");   // remove non-digits
-    setForm({ ...form, phone: v.slice(0, 10) });   // max 10 digits
-  }}
+name="name"
+label="Teacher Name"
+value={form.name}
+focused={focused}
+setFocused={setFocused}
+onChange={e => setForm({ ...form, name: e.target.value })}
 />
+
 <FloatingInput
-  name="address"
-  label="Address"
-  value={form.address}
-  focused={focused}
-  setFocused={setFocused}
-  rows={3}
-  onChange={e =>
-    setForm({ ...form, address: e.target.value })
-  }
+name="teacherId"
+label="Teacher ID"
+value={form.teacherId}
+focused={focused}
+setFocused={setFocused}
+onChange={e =>
+setForm({ ...form, teacherId: e.target.value })
+}
 />
 
 
-            <select
-              value={form.gender}
-              onChange={e => setForm({ ...form, gender: e.target.value })}
-            >
-              <option value="">Gender</option>
-              <option>Male</option>
-              <option>Female</option>
-              <option>Other</option>
-            </select>
-            <select
-  value={form.category}
-  onChange={e => {
-    const value = e.target.value;
-    setForm(prev => ({
-      ...prev,
-      category: value,
-      assignedClasses:
-        value === "Non Teaching Staff" ? [] : prev.assignedClasses,
-      nonTeachingRole: value === "Teaching Staff" ? "" : prev.nonTeachingRole
-    }));
-  }}
+{/* PASSWORD */}
+<div className="password-field">
+
+<FloatingInput
+name="password"
+label="Password"
+type={showPassword ? "text" : "password"}
+value={password}
+focused={focused}
+setFocused={setFocused}
+onChange={e => setPassword(e.target.value)}
+/>
+
+<span
+className="password-toggle"
+onClick={() => setShowPassword(prev => !prev)}
 >
-  <option value="Teaching Staff">Teaching Staff</option>
-  <option value="Non Teaching Staff">Non Teaching Staff</option>
+{showPassword ? <FaEyeSlash /> : <FaEye />}
+</span>
+
+</div>
+
+
+<FloatingInput
+name="email"
+label="Email"
+value={form.email}
+focused={focused}
+setFocused={setFocused}
+onChange={(e) =>
+setForm({ ...form, email: e.target.value })
+}
+/>
+
+<FloatingInput
+name="phone"
+label="Phone"
+value={form.phone}
+focused={focused}
+setFocused={setFocused}
+maxLength={10}
+onChange={e => {
+const v = e.target.value.replace(/\D/g, "");
+setForm({ ...form, phone: v.slice(0,10) });
+}}
+/>
+
+<FloatingInput
+name="address"
+label="Address"
+value={form.address}
+focused={focused}
+setFocused={setFocused}
+rows={3}
+onChange={e =>
+setForm({ ...form, address: e.target.value })
+}
+/>
+
+
+<select
+value={form.gender}
+onChange={e => setForm({ ...form, gender: e.target.value })}
+>
+<option value="">Gender</option>
+<option>Male</option>
+<option>Female</option>
+<option>Other</option>
 </select>
 
-{/* 👇 ADD THIS BLOCK HERE */}
+
+<select
+value={form.category}
+onChange={e => {
+const value = e.target.value;
+
+setForm(prev => ({
+...prev,
+category: value,
+assignedClasses:
+value === "Non Teaching Staff" ? [] : prev.assignedClasses,
+nonTeachingRole:
+value === "Teaching Staff" ? "" : prev.nonTeachingRole
+}));
+}}
+>
+<option value="Teaching Staff">Teaching Staff</option>
+<option value="Non Teaching Staff">Non Teaching Staff</option>
+</select>
+
+
+{/* Teaching Staff */}
+
 {form.category === "Teaching Staff" && (
-  <>
-    <h4>Assigned Classes</h4>
 
-    <select
-      value={classForm.class}
-      onChange={e =>
-        setClassForm({ ...classForm, class: e.target.value })
-      }
-    >
-      <option value="">Class</option>
-      {classes.map(c => (
-        <option key={c}>{c}</option>
-      ))}
-    </select>
+<>
 
-    <select
-      value={classForm.section}
-      onChange={e =>
-        setClassForm({ ...classForm, section: e.target.value })
-      }
-    >
-      <option value="">Section</option>
-      {sections.map(s => (
-        <option key={s}>{s}</option>
-      ))}
-    </select>
-    <FloatingInput
-  name="subject"
-  label="Subject"
-  value={classForm.subject}
-  focused={focused}
-  setFocused={setFocused}
-      onChange={e =>
-        setClassForm({ ...classForm, subject: e.target.value })
-      }
-    />
+<select
+value={classForm.class}
+onChange={e =>
+setClassForm({ ...classForm, class: e.target.value })
+}
+>
+<option value="">Class</option>
 
-    <button onClick={addAssignedClass}>+ Add Class</button>
+{classes.map(c => (
+<option key={c.id} value={c.name}>
+{c.name}
+</option>
+))}
 
-    <ul>
-  {(form.assignedClasses || []).map((c, i) => (
-    <li
-      key={i}
-     
-    >
-      <span>
-        {c.class}-{c.section} ({c.subject})
-      </span>
+</select>
+<select
+value={classForm.section}
+onChange={e =>
+setClassForm({ ...classForm, section: e.target.value })
+}
+>
+<option value="">Section</option>
 
-      <button
-        type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          removeAssignedClass(i);
-        }}
-      
-      >
-        ❌ Remove
-      </button>
-    </li>
-  ))}
+{classes
+.find(c => c.name === classForm.class)
+?.sections?.map(sec => (
+<option key={sec} value={sec}>
+{sec}
+</option>
+))}
+
+</select>
+
+<FloatingInput
+name="subject"
+label="Subject"
+value={classForm.subject}
+focused={focused}
+setFocused={setFocused}
+onChange={e =>
+setClassForm({ ...classForm, subject: e.target.value })
+}
+/>
+
+<button onClick={addAssignedClass}>
++ Add Class
+</button>
+
+<ul>
+
+<div className="assigned-class-list">
+
+{(form.assignedClasses || []).map((c,i)=>(
+
+<div key={i} className="assigned-class-item">
+
+<span className="class-text">
+{c.class}-{c.section} ({c.subject})
+</span>
+
+<button
+type="button"
+className="remove-btn"
+onClick={(e)=>{
+e.preventDefault();
+e.stopPropagation();
+removeAssignedClass(i);
+}}
+>
+✕
+</button>
+
+</div>
+
+))}
+
+</div>
+
 </ul>
 
+</>
 
-  </>
 )}
 
+
+{/* Non Teaching */}
+
 {form.category === "Non Teaching Staff" && (
-  <select
-    value={form.nonTeachingRole}
-    onChange={e =>
-      setForm({ ...form, nonTeachingRole: e.target.value })
-    }
-  >
-    <option value="">Select Role</option>
-    <option value="Helper">Helper</option>
-    <option value="ECA Staff">ECA Staff</option>
-  </select>
-)}</div>
-            <div className="modal-actions">
-              <button className="save" onClick={() => requirePremium(handleSaveTeacher)}>
-                Save
-              </button>
-              <button className="cancel" onClick={resetForm}>
-                Cancel
-              </button>
-            </div>
-          </div>
-          </div>
-      
+
+<select
+value={form.nonTeachingRole}
+onChange={e =>
+setForm({ ...form, nonTeachingRole: e.target.value })
+}
+>
+<option value="">Select Role</option>
+<option value="Helper">Helper</option>
+<option value="ECA Staff">ECA Staff</option>
+</select>
+
+)}
+
+
+{/* PHOTO */}
+<div className="photo-box">
+
+<label className="photo-upload">
+
+{form.photoURL ? (
+<div className="photo-placeholder uploaded">
+
+<img
+src={form.photoURL}
+alt="teacher"
+className="photo-preview"
+/>
+
+<span className="photo-text success">
+✔ Profile uploaded
+</span>
+
+</div>
+) : (
+<div className="photo-placeholder">
+<FaUser className="photo-icon"/>
+<span className="photo-text">
+Upload profile picture
+</span>
+</div>
+)}
+
+<input
+type="file"
+accept="image/*"
+hidden
+onChange={e=>{
+const file = e.target.files?.[0];
+if(!file) return;
+
+const reader = new FileReader();
+
+reader.onloadend = () =>
+setForm(prev => ({
+...prev,
+photoURL: reader.result
+}));
+
+reader.readAsDataURL(file);
+}}
+/>
+
+</label>
+
+</div>
+<button
+className="save"
+onClick={() => requirePremium(handleSaveTeacher)}
+>
+Save
+</button>
+
+<button
+className="cancel"
+onClick={resetForm}
+>
+Cancel
+</button>
+
+</div>
+
+)}
+          </>
       )}
     
 

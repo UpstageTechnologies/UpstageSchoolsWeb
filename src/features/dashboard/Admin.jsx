@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { FaPlus, FaSearch, FaEdit, FaTrash } from "react-icons/fa";
+import { FaPlus, FaSearch, FaEdit, FaTrash, FaPhotoVideo, FaUser } from "react-icons/fa";
 import "../dashboard_styles/Teacher.css"; // reuse same CSS
 import CreateAccountModal from "../../components/CreateAccountModal"
 import "../dashboard_styles/CreateAccountModal.css"
+import FloatingInput from "../../components/FloatingInput";
 import {
   collection,
   addDoc,
@@ -22,9 +23,12 @@ const Admin = ({ formOnly = false, requirePremium, globalSearch = "", setActiveP
 
   const [showModal, setShowModal] = useState(false);
   const [admins, setAdmins] = useState([]);
+  const [focused, setFocused] = useState(null);
   const [editId, setEditId] = useState(null);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [showGender,setShowGender] =useState(false);
   const selectedAdminId = localStorage.getItem("selectedAdminId");
 
   /* ===== ADMIN FORM ===== */
@@ -268,30 +272,29 @@ if (!/^\d{10}$/.test(phoneClean)) {
 >
   <FaEye /> View
 </button>
+<button
+  className="edit-btn"
+  onClick={() => {
+    setForm({
+      name: a.name || "",
+      adminId: a.adminId || "",
+      email: a.email || "",
+      phone: a.phone || "",
+      address: a.address || "",
+      gender: a.gender || "",
+      qualification: a.qualification || "",
+      experience: a.experience || "",
+      photoURL: a.photoURL || ""
+    });
 
-          <button
-            className="edit-btn"
-            onClick={() => {
-              setForm({
-                name: a.name || "",
-                adminId: a.adminId || "",
-                email: a.email || "",
-                phone: a.phone || "",
-                address: a.address || "",
-                gender: a.gender || "",
-                qualification: a.qualification || "",
-                experience: a.experience || "",
-                photoURL: a.photoURL || "" 
-              });
-              localStorage.setItem("profilePhoto", a.photoURL || "");
-              setEditId(a.id);
-              setPassword(a.password || ""); 
-              setShowModal(true);
-            }}
-          >
+    setEditId(a.id);
+    setPassword(a.password || "");
 
-            <FaEdit /> Edit
-          </button>
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }}
+>
+  <FaEdit /> Edit
+</button>
 
           <button
             className="delete-btn"
@@ -306,37 +309,37 @@ if (!/^\d{10}$/.test(phoneClean)) {
 
       </table>
       )}
-    {(showModal || formOnly) && (
-<div className="entries-box">
-
-
-<div className="admin-form-layout">
-
-
-
-{/* INPUT GRID */}
-<div className="admin-fields">
-
-<input
-placeholder="Admin Name"
+   {(showModal || formOnly) && (
+<div className="account-grid">
+<FloatingInput
+name="name"
+label="Admin Name"
 value={form.name}
-onChange={e=>setForm({...form,name:e.target.value})}
+focused={focused}
+setFocused={setFocused}
+onChange={e => setForm({ ...form, name: e.target.value })}
 />
-
-<input
-placeholder="Admin ID"
+<FloatingInput
+name="adminId"
+label="Admin ID"
 value={form.adminId}
-onChange={e=>setForm({...form,adminId:e.target.value})}
+focused={focused}
+setFocused={setFocused}
+onChange={e => setForm({ ...form, adminId: e.target.value })}
 />
 
 {/* PASSWORD */}
 <div className="password-field">
-
-<input
-type={showPassword ? "text":"password"}
-placeholder={editId ? "New Password (optional)" : "Password"}
+<FloatingInput
+name="password"
+label={editId ? "New Password (optional)" : "Password"}
+type={showPassword ? "text" : "password"}
 value={password}
-onChange={e=>setPassword(e.target.value)}
+focused={focused}
+setFocused={setFocused}
+onChange={e => setPassword(e.target.value)}
+rightIcon={showPassword ? <FaEyeSlash/> : <FaEye/>}
+onRightIconClick={() => setShowPassword(prev => !prev)}
 />
 
 <span onClick={()=>setShowPassword(prev=>!prev)}>
@@ -344,97 +347,172 @@ onChange={e=>setPassword(e.target.value)}
 </span>
 
 </div>
-
-<input
-placeholder="Email"
+<FloatingInput
+name="email"
+label="Email"
 value={form.email}
-onChange={e=>setForm({...form,email:e.target.value})}
+focused={focused}
+setFocused={setFocused}
+onChange={e => setForm({ ...form, email: e.target.value })}
 />
-
-<input
-placeholder="Phone"
+<FloatingInput
+name="phone"
+label="Phone"
+type="tel"
 value={form.phone}
-maxLength={10}
-onChange={e=>{
-const v=e.target.value.replace(/\D/g,"");
-setForm({...form,phone:v.slice(0,10)});
+focused={focused}
+setFocused={setFocused}
+onChange={e => {
+const v = e.target.value.replace(/\D/g,"");
+setForm({ ...form, phone: v.slice(0,10) });
 }}
 />
-<input
-className="address-field"
-placeholder="Address"
+<FloatingInput
+name="address"
+label="Address"
 value={form.address}
-onChange={e=>setForm({...form,address:e.target.value})}
+focused={focused}
+setFocused={setFocused}
+onChange={e => setForm({ ...form, address: e.target.value })}
 />
-<select
-value={form.gender}
-onChange={e=>setForm({...form,gender:e.target.value})}
->
-<option value="">Gender</option>
-<option>Male</option>
-<option>Female</option>
-<option>Other</option>
-</select>
+<div className="popup-select">
 
-<input
-placeholder="Qualification"
-value={form.qualification}
-onChange={e=>setForm({...form,qualification:e.target.value})}
-/>
+  <div
+    className="popup-input"
+    onClick={() => setShowGender(prev => !prev)}
+  >
+    {form.gender || "Gender"}
+    <span>▾</span>
+  </div>
 
-<input
-placeholder="Experience (years)"
-value={form.experience}
-onChange={e=>setForm({...form,experience:e.target.value})}
-/>
+  {showGender && (
+    <div className="popup-menu">
+
+      {["Male","Female","Other"].map(g => (
+
+        <div
+          key={g}
+          className={`popup-item ${form.gender === g ? "active" : ""}`}
+          onClick={() => {
+            setForm({ ...form, gender: g });
+            setShowGender(false);
+          }}
+        >
+          {form.gender === g && "✓ "}
+          {g}
+
+        </div>
+
+      ))}
+
+    </div>
+  )}
 
 </div>
-
-{/* PHOTO */}
+<FloatingInput
+name="qualification"
+label="Qualification"
+value={form.qualification}
+focused={focused}
+setFocused={setFocused}
+onChange={e =>
+setForm({ ...form, qualification: e.target.value })
+}
+/><FloatingInput
+name="experience"
+label="Experience (years)"
+type="number"
+value={form.experience}
+focused={focused}
+setFocused={setFocused}
+onChange={e =>
+setForm({ ...form, experience: e.target.value })
+}
+/>{/* PHOTO */}
 <div className="photo-box">
 
 <label className="photo-upload">
 
 {form.photoURL ? (
+<div className="photo-placeholder uploaded">
+
 <img
 src={form.photoURL}
-alt="admin"
-style={{ width:"100%", height:"100%", objectFit:"cover" }}
+alt="profile"
+className="photo-preview"
+onClick={(e)=>{
+e.preventDefault();
+setPreviewOpen(true);
+}}
 />
+
+<span className="photo-text success">
+✔ Profile uploaded
+</span>
+
+</div>
 ) : (
-<span style={{ fontSize:32,color:"#888" }}>+</span>
+<div className="photo-placeholder">
+<FaUser className="photo-icon"/>
+<span className="photo-text">
+Upload profile picture
+</span>
+</div>
 )}
 
 <input
 type="file"
 accept="image/*"
-style={{ display:"none" }}
 onChange={(e)=>{
 const file = e.target.files?.[0];
 if(!file) return;
 
 const reader = new FileReader();
+
 reader.onloadend = () =>
-setForm(prev => ({...prev,photoURL:reader.result}));
+setForm(prev => ({
+...prev,
+photoURL: reader.result
+}));
 
 reader.readAsDataURL(file);
 }}
+hidden
 />
 
 </label>
 
-<p>Select profile photo</p>
-
-</div>
 </div>
 
 
-{/* BUTTONS */}
-<div className="modal-actions">
+{/* IMAGE PREVIEW MODAL */}
+
+{previewOpen && (
+<div
+className="photo-modal"
+onClick={()=>setPreviewOpen(false)}
+>
+
+<div
+className="photo-modal-box"
+onClick={(e)=>e.stopPropagation()}
+>
+
+<img
+src={form.photoURL}
+alt="preview"
+className="photo-modal-img"
+/>
+
+</div>
+
+</div>
+)}
+
 
 <button
 className="save"
-onClick={()=>requirePremium(handleSaveAdmin)}
+onClick={()=>requirePremium ? requirePremium(handleSaveAdmin) : handleSaveAdmin()}
 >
 Save
 </button>
@@ -445,9 +523,6 @@ onClick={resetForm}
 >
 Cancel
 </button>
-
-</div>
-
 </div>
 )}</> 
       
