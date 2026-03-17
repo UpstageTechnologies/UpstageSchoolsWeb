@@ -13,17 +13,18 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "../../services/firebase";
 const selectedStudentId = localStorage.getItem("selectedStudentId");
-
-const sections = Array.from({ length: 26 }, (_, i) =>
-  String.fromCharCode(65 + i)
-);
-const Student = ({ formOnly=false, requirePremium , globalSearch = ""}) => {
+const Student = ({
+  formOnly = false,
+  requirePremium,
+  globalSearch = "",
+  editData,
+  onEdit
+}) => {
   const adminUid =
     auth.currentUser?.uid || localStorage.getItem("adminUid");
 
   const role = localStorage.getItem("role");
 
-  const [showModal, setShowModal] = useState(false);
   const [students, setStudents] = useState([]);
   const [editId, setEditId] = useState(null);
   const [viewStudent, setViewStudent] = useState(null);
@@ -31,6 +32,7 @@ const Student = ({ formOnly=false, requirePremium , globalSearch = ""}) => {
   const [showClass, setShowClass] = useState(false);
 const [showSection, setShowSection] = useState(false);
 const [classes, setClasses] = useState([]);
+
   const [form, setForm] = useState({
     studentName: "",
     studentId: "",
@@ -44,7 +46,7 @@ const [classes, setClasses] = useState([]);
     section: "",
     photoURL: ""  
   });
-
+  const selectedClass = classes.find(c => c.name === form.class)
   const fetchStudents = async () => {
     if (!adminUid) return;
 
@@ -62,6 +64,25 @@ const [classes, setClasses] = useState([]);
     )
     );
   };
+  useEffect(() => {
+    if (editData) {
+      setForm({
+        studentName: editData.studentName || "",
+        studentId: editData.studentId || "",
+        parentId: editData.parentId || "",
+        parentName: editData.parentName || "",
+        gender: editData.gender || "",
+        dob: editData.dob || "",
+        phone: editData.phone || "",
+        address: editData.address || "",
+        class: editData.class || "",
+        section: editData.section || "",
+        photoURL: editData.photoURL || ""
+      });
+  
+      setEditId(editData.id);
+    }
+  }, [editData]);
   useEffect(() => {
 
     const fetchClasses = async () => {
@@ -279,11 +300,11 @@ const [classes, setClasses] = useState([]);
   </button>
   <button
     className="edit-btn"
-    onClick={() => requirePremium(() => {
-      setForm({ ...s });
-      setEditId(s.id);
-      setShowModal(true);
-    })}
+    onClick={() => {
+      if (onEdit) {
+        onEdit(s); // 🔥 send data to parent
+      }
+    }}
   >
     <FaEdit /> Edit
   </button>
@@ -340,41 +361,47 @@ const [classes, setClasses] = useState([]);
     </div>
   </div>
 )}
-{(showModal || formOnly) && (
+{formOnly && (
 <div className="account-grid">
-
-
-
-<input
-placeholder="Student Name"
-value={form.studentName}
-onChange={e =>
-setForm({ ...form, studentName: e.target.value })
-}
+<FloatingInput
+  name="studentName"
+  label="Student Name"
+  value={form.studentName}
+  focused={focused}
+  setFocused={setFocused}
+  onChange={e =>
+    setForm({ ...form, studentName: e.target.value })
+  }
 />
-
-<input
-placeholder="Student ID"
-value={form.studentId}
-onChange={e =>
-setForm({ ...form, studentId: e.target.value })
-}
+<FloatingInput
+  name="studentId"
+  label="Student ID"
+  value={form.studentId}
+  focused={focused}
+  setFocused={setFocused}
+  onChange={e =>
+    setForm({ ...form, studentId: e.target.value })
+  }
 />
-
-<input
-placeholder="Parent ID"
-value={form.parentId}
-onChange={e =>
-setForm({ ...form, parentId: e.target.value })
-}
+<FloatingInput
+  name="parentId"
+  label="Parent ID"
+  value={form.parentId}
+  focused={focused}
+  setFocused={setFocused}
+  onChange={e =>
+    setForm({ ...form, parentId: e.target.value })
+  }
 />
-
-<input
-placeholder="Parent Name"
-value={form.parentName}
-onChange={e =>
-setForm({ ...form, parentName: e.target.value })
-}
+<FloatingInput
+  name="parentName"
+  label="Parent Name"
+  value={form.parentName}
+  focused={focused}
+  setFocused={setFocused}
+  onChange={e =>
+    setForm({ ...form, parentName: e.target.value })
+  }
 />
 <div className="popup-select">
 
@@ -411,39 +438,45 @@ Class {c.name}
 
 )}
 
-</div>
-<div className="popup-select">
+</div><div className="popup-select">
 
-  <div
-    className="popup-input"
-    onClick={() => setShowSection(!showSection)}
-  >
-    {form.section || "Section"}
-    <span>▾</span>
+<div
+  className="popup-input"
+  onClick={() => {
+    if (!form.class) {
+      alert("⚠️ First select class")
+      return
+    }
+    setShowSection(!showSection)
+    setShowClass(false)
+  }}
+>
+  {form.section ? `Section ${form.section}` : "Section"}
+  <span>▾</span>
+</div>
+
+{showSection && (
+
+  <div className="popup-menu">
+
+    {selectedClass?.sections?.map(s => (
+
+      <div
+        key={s}
+        className={`popup-item ${form.section === s ? "active" : ""}`}
+        onClick={() => {
+          setForm(prev => ({ ...prev, section: s }))
+          setShowSection(false)
+        }}
+      >
+        Section {s}
+      </div>
+
+    ))}
+
   </div>
 
-  {showSection && (
-
-    <div className="popup-menu">
-
-      {sections.map(s => (
-
-        <div
-          key={s}
-          className={`popup-item ${form.section === s ? "active" : ""}`}
-          onClick={() => {
-            setForm({ ...form, section: s });
-            setShowSection(false);
-          }}
-        >
-          {s}
-        </div>
-
-      ))}
-
-    </div>
-
-  )}
+)}
 
 </div>
 {/* PHOTO */}

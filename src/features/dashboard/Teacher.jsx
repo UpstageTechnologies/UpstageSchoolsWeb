@@ -69,15 +69,20 @@ const FloatingInput = ({
       </span>
     )}
   </div>
-);
-const Teacher = ({ formOnly = false, requirePremium, globalSearch = "", setActivePage }) => {
-
+);const Teacher = ({
+  formOnly = false,
+  requirePremium,
+  globalSearch = "",
+  setActivePage,
+  editData,
+  onEdit   // 🔥 ADD
+}) => {
   const adminUid =
     auth.currentUser?.uid || localStorage.getItem("adminUid");
 
   const role = localStorage.getItem("role"); // admin | sub_admin
   const [focused, setFocused] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  
   const [teachers, setTeachers] = useState([]);
   const [editId, setEditId] = useState(null);
   const [password, setPassword] = useState("");
@@ -140,7 +145,17 @@ const Teacher = ({ formOnly = false, requirePremium, globalSearch = "", setActiv
       localStorage.removeItem("selectedTeacherId");
     };
   }, []);
+  useEffect(() => {
+    if (editData) {
+      setForm({
+        ...editData,
+        assignedClasses: editData.assignedClasses || []
+      });
   
+      setEditId(editData.id);
+      setPassword(editData.password || "");
+    }
+  }, [editData]);
   /* ================= ADD CLASS ================= */
   const addAssignedClass = () => {
     if (!classForm.class || !classForm.section || !classForm.subject) {
@@ -440,17 +455,11 @@ useEffect(() => {
 </button>
   <button
     className="edit-btn"
-    onClick={() =>
-      requirePremium(() => {
-        setForm({
-          ...t,
-          assignedClasses: t.assignedClasses || []
-        });
-      setEditId(t.id);
-      setPassword(t.password || "");
-      setShowModal(true); // ✅ FIXED
-    })
-  }
+    onClick={() => {
+      if (onEdit) {
+        onEdit(t); // 🔥 send to parent
+      }
+    }}
   >
     <FaEdit /> Edit
   </button>
@@ -467,7 +476,7 @@ useEffect(() => {
         </tbody>
       </table>
       )}
-     {(showModal || formOnly) && (
+     {formOnly&& (
 
 <div className="account-grid">
 

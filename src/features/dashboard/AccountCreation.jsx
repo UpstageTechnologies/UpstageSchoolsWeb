@@ -1,16 +1,19 @@
-import React, { useState } from "react";
+import React, { useState ,useEffect } from "react";
 
 import Admin from "./Admin";
 import Teacher from "./Teacher";
 import Parent from "./Parent";
 import Student from "./Student";
 import OfficeStaff from "./OfficeStaff";
-import "../dashboard_styles/History.css"
+import "../dashboard_styles/CreateAccountModal.css"
 
 import CreateAccountModal from "../../components/CreateAccountModal";
 
 export default function AccountCreation() {
-
+ 
+  const [modalOpen, setModalOpen] = useState(false);
+const [accountType, setAccountType] = useState("");
+const [editData, setEditData] = useState(null);
 const [activeTab,setActiveTab] = useState("admin")
 
 return(
@@ -61,14 +64,60 @@ Office Staff
 
   {/* Card content */}
   <div className="account-card-body">
-
-    <CreateAccountModal />
-
-    {activeTab==="admin" && <Admin/>}
-    {activeTab==="teacher" && <Teacher/>}
-    {activeTab==="parent" && <Parent/>}
-    {activeTab==="student" && <Student/>}
-    {activeTab==="staff" && <OfficeStaff/>}
+  <CreateAccountModal
+  open={modalOpen}
+  setOpen={setModalOpen}
+  accountType={accountType}
+  editData={editData}
+  setEditData={setEditData}
+  setActiveTab={setActiveTab}   // 🔥 ADD THIS
+/>
+{activeTab==="admin" && (
+  <Admin
+    onEdit={(data) => {
+      setEditData({ ...data, type: "admin" });
+      setAccountType("admin"); // 🔥 IMPORTANT
+      setModalOpen(true);
+    }}
+  />
+)}
+    {activeTab==="teacher" && (
+  <Teacher
+    onEdit={(data) => {
+      setEditData({ ...data, type: "teacher" });
+      setAccountType("teacher"); // 🔥 IMPORTANT
+      setModalOpen(true);        // 🔥 open modal
+    }}
+  />
+)}
+    {activeTab==="parent" && (
+ <Parent
+   onEdit={(data) => {
+    setEditData({ ...data, type: "parent" });
+     setAccountType("parent"); // 🔥 ADD THIS
+     setModalOpen(true);
+   }}
+ />
+)}
+    {activeTab==="student" && (
+  <Student
+    onEdit={(data) => {
+      setEditData({ ...data, type: "student" });
+      setAccountType("student"); // 🔥 IMPORTANT
+      setModalOpen(true);
+    }}
+  />
+)}
+    {activeTab==="staff" && (
+  <OfficeStaff
+    onEdit={(data) => {
+     
+      setEditData({ ...data, type: "staff" }); // 🔥 add type
+      setAccountType("staff");   // 🔥 dropdown auto select
+      setModalOpen(true);        // 🔥 open modal
+    }}
+  />
+)}
 
   </div>
 

@@ -19,9 +19,15 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const role = localStorage.getItem("role");
 const isAdmin = role === "master";
-const Admin = ({ formOnly = false, requirePremium, globalSearch = "", setActivePage }) => {
+const Admin = ({
+  formOnly = false,
+  requirePremium,
+  globalSearch = "",
+  setActivePage,
+  editData,
+  onEdit   // 🔥 ADD
+}) => {
 
-  const [showModal, setShowModal] = useState(false);
   const [admins, setAdmins] = useState([]);
   const [focused, setFocused] = useState(null);
   const [editId, setEditId] = useState(null);
@@ -65,7 +71,24 @@ const Admin = ({ formOnly = false, requirePremium, globalSearch = "", setActiveP
       }))
     );
   };
-
+  useEffect(() => {
+    if (editData) {
+      setForm({
+        name: editData.name || "",
+        adminId: editData.adminId || "",
+        email: editData.email || "",
+        phone: editData.phone || "",
+        address: editData.address || "",
+        gender: editData.gender || "",
+        qualification: editData.qualification || "",
+        experience: editData.experience || "",
+        photoURL: editData.photoURL || ""
+      });
+  
+      setEditId(editData.id);
+      setPassword(editData.password || "");
+    }
+  }, [editData]);
   useEffect(() => {
     fetchAdmins();
   }, [superAdminUid]);
@@ -154,7 +177,7 @@ if (!/^\d{10}$/.test(phoneClean)) {
   };
 
   const resetForm = () => {
-    setShowModal(false);
+   
     setEditId(null);
     setPassword("");
     setForm({
@@ -275,22 +298,9 @@ if (!/^\d{10}$/.test(phoneClean)) {
 <button
   className="edit-btn"
   onClick={() => {
-    setForm({
-      name: a.name || "",
-      adminId: a.adminId || "",
-      email: a.email || "",
-      phone: a.phone || "",
-      address: a.address || "",
-      gender: a.gender || "",
-      qualification: a.qualification || "",
-      experience: a.experience || "",
-      photoURL: a.photoURL || ""
-    });
-
-    setEditId(a.id);
-    setPassword(a.password || "");
-
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (onEdit) {
+      onEdit(a); // 🔥 send to parent
+    }
   }}
 >
   <FaEdit /> Edit
@@ -309,7 +319,7 @@ if (!/^\d{10}$/.test(phoneClean)) {
 
       </table>
       )}
-   {(showModal || formOnly) && (
+   {formOnly && (
 <div className="account-grid">
 <FloatingInput
 name="name"

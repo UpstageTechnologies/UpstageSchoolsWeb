@@ -33,9 +33,14 @@
     "Office Assistant",
     "Manager",
     "Supervisor"
-  ];
-  const OfficeStaff = ({ formOnly=false, requirePremium, globalSearch="", setActivePage }) => {
-
+  ];const OfficeStaff = ({
+    formOnly = false,
+    requirePremium,
+    globalSearch = "",
+    setActivePage,
+    editData,
+    onEdit
+  }) => {
     const selectedOfficeStaffId =
       localStorage.getItem("selectedOfficeStaffId");
   
@@ -45,8 +50,6 @@
       auth.currentUser?.uid || localStorage.getItem("adminUid");
 
     const roleType = localStorage.getItem("role"); // admin | sub_admin
-
-    const [showModal, setShowModal] = useState(false);
     const [staffs, setStaffs] = useState([]);
     const [editId, setEditId] = useState(null);
 
@@ -64,7 +67,23 @@
       address: "",
       photoURL: ""
     });
-
+    useEffect(() => {
+      if (editData) {
+        setForm({
+          name: editData.name || "",
+          staffId: editData.staffId || "",
+          email: editData.email || "",
+          phone: editData.phone || "",
+          department: editData.department || "",
+          role: editData.role || "",
+          address: editData.address || "",
+          photoURL: editData.photoURL || ""
+        });
+    
+        setEditId(editData.id);
+        setPassword(editData.password || "");
+      }
+    }, [editData]);
     /* ================= FETCH STAFF ================= */
     const fetchStaffs = async () => {
       if (!adminUid) return;
@@ -309,10 +328,9 @@
                     <button
                       className="edit-btn"
                       onClick={() => {
-                        setForm({ ...s });
-                        setEditId(s.id);
-                        setPassword(s.password || "");
-                        setShowModal(true);
+                        if (onEdit) {
+                          onEdit(s); // 🔥 send data to parent
+                        }
                       }}
                     >
                       <FaEdit /> Edit
@@ -333,7 +351,7 @@
         </table>
         )}
         {/* MODAL */}
-        {(showModal || formOnly) && (
+        {formOnly && (
         <div className="account-grid">
 
               <input

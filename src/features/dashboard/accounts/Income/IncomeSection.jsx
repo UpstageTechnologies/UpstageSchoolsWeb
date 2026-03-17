@@ -1,7 +1,8 @@
     import React from "react";
-   
+   import { useState } from "react";
     import { addDoc, collection } from "firebase/firestore";
     import { db } from "../../../../services/firebase";
+    import FloatingInput from "../../../../components/FloatingInput";
     function IncomeSection(props) {
 
         const {
@@ -114,6 +115,7 @@ setShowStudentDropdown,
             setShowPaymentMode, 
             feeType  
         } = props;
+        const [focused, setFocused] = useState(null);
 
         const sourceMasterRef = collection(
           db,
@@ -219,16 +221,19 @@ setShowStudentDropdown,
         <div className="entry-row source">
 
     <div className="student-dropdown">
-    <input
-        placeholder="Source Name"
-        value={srcName || sourceSearch}
-        onChange={e => {
-        setSourceSearch(e.target.value);
-        setSrcName("");
-        setShowSourceDD(true);
-        }}
-        onFocus={() => setShowSourceDD(true)}
-    />
+    <FloatingInput
+  name="source"
+  label="Source Name"
+  value={srcName || sourceSearch}
+  onChange={e => {
+    setSourceSearch(e.target.value);
+    setSrcName("");
+    setShowSourceDD(true);
+  }}
+  onFocus={() => setShowSourceDD(true)}
+  focused={focused}
+  setFocused={setFocused}
+/>
 
     {showSourceDD && (
         <div className="student-dropdown-list">

@@ -12,33 +12,137 @@ const accountOptions = [
   { label: "Parent", value: "parent" },
   { label: "Office Staff", value: "staff" },
   { label: "Student", value: "student" }
-];
-
-function CreateAccountSection() {
+];function CreateAccountSection({ editData, setEditData, setActiveTab }) {
   useEffect(()=>{
     const close=()=>setShowDropdown(false);
     window.addEventListener("click",close);
     return()=>window.removeEventListener("click",close);
   },[]);
-  const [accountType, setAccountType] = useState("");
+  ;
+  
   const [showDropdown,setShowDropdown] = useState(false);
+  const [accountType, setAccountType] = useState("");
+  useEffect(() => {
+    if (editData?.type) {
+      setAccountType(editData.type);
+      setActiveTab(editData.type); // 🔥 SYNC TAB
+    }
+  }, [editData]);
   const renderForm = () => {
     switch (accountType) {
       case "admin":
-        return <Admin formOnly />;
-      case "teacher":
-        return <Teacher formOnly />;
-      case "parent":
-        return <Parent formOnly />;
-      case "staff":
-        return <OfficeStaff formOnly />;
-      case "student":
-        return <Student formOnly />;
+  return (
+    <Admin
+      formOnly
+      editData={editData}
+      onEdit={(data) => {
+        setEditData({
+          ...data,
+          type: "admin"
+        });
+      }}
+    />
+  );
+        case "teacher":
+          return (
+            <Teacher
+              formOnly
+              editData={editData}
+              onEdit={(data) => {
+                setEditData(data);
+                setAccountType("teacher");
+              }}
+            />
+          );
+        case "parent":
+  return (
+    <Parent
+      formOnly
+      editData={editData}
+      setEditData={setEditData}
+      onEdit={(data) => {
+        setEditData(data);      // 🔥 set data
+        setAccountType("parent"); // 🔥 open form
+      }}
+    />
+  );
+  case "staff":
+    return (
+      <OfficeStaff
+        formOnly
+        editData={editData}
+        onEdit={(data) => {
+          setEditData(data);
+          setAccountType("staff");
+        }}
+      />
+    );
+    case "student":
+      return (
+        <Student
+          formOnly
+          editData={editData}
+          onEdit={(data) => {
+            setEditData(data);
+            setAccountType("student");
+          }}
+        />
+      );
       default:
         return null;
     }
   };
-
+  const renderTable = () => {
+    switch (accountType) {
+      case "admin":
+  return (
+    <Admin
+      onEdit={(data) => {
+        setEditData(data);
+        setAccountType("admin");
+      }}
+    />
+  );
+      case "parent":
+        return (
+          <Parent
+            onEdit={(data) => {
+              setEditData(data);      // 🔥 set data
+              setAccountType("parent"); // 🔥 open form
+            }}
+          />
+        );
+        case "staff":
+  return (
+    <OfficeStaff
+      onEdit={(data) => {
+        setEditData(data);
+        setAccountType("staff");
+      }}
+    />
+  );
+  case "student":
+  return (
+    <Student
+      onEdit={(data) => {
+        setEditData(data);
+        setAccountType("student");
+      }}
+    />
+  );
+  case "teacher":
+  return (
+    <Teacher
+      onEdit={(data) => {
+        setEditData(data);
+        setAccountType("teacher");
+      }}
+    />
+  );
+      default:
+        return null;
+    }
+  };
   return (
     <div className="create-area">
 
@@ -76,6 +180,8 @@ function CreateAccountSection() {
     key={option.value}
     onClick={()=>{
       setAccountType(option.value);
+      setActiveTab(option.value);   // 🔥 SYNC TAB
+      setEditData(null);
       setShowDropdown(false);
     }}
   >

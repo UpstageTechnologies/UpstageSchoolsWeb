@@ -1,5 +1,8 @@
 /* MAIN LAYOUT */
-
+:root{
+  --primary-purple: rgba(124,58,237,0.9);
+  --primary-purple-dark: rgba(91,33,182,0.9);
+}
 .create-row{
   margin: 10px;
   display:grid;
@@ -30,26 +33,18 @@
   border:1px solid #d7dce9;
 
   background:#fdfdff;
-
-  font-size:15px;
-  font-weight:500;
-  color:#374151;
-
+  font-size:16px;        /* 🔥 increase */
+  font-weight:600;       /* ok */
+  color:#6b7280; 
   transition:.2s ease;
 }.account-grid input:focus,
 .account-grid select:focus{
-
-  outline:none;
-
-  border-color:#4e73df;
-
-  box-shadow:0 0 0 2px rgba(78,115,223,.18);
-
-  background:#fff;
+  border-color: var(--primary-purple);
+  box-shadow:0 0 0 2px rgba(124,58,237,0.2);
 }
 .account-grid input::placeholder{
   color:#6b7280;
-  font-weight:500;
+  font-weight:600;
 }
   /* PASSWORD */
   
@@ -90,10 +85,13 @@
     font-weight:600;
     cursor:pointer;
   }
-  
   .adminpopup-menu div:hover{
-    background:#f4f3ff;
-    color:#6c63ff;
+    background: linear-gradient(
+      rgba(124,58,237,0.9),
+      rgba(91,33,182,0.9)
+    );  /* 🔥 same as sidebar */
+  
+    color:#fff;             /* 🔥 white text */
   }
   @keyframes dropdownFade{
     from{
@@ -108,17 +106,20 @@
   .adminpopup-input{
     height:44px;
     border-radius:14px;
-    border:2px solid #6c63ff;
+  
+    border:2px solid rgba(124,58,237,0.9);   /* 🔥 match */
+  
     display:flex;
     align-items:center;
     justify-content:space-between;
     padding:0 16px;
+  
     font-weight:600;
     font-size:16px;
   
-    color:#6c63ff;
-    background:#fff;
+    color:rgba(124,58,237,0.9);   /* 🔥 match text */
   
+    background:#fff;
     cursor:pointer;
   }
   .photo-placeholder{
@@ -140,17 +141,25 @@
     color:#555;
   }
   /* BUTTONS */
-  
   .save{
-  height:44px;
-  border:none;
-  border-radius:12px;
-  background:linear-gradient(90deg,#6c63ff,#5a54e8);
-  color:#fff;
-  font-weight:600;
-  cursor:pointer;
-  }
+    height:44px;
+    border:none;
+    border-radius:14px;
   
+    background: linear-gradient(
+      rgba(124,58,237,0.9),
+      rgba(91,33,182,0.9)
+    ); /* 🔥 EXACT SAME */
+  
+    color:#fff;
+    font-weight:600;
+    font-size:16px;
+  
+    cursor:pointer;
+  
+    box-shadow: 0 8px 20px rgba(91,33,182,0.35); /* match tone */
+    transition: all 0.25s ease;
+  }
   .cancel{
   height:44px;
   border:none;
@@ -291,3 +300,175 @@
     .remove-btn:hover{
     color:#dc2626;
     }
+    @media (max-width: 768px){
+
+      /* MAIN CONTAINER */
+      .create-row{
+        grid-template-columns: 1fr;
+        gap:16px;              /* 🔥 clean spacing */
+        margin:12px;           /* 🔥 balanced side space */
+      }
+    
+      /* FORM STACK */
+      .account-grid{
+        display:block;
+      }
+    
+      /* INPUT SPACING */
+      .account-grid input,
+      .account-grid select,
+      .adminpopup-select,
+      .photo-placeholder{
+        width:100%;
+        height:46px;
+    
+        margin-bottom:10px;    /* 🔥 MAIN FIX (space between fields) */
+    
+        font-size:15px;
+      }
+    
+      /* LAST INPUT REMOVE EXTRA GAP */
+      .account-grid input:last-child,
+      .account-grid select:last-child{
+        margin-bottom:0;
+      }
+    
+      /* DROPDOWN */
+      .adminpopup-menu{
+        top:48px;
+        border-radius:12px;
+      }
+    
+      /* BUTTON GROUP */
+      .save{
+        margin-top:14px;       /* 🔥 space from inputs */
+      }
+    
+      .cancel{
+        margin-top:10px;       /* 🔥 gap between buttons */
+      }
+    
+      /* PHOTO BOX */
+      .photo-placeholder{
+        margin-top:6px;
+      }
+    
+      /* MODAL IMAGE */
+      .photo-modal-img{
+        max-width:90%;
+        max-height:70vh;
+      }
+    
+    }
+    .accountcreationbuttons{
+    display:flex;
+    align-items:flex-end;
+    padding-left:10px;
+  }
+  
+  .tab{
+    padding:12px 34px;
+    background:#b9c0cf;
+    color:#555;
+    border:none;
+    cursor:pointer;
+    font-weight:500;
+  
+    border-radius:30px 30px 0 0;
+  
+    margin-right:-20px;   /* overlap */
+    transition:0.25s;
+  }
+  
+  /* active tab */
+  .tab.active{
+    background:white;
+    color:#111;
+    border:1px solid #e5e7eb;
+    border-bottom:1px solid white;
+    z-index:2;
+    position:relative;
+  }
+  
+  /* card */
+  .account-card-body{
+    border:1px solid #e5e7eb;
+    border-radius:12px;
+    padding:25px;
+    background:white;
+  }
+  @media (max-width: 768px){
+
+    .accountcreationbuttons{
+      padding-left:8px;
+      gap:2px;                 /* 🔥 small spacing between tabs */
+    }
+  
+    .tab{
+      padding:10px 16px;       /* 🔥 balanced size (not too small) */
+      font-size:13px;
+  
+      margin-right:-10px;      /* 🔥 smooth overlap */
+      
+      border-radius:20px 20px 0 0;  /* 🔥 slightly softer */
+    }
+  
+  }
+  .drop-select{
+    width:100%;
+    position:relative;
+  }
+  
+  .drop-input{
+    width:100%;
+    height:44px;
+  
+    padding:10px 12px;
+  
+    border-radius:12px;
+    border:1px solid #d7dce9;
+  
+    background:#fdfdff;
+  
+    font-size:16px;
+    font-weight:600;
+    color:#6b7280;
+  
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  
+    cursor:pointer;
+    box-sizing:border-box;   /* 🔥 MUST */
+  }
+  
+  .drop-menu{
+    position:absolute;
+    top:52px;
+    left:0;
+  
+    width:100%;
+  
+    background:#fff;
+    border:1px solid #d7dce9;
+    border-radius:12px;
+  
+    box-shadow:0 10px 25px rgba(0,0,0,0.15);
+    overflow:hidden;
+  
+    z-index:100;
+  }
+  
+  .drop-item{
+    padding:12px 14px;
+    font-size:15px;
+    cursor:pointer;
+  }
+  
+  .drop-item:hover{
+    background: linear-gradient(
+      rgba(124,58,237,0.9),
+      rgba(91,33,182,0.9)
+    );
+    color:#fff;
+  }

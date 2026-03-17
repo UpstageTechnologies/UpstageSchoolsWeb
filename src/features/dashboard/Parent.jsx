@@ -22,8 +22,15 @@ const handleViewParent = (p) => {
 
   window.open("/dashboard", "_blank");   // 👈 new tab
 };
-const Parent = ({ formOnly=false, requirePremium, globalSearch="", setActivePage }) => {
-
+const Parent = ({ 
+  formOnly = false, 
+  requirePremium, 
+  globalSearch = "", 
+  setActivePage,
+  editData,       
+  onEdit,   // ✅ ADD THIS
+  setEditData        // ✅ ADD THIS
+}) => {
   /* ================= BASIC ================= */
   const adminUid =
     auth.currentUser?.uid || localStorage.getItem("adminUid");
@@ -32,7 +39,7 @@ const Parent = ({ formOnly=false, requirePremium, globalSearch="", setActivePage
   const selectedParentId = localStorage.getItem("selectedParentId");
 
   const [parents, setParents] = useState([]);
-  const [showModal, setShowModal] = useState(false);
+ 
   const [editId, setEditId] = useState(null);
   const [password, setPassword] = useState("");
   const [studentCount, setStudentCount] = useState(0);
@@ -43,6 +50,7 @@ const [students, setStudents] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused] = useState(null);
   const [openClassIndex, setOpenClassIndex] = useState(null);
+  const [openSectionIndex, setOpenSectionIndex] = useState(null)
   const [form, setForm] = useState({
     parentName: "",
     parentId: "",
@@ -74,6 +82,20 @@ const [students, setStudents] = useState([]);
   useEffect(() => {
     fetchParents();
   }, [adminUid]);
+  useEffect(() => {
+    if (editData) {
+      setForm({
+        parentName: editData.parentName || "",
+        parentId: editData.parentId || "",
+        email: editData.email || "",
+        phone: editData.phone || "",
+        address: editData.address || "",
+        photoURL: editData.photoURL || ""
+      });
+  
+      setEditId(editData.id);
+    }
+  }, [editData]);
   useEffect(() => {
     return () => {
       localStorage.removeItem("selectedParentId");
@@ -116,6 +138,41 @@ const [students, setStudents] = useState([]);
   
     fetchClasses();
   }, [adminUid]);
+  useEffect(() => {
+    if (editData) {
+      setForm({
+        parentName: editData.parentName || "",
+        parentId: editData.parentId || "",
+        email: editData.email || "",
+        phone: editData.phone || "",
+        address: editData.address || "",
+        photoURL: editData.photoURL || ""
+      });
+  
+      setEditId(editData.id);
+  
+      // 🔥 LOAD STUDENTS ALSO
+      const loadStudents = async () => {
+        const snap = await getDocs(
+          collection(db, "users", adminUid, "students")
+        );
+  
+        const list = snap.docs
+          .map(d => d.data())
+          .filter(s => s.parentId === editData.parentId);
+  
+        setStudents(
+          list.length
+            ? list
+            : [{ studentId: "", studentName: "", class: "", section: "" }]
+        );
+  
+        setStudentsCount(list.length || 1);
+      };
+  
+      loadStudents();
+    }
+  }, [editData]);
   /* ================= SAVE (ADMIN / SUB ADMIN) ================= */
   const handleSave = async () => {
     if (
@@ -360,46 +417,16 @@ if (editId) {
   
     fetchParents();
   };
-  
-
-  /* ================= EDIT ================= */
-  const handleEdit = async (p) => {
-    setEditId(p.id);
-  
-    setForm({
-      parentName: p.parentName,
-      parentId: p.parentId,
-      email: p.email,
-      phone: p.phone,
-      address: p.address,
-      photoURL: p.photoURL || ""
-
-    });
-  
-    // ⭐ load students REALLY in DB now
-    const snap = await getDocs(
-      collection(db, "users", adminUid, "students")
-    );
-  
-    const list = snap.docs
-      .map(d => d.data())
-      .filter(s => s.parentId === p.parentId);
-  
-    setStudents(list.length ? list : [{ studentId: "", studentName: "", class: "", section: "" }]);
-    setStudentsCount(list.length || 1);
-  
-    setPassword(p.password ||"");
-    setShowModal(true);
+  const handleEdit = (p) => {
+    if (onEdit) {
+      onEdit(p); // 🔥 send to parent component
+    }
   };
-  
-
-  /* ================= RESET ================= */
   const resetForm = () => {
-    setShowModal(false);
     setEditId(null);
     setPassword("");
     setStudentsCount(1);
-    setStudents([{ studentId: "", studentName: "", class: "", section: ""}]);
+    setStudents([{ studentId: "", studentName: "", class: "", section: "" }]);
     setForm({
       parentName: "",
       parentId: "",
@@ -502,12 +529,17 @@ if (editId) {
 >
   <FaEye /> View
 </button>
-
-<button className="edit-btn" onClick={() => requirePremium(() => handleEdit(p))}>
-  <FaEdit /> Edit
+<button className="edit-btn"onClick={() => handleEdit(p)}>
+<FaEdit /> Edit
 </button>
-
-<button className="delete-btn" onClick={() => requirePremium(() => handleDelete(p.id))}>
+<button
+  className="delete-btn"
+  onClick={() =>
+    requirePremium
+      ? requirePremium(() => handleDelete(p.id))
+      : handleDelete(p.id)
+  }
+>
   <FaTrash /> Delete
 </button>
 </td>
@@ -519,7 +551,7 @@ if (editId) {
       </table>
       )}
       {/* MODAL same as before */}
-      {(showModal || formOnly) && (
+      {formOnly && (
        <>
           <div className="account-grid">
  
@@ -635,10 +667,10 @@ onChange={e =>
 />
 
 
-<div className="popup-select">
+<div className="drop-select">
 
   <div
-    className="popup-input"
+    className="drop-input"
     onClick={() =>
       setOpenClassIndex(openClassIndex === i ? null : i)
     }
@@ -648,13 +680,13 @@ onChange={e =>
   </div>
 
   {openClassIndex === i && (
-    <div className="popup-menu">
+    <div className="drop-menu">
 
       {classes.map(c => (
 
         <div
           key={c.id}
-          className="popup-item"
+          className="drop-item"
           onClick={()=>{
             handleStudentChange(i, "class", c.name);
             setOpenClassIndex(null);
@@ -669,10 +701,10 @@ onChange={e =>
   )}
 
 </div>
-<div className="popup-select">
+<div className="drop-select">
 
   <div
-    className="popup-input"
+    className="drop-input"
     onClick={() =>
       setOpenSectionIndex(openSectionIndex === i ? null : i)
     }
@@ -682,7 +714,7 @@ onChange={e =>
   </div>
 
   {openSectionIndex === i && (
-    <div className="popup-menu">
+    <div className="drop-menu">
 
       {classes
         .find(c => c.name === s.class)
@@ -690,7 +722,7 @@ onChange={e =>
 
         <div
           key={sec}
-          className="popup-item"
+          className="drop-item"
           onClick={()=>{
             handleStudentChange(i, "section", sec);
             setOpenSectionIndex(null);
@@ -788,7 +820,11 @@ className="photo-modal-img"
 
 </div>
 )}
-              <button className="save" onClick={() => requirePremium(handleSave)}>
+              <button className="save"onClick={() =>
+  requirePremium
+    ? requirePremium(handleSave)
+    : handleSave()
+}>
                 Save
               </button>
               <button className="cancel" onClick={resetForm}>
