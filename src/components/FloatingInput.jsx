@@ -1,5 +1,5 @@
 import React from "react";
-
+import "../features/dashboard_styles/design.css"
 const FloatingInput = ({
   name,
   label,

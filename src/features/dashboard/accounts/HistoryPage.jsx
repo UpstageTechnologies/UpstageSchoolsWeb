@@ -26,7 +26,9 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
     else if (activeFilter === "inventory") {
       return entryType === "inventory" && action !== "DELETE";
     }
-
+    else if (activeFilter === "people") {
+      return entryType === "people" && action === "DELETE";
+    }
     else if (activeFilter === "deleted") {
       return action === "DELETE";
     }
@@ -43,33 +45,45 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
       return;
     }
   
-    let collectionName = "";
+    let ref = null;
   
-    // 🔥 use module instead of entryType
+    // 🔥 MASTER TYPES
     if (item.module === "SALARY_MASTER") {
-      collectionName = "FeesMaster";
+      ref = collection(db, "users", adminUid, "Account", "accounts", "FeesMaster");
     }
+  
     else if (item.module === "FEES_MASTER") {
-      collectionName = "FeesMaster";
+      ref = collection(db, "users", adminUid, "Account", "accounts", "FeesMaster");
     }
+  
     else if (item.module === "COMPETITION") {
-      collectionName = "Competition";
+      ref = collection(db, "users", adminUid, "Account", "accounts", "Competition");
     }
+  
+    // 💰 INCOME
     else if (item.entryType === "income") {
-      collectionName = "Income";
+      ref = collection(db, "users", adminUid, "Account", "accounts", "Income");
     }
+  
+    // 💸 EXPENSE
     else if (item.entryType === "expense") {
-      collectionName = "Expenses";
+      ref = collection(db, "users", adminUid, "Account", "accounts", "Expenses");
     }
+  
+    // 👥 PEOPLE (🔥 FIX HERE)
+    else if (item.entryType === "people") {
+      ref = collection(db, "users", adminUid, "office_staffs");
+    }
+  
     else {
+      alert("Unknown type ❌");
       return;
     }
   
-    await addDoc(
-      collection(db, "users", adminUid, "Account", "accounts", collectionName),
-      item.originalData
-    );
+    // 🔥 RESTORE
+    await addDoc(ref, item.originalData);
   
+    // 🔥 DELETE FROM HISTORY
     await deleteDoc(
       doc(db, "users", adminUid, "Account", "accounts", "History", item.id)
     );
@@ -217,6 +231,12 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
     Inventory
   </button>
   <button
+  className={activeFilter==="people" ? "tab-btn active" : "tab-btn"}
+  onClick={()=>setActiveFilter("people")}
+>
+  People
+</button>
+  <button
   className={activeFilter==="deleted" ? "tab-btn active" : "tab-btn"}
   onClick={()=>setActiveFilter("deleted")}
 >
@@ -345,10 +365,28 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
   })
   .map(h => (
     <tr key={h.id}>
-      <td data-label="Type">{h.module}</td>
+     <td data-label="Type">
+  {h.entryType === "people"
+    ? (h.module || "").toLowerCase()
+    : h.module}
+</td>
       <td data-label="Action">{h.action}</td>
       <td data-label="Name">{h.name}</td>
-      <td data-label="Amount">₹{h.amount}</td>
+      <td data-label="Amount">
+  {h.entryType === "people" ? (
+    <span style={{ 
+      background: "#eef2ff",
+      padding: "4px 10px",
+      borderRadius: "10px",
+      fontSize: "13px",
+      fontWeight: 600
+    }}>
+      {h.role || h.module}
+    </span>
+  ) : (
+    `₹${h.amount}`
+  )}
+</td>
       <td data-label="Date">{formatDate(h.date)}</td>
       <td className="action-cell">
 

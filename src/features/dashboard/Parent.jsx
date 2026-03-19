@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaPlus, FaSearch, FaEdit, FaTrash ,FaUser } from "react-icons/fa";
+import { FaPlus, FaSearch, FaEdit, FaTrash ,FaUser ,FaUndo} from "react-icons/fa";
 import {
   collection,
   addDoc,
@@ -7,8 +7,9 @@ import {
   Timestamp,
   deleteDoc,
   doc,
-  updateDoc,query, where
+  updateDoc,query, where,onSnapshot
 } from "firebase/firestore";
+
 import { auth, db } from "../../services/firebase";
 import "../dashboard_styles/Teacher.css";
 import FloatingInput from "../../components/FloatingInput";
@@ -51,6 +52,8 @@ const [students, setStudents] = useState([]);
   const [focused, setFocused] = useState(null);
   const [openClassIndex, setOpenClassIndex] = useState(null);
   const [openSectionIndex, setOpenSectionIndex] = useState(null)
+  const [saving, setSaving] = useState(false);
+const [saved, setSaved] = useState(false);
   const [form, setForm] = useState({
     parentName: "",
     parentId: "",
@@ -59,29 +62,26 @@ const [students, setStudents] = useState([]);
     address: "",
     photoURL: "" 
   });
-
-  /* ================= FETCH ================= */
-  const fetchParents = async () => {
+  useEffect(() => {
     if (!adminUid) return;
-
-    const snap = await getDocs(
-      collection(db, "users", adminUid, "parents")
-    );
-
-    setParents(
-      snap.docs
+  
+    const ref = collection(db, "users", adminUid, "parents");
+  
+    const unsubscribe = onSnapshot(ref, (snap) => {
+      const list = snap.docs
         .map(d => ({ id: d.id, ...d.data() }))
         .sort((a, b) =>
-          (a.parentName || "").trim().toLowerCase()
-            .localeCompare((b.parentName || "").trim().toLowerCase())
-        )
-    );
-    
-  };
-
-  useEffect(() => {
-    fetchParents();
+          (a.parentName || "")
+            .toLowerCase()
+            .localeCompare((b.parentName || "").toLowerCase())
+        );
+  
+      setParents(list);
+    });
+  
+    return () => unsubscribe();
   }, [adminUid]);
+
   useEffect(() => {
     if (editData) {
       setForm({
@@ -173,217 +173,193 @@ const [students, setStudents] = useState([]);
       loadStudents();
     }
   }, [editData]);
-  /* ================= SAVE (ADMIN / SUB ADMIN) ================= */
   const handleSave = async () => {
-    if (
-      !form.parentName ||
-      !form.parentId ||
-      !form.email ||
-      !form.phone ||
-      !form.address ||
-      students.some(s => !s.studentId || !s.studentName || !s.class || !s.section) ||
-      (!editId && !password)
-    ) {
-      alert("All fields required");
-      return;
-    }
-    const parentIdTrim = form.parentId.trim();
-    const phoneClean = form.phone.trim();
-
-if (!/^\d{10}$/.test(phoneClean)) {
-  alert("📞 Phone number must be exactly 10 digits");
-  return;
-}
-
-
-      // =======================
-  // 🔎 1️⃣ CLEAN + CHECK DUP STUDENT IDs
-  // =======================
-  const cleanStudents = students.map(s => ({
-    ...s,
-    studentId: s.studentId.trim().toLowerCase()
-  }));
-
-  const ids = cleanStudents.map(s => s.studentId);
-  const hasDuplicate = ids.some((id, i) => ids.indexOf(id) !== i);
-
-  if (hasDuplicate) {
-    alert("❌ Duplicate Student ID — each student must be unique.");
-    return;
-  }
-    // 🔎 CHECK DUPLICATE Parent ID
-  const q = query(
-    collection(db, "users", adminUid, "parents"),
-    where("parentId", "==", parentIdTrim)
-  );
-
-  const snap = await getDocs(q);
+    try {
+      setSaving(true);
+      setSaved(false);
   
-  // =======================
-// 🔎 2️⃣ GLOBAL duplicate check in Firestore
-// =======================
-for (const s of cleanStudents) {
-
-  const q2 = query(
-    collection(db, "users", adminUid, "students"),
-    where("studentId", "==", s.studentId)
-  );
-
-  const snap2 = await getDocs(q2);
-
-  // ➤ ADD -> block if exists
-  if (!editId && !snap2.empty) {
-    alert(`❌ Student ID "${s.studentId}" already exists in the school.`);
-    return;
-  }
-
-  // ➤ EDIT -> allow only if student belongs to same parent
-  if (editId && !snap2.empty) {
-    const another = snap2.docs.find(
-      d => d.data().parentId !== form.parentId
-    );
-
-    if (another) {
-      alert(`❌ Student ID "${s.studentId}" is already used by another parent.`);
-      return;
-    }
-  }
-}
-
-
-  // ➤ ADD → must NOT exist
-  if (!editId && !snap.empty) {
-    alert("❌ Parent ID already exists. Use another one.");
-    return;
-  }
-
-  // ➤ EDIT → allow only if the same parent
-  if (editId && !snap.empty) {
-    const found = snap.docs[0];
-    if (found.id !== editId) {
-      alert("❌ Another parent already uses this Parent ID.");
-      return;
-    }
-  }
-
-    const payload = {
-      ...form,
-      parentId: parentIdTrim,
-      studentsCount,
-      students: cleanStudents
-    };
-
-    /* 🔴 SUB ADMIN → APPROVAL */
-    if (role === "admin") {
-      await addDoc(
-        collection(db, "users", adminUid, "approval_requests"),
-        {
-          module: "parent",
-          action: editId ? "update" : "create",
-          targetId: editId || null,
-          payload: {
-            ...payload,
-            password: password || null
-          },
-          status: "pending",
-          createdBy: localStorage.getItem("adminId"),
-          createdAt: Timestamp.now()
-        }
-      );
-
-      alert("⏳ Sent for admin approval");
-      resetForm();
-      return;
-    }
-
-if (editId) {
-
-  // 1️⃣ update parent document
-  const updateData = {
-    ...payload,
-    updatedAt: Timestamp.now(),
-  };
-  
-  // ⭐ Only if NEW password entered
-  if (password && password.trim() !== "") {
-    updateData.password = password;
-  }
-  
-  await updateDoc(
-    doc(db, "users", adminUid, "parents", editId),
-    updateData
-  );
-  
-
-  // 2️⃣ load students currently in DB for this parent
-  const existingSnap = await getDocs(
-    collection(db, "users", adminUid, "students")
-  );
-
-  const existingForParent = existingSnap.docs
-    .map(d => ({ id: d.id, ...d.data() }))
-    .filter(s => s.parentId === payload.parentId);
-
-  // 3️⃣ for each student in FORM
-  for (const s of students) {
-
-    const match = existingForParent.find(
-      x => (x.studentId || "").toLowerCase() === s.studentId.toLowerCase()
-    );
-
-    // ➜ if NOT found → create again (re-create deleted student)
-    if (!match) {
-      await addDoc(
-        collection(db, "users", adminUid, "students"),
-        {
-          studentName: s.studentName,
-          studentId: s.studentId,
-          parentId: payload.parentId,
-          parentName: payload.parentName,
-          class: s.class,
-          section: s.section,
-          createdAt: Timestamp.now()
-        }
-      );
-    }
-  }
-}
- else {
-
-  // ⭐ create parent
-  const parentRef = await addDoc(
-    collection(db, "users", adminUid, "parents"),
-    {
-      ...payload,
-      password,
-      role: "parent",
-      createdAt: Timestamp.now()
-    }
-  );
-
-  // ⭐ create ALL students (first time only)
-  for (const s of students) {
-    await addDoc(
-      collection(db, "users", adminUid, "students"),
-      {
-        studentName: s.studentName || s.studentId,
-        studentId: s.studentId || s.studentName,
-
-        parentId: payload.parentId,
-        parentName: payload.parentName,
-
-        class: s.class,
-        section: s.section,
-        createdAt: Timestamp.now()
+      /* ================= VALIDATION ================= */
+      if (
+        !form.parentName ||
+        !form.parentId ||
+        !form.email ||
+        !form.phone ||
+        !form.address ||
+        students.some(s => !s.studentId || !s.studentName || !s.class || !s.section) ||
+        (!editId && !password)
+      ) {
+        alert("❌ All fields required");
+        return;
       }
-    );
-  }
-}
-
-
-
-    resetForm();
-    fetchParents();
+  
+      const parentIdTrim = form.parentId.trim();
+      const phoneClean = form.phone.trim();
+  
+      if (!/^\d{10}$/.test(phoneClean)) {
+        alert("📞 Phone must be 10 digits");
+        return;
+      }
+  
+      /* ================= CLEAN STUDENTS ================= */
+      const cleanStudents = students.map(s => ({
+        ...s,
+        studentId: s.studentId.trim().toLowerCase()
+      }));
+  
+      const ids = cleanStudents.map(s => s.studentId);
+      const hasDuplicate = ids.some((id, i) => ids.indexOf(id) !== i);
+  
+      if (hasDuplicate) {
+        alert("❌ Duplicate Student IDs");
+        return;
+      }
+  
+      /* ================= DUP CHECK ================= */
+      const parentQ = query(
+        collection(db, "users", adminUid, "parents"),
+        where("parentId", "==", parentIdTrim)
+      );
+  
+      const parentSnap = await getDocs(parentQ);
+  
+      if (!editId && !parentSnap.empty) {
+        alert("❌ Parent ID already exists");
+        return;
+      }
+  
+      if (editId && !parentSnap.empty && parentSnap.docs[0].id !== editId) {
+        alert("❌ Duplicate Parent ID");
+        return;
+      }
+  
+      /* ================= STUDENT GLOBAL CHECK ================= */
+      for (const s of cleanStudents) {
+        const q2 = query(
+          collection(db, "users", adminUid, "students"),
+          where("studentId", "==", s.studentId)
+        );
+  
+        const snap2 = await getDocs(q2);
+  
+        if (!editId && !snap2.empty) {
+          alert(`❌ Student ID "${s.studentId}" exists`);
+          return;
+        }
+  
+        if (editId && !snap2.empty) {
+          const another = snap2.docs.find(
+            d => d.data().parentId !== parentIdTrim
+          );
+  
+          if (another) {
+            alert(`❌ "${s.studentId}" used by another parent`);
+            return;
+          }
+        }
+      }
+  
+      /* ================= PAYLOAD ================= */
+      const payload = {
+        ...form,
+        parentId: parentIdTrim,
+        studentsCount,
+        students: cleanStudents
+      };
+  
+      /* ================= SUB ADMIN ================= */
+      if (role === "admin") {
+        await addDoc(
+          collection(db, "users", adminUid, "approval_requests"),
+          {
+            module: "parent",
+            action: editId ? "update" : "create",
+            targetId: editId || null,
+            payload: { ...payload, password: password || null },
+            status: "pending",
+            createdAt: Timestamp.now()
+          }
+        );
+  
+        alert("⏳ Sent for approval");
+        resetForm();
+        return;
+      }
+  
+      /* ================= MAIN ADMIN ================= */
+      if (editId) {
+        // update parent
+        const updateData = {
+          ...payload,
+          updatedAt: Timestamp.now()
+        };
+  
+        if (password?.trim()) {
+          updateData.password = password;
+        }
+  
+        await updateDoc(
+          doc(db, "users", adminUid, "parents", editId),
+          updateData
+        );
+  
+      } else {
+        // create parent
+        await addDoc(
+          collection(db, "users", adminUid, "parents"),
+          {
+            ...payload,
+            password,
+            role: "parent",
+            createdAt: Timestamp.now()
+          }
+        );
+      }
+  
+      /* ================= STUDENTS SYNC ================= */
+      const existingSnap = await getDocs(
+        collection(db, "users", adminUid, "students")
+      );
+  
+      const existing = existingSnap.docs.map(d => ({
+        id: d.id,
+        ...d.data()
+      }));
+  
+      for (const s of cleanStudents) {
+        const match = existing.find(
+          x =>
+            x.studentId?.toLowerCase() === s.studentId &&
+            x.parentId === parentIdTrim
+        );
+  
+        if (!match) {
+          await addDoc(
+            collection(db, "users", adminUid, "students"),
+            {
+              studentName: s.studentName,
+              studentId: s.studentId,
+              parentId: parentIdTrim,
+              parentName: payload.parentName,
+              class: s.class,
+              section: s.section,
+              createdAt: Timestamp.now()
+            }
+          );
+        }
+      }
+  
+      /* ================= SUCCESS ================= */
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+  
+      resetForm(); // 🔥 no fetch needed
+  
+    } catch (err) {
+      console.error("🔥 ERROR:", err);
+      alert(err.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   /* ================= DELETE ================= */
@@ -415,7 +391,6 @@ if (editId) {
     // 3️⃣ delete parent
     await deleteDoc(doc(db, "users", adminUid, "parents", id));
   
-    fetchParents();
   };
   const handleEdit = (p) => {
     if (onEdit) {
@@ -667,10 +642,10 @@ onChange={e =>
 />
 
 
-<div className="drop-select">
+<div className="adminpopup-select">
 
   <div
-    className="drop-input"
+    className="adminpopup-input"
     onClick={() =>
       setOpenClassIndex(openClassIndex === i ? null : i)
     }
@@ -680,7 +655,7 @@ onChange={e =>
   </div>
 
   {openClassIndex === i && (
-    <div className="drop-menu">
+    <div className="adminpopup-menu">
 
       {classes.map(c => (
 
@@ -701,10 +676,10 @@ onChange={e =>
   )}
 
 </div>
-<div className="drop-select">
+<div className="adminpopup-select">
 
   <div
-    className="drop-input"
+    className="adminpopup-input"
     onClick={() =>
       setOpenSectionIndex(openSectionIndex === i ? null : i)
     }
@@ -714,7 +689,7 @@ onChange={e =>
   </div>
 
   {openSectionIndex === i && (
-    <div className="drop-menu">
+    <div className="adminpopup-menu">
 
       {classes
         .find(c => c.name === s.class)
@@ -820,15 +795,19 @@ className="photo-modal-img"
 
 </div>
 )}
-              <button className="save"onClick={() =>
-  requirePremium
-    ? requirePremium(handleSave)
-    : handleSave()
-}>
-                Save
-              </button>
+             <button
+  className="save"
+  disabled={saving}
+  onClick={() =>
+    requirePremium
+      ? requirePremium(handleSave)
+      : handleSave()
+  }
+>
+  {saving ? "Saving..." : saved ? "Saved ✅" : "Save"}
+</button>
               <button className="cancel" onClick={resetForm}>
-                Cancel
+                <FaUndo /> Reset
               </button>
           
             </div>

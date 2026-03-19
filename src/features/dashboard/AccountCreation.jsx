@@ -9,20 +9,17 @@ import "../dashboard_styles/CreateAccountModal.css"
 
 import CreateAccountModal from "../../components/CreateAccountModal";
 
-export default function AccountCreation() {
+export default function AccountCreation({ setActivePage }) {
  
   const [modalOpen, setModalOpen] = useState(false);
 const [accountType, setAccountType] = useState("");
 const [editData, setEditData] = useState(null);
 const [activeTab,setActiveTab] = useState("admin")
-
+const [globalSearch,setGlobalSearch]=useState("");
 return(
 <div className="accountcreationtitle">
-
-<h2>Account Creation</h2>
-
+<h2 className="page-title">Account creation</h2>
 <div className="account-card">
-
 <div className="accountcreationbuttons">
 
 <button 
@@ -70,10 +67,14 @@ Office Staff
   accountType={accountType}
   editData={editData}
   setEditData={setEditData}
-  setActiveTab={setActiveTab}   // 🔥 ADD THIS
+  setActiveTab={setActiveTab}
+  globalSearch={globalSearch}        // 🔥 ADD
+  setGlobalSearch={setGlobalSearch}   // 🔥 ADD THIS
 />
 {activeTab==="admin" && (
   <Admin
+  globalSearch={globalSearch}
+  setActivePage={setActivePage}
     onEdit={(data) => {
       setEditData({ ...data, type: "admin" });
       setAccountType("admin"); // 🔥 IMPORTANT
@@ -82,7 +83,10 @@ Office Staff
   />
 )}
     {activeTab==="teacher" && (
+
   <Teacher
+  globalSearch={globalSearch}
+  setActivePage={setActivePage}
     onEdit={(data) => {
       setEditData({ ...data, type: "teacher" });
       setAccountType("teacher"); // 🔥 IMPORTANT
@@ -92,6 +96,8 @@ Office Staff
 )}
     {activeTab==="parent" && (
  <Parent
+ globalSearch={globalSearch}
+ setActivePage={setActivePage}
    onEdit={(data) => {
     setEditData({ ...data, type: "parent" });
      setAccountType("parent"); // 🔥 ADD THIS
@@ -101,6 +107,8 @@ Office Staff
 )}
     {activeTab==="student" && (
   <Student
+  globalSearch={globalSearch}
+  setActivePage={setActivePage}
     onEdit={(data) => {
       setEditData({ ...data, type: "student" });
       setAccountType("student"); // 🔥 IMPORTANT
@@ -110,6 +118,8 @@ Office Staff
 )}
     {activeTab==="staff" && (
   <OfficeStaff
+  globalSearch={globalSearch}
+  setActivePage={setActivePage}
     onEdit={(data) => {
      
       setEditData({ ...data, type: "staff" }); // 🔥 add type

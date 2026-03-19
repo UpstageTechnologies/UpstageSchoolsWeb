@@ -285,11 +285,14 @@ setShowStudentDropdown,
         </div>
     )}
     </div>
-    <input
+    <FloatingInput
+  name="amount"
+  label="Amount"
   type="number"
-  placeholder="Amount"
   value={srcAmt}
   onChange={e => setSrcAmt(e.target.value)}
+  focused={focused}
+  setFocused={setFocused}
 />
 <div className="student-dropdown">
 
@@ -515,9 +518,9 @@ setShowStudentDropdown,
 {incomeMode === "student" && studentMode === "new" && (
     <div className="entry-row source">
 <div className="student-dropdown">
-
-<input
-  placeholder="Student Name"
+<FloatingInput
+  name="studentName"
+  label="Student Name"
   value={newName || studentSearch}
   onChange={e => {
     setStudentSearch(e.target.value);
@@ -525,6 +528,8 @@ setShowStudentDropdown,
     setShowStudentDropdown(true);
   }}
   onFocus={() => setShowStudentDropdown(true)}
+  focused={focused}
+  setFocused={setFocused}
 />
 
 {showStudentDropdown && (
@@ -557,25 +562,28 @@ setShowStudentDropdown,
 )}
 
 </div>
-
-<input
-  placeholder="Parent Name"
+<FloatingInput
+  name="parentName"
+  label="Parent Name"
   value={newParent}
   onChange={e => setNewParent(e.target.value)}
+  focused={focused}
+  setFocused={setFocused}
 />{/* CLASS DROPDOWN (NEW ADMISSION) */}
 <div className="student-dropdown">
-
-  <input
-    placeholder="Select Class"
-    value={newClass || newClassSearch}
-    onChange={e => {
-      setNewClassSearch(e.target.value);
-      setNewClass("");
-      setShowNewClassDropdown(true);
-    }}
-    onFocus={() => setShowNewClassDropdown(true)}
-  />
-
+<FloatingInput
+  name="newClass"
+  label="Select Class"
+  value={newClass || newClassSearch}
+  onChange={e => {
+    setNewClassSearch(e.target.value);
+    setNewClass("");
+    setShowNewClassDropdown(true);
+  }}
+  onFocus={() => setShowNewClassDropdown(true)}
+  focused={focused}
+  setFocused={setFocused}
+/>
   {showNewClassDropdown && (
     <div className="student-dropdown-list">
 
@@ -611,15 +619,19 @@ setShowStudentDropdown,
 
         {/* ===== SELECT FEES FROM INVENTORY ===== */}
 <div className="student-dropdown">
-  <input
-    placeholder="Select Fees"
-    value={
-      selectedFees.length
-        ? `${selectedFees[0].name} — ₹${selectedFees[0].amount}`
-        : ""
-    }
-    readOnly
-    onClick={()=>setShowFeesDropdown(!showFeesDropdown)}/>
+<FloatingInput
+  name="fees"
+  label="Select Fees"
+  value={
+    selectedFees.length
+      ? `${selectedFees[0].name} — ₹${selectedFees[0].amount}`
+      : ""
+  }
+  readOnly
+  onClick={() => setShowFeesDropdown(prev => !prev)}
+  focused={focused}
+  setFocused={setFocused}
+/>
   {showFeesDropdown && (
     <div className="student-dropdown-list">
       {getClassFees(newClass || oldClass).map(fee => {
@@ -651,16 +663,19 @@ setShowStudentDropdown,
   />
 )}<div className="student-dropdown">
           
-  <input
-    placeholder="Select Payment Type"
-    value={paymentType || paymentSearch}
-    onChange={e => {
-      setPaymentSearch(e.target.value);
-      setPaymentType("");
-      setShowPaymentDD(true);
-    }}
-    onFocus={() => setShowPaymentDD(true)}
-  />
+          <FloatingInput
+  name="paymentType"
+  label="Select Payment Type"
+  value={paymentType || paymentSearch}
+  onChange={e => {
+    setPaymentSearch(e.target.value);
+    setPaymentType("");
+    setShowPaymentDD(true);
+  }}
+  onFocus={() => setShowPaymentDD(true)}
+  focused={focused}
+  setFocused={setFocused}
+/>
 
   {showPaymentDD && (
     <div className="student-dropdown-list">
@@ -706,12 +721,15 @@ setShowStudentDropdown,
 )}
 
 {newPayType === "partial" && (
-  <input
-    type="number"
-    placeholder="Enter Amount"
-    value={newPayAmount}
-    onChange={e => setNewPayAmount(e.target.value)}
-  />
+ <FloatingInput
+ name="payAmount"
+ label="Enter Amount"
+ type="number"
+ value={newPayAmount}
+ onChange={e => setNewPayAmount(e.target.value)}
+ focused={focused}
+ setFocused={setFocused}
+/>
 )}
 
 {newPayType.startsWith("term") && (

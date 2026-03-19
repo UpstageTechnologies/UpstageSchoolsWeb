@@ -1,6 +1,8 @@
   import React, { useEffect, useState } from "react";
+  import { onSnapshot } from "firebase/firestore";
   import { FaPlus, FaSearch, FaEdit, FaTrash, FaEye, FaEyeSlash } from "react-icons/fa";
   import "../dashboard_styles/Teacher.css"; // same CSS reuse
+  import FloatingInput from "../../components/FloatingInput";
   import {
     collection,
     addDoc,
@@ -52,10 +54,13 @@
     const roleType = localStorage.getItem("role"); // admin | sub_admin
     const [staffs, setStaffs] = useState([]);
     const [editId, setEditId] = useState(null);
-
+    const [focused, setFocused] = useState(null);
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
-    
+    const [showDepartment, setShowDepartment] = useState(false);
+    const [showRole, setShowRole] = useState(false);
+    const [saving, setSaving] = useState(false);
+const [saved, setSaved] = useState(false);
     /* ================= FORM ================= */
     const [form, setForm] = useState({
       name: "",
@@ -67,6 +72,7 @@
       address: "",
       photoURL: ""
     });
+    
     useEffect(() => {
       if (editData) {
         setForm({
@@ -84,142 +90,179 @@
         setPassword(editData.password || "");
       }
     }, [editData]);
-    /* ================= FETCH STAFF ================= */
-    const fetchStaffs = async () => {
+    useEffect(() => {
       if (!adminUid) return;
-
-      const snap = await getDocs(
-        collection(db, "users", adminUid, "office_staffs")
-      );
-
-      setStaffs(
-        snap.docs
+    
+      const ref = collection(db, "users", adminUid, "office_staffs");
+      
+      const unsubscribe = onSnapshot(ref, (snap) => {
+        const list = snap.docs
           .map(d => ({ id: d.id, ...d.data() }))
           .sort((a, b) =>
             (a.name || "").toLowerCase().localeCompare((b.name || "").toLowerCase())
-          )
-      );
-    };
-
-    useEffect(() => {
-      fetchStaffs();
+          );
+    
+        setStaffs(list);
+      });
+    
+      return () => unsubscribe();
     }, [adminUid]);
-
     /* ================= SAVE ================= */
     const handleSaveStaff = async () => {
-      if (
-        !form.name ||
-        !form.staffId ||
-        !form.phone ||
-        !form.department ||
-        !form.role ||
-        (!editId && !password)
-      ) {
-        alert("❌ Required fields missing");
-        return;
-      }
-
-      // 📞 phone validation
-      if (!/^\d{10}$/.test(form.phone)) {
-        alert("📞 Phone must be 10 digits");
-        return;
-      }
-
-      const staffIdTrimmed = form.staffId.trim();
-
-      // 🔎 duplicate staffId check
-      const q = query(
-        collection(db, "users", adminUid, "office_staffs"),
-        where("staffId", "==", staffIdTrimmed)
-      );
-      const snap = await getDocs(q);
-
-      if (!editId && !snap.empty) {
-        alert("❌ Staff ID already exists");
-        return;
-      }
-
-      if (editId && !snap.empty && snap.docs[0].id !== editId) {
-        alert("❌ Another staff uses this ID");
-        return;
-      }
-      if (roleType === "admin") {
-        await addDoc(
+      try {
+        setSaving(true);
+        setSaved(false);
+    
+        if (
+          !form.name ||
+          !form.staffId ||
+          !form.phone ||
+          !form.department ||
+          !form.role ||
+          (!editId && !password)
+        ) {
+          alert("❌ Required fields missing");
+          return;
+        }
+    
+        if (!/^\d{10}$/.test(form.phone)) {
+          alert("📞 Phone must be 10 digits");
+          return;
+        }
+    
+        const staffIdTrimmed = form.staffId.trim();
+    
+        const q = query(
           collection(db, "users", adminUid, "office_staffs"),
-          {
+          where("staffId", "==", staffIdTrimmed)
+        );
+    
+        const snap = await getDocs(q);
+    
+        if (!editId && !snap.empty) {
+          alert("❌ Staff ID already exists");
+          return;
+        }
+    
+        if (editId && !snap.empty && snap.docs[0].id !== editId) {
+          alert("❌ Another staff uses this ID");
+          return;
+        }
+    
+        // 🔴 sub admin
+        if (roleType === "admin") {
+          await addDoc(
+            collection(db, "users", adminUid, "office_staffs"),
+            {
+              ...form,
+              staffId: staffIdTrimmed,
+              password,
+              createdAt: Timestamp.now()
+            }
+          );
+    
+          alert("⏳ Sent for approval");
+          return;
+        }
+    
+        // 🟢 main admin
+        if (editId) {
+          const updateData = {
             ...form,
             staffId: staffIdTrimmed,
-            password,
-            createdAt: Timestamp.now()
+            updatedAt: Timestamp.now()
+          };
+    
+          if (password.trim()) {
+            updateData.password = password;
           }
-        );
-        
-
-        alert("⏳ Sent for approval");
+    
+          await updateDoc(
+            doc(db, "users", adminUid, "office_staffs", editId),
+            updateData
+          );
+        } else {
+          await addDoc(
+            collection(db, "users", adminUid, "office_staffs"),
+            {
+              ...form,
+              staffId: staffIdTrimmed,
+              password,
+              createdAt: Timestamp.now()
+            }
+          );
+        }
+    
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+    
         resetForm();
-        return;
+       
+    
+      } catch (err) {
+        console.error("🔥 FIREBASE ERROR:", err);
+        alert(err.message); // 🔥 REAL ERROR SHOW
+      } finally {
+        setSaving(false);
       }
-
-      /* 🟢 MAIN ADMIN */
-      if (editId) {
-        const updateData = {
-          ...form,
-          staffId: staffIdTrimmed,
-          updatedAt: Timestamp.now()
-        };
-
-        if (password.trim()) updateData.password = password;
-
-        await updateDoc(
-          doc(db, "users", adminUid, "office_staffs", editId),
-          updateData
-        );
-      } else {
-        await addDoc(
-          collection(db, "users", adminUid, "office_staffs"),
-          {
-            name: newStaffName,
-            phone: newStaffPhone,
-            department: "Office",
-            role: salaryPosition,
-            staffId: "OFF" + Date.now(),
-            createdAt: new Date()
-          }
-        );
-        
-      }
-
-      resetForm();
-      fetchStaffs();
     };
 
     /* ================= DELETE ================= */
-    const handleDelete = async (id) => {
+    const handleDelete = async (staff) => {
       if (!window.confirm("Delete staff?")) return;
-
-      if (roleType === "admin") {
+    
+      // 🔥 UI update immediately
+      setStaffs(prev => prev.filter(s => s.id !== staff.id));
+    
+      try {
+        if (roleType === "admin") {
+          await addDoc(
+            collection(db, "users", adminUid, "approval_requests"),
+            {
+              module: "office_staff",
+              action: "delete",
+              targetId: staff.id,
+              status: "pending",
+              createdBy: localStorage.getItem("adminId"),
+              createdAt: Timestamp.now()
+            }
+          );
+          alert("⏳ Delete request sent");
+          return;
+        }
+    
+        // 🔥 Save to History (WITH ID)
         await addDoc(
-          collection(db, "users", adminUid, "approval_requests"),
+          collection(db, "users", adminUid, "Account", "accounts", "History"),
           {
-            module: "office_staff",
-            action: "delete",
-            targetId: id,
-            status: "pending",
-            createdBy: localStorage.getItem("adminId"),
-            createdAt: Timestamp.now()
+            entryType: "people",
+            module: "OFFICE_STAFF",
+            name: staff.name,
+            role: staff.role,
+            action: "DELETE",
+            date: Timestamp.now(),
+            createdAt: Timestamp.now(),
+            originalData: {
+              id: staff.id,   // 🔥 VERY IMPORTANT
+              ...staff
+            }
           }
         );
-        alert("⏳ Delete request sent");
-        return;
+    
+        // 🔥 Delete from firestore
+        await deleteDoc(
+          doc(db, "users", adminUid, "office_staffs", staff.id)
+        );
+    
+      } catch (err) {
+        console.error(err);
+        alert("Delete failed ❌");
       }
-
-      await deleteDoc(doc(db, "users", adminUid, "office_staffs", id));
-      fetchStaffs();
     };
-
+const safePremium = requirePremium ?? ((fn) => fn());
     /* ================= RESET ================= */
     const resetForm = () => {
-      setShowModal(false);
+     
       setEditId(null);
       setPassword("");
       setForm({
@@ -238,6 +281,15 @@
         localStorage.removeItem("selectedOfficeStaffId");
       };
     }, []);
+    useEffect(()=>{
+      const close=()=> {
+      
+        setShowDepartment(false);
+        setShowRole(false);
+      };
+      window.addEventListener("click",close);
+      return()=>window.removeEventListener("click",close);
+    },[]);
     
     return (
 <>
@@ -246,7 +298,7 @@
           {!formOnly && (
 <></>
 )}
-       
+        
 
         {/* TABLE */}
         {!formOnly && (
@@ -337,13 +389,11 @@
                     </button>
 
                     <button
-                      className="delete-btn"
-                      onClick={() => handleDelete(s.id)}
-                    >
-                      <FaTrash /> Delete
-                    </button>
-
-
+  className="delete-btn"
+  onClick={() => safePremium(() => handleDelete(s))}
+>
+  <FaTrash /> Delete
+</button>
                   </td>
                 </tr>
               ))}
@@ -353,59 +403,128 @@
         {/* MODAL */}
         {formOnly && (
         <div className="account-grid">
+<FloatingInput
+  name="name"
+  label="Staff Name"
+  value={form.name}
+  focused={focused}
+  setFocused={setFocused}
+  onChange={(e) =>
+    setForm({ ...form, name: e.target.value })
+  }
+/>
+<FloatingInput
+  name="staffId"
+  label="Staff ID"
+  value={form.staffId}
+  focused={focused}
+  setFocused={setFocused}
+  onChange={(e) =>
+    setForm({ ...form, staffId: e.target.value })
+  }
+/>
 
-              <input
-                placeholder="Staff Name"
-                value={form.name}
-                onChange={e => setForm({ ...form, name: e.target.value })}
-              />
-
-              <input
-                placeholder="Staff ID"
-                value={form.staffId}
-                onChange={e => setForm({ ...form, staffId: e.target.value })}
-              />
-
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                />
-                <span
-                  onClick={() => setShowPassword(p => !p)}
-                  
-                >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
-                </span>
+<FloatingInput
+  name="password"
+  label="Password"
+  type={showPassword ? "text" : "password"}
+  value={password}
+  focused={focused}
+  setFocused={setFocused}
+  onChange={(e) => setPassword(e.target.value)}
+  rightIcon={showPassword ? <FaEyeSlash /> : <FaEye />}
+  onRightIconClick={() => setShowPassword(p => !p)}
+/>
               
 
-              <input
-                placeholder="Phone"
-                value={form.phone}
-                maxLength={10}
-                onChange={e =>
-                  setForm({ ...form, phone: e.target.value.replace(/\D/g, "") })
-                }
-              />
+                <FloatingInput
+  name="phone"
+  label="Phone"
+  value={form.phone}
+  focused={focused}         // ✅ FIX
+  setFocused={setFocused}   // ✅ FIX
+  onChange={(e) => {
+    const v = e.target.value.replace(/\D/g, "");
+    setForm({ ...form, phone: v.slice(0, 10) });
+  }}
+/>
 
-              <select
-                value={form.department}
-                onChange={e => setForm({ ...form, department: e.target.value })}
-              >
-                <option value="">Department</option>
-                {departments.map(d => <option key={d}>{d}</option>)}
-              </select>
+<div className="adminpopup-select">
 
-              <select
-                value={form.role}
-                onChange={e => setForm({ ...form, role: e.target.value })}
-              >
-                <option value="">Role</option>
-                {roles.map(r => <option key={r}>{r}</option>)}
-              </select>
+<div
+  className="adminpopup-input"
+  onClick={(e) => {
+    e.stopPropagation(); // 🔥 ADD THIS
+    setShowDepartment(prev => !prev);
+  }}
+>
+  {form.department || "Department"}
+  <span>▾</span>
+</div>
 
-                <button className="save" onClick={handleSaveStaff}>Save</button>
+{showDepartment && (
+  <div className="adminpopup-menu">
+
+    {departments.map(d => (
+      <div
+        key={d}
+        className={`popup-item ${form.department === d ? "active" : ""}`}
+        onClick={() => {
+          setForm({ ...form, department: d });
+          setShowDepartment(false);
+        }}
+      >
+        {form.department === d && "✓ "}
+        {d}
+      </div>
+    ))}
+
+  </div>
+)}
+
+</div>
+
+<div className="adminpopup-select">
+<div
+  className="adminpopup-input"
+  onClick={(e) => {
+    e.stopPropagation(); // 🔥 ADD THIS
+    setShowRole(prev => !prev);
+  }}
+>
+  {form.role || "Role"}
+  <span>▾</span>
+</div>
+
+{showRole && (
+  <div className="adminpopup-menu">
+
+    {roles.map(r => (
+      <div
+        key={r}
+        className={`popup-item ${form.role === r ? "active" : ""}`}
+        onClick={() => {
+          setForm({ ...form, role: r });
+          setShowRole(false);
+        }}
+      >
+        {form.role === r && "✓ "}
+        {r}
+      </div>
+    ))}
+
+  </div>
+)}
+
+</div>
+
+              <button
+  className="save"
+  disabled={saving}
+  onClick={() => safePremium(handleSaveStaff)}
+>
+  {saving ? "Saving..." : saved ? "Saved ✅" : "Save"}
+</button>
                 <button className="cancel" onClick={resetForm}>Cancel</button>
              
             </div>

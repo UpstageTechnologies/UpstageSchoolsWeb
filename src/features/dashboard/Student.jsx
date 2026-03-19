@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FaPlus, FaSearch, FaEdit, FaTrash, FaEye ,FaUser } from "react-icons/fa";
 import "../dashboard_styles/Teacher.css";
+import { onSnapshot } from "firebase/firestore"; 
 import FloatingInput from "../../components/FloatingInput";
 import {
   collection,
@@ -32,6 +33,8 @@ const Student = ({
   const [showClass, setShowClass] = useState(false);
 const [showSection, setShowSection] = useState(false);
 const [classes, setClasses] = useState([]);
+const [saving, setSaving] = useState(false);
+const [saved, setSaved] = useState(false);
 
   const [form, setForm] = useState({
     studentName: "",
@@ -47,23 +50,26 @@ const [classes, setClasses] = useState([]);
     photoURL: ""  
   });
   const selectedClass = classes.find(c => c.name === form.class)
-  const fetchStudents = async () => {
+  const safePremium = requirePremium ?? ((fn) => fn());
+  useEffect(() => {
     if (!adminUid) return;
-
-    const snap = await getDocs(
-      collection(db, "users", adminUid, "students")
-    );
-
-    setStudents(
-      snap.docs.map(d => ({
-        id: d.id,
-        ...d.data()
-      }))
-      .sort((a, b) =>
-      (a.studentName || "").toLowerCase().localeCompare((b.studentName || "").toLowerCase())
-    )
-    );
-  };
+  
+    const ref = collection(db, "users", adminUid, "students");
+  
+    const unsubscribe = onSnapshot(ref, (snap) => {
+      const list = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) =>
+          (a.studentName || "")
+            .toLowerCase()
+            .localeCompare((b.studentName || "").toLowerCase())
+        );
+  
+      setStudents(list);
+    });
+  
+    return () => unsubscribe();
+  }, [adminUid]);
   useEffect(() => {
     if (editData) {
       setForm({
@@ -103,87 +109,100 @@ const [classes, setClasses] = useState([]);
     fetchClasses()
     
     },[adminUid])
-  useEffect(() => {
-    fetchStudents();
-  }, [adminUid]);
-
-  const handleSaveStudent = async () => {
-    if (
-      !form.studentName ||
-      !form.studentId ||
-      !form.parentId ||
-      !form.parentName ||
-      !form.class ||
-      !form.section
-    ) {
-      alert("Required fields missing");
-      return;
-    }
-    const idTrim = form.studentId.trim();
-
-  // 🔎 CHECK DUPLICATE studentId
-  const q = query(
-    collection(db, "users", adminUid, "students"),
-    where("studentId", "==", idTrim)
-  );
-
-  const snap = await getDocs(q);
-
-  // ➤ ADD → must NOT exist
-  if (!editId && !snap.empty) {
-    alert("❌ Student ID already exists. Use another one.");
-    return;
-  }
-
-  // ➤ EDIT → allow only if same student document
-  if (editId && !snap.empty) {
-    const found = snap.docs[0];
-    if (found.id !== editId) {
-      alert("❌ Another student already uses this Student ID.");
-      return;
-    }
-  }
-
-    if (role === "admin") {
-      await addDoc(
-        collection(db, "users", adminUid, "approval_requests"),
-        {
-          module: "student",
-          action: editId ? "update" : "create",
-          targetId: editId || null,
-          payload: { ...form },
-          status: "pending",
-          createdBy: localStorage.getItem("adminId"),
-          createdAt: Timestamp.now()
+    const handleSaveStudent = async () => {
+      try {
+        setSaving(true);
+        setSaved(false);
+    
+        /* ================= VALIDATION ================= */
+        if (
+          !form.studentName ||
+          !form.studentId ||
+          !form.parentId ||
+          !form.parentName ||
+          !form.class ||
+          !form.section
+        ) {
+          alert("❌ Required fields missing");
+          return;
         }
-      );
-
-      alert("⏳ Sent for admin approval");
-      resetForm();
-      return;
-    }
-
-    if (editId) {
-      await updateDoc(
-        doc(db, "users", adminUid, "students", editId),
-        {
-          ...form,
-          updatedAt: Timestamp.now()
+    
+        const idTrim = form.studentId.trim();
+    
+        /* ================= DUPLICATE CHECK ================= */
+        const q = query(
+          collection(db, "users", adminUid, "students"),
+          where("studentId", "==", idTrim)
+        );
+    
+        const snap = await getDocs(q);
+    
+        // ➤ ADD case
+        if (!editId && !snap.empty) {
+          alert("❌ Student ID already exists");
+          return;
         }
-      );
-    } else {
-      await addDoc(
-        collection(db, "users", adminUid, "students"),
-        {
-          ...form,
-          createdAt: Timestamp.now()
+    
+        // ➤ EDIT case
+        if (editId && !snap.empty && snap.docs[0].id !== editId) {
+          alert("❌ Another student already uses this ID");
+          return;
         }
-      );
-    }
-
-    resetForm();
-    fetchStudents();
-  };
+    
+        /* ================= SUB ADMIN FLOW ================= */
+        if (role === "admin") {
+          await addDoc(
+            collection(db, "users", adminUid, "approval_requests"),
+            {
+              module: "student",
+              action: editId ? "update" : "create",
+              targetId: editId || null,
+              payload: { ...form, studentId: idTrim },
+              status: "pending",
+              createdBy: localStorage.getItem("adminId"),
+              createdAt: Timestamp.now()
+            }
+          );
+    
+          alert("⏳ Sent for admin approval");
+          resetForm();
+          return;
+        }
+    
+        /* ================= MAIN ADMIN SAVE ================= */
+        if (editId) {
+          await updateDoc(
+            doc(db, "users", adminUid, "students", editId),
+            {
+              ...form,
+              studentId: idTrim,
+              updatedAt: Timestamp.now()
+            }
+          );
+        } else {
+          await addDoc(
+            collection(db, "users", adminUid, "students"),
+            {
+              ...form,
+              studentId: idTrim,
+              createdAt: Timestamp.now()
+            }
+          );
+        }
+    
+        /* ================= SUCCESS UI ================= */
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+    
+        resetForm(); // 🔥 no fetch needed (onSnapshot handles)
+    
+      } catch (err) {
+        console.error("🔥 FIREBASE ERROR:", err);
+        alert("❌ Save failed");
+      } finally {
+        setSaving(false);
+      }
+    };
 
   const handleDeleteStudent = async (id) => {
     if (!window.confirm("Delete student?")) return;
@@ -206,11 +225,11 @@ const [classes, setClasses] = useState([]);
     }
 
     await deleteDoc(doc(db, "users", adminUid, "students", id));
-    fetchStudents();
+  
   };
 
   const resetForm = () => {
-    setShowModal(false);
+  
     setEditId(null);
     setForm({
       studentName: "",
@@ -251,10 +270,12 @@ const [classes, setClasses] = useState([]);
         <tbody>
           {students
   .filter(s => {
-
-    // ✅ If coming from global search click
     if (selectedStudentId) {
-      return s.id === selectedStudentId;
+      const found = s.id === selectedStudentId;
+      if (found) {
+        localStorage.removeItem("selectedStudentId"); // 🔥 auto clear
+      }
+      return found;
     }
 
     // ✅ Normal table search
@@ -311,7 +332,7 @@ const [classes, setClasses] = useState([]);
 
   <button
     className="delete-btn"
-    onClick={() => requirePremium(() => handleDeleteStudent(s.id))}
+    onClick={() => safePremium(() => handleDeleteStudent(s.id))}
   >
     <FaTrash /> Delete
   </button>
@@ -403,10 +424,10 @@ const [classes, setClasses] = useState([]);
     setForm({ ...form, parentName: e.target.value })
   }
 />
-<div className="popup-select">
+<div className="adminpopup-select">
 
 <div
-className="popup-input"
+className="adminpopup-input"
 onClick={() => setShowClass(!showClass)}
 >
 {form.class || "Class"}
@@ -415,7 +436,7 @@ onClick={() => setShowClass(!showClass)}
 
 {showClass && (
 
-<div className="popup-menu">
+<div className="adminpopup-menu">
 
 {classes.map(c => (
 
@@ -438,10 +459,10 @@ Class {c.name}
 
 )}
 
-</div><div className="popup-select">
+</div><div className="adminpopup-select">
 
 <div
-  className="popup-input"
+  className="adminpopup-input"
   onClick={() => {
     if (!form.class) {
       alert("⚠️ First select class")
@@ -457,7 +478,7 @@ Class {c.name}
 
 {showSection && (
 
-  <div className="popup-menu">
+  <div className="adminpopup-menu">
 
     {selectedClass?.sections?.map(s => (
 
@@ -531,10 +552,11 @@ hidden
 
 </div>
 <button
-className="save"
-onClick={()=>requirePremium(handleSaveStudent)}
+  className="save"
+  disabled={saving}
+  onClick={() => safePremium(handleSaveStudent)}
 >
-Save
+  {saving ? "Saving..." : saved ? "Saved ✅" : "Save"}
 </button>
 
 <button

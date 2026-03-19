@@ -12,7 +12,7 @@ import {
   deleteDoc,
   doc,
   updateDoc,
-  getDoc,setDoc
+  getDoc,setDoc,onSnapshot
 } from "firebase/firestore";
 import { auth, db } from "../../services/firebase";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
@@ -35,6 +35,8 @@ const Admin = ({
   const [showPassword, setShowPassword] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [showGender,setShowGender] =useState(false);
+  const [saving, setSaving] = useState(false);
+const [saved, setSaved] = useState(false);
   const selectedAdminId = localStorage.getItem("selectedAdminId");
 
   /* ===== ADMIN FORM ===== */
@@ -55,22 +57,25 @@ const Admin = ({
   const superAdminUid =
   auth.currentUser?.uid || localStorage.getItem("adminUid");
 
-
-  /* ================= FETCH ADMINS ================= */
-  const fetchAdmins = async () => {
+  useEffect(() => {
     if (!superAdminUid) return;
-
-    const snap = await getDocs(
-      collection(db, "users", superAdminUid, "admins")
-    );
-
-    setAdmins(
-      snap.docs.map(d => ({
-        id: d.id,
-        ...d.data()
-      }))
-    );
-  };
+  
+    const ref = collection(db, "users", superAdminUid, "admins");
+  
+    const unsubscribe = onSnapshot(ref, (snap) => {
+      const list = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) =>
+          (a.name || "")
+            .toLowerCase()
+            .localeCompare((b.name || "").toLowerCase())
+        );
+  
+      setAdmins(list);
+    });
+  
+    return () => unsubscribe();
+  }, [superAdminUid]);
   useEffect(() => {
     if (editData) {
       setForm({
@@ -89,82 +94,91 @@ const Admin = ({
       setPassword(editData.password || "");
     }
   }, [editData]);
-  useEffect(() => {
-    fetchAdmins();
-  }, [superAdminUid]);
+
 
   /* ================= ADD / EDIT ADMIN ================= */
   const handleSaveAdmin = async () => {
-    if (!superAdminUid) {
-      alert("Master not authenticated");
-      return;
-    }
+    try {
+      setSaving(true);
+      setSaved(false);
   
-    if (
-      !form.name ||
-      !form.adminId ||
-      !form.email ||
-      !form.phone ||
-      (!editId && !password)
-    ) {
-      alert("Required fields missing");
-      return;
-    }
-    const phoneClean = form.phone.trim();
-
-if (!/^\d{10}$/.test(phoneClean)) {
-  alert("📞 Phone number must be exactly 10 digits");
-  return;
-}
-
-  
-    if (editId) {
-      // --- UPDATE (same as before) ---
-      const updateData = {
-        ...form,
-        role: "admin",                 // 👈 force correct role always
-        updatedAt: Timestamp.now()
-        
-      };
-      
-      if (password && password.trim() !== "") {
-        updateData.password = password;
-      }
-      
-    
-      await updateDoc(
-        doc(db, "users", superAdminUid, "admins", editId),
-        updateData
-      );
-    } 
-    else {
-      // 🔎 1️⃣ CHECK DUPLICATE
-      const existing = await getDoc(
-        doc(db, "users", superAdminUid, "admins", form.adminId)
-      );
-    
-      if (existing.exists()) {
-        alert("❌ Admin ID already exists. Use a different ID.");
+      if (!superAdminUid) {
+        alert("❌ Master not authenticated");
         return;
       }
-    
-      // 🆕 2️⃣ CREATE NEW
-      await setDoc(
-        doc(db, "users", superAdminUid, "admins", form.adminId),
-        {
+  
+      /* ================= VALIDATION ================= */
+      if (
+        !form.name ||
+        !form.adminId ||
+        !form.email ||
+        !form.phone ||
+        (!editId && !password)
+      ) {
+        alert("❌ Required fields missing");
+        return;
+      }
+  
+      const phoneClean = form.phone.trim();
+  
+      if (!/^\d{10}$/.test(phoneClean)) {
+        alert("📞 Phone must be 10 digits");
+        return;
+      }
+  
+      /* ================= UPDATE ================= */
+      if (editId) {
+        const updateData = {
           ...form,
-          password,
           role: "admin",
-          createdAt: Timestamp.now()
+          updatedAt: Timestamp.now()
+        };
+  
+        if (password?.trim()) {
+          updateData.password = password;
         }
-      );
+  
+        await updateDoc(
+          doc(db, "users", superAdminUid, "admins", editId),
+          updateData
+        );
+  
+      } 
+      /* ================= CREATE ================= */
+      else {
+        const existing = await getDoc(
+          doc(db, "users", superAdminUid, "admins", form.adminId)
+        );
+  
+        if (existing.exists()) {
+          alert("❌ Admin ID already exists");
+          return;
+        }
+  
+        await setDoc(
+          doc(db, "users", superAdminUid, "admins", form.adminId),
+          {
+            ...form,
+            password,
+            role: "admin",
+            createdAt: Timestamp.now()
+          }
+        );
+      }
+  
+      /* ================= SUCCESS ================= */
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+  
+      resetForm(); // 🔥 no fetch needed (onSnapshot handles)
+  
+    } catch (err) {
+      console.error("🔥 ERROR:", err);
+      alert(err.message);
+    } finally {
+      setSaving(false);
     }
-    
-  
-    resetForm();
-    fetchAdmins();
   };
-  
 
   /* ================= DELETE ================= */
   const handleDelete = async (id) => {
@@ -173,7 +187,7 @@ if (!/^\d{10}$/.test(phoneClean)) {
     await deleteDoc(
       doc(db, "users", superAdminUid, "admins", id)
     );
-    fetchAdmins();
+ 
   };
 
   const resetForm = () => {
@@ -196,12 +210,26 @@ if (!/^\d{10}$/.test(phoneClean)) {
     localStorage.setItem("viewType", "admin");
     localStorage.setItem("viewName", admin.name);
     localStorage.setItem("viewId", admin.adminId);
-    setActivePage("subdashboard");
+  
+    if (setActivePage) {
+      setActivePage("subdashboard");
+    }
   };
   
   useEffect(() => {
     return () => {
       localStorage.removeItem("selectedAdminId");
+    };
+  }, []);
+  useEffect(() => {
+    const closeAll = () => {
+      setShowGender(false);
+    };
+  
+    window.addEventListener("click", closeAll);
+  
+    return () => {
+      window.removeEventListener("click", closeAll);
     };
   }, []);
   
@@ -385,18 +413,22 @@ focused={focused}
 setFocused={setFocused}
 onChange={e => setForm({ ...form, address: e.target.value })}
 />
-<div className="popup-select">
+<div className="adminpopup-select">
 
   <div
-    className="popup-input"
-    onClick={() => setShowGender(prev => !prev)}
+    className="adminpopup-input"
+    onClick={(e) => {
+      e.stopPropagation();
+      setShowGender(prev => !prev);
+    }}
   >
     {form.gender || "Gender"}
     <span>▾</span>
   </div>
 
   {showGender && (
-    <div className="popup-menu">
+    <div className="adminpopup-menu"
+    onClick={(e) => e.stopPropagation()}>
 
       {["Male","Female","Other"].map(g => (
 
@@ -519,12 +551,16 @@ className="photo-modal-img"
 </div>
 )}
 
-
 <button
-className="save"
-onClick={()=>requirePremium ? requirePremium(handleSaveAdmin) : handleSaveAdmin()}
+  className="save"
+  disabled={saving}
+  onClick={() =>
+    requirePremium
+      ? requirePremium(handleSaveAdmin)
+      : handleSaveAdmin()
+  }
 >
-Save
+  {saving ? "Saving..." : saved ? "Saved ✅" : "Save"}
 </button>
 
 <button

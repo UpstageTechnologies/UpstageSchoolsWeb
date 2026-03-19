@@ -4,18 +4,74 @@
   --primary-purple-dark: rgba(91,33,182,0.9);
 }
 .create-row{
-  margin: 10px;
+  margin: 0px;
+  margin-bottom: 10px;
   display:grid;
   grid-template-columns:repeat(5,1fr);
   gap:16px;
   align-items:center;
   width:100%;
   }
+  .create-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   
-  /* FORM GRID */
+    margin-bottom: 15px;
+  }
+  
+  .create-header h2{
+    margin: 0;
+  }
+  
+  .create-header .search-input{
+    width: 250px;
+  }
+  @media (max-width:768px){
+    .create-header{
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+  
+    .create-header .search-input{
+      width: 100%;
+    }
+  }
+  .search-input{
+    padding:10px 14px;
+    border-radius:14px;
+    border:2px solid #e5e7eb;
+    background:#f9fafb;
+  }
+  
+  .search-input:focus{
+    border-color:#7c3aed;
+    box-shadow:0 0 0 3px rgba(124,58,237,0.2);
+  }
   
   .account-grid{
   display:contents;
+  }
+  .table-top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 15px 0;
+  }
+  
+  .search-input {
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    outline: none;
+    width: 250px;
+    font-size: 14px;
+  }
+  
+  .search-input:focus {
+    border-color: #7b5cff;
+    box-shadow: 0 0 0 2px rgba(123, 92, 255, 0.2);
   }
   .adminpopup-select{
     width:100%;
@@ -65,18 +121,21 @@
   }
   .adminpopup-menu{
     position:absolute;
-    top:52px;
+    top:100%;        /* 🔥 PERFECT ALIGN */
     left:0;
   
-    width:100%;            /* same width as select */
-    
+    width:100%;
+  
+    margin-top:6px;  /* 🔥 small gap (optional clean look) */
+  
     background:#fff;
-    border:2px solid #6c63ff;
-    border-radius:16px;
+  
+    border:2px solid var(--primary-purple);
+    border-radius:14px;
   
     box-shadow:0 10px 25px rgba(0,0,0,0.15);
-    overflow:hidden;
   
+    overflow:hidden;
     z-index:100;
   }
   .adminpopup-menu div{
@@ -306,7 +365,7 @@
       .create-row{
         grid-template-columns: 1fr;
         gap:16px;              /* 🔥 clean spacing */
-        margin:12px;           /* 🔥 balanced side space */
+        margin:0px;           /* 🔥 balanced side space */
       }
     
       /* FORM STACK */
@@ -333,11 +392,7 @@
         margin-bottom:0;
       }
     
-      /* DROPDOWN */
-      .adminpopup-menu{
-        top:48px;
-        border-radius:12px;
-      }
+     
     
       /* BUTTON GROUP */
       .save{
@@ -389,13 +444,18 @@
     z-index:2;
     position:relative;
   }
-  
-  /* card */
+  .account-card{
+    overflow:hidden;
+    
+    margin: -15px;   /* instead of negative margin */
+  }
   .account-card-body{
     border:1px solid #e5e7eb;
     border-radius:12px;
     padding:25px;
     background:white;
+  
+  /* 🔥 FIX */
   }
   @media (max-width: 768px){
 
@@ -471,4 +531,68 @@
       rgba(91,33,182,0.9)
     );
     color:#fff;
+  }
+  .save:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .page-wrapper{
+    padding: 15px;
+  }
+  
+  .page-card{
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  }
+  .assigned-class-inline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;   /* 🔥 align with button/input */
+    gap: 8px;
+    max-width: 100%;
+  }
+  
+  /* 🔥 IMPORTANT: prevent going below button */
+  .assigned-class-inline {
+    flex: 1;               /* take available space */
+    min-height: 40px;
+  }
+  
+  /* CHIP STYLE */
+  .inline-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: #f1f1f1;
+    font-size: 14px;
+    white-space: nowrap;
+    height: 36px;          /* 🔥 same as input height */
+  }
+  
+  /* REMOVE BUTTON */
+  .inline-chip button {
+    border: none;
+    background: transparent;
+    color: red;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+  }
+  
+  /* 🔥 FIX MAIN LAYOUT (VERY IMPORTANT) */
+  .assigned-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap;   /* ❌ prevent नीचे போகாதது */
+  }
+  
+  /* 🔥 ensure button + chips same line */
+  .add-class-btn {
+    white-space: nowrap;
   }

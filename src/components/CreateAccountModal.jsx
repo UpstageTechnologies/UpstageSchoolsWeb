@@ -5,14 +5,14 @@ import Teacher from "../features/dashboard/Teacher";
 import Parent from "../features/dashboard/Parent";
 import OfficeStaff from "../features/dashboard/OfficeStaff";
 import Student from "../features/dashboard/Student";
-
+import "../features/dashboard_styles/History.css"
 const accountOptions = [
   { label: "Admin", value: "admin" },
   { label: "Teacher", value: "teacher" },
   { label: "Parent", value: "parent" },
   { label: "Office Staff", value: "staff" },
   { label: "Student", value: "student" }
-];function CreateAccountSection({ editData, setEditData, setActiveTab }) {
+];function CreateAccountSection({ editData, setEditData, setActiveTab ,globalSearch,setGlobalSearch}) {
   useEffect(()=>{
     const close=()=>setShowDropdown(false);
     window.addEventListener("click",close);
@@ -35,6 +35,7 @@ const accountOptions = [
     <Admin
       formOnly
       editData={editData}
+      
       onEdit={(data) => {
         setEditData({
           ...data,
@@ -48,6 +49,7 @@ const accountOptions = [
             <Teacher
               formOnly
               editData={editData}
+              requirePremium={requirePremium}
               onEdit={(data) => {
                 setEditData(data);
                 setAccountType("teacher");
@@ -59,6 +61,7 @@ const accountOptions = [
     <Parent
       formOnly
       editData={editData}
+      requirePremium={requirePremium}
       setEditData={setEditData}
       onEdit={(data) => {
         setEditData(data);      // 🔥 set data
@@ -71,6 +74,7 @@ const accountOptions = [
       <OfficeStaff
         formOnly
         editData={editData}
+        requirePremium={requirePremium}
         onEdit={(data) => {
           setEditData(data);
           setAccountType("staff");
@@ -82,6 +86,7 @@ const accountOptions = [
         <Student
           formOnly
           editData={editData}
+          requirePremium={requirePremium}
           onEdit={(data) => {
             setEditData(data);
             setAccountType("student");
@@ -143,10 +148,32 @@ const accountOptions = [
         return null;
     }
   };
+  const requirePremium = (fn) => {
+    const isPremium = true; // 🔥 change logic later
+  
+    if (!isPremium) {
+      alert("Upgrade to premium");
+      return;
+    }
+  
+    fn();
+  };
   return (
     <div className="create-area">
+<div className="history-controls">
 
-      <h3>Create Account</h3>
+{/* LEFT SIDE */}
+<h2>Create Account</h2>
+
+{/* RIGHT SIDE SEARCH */}
+<input
+  type="text"
+  placeholder="Search here..."
+  value={globalSearch}
+  onChange={(e) => setGlobalSearch(e.target.value)}
+/>
+
+</div>
 
       <div className="create-row">
 

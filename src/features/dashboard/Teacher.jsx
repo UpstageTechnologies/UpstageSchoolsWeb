@@ -11,7 +11,8 @@ import {
   setDoc,
   updateDoc,
   query,
-  where
+  where,
+  onSnapshot
 } from "firebase/firestore";
 
 import { auth, db } from "../../services/firebase";
@@ -88,6 +89,13 @@ const FloatingInput = ({
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [classes, setClasses] = useState([]);
+  const [showGender, setShowGender] = useState(false);
+  const [showCategory, setShowCategory] = useState(false);
+  const [showClassDropdown, setShowClassDropdown] = useState(false);
+  const [showSectionDropdown, setShowSectionDropdown] = useState(false);
+  const [showRoleDropdown, setShowRoleDropdown] = useState(false);
+  const [saving, setSaving] = useState(false);
+const [saved, setSaved] = useState(false);
   // 🔥 MOVE THIS ABOVE Teacher COMPONENT
 
   /* ================= FORM ================= */
@@ -111,27 +119,24 @@ const FloatingInput = ({
     section: "",
     subject: ""
   });
-  /* ================= FETCH TEACHERS ================= */
-  const fetchTeachers = async () => {
-    if (!adminUid) return;
-
-    const snap = await getDocs(
-      collection(db, "users", adminUid, "teachers")
-    );
-
-    setTeachers(
-      snap.docs.map(d => ({
-        id: d.id,
-        ...d.data()
-      }))
-      .sort((a, b) =>
-      (a.name || "").toLowerCase().localeCompare((b.name || "").toLowerCase())
-    )
-    );
-  };
-
   useEffect(() => {
-    fetchTeachers();
+    if (!adminUid) return;
+  
+    const ref = collection(db, "users", adminUid, "teachers");
+  
+    const unsubscribe = onSnapshot(ref, (snap) => {
+      const list = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) =>
+          (a.name || "")
+            .toLowerCase()
+            .localeCompare((b.name || "").toLowerCase())
+        );
+  
+      setTeachers(list);
+    });
+  
+    return () => unsubscribe();
   }, [adminUid]);
   const removeAssignedClass = (index) => {
     setForm(prev => ({
@@ -162,12 +167,18 @@ const FloatingInput = ({
       alert("Fill class, section & subject");
       return;
     }
-
+  
+    const newClass = {
+      class: classForm.class,
+      section: classForm.section,
+      subject: classForm.subject
+    };
+  
     setForm(prev => ({
       ...prev,
-      assignedClasses: [...prev.assignedClasses, classForm]
+      assignedClasses: [...prev.assignedClasses, newClass]
     }));
-
+  
     setClassForm({ class: "", section: "", subject: "" });
   };
   useEffect(() => {
@@ -191,105 +202,114 @@ const FloatingInput = ({
 
   /* ================= SAVE ================= */
   const handleSaveTeacher = async () => {
-    if (
-      !form.name ||
-      !form.teacherId ||
-      !form.email ||
-      !form.phone ||
-      (!editId && !password)
-    ) {
-      alert("Required fields missing");
-      return;
-    }
-    // 📞 Validate 10-digit phone
-const phoneClean = form.phone.trim();
-
-if (!/^\d{10}$/.test(phoneClean)) {
-  alert("📞 Phone number must be exactly 10 digits");
-  return;
-}
-
-
-  // ⭐ trim spaces
-  const teacherIdTrimmed = form.teacherId.trim();
-
-  // 🔎 CHECK DUPLICATE teacherId
-  const q = query(
-    collection(db, "users", adminUid, "teachers"),
-    where("teacherId", "==", teacherIdTrimmed)
-  );
-
-  const snap = await getDocs(q);
-
-  // ➤ ADD mode: must NOT exist
-  if (!editId && !snap.empty) {
-    alert("❌ Teacher ID already exists. Use another one.");
-    return;
-  }
-
-  // ➤ EDIT mode: allow only if belongs to the SAME teacher
-  if (editId && !snap.empty) {
-    const found = snap.docs[0];
-    if (found.id !== editId) {
-      alert("❌ Another teacher already uses this Teacher ID.");
-      return;
-    }
-  } 
-
-    /* 🔴 SUB ADMIN → APPROVAL */
-    if (role === "admin") {
-      await addDoc(
-        collection(db, "users", adminUid, "approval_requests"),
-        {
-          module: "teacher",
-          action: editId ? "update" : "create",
-          targetId: editId || null,
-          payload: {
-            ...form,
-            password: password || null
-          },
-          status: "pending",
-          createdBy: localStorage.getItem("adminId"),
-          createdAt: Timestamp.now()
-        }
-      );
-
-      alert("⏳ Sent for admin approval");
-      resetForm();
-      return;
-    }
-
-    /* 🟢 MAIN ADMIN → DIRECT SAVE */
-    if (editId) {
-      const updateData = {
-        ...form,
-        teacherId: teacherIdTrimmed,
-        updatedAt: Timestamp.now(),
-        password: form.password || password  
-      };
-      if (password && password.trim() !== "") {
-        updateData.password = password;   // only when NEW entered
+    try {
+      setSaving(true);
+      setSaved(false);
+  
+      /* ================= VALIDATION ================= */
+      if (
+        !form.name ||
+        !form.teacherId ||
+        !form.email ||
+        !form.phone ||
+        (!editId && !password)
+      ) {
+        alert("❌ Required fields missing");
+        return;
       }
-
-      await updateDoc(
-        doc(db, "users", adminUid, "teachers", editId),
-        updateData
+  
+      const phoneClean = form.phone.trim();
+  
+      if (!/^\d{10}$/.test(phoneClean)) {
+        alert("📞 Phone must be 10 digits");
+        return;
+      }
+  
+      const teacherIdTrimmed = form.teacherId.trim();
+  
+      /* ================= DUPLICATE CHECK ================= */
+      const q = query(
+        collection(db, "users", adminUid, "teachers"),
+        where("teacherId", "==", teacherIdTrimmed)
       );
-    } else {
-      await setDoc(
-        doc(db, "users", adminUid, "teachers", teacherIdTrimmed),
-        {
+  
+      const snap = await getDocs(q);
+  
+      if (!editId && !snap.empty) {
+        alert("❌ Teacher ID already exists");
+        return;
+      }
+  
+      if (editId && !snap.empty && snap.docs[0].id !== editId) {
+        alert("❌ Duplicate Teacher ID");
+        return;
+      }
+  
+      /* ================= SUB ADMIN ================= */
+      if (role === "admin") {
+        await addDoc(
+          collection(db, "users", adminUid, "approval_requests"),
+          {
+            module: "teacher",
+            action: editId ? "update" : "create",
+            targetId: editId || null,
+            payload: {
+              ...form,
+              teacherId: teacherIdTrimmed,
+              password: password || null
+            },
+            status: "pending",
+            createdAt: Timestamp.now()
+          }
+        );
+  
+        alert("⏳ Sent for approval");
+        resetForm();
+        return;
+      }
+  
+      /* ================= MAIN ADMIN ================= */
+      if (editId) {
+        const updateData = {
           ...form,
           teacherId: teacherIdTrimmed,
-          password,
-          role: "teacher",
-          createdAt: Timestamp.now()
+          updatedAt: Timestamp.now()
+        };
+  
+        if (password?.trim()) {
+          updateData.password = password;
         }
-      );
+  
+        await updateDoc(
+          doc(db, "users", adminUid, "teachers", editId),
+          updateData
+        );
+  
+      } else {
+        await setDoc(
+          doc(db, "users", adminUid, "teachers", teacherIdTrimmed),
+          {
+            ...form,
+            teacherId: teacherIdTrimmed,
+            password,
+            role: "teacher",
+            createdAt: Timestamp.now()
+          }
+        );
+      }
+  
+      /* ================= SUCCESS ================= */
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+  
+      resetForm(); // 🔥 realtime handles table
+  
+    } catch (err) {
+      console.error("🔥 ERROR:", err);
+      alert(err.message);
+    } finally {
+      setSaving(false);
     }
-
-    resetForm();
-    fetchTeachers();
   };
 
   /* ================= DELETE ================= */
@@ -316,12 +336,12 @@ if (!/^\d{10}$/.test(phoneClean)) {
 
     /* 🟢 MAIN ADMIN */
     await deleteDoc(doc(db, "users", adminUid, "teachers", id));
-    fetchTeachers();
+   
   };
  
   /* ================= RESET ================= */
   const resetForm = () => {
-    setShowModal(false);
+    
     setEditId(null);
     setPassword("");
     setForm({
@@ -347,6 +367,21 @@ useEffect(() => {
   setSelectedTeacherId(
     localStorage.getItem("selectedTeacherId")
   );
+}, []);
+useEffect(() => {
+  const closeAllDropdowns = () => {
+    setShowGender(false);
+    setShowCategory(false);
+    setShowClassDropdown(false);
+    setShowSectionDropdown(false);
+    setShowRoleDropdown(false);
+  };
+
+  window.addEventListener("click", closeAllDropdowns);
+
+  return () => {
+    window.removeEventListener("click", closeAllDropdowns);
+  };
 }, []);
   return (
     <>
@@ -561,148 +596,82 @@ onChange={e =>
 setForm({ ...form, address: e.target.value })
 }
 />
+<div className="adminpopup-select">
 
+  <div
+    className="adminpopup-input"
+    onClick={(e) => {
+      e.stopPropagation();   // 🔥 important
+      setShowGender(prev => !prev);
+    }}
+  >
+    {form.gender || "Gender"}
+    <span>▾</span>
+  </div>
 
-<select
-value={form.gender}
-onChange={e => setForm({ ...form, gender: e.target.value })}
->
-<option value="">Gender</option>
-<option>Male</option>
-<option>Female</option>
-<option>Other</option>
-</select>
+  {showGender && (
+    <div className="adminpopup-menu">
 
+      {["Male", "Female", "Other"].map(g => (
+        <div
+          key={g}
+          className={`popup-item ${form.gender === g ? "active" : ""}`}
+          onClick={() => {
+            setForm({ ...form, gender: g });
+            setShowGender(false);
+          }}
+        >
+          {form.gender === g && "✓ "}
+          {g}
+        </div>
+      ))}
 
-<select
-value={form.category}
-onChange={e => {
-const value = e.target.value;
-
-setForm(prev => ({
-...prev,
-category: value,
-assignedClasses:
-value === "Non Teaching Staff" ? [] : prev.assignedClasses,
-nonTeachingRole:
-value === "Teaching Staff" ? "" : prev.nonTeachingRole
-}));
-}}
->
-<option value="Teaching Staff">Teaching Staff</option>
-<option value="Non Teaching Staff">Non Teaching Staff</option>
-</select>
-
-
-{/* Teaching Staff */}
-
-{form.category === "Teaching Staff" && (
-
-<>
-
-<select
-value={classForm.class}
-onChange={e =>
-setClassForm({ ...classForm, class: e.target.value })
-}
->
-<option value="">Class</option>
-
-{classes.map(c => (
-<option key={c.id} value={c.name}>
-{c.name}
-</option>
-))}
-
-</select>
-<select
-value={classForm.section}
-onChange={e =>
-setClassForm({ ...classForm, section: e.target.value })
-}
->
-<option value="">Section</option>
-
-{classes
-.find(c => c.name === classForm.class)
-?.sections?.map(sec => (
-<option key={sec} value={sec}>
-{sec}
-</option>
-))}
-
-</select>
-
-<FloatingInput
-name="subject"
-label="Subject"
-value={classForm.subject}
-focused={focused}
-setFocused={setFocused}
-onChange={e =>
-setClassForm({ ...classForm, subject: e.target.value })
-}
-/>
-
-<button onClick={addAssignedClass}>
-+ Add Class
-</button>
-
-<ul>
-
-<div className="assigned-class-list">
-
-{(form.assignedClasses || []).map((c,i)=>(
-
-<div key={i} className="assigned-class-item">
-
-<span className="class-text">
-{c.class}-{c.section} ({c.subject})
-</span>
-
-<button
-type="button"
-className="remove-btn"
-onClick={(e)=>{
-e.preventDefault();
-e.stopPropagation();
-removeAssignedClass(i);
-}}
->
-✕
-</button>
+    </div>
+  )}
 
 </div>
+<div className="adminpopup-select">
 
-))}
+  <div
+    className="adminpopup-input"
+    onClick={(e) => {
+      e.stopPropagation();
+      setShowCategory(prev => !prev);
+    }}
+  >
+    {form.category || "Category"}
+    <span>▾</span>
+  </div>
+
+  {showCategory && (
+    <div className="adminpopup-menu">
+
+      {["Teaching Staff", "Non Teaching Staff"].map(c => (
+        <div
+          key={c}
+          className={`popup-item ${form.category === c ? "active" : ""}`}
+          onClick={() => {
+            setForm(prev => ({
+              ...prev,
+              category: c,
+              assignedClasses:
+                c === "Non Teaching Staff" ? [] : prev.assignedClasses,
+              nonTeachingRole:
+                c === "Teaching Staff" ? "" : prev.nonTeachingRole
+            }));
+
+            setShowCategory(false);
+          }}
+        >
+          {form.category === c && "✓ "}
+          {c}
+        </div>
+      ))}
+
+    </div>
+  )}
 
 </div>
-
-</ul>
-
-</>
-
-)}
-
-
-{/* Non Teaching */}
-
-{form.category === "Non Teaching Staff" && (
-
-<select
-value={form.nonTeachingRole}
-onChange={e =>
-setForm({ ...form, nonTeachingRole: e.target.value })
-}
->
-<option value="">Select Role</option>
-<option value="Helper">Helper</option>
-<option value="ECA Staff">ECA Staff</option>
-</select>
-
-)}
-
-
 {/* PHOTO */}
 <div className="photo-box">
 
@@ -754,11 +723,182 @@ reader.readAsDataURL(file);
 </label>
 
 </div>
-<button
-className="save"
-onClick={() => requirePremium(handleSaveTeacher)}
+{/* Teaching Staff */}
+
+{form.category === "Teaching Staff" && (
+
+<>
+<div className="adminpopup-select">
+
+  <div
+    className="adminpopup-input"
+    onClick={(e) => {
+      e.stopPropagation();
+      setShowClassDropdown(prev => !prev);
+    }}
+  >
+    {classForm.class || "Class"}
+    <span>▾</span>
+  </div>
+
+  {showClassDropdown && (
+    <div className="adminpopup-menu">
+
+      {classes.map(c => (
+        <div
+          key={c.id}
+          className={`popup-item ${classForm.class === c.name ? "active" : ""}`}
+          onClick={() => {
+            setClassForm({ ...classForm, class: c.name });
+            setShowClassDropdown(false);
+          }}
+        >
+          {classForm.class === c.name && "✓ "}
+          {c.name}
+        </div>
+      ))}
+
+    </div>
+  )}
+
+</div>
+<div className="adminpopup-select">
+
+  <div
+    className="adminpopup-input"
+    onClick={(e) => {
+      e.stopPropagation();
+
+      // 🔥 class select pannala na prevent
+      if (!classForm.class) {
+        alert("⚠️ First select class");
+        return;
+      }
+
+      setShowSectionDropdown(prev => !prev);
+    }}
+  >
+    {classForm.section || "Section"}
+    <span>▾</span>
+  </div>
+
+  {showSectionDropdown && (
+    <div className="adminpopup-menu">
+
+      {classes
+        .find(c => c.name === classForm.class)
+        ?.sections?.map(sec => (
+          <div
+            key={sec}
+            className={`popup-item ${classForm.section === sec ? "active" : ""}`}
+            onClick={() => {
+              setClassForm({ ...classForm, section: sec });
+              setShowSectionDropdown(false);
+            }}
+          >
+            {classForm.section === sec && "✓ "}
+            {sec}
+          </div>
+        ))}
+
+    </div>
+  )}
+
+</div>
+
+<FloatingInput
+name="subject"
+label="Subject"
+value={classForm.subject}
+focused={focused}
+setFocused={setFocused}
+onChange={e =>
+setClassForm({ ...classForm, subject: e.target.value })
+}
+/>
+
+<button onClick={addAssignedClass}>
++ Add Class
+</button>
+<div className="assigned-class-inline">
+
+  {(form.assignedClasses || []).map((c, i) => (
+    <div key={i} className="inline-chip">
+
+      <span>
+        {c.class} {c.section} {c.subject}
+      </span>
+
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          removeAssignedClass(i);
+        }}
+      >
+        ✕
+      </button>
+
+    </div>
+  ))}
+
+</div>
+
+</>
+
+)}
+
+
+{/* Non Teaching */}
+
+{form.category === "Non Teaching Staff" && (
+  <div className="adminpopup-select">
+
+<div
+  className="adminpopup-input"
+  onClick={(e) => {
+    e.stopPropagation();
+    setShowRoleDropdown(prev => !prev);
+  }}
 >
-Save
+  {form.nonTeachingRole || "Select Role"}
+  <span>▾</span>
+</div>
+
+{showRoleDropdown && (
+  <div className="adminpopup-menu">
+
+    {["Helper", "ECA Staff"].map(role => (
+      <div
+        key={role}
+        className={`popup-item ${form.nonTeachingRole === role ? "active" : ""}`}
+        onClick={() => {
+          setForm({ ...form, nonTeachingRole: role });
+          setShowRoleDropdown(false);
+        }}
+      >
+        {form.nonTeachingRole === role && "✓ "}
+        {role}
+      </div>
+    ))}
+
+  </div>
+)}
+
+</div>
+
+)}
+<button
+  className="save"
+  disabled={saving}
+  onClick={() =>
+    requirePremium
+      ? requirePremium(handleSaveTeacher)
+      : handleSaveTeacher()
+  }
+>
+  {saving ? "Saving..." : saved ? "Saved ✅" : "Save"}
 </button>
 
 <button

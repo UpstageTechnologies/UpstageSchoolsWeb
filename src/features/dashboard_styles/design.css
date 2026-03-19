@@ -177,3 +177,6 @@ justify-content:space-between;
     color:#111827;
     line-height:1.2;
     }
+    .floating-input.active input {
+        border-color: #7c3aed;
+      }
