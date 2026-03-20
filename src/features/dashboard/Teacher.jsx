@@ -76,7 +76,9 @@ const FloatingInput = ({
   globalSearch = "",
   setActivePage,
   editData,
-  onEdit   // 🔥 ADD
+  onEdit ,
+  sortField,          // 🔥 ADD
+  sortDirection   // 🔥 ADD
 }) => {
   const adminUid =
     auth.currentUser?.uid || localStorage.getItem("adminUid");
@@ -125,19 +127,40 @@ const [saved, setSaved] = useState(false);
     const ref = collection(db, "users", adminUid, "teachers");
   
     const unsubscribe = onSnapshot(ref, (snap) => {
-      const list = snap.docs
-        .map(d => ({ id: d.id, ...d.data() }))
-        .sort((a, b) =>
-          (a.name || "")
-            .toLowerCase()
-            .localeCompare((b.name || "").toLowerCase())
-        );
+      let list = snap.docs.map(d => ({
+        id: d.id,
+        ...d.data()
+      }));
+  
+      // 🔥 CLASS SORT (special case)
+      if (sortField === "class") {
+        list.sort((a, b) => {
+          const aVal = a.assignedClasses?.[0]?.class || "";
+          const bVal = b.assignedClasses?.[0]?.class || "";
+  
+          return sortDirection === "asc"
+            ? aVal.localeCompare(bVal)
+            : bVal.localeCompare(aVal);
+        });
+      }
+  
+      // 🔥 NORMAL SORT
+      else if (sortField) {
+        list.sort((a, b) => {
+          const aVal = (a[sortField] || "").toString().toLowerCase();
+          const bVal = (b[sortField] || "").toString().toLowerCase();
+  
+          return sortDirection === "asc"
+            ? aVal.localeCompare(bVal)
+            : bVal.localeCompare(aVal);
+        });
+      }
   
       setTeachers(list);
     });
   
     return () => unsubscribe();
-  }, [adminUid]);
+  }, [adminUid, sortField, sortDirection]); // 🔥 VERY IMPORTANT
   const removeAssignedClass = (index) => {
     setForm(prev => ({
       ...prev,
@@ -284,6 +307,23 @@ const [saved, setSaved] = useState(false);
           doc(db, "users", adminUid, "teachers", editId),
           updateData
         );
+        // 🔥 HISTORY UPDATE
+await addDoc(
+  collection(db, "users", adminUid, "Account", "accounts", "History"),
+  {
+    entryType: "people",
+    module: "TEACHER",
+    name: form.name,
+    role: form.category,
+    action: "UPDATE",
+    date: Timestamp.now(),
+    createdAt: Timestamp.now(),
+    originalData: {
+      id: editId,
+      ...updateData
+    }
+  }
+);
   
       } else {
         await setDoc(
@@ -296,6 +336,24 @@ const [saved, setSaved] = useState(false);
             createdAt: Timestamp.now()
           }
         );
+        // 🔥 HISTORY CREATE
+await addDoc(
+  collection(db, "users", adminUid, "Account", "accounts", "History"),
+  {
+    entryType: "people",
+    module: "TEACHER",
+    name: form.name,
+    role: form.category,
+    action: "CREATE",
+    date: Timestamp.now(),
+    createdAt: Timestamp.now(),
+    originalData: {
+      id: teacherIdTrimmed,   // 🔥 VERY IMPORTANT
+      ...form,
+      teacherId: teacherIdTrimmed
+    }
+  }
+);
       }
   
       /* ================= SUCCESS ================= */
@@ -311,32 +369,62 @@ const [saved, setSaved] = useState(false);
       setSaving(false);
     }
   };
-
-  /* ================= DELETE ================= */
   const handleDelete = async (id) => {
     if (!window.confirm("Delete teacher?")) return;
-
-    /* 🔴 SUB ADMIN → APPROVAL */
-    if (role === "admin") {
+  
+    try {
+      const teacherDoc = teachers.find(t => t.id === id);
+      if (!teacherDoc) return;
+  
+      /* 🔴 SUB ADMIN */
+      if (role === "admin") {
+        await addDoc(
+          collection(db, "users", adminUid, "approval_requests"),
+          {
+            module: "teacher",
+            action: "delete",
+            targetId: id,
+            status: "pending",
+            createdBy: localStorage.getItem("adminId"),
+            createdAt: Timestamp.now()
+          }
+        );
+  
+        alert("⏳ Delete request sent");
+        return;
+      }
+  
+      /* 🟢 MAIN ADMIN */
+  
+      // 🔥 1. SAVE HISTORY FIRST
       await addDoc(
-        collection(db, "users", adminUid, "approval_requests"),
+        collection(db, "users", adminUid, "Account", "accounts", "History"),
         {
-          module: "teacher",
-          action: "delete",
-          targetId: id,
-          status: "pending",
-          createdBy: localStorage.getItem("adminId"),
-          createdAt: Timestamp.now()
+          entryType: "people",
+          module: "TEACHER",
+          name: teacherDoc.name,
+          role: teacherDoc.category,
+          action: "DELETE",
+          date: Timestamp.now(),
+          createdAt: Timestamp.now(),
+          originalData: {
+            id: teacherDoc.id,   // 🔥 IMPORTANT
+            ...teacherDoc
+          }
         }
       );
-
-      alert("⏳ Delete request sent");
-      return;
+  
+      // 🔥 2. DELETE
+      await deleteDoc(
+        doc(db, "users", adminUid, "teachers", id)
+      );
+  
+      alert("Deleted + history saved ✅");
+  
+    } catch (err) {
+      console.error(err);
+      alert("Delete failed ❌");
     }
-
-    /* 🟢 MAIN ADMIN */
-    await deleteDoc(doc(db, "users", adminUid, "teachers", id));
-   
   };
  
   /* ================= RESET ================= */
@@ -501,7 +589,11 @@ useEffect(() => {
 
   <button
     className="delete-btn"
-    onClick={() => requirePremium(() => handleDelete(t.id))}
+    onClick={() =>
+      requirePremium
+        ? requirePremium(() => handleDelete(t.id))
+        : handleDelete(t.id)
+    }
   >
     <FaTrash /> Delete
   </button>

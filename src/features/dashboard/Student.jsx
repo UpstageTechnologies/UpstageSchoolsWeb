@@ -19,7 +19,9 @@ const Student = ({
   requirePremium,
   globalSearch = "",
   editData,
-  onEdit
+  onEdit,
+  sortField,        // 🔥 ADD
+  sortDirection 
 }) => {
   const adminUid =
     auth.currentUser?.uid || localStorage.getItem("adminUid");
@@ -57,19 +59,52 @@ const [saved, setSaved] = useState(false);
     const ref = collection(db, "users", adminUid, "students");
   
     const unsubscribe = onSnapshot(ref, (snap) => {
-      const list = snap.docs
-        .map(d => ({ id: d.id, ...d.data() }))
-        .sort((a, b) =>
-          (a.studentName || "")
-            .toLowerCase()
-            .localeCompare((b.studentName || "").toLowerCase())
-        );
+      let list = snap.docs.map(d => ({
+        id: d.id,
+        ...d.data()
+      }));
+  
+      // 🔥 NAME SORT (studentName)
+      if (sortField === "studentName") {
+        list.sort((a, b) => {
+          const aVal = (a.studentName || "").toLowerCase();
+          const bVal = (b.studentName || "").toLowerCase();
+  
+          return sortDirection === "asc"
+            ? aVal.localeCompare(bVal)
+            : bVal.localeCompare(aVal);
+        });
+      }
+  
+      // 🔥 CLASS SORT
+      else if (sortField === "class") {
+        list.sort((a, b) => {
+          const aVal = (a.class || "").toLowerCase();
+          const bVal = (b.class || "").toLowerCase();
+  
+          return sortDirection === "asc"
+            ? aVal.localeCompare(bVal)
+            : bVal.localeCompare(aVal);
+        });
+      }
+  
+      // 🔥 DEFAULT (dynamic fallback)
+      else if (sortField) {
+        list.sort((a, b) => {
+          const aVal = (a[sortField] || "").toString().toLowerCase();
+          const bVal = (b[sortField] || "").toString().toLowerCase();
+  
+          return sortDirection === "asc"
+            ? aVal.localeCompare(bVal)
+            : bVal.localeCompare(aVal);
+        });
+      }
   
       setStudents(list);
     });
   
     return () => unsubscribe();
-  }, [adminUid]);
+  }, [adminUid, sortField, sortDirection]); // 🔥 IMPORTANT
   useEffect(() => {
     if (editData) {
       setForm({
@@ -114,7 +149,6 @@ const [saved, setSaved] = useState(false);
         setSaving(true);
         setSaved(false);
     
-        /* ================= VALIDATION ================= */
         if (
           !form.studentName ||
           !form.studentId ||
@@ -129,7 +163,6 @@ const [saved, setSaved] = useState(false);
     
         const idTrim = form.studentId.trim();
     
-        /* ================= DUPLICATE CHECK ================= */
         const q = query(
           collection(db, "users", adminUid, "students"),
           where("studentId", "==", idTrim)
@@ -137,50 +170,51 @@ const [saved, setSaved] = useState(false);
     
         const snap = await getDocs(q);
     
-        // ➤ ADD case
         if (!editId && !snap.empty) {
           alert("❌ Student ID already exists");
           return;
         }
     
-        // ➤ EDIT case
         if (editId && !snap.empty && snap.docs[0].id !== editId) {
-          alert("❌ Another student already uses this ID");
+          alert("❌ Duplicate ID");
           return;
         }
     
-        /* ================= SUB ADMIN FLOW ================= */
-        if (role === "admin") {
-          await addDoc(
-            collection(db, "users", adminUid, "approval_requests"),
-            {
-              module: "student",
-              action: editId ? "update" : "create",
-              targetId: editId || null,
-              payload: { ...form, studentId: idTrim },
-              status: "pending",
-              createdBy: localStorage.getItem("adminId"),
-              createdAt: Timestamp.now()
-            }
-          );
-    
-          alert("⏳ Sent for admin approval");
-          resetForm();
-          return;
-        }
-    
-        /* ================= MAIN ADMIN SAVE ================= */
+        // 🟢 UPDATE
         if (editId) {
+          const updateData = {
+            ...form,
+            studentId: idTrim,
+            updatedAt: Timestamp.now()
+          };
+    
           await updateDoc(
             doc(db, "users", adminUid, "students", editId),
+            updateData
+          );
+    
+          // ✅ ONLY UPDATE HISTORY
+          await addDoc(
+            collection(db, "users", adminUid, "Account", "accounts", "History"),
             {
-              ...form,
-              studentId: idTrim,
-              updatedAt: Timestamp.now()
+              entryType: "people",
+              module: "STUDENT",
+              name: form.studentName,
+              role: form.class,
+              action: "UPDATE",
+              date: Timestamp.now(),
+              createdAt: Timestamp.now(),
+              originalData: {
+                id: editId,
+                ...updateData
+              }
             }
           );
-        } else {
-          await addDoc(
+        }
+    
+        // 🟢 CREATE
+        else {
+          const docRef = await addDoc(
             collection(db, "users", adminUid, "students"),
             {
               ...form,
@@ -188,45 +222,74 @@ const [saved, setSaved] = useState(false);
               createdAt: Timestamp.now()
             }
           );
+    
+          // ✅ ONLY CREATE HISTORY
+          await addDoc(
+            collection(db, "users", adminUid, "Account", "accounts", "History"),
+            {
+              entryType: "people",
+              module: "STUDENT",
+              name: form.studentName,
+              role: form.class,
+              action: "CREATE",
+              date: Timestamp.now(),
+              createdAt: Timestamp.now(),
+              originalData: {
+                id: docRef.id, // 🔥 IMPORTANT
+                ...form,
+                studentId: idTrim
+              }
+            }
+          );
         }
     
-        /* ================= SUCCESS UI ================= */
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
     
-        resetForm(); // 🔥 no fetch needed (onSnapshot handles)
+        resetForm();
     
       } catch (err) {
-        console.error("🔥 FIREBASE ERROR:", err);
+        console.error(err);
         alert("❌ Save failed");
       } finally {
         setSaving(false);
       }
     };
-
-  const handleDeleteStudent = async (id) => {
-    if (!window.confirm("Delete student?")) return;
-
-    if (role === "admin") {
-      await addDoc(
-        collection(db, "users", adminUid, "approval_requests"),
-        {
-          module: "student",
-          action: "delete",
-          targetId: id,
-          status: "pending",
-          createdBy: localStorage.getItem("adminId"),
-          createdAt: Timestamp.now()
-        }
-      );
-
-      alert("⏳ Delete request sent");
-      return;
-    }
-
-    await deleteDoc(doc(db, "users", adminUid, "students", id));
-  
-  };
+    const handleDeleteStudent = async (student) => {
+      if (!window.confirm("Delete student?")) return;
+    
+      // 🔥 UI remove instantly
+      setStudents(prev => prev.filter(s => s.id !== student.id));
+    
+      try {
+        // 🔥 HISTORY SAVE
+        await addDoc(
+          collection(db, "users", adminUid, "Account", "accounts", "History"),
+          {
+            entryType: "people",
+            module: "STUDENT",
+            name: student.studentName,
+            role: student.class,
+            action: "DELETE",
+            date: Timestamp.now(),
+            createdAt: Timestamp.now(),
+            originalData: {
+              id: student.id,
+              ...student
+            }
+          }
+        );
+    
+        // 🔥 DELETE FROM FIRESTORE
+        await deleteDoc(
+          doc(db, "users", adminUid, "students", student.id)
+        );
+    
+      } catch (err) {
+        console.error(err);
+        alert("Delete failed ❌");
+      }
+    };
 
   const resetForm = () => {
   
@@ -332,7 +395,7 @@ const [saved, setSaved] = useState(false);
 
   <button
     className="delete-btn"
-    onClick={() => safePremium(() => handleDeleteStudent(s.id))}
+    onClick={() => safePremium(() => handleDeleteStudent(s))}
   >
     <FaTrash /> Delete
   </button>
@@ -571,5 +634,5 @@ Cancel
     </>
   );
 };
-
 export default Student;
+ 

@@ -6,22 +6,43 @@ import Parent from "../features/dashboard/Parent";
 import OfficeStaff from "../features/dashboard/OfficeStaff";
 import Student from "../features/dashboard/Student";
 import "../features/dashboard_styles/History.css"
+import { FaFilter } from "react-icons/fa";
 const accountOptions = [
   { label: "Admin", value: "admin" },
   { label: "Teacher", value: "teacher" },
   { label: "Parent", value: "parent" },
   { label: "Office Staff", value: "staff" },
   { label: "Student", value: "student" }
-];function CreateAccountSection({ editData, setEditData, setActiveTab ,globalSearch,setGlobalSearch}) {
+];function CreateAccountSection({
+  editData,
+  setEditData,
+  setActiveTab,
+  globalSearch,
+  setGlobalSearch,
+  sortField,              // 🔥 ADD THIS
+  setSortField,          // 🔥 ADD
+  setSortDirection       // 🔥 ADD
+}) {
   useEffect(()=>{
     const close=()=>setShowDropdown(false);
     window.addEventListener("click",close);
     return()=>window.removeEventListener("click",close);
   },[]);
   ;
-  
+
   const [showDropdown,setShowDropdown] = useState(false);
   const [accountType, setAccountType] = useState("");
+  const [showFilterList,setShowFilterList] = useState(false)
+const [filterType, setFilterType] = useState("");
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setShowFilterList(false);
+    };
+  
+    window.addEventListener("click", handleClickOutside);
+  
+    return () => window.removeEventListener("click", handleClickOutside);
+  }, []);
   useEffect(() => {
     if (editData?.type) {
       setAccountType(editData.type);
@@ -162,16 +183,75 @@ const accountOptions = [
     <div className="create-area">
 <div className="history-controls">
 
-{/* LEFT SIDE */}
 <h2>Create Account</h2>
 
-{/* RIGHT SIDE SEARCH */}
+{/* WRAPPER ADD */}
+<div className="search-wrapper" onClick={(e) => e.stopPropagation()}>
 <input
   type="text"
   placeholder="Search here..."
   value={globalSearch}
-  onChange={(e) => setGlobalSearch(e.target.value)}
+  onChange={(e) => {
+    const value = e.target.value;
+    setGlobalSearch(value);
+  
+    if (value) {
+      setShowFilterList(false); // typing → close
+    } else {
+      setShowFilterList(true);  // 🔥 emptyனா மீண்டும் open
+    }
+  }}
+  onFocus={(e) => {
+    e.stopPropagation();
+    if (!globalSearch) {
+      setShowFilterList(true);
+    }
+  }}
 />
+
+  {showFilterList && (
+   <div className="filter-list" onClick={(e) => e.stopPropagation()}>
+   <label>Filter type <FaFilter /></label>
+   <h4
+  onClick={() => {
+    setFilterType("name");
+    setShowFilterList(false);
+
+    if (sortField === "name") {
+    
+      setSortDirection(prev =>
+        prev === "asc" ? "desc" : "asc"
+      );
+    } else {
+      // 🔥 first time click
+      setSortField("name");
+      setSortDirection("asc");
+    }
+  }}
+>
+  Name
+</h4>
+<h4
+  onClick={() => {
+    setFilterType("class");
+    setShowFilterList(false);
+
+    if (sortField === "class") {
+      setSortDirection(prev =>
+        prev === "asc" ? "desc" : "asc"
+      );
+    } else {
+      setSortField("class");
+      setSortDirection("asc");
+    }
+  }}
+>
+  Class
+</h4>
+ </div>
+  )}
+
+</div>
 
 </div>
 
@@ -220,8 +300,6 @@ const accountOptions = [
 )}
 
 </div>
-
-        {/* FORM SIDE */}
         {accountType && renderForm()}
 
       </div>

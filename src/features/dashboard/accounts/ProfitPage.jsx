@@ -1,5 +1,5 @@
 import React, { useEffect, useState ,useMemo ,useCallback } from "react";
-import { collection, onSnapshot, addDoc, updateDoc,  deleteDoc, doc ,getDoc ,query, where, getDocs} from "firebase/firestore";
+import { collection, onSnapshot, addDoc, updateDoc,  deleteDoc, doc ,getDoc ,query, where, getDocs,Timestamp} from "firebase/firestore";
   import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
 import "../../dashboard_styles/studentSearch.css";
@@ -611,7 +611,26 @@ const generatedParentId = `P-${Date.now()}`;
         ]
       }
     );
-    
+    // 🔥 STUDENT CREATE HISTORY
+await addDoc(
+  collection(db, "users", adminUid, "Account", "accounts", "History"),
+  {
+    entryType: "people",
+    module: "STUDENT",
+    name: newName,
+    role: newClass,
+    action: "CREATE",
+    date: Timestamp.now(),
+    createdAt: Timestamp.now(),
+    originalData: {
+      id: studentDocRef.id,
+      studentName: newName,
+      parentName: newParent,
+      parentId: generatedParentId,
+      class: newClass
+    }
+  }
+);
     
     
   
@@ -1264,8 +1283,10 @@ const getTermPaidCount = (studentId, feeId) =>
       entryType,
       action: "DELETE",
       module: collectionName,
-      originalId: row.id,
-      originalData: originalData,
+      originalData: {
+        id: row.id,   // 🔥 MUST ADD THIS
+        ...originalData
+      },
       name: originalData.studentName || originalData.name || "",
       amount: originalData.paidAmount || originalData.amount || 0,
       date: originalData.date || new Date(),

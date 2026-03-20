@@ -30,7 +30,8 @@ const Parent = ({
   setActivePage,
   editData,       
   onEdit,   // ✅ ADD THIS
-  setEditData        // ✅ ADD THIS
+  sortField,        // 🔥 ADD
+  sortDirection       // ✅ ADD THIS
 }) => {
   /* ================= BASIC ================= */
   const adminUid =
@@ -68,19 +69,52 @@ const [saved, setSaved] = useState(false);
     const ref = collection(db, "users", adminUid, "parents");
   
     const unsubscribe = onSnapshot(ref, (snap) => {
-      const list = snap.docs
-        .map(d => ({ id: d.id, ...d.data() }))
-        .sort((a, b) =>
-          (a.parentName || "")
-            .toLowerCase()
-            .localeCompare((b.parentName || "").toLowerCase())
-        );
+      let list = snap.docs.map(d => ({
+        id: d.id,
+        ...d.data()
+      }));
+  
+      // 🔥 NAME SORT
+      if (sortField === "parentName") {
+        list.sort((a, b) => {
+          const aVal = (a.parentName || "").toLowerCase();
+          const bVal = (b.parentName || "").toLowerCase();
+  
+          return sortDirection === "asc"
+            ? aVal.localeCompare(bVal)
+            : bVal.localeCompare(aVal);
+        });
+      }
+  
+      // 🔥 STUDENT COUNT SORT
+      else if (sortField === "studentsCount") {
+        list.sort((a, b) => {
+          const aVal = a.studentsCount || 0;
+          const bVal = b.studentsCount || 0;
+  
+          return sortDirection === "asc"
+            ? aVal - bVal
+            : bVal - aVal;
+        });
+      }
+  
+      // 🔥 DEFAULT (fallback)
+      else if (sortField) {
+        list.sort((a, b) => {
+          const aVal = (a[sortField] || "").toString().toLowerCase();
+          const bVal = (b[sortField] || "").toString().toLowerCase();
+  
+          return sortDirection === "asc"
+            ? aVal.localeCompare(bVal)
+            : bVal.localeCompare(aVal);
+        });
+      }
   
       setParents(list);
     });
   
     return () => unsubscribe();
-  }, [adminUid]);
+  }, [adminUid, sortField, sortDirection]); // 🔥 IMPORTANT
 
   useEffect(() => {
     if (editData) {
@@ -301,16 +335,51 @@ const [saved, setSaved] = useState(false);
           doc(db, "users", adminUid, "parents", editId),
           updateData
         );
+        // 🔥 HISTORY UPDATE
+await addDoc(
+  collection(db, "users", adminUid, "Account", "accounts", "History"),
+  {
+    entryType: "people",
+    module: "PARENT",
+    name: form.parentName,
+    role: "parent",
+    action: "UPDATE",
+    date: Timestamp.now(),
+    createdAt: Timestamp.now(),
+    originalData: {
+      id: editId,
+      ...updateData
+    }
+  }
+);
   
       } else {
         // create parent
-        await addDoc(
+        const parentRef = await addDoc(
           collection(db, "users", adminUid, "parents"),
           {
             ...payload,
             password,
             role: "parent",
             createdAt: Timestamp.now()
+          }
+        );
+      
+        // 🔥 HISTORY CREATE
+        await addDoc(
+          collection(db, "users", adminUid, "Account", "accounts", "History"),
+          {
+            entryType: "people",
+            module: "PARENT",
+            name: form.parentName,
+            role: "parent",
+            action: "CREATE",
+            date: Timestamp.now(),
+            createdAt: Timestamp.now(),
+            originalData: {
+              id: parentRef.id,   // 🔥 IMPORTANT
+              ...payload
+            }
           }
         );
       }
@@ -333,7 +402,7 @@ const [saved, setSaved] = useState(false);
         );
   
         if (!match) {
-          await addDoc(
+          const studentRef = await addDoc(
             collection(db, "users", adminUid, "students"),
             {
               studentName: s.studentName,
@@ -343,6 +412,29 @@ const [saved, setSaved] = useState(false);
               class: s.class,
               section: s.section,
               createdAt: Timestamp.now()
+            }
+          );
+          
+          // 🔥 HISTORY FOR STUDENT CREATE
+          await addDoc(
+            collection(db, "users", adminUid, "Account", "accounts", "History"),
+            {
+              entryType: "people",
+              module: "STUDENT",
+              name: s.studentName,
+              role: s.class,
+              action: "CREATE",
+              date: Timestamp.now(),
+              createdAt: Timestamp.now(),
+              originalData: {
+                id: studentRef.id,   // 🔥 IMPORTANT
+                studentName: s.studentName,
+                studentId: s.studentId,
+                parentId: parentIdTrim,
+                parentName: payload.parentName,
+                class: s.class,
+                section: s.section
+              }
             }
           );
         }
@@ -367,7 +459,6 @@ const [saved, setSaved] = useState(false);
     if (!window.confirm("Delete parent and all students?")) return;
   
     if (role === "admin") {
-      // … your approval request logic (same)
       return;
     }
   
@@ -375,22 +466,49 @@ const [saved, setSaved] = useState(false);
     const parentDoc = parents.find(p => p.id === id);
     if (!parentDoc) return;
   
-    // 2️⃣ delete students belonging to parent
-    const snap = await getDocs(
-      collection(db, "users", adminUid, "students")
-    );
+    try {
+      // 🔥 2️⃣ SAVE HISTORY FIRST
+      await addDoc(
+        collection(db, "users", adminUid, "Account", "accounts", "History"),
+        {
+          entryType: "people",
+          module: "PARENT",
+          name: parentDoc.parentName,
+          role: "parent",
+          action: "DELETE",
+          date: Timestamp.now(),
+          createdAt: Timestamp.now(),
+          originalData: {
+            id: parentDoc.id,   // 🔥 IMPORTANT
+            ...parentDoc
+          }
+        }
+      );
   
-    for (const d of snap.docs) {
-      if (d.data().parentId === parentDoc.parentId) {
-        await deleteDoc(
-          doc(db, "users", adminUid, "students", d.id)
-        );
+      // 3️⃣ delete students
+      const snap = await getDocs(
+        collection(db, "users", adminUid, "students")
+      );
+  
+      for (const d of snap.docs) {
+        if (d.data().parentId === parentDoc.parentId) {
+          await deleteDoc(
+            doc(db, "users", adminUid, "students", d.id)
+          );
+        }
       }
+  
+      // 4️⃣ delete parent
+      await deleteDoc(
+        doc(db, "users", adminUid, "parents", id)
+      );
+  
+      alert("Deleted + history saved ✅");
+  
+    } catch (err) {
+      console.error(err);
+      alert("Delete failed ❌");
     }
-  
-    // 3️⃣ delete parent
-    await deleteDoc(doc(db, "users", adminUid, "parents", id));
-  
   };
   const handleEdit = (p) => {
     if (onEdit) {

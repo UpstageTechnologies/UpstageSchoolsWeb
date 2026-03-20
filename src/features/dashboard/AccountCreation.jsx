@@ -16,6 +16,8 @@ const [accountType, setAccountType] = useState("");
 const [editData, setEditData] = useState(null);
 const [activeTab,setActiveTab] = useState("admin")
 const [globalSearch,setGlobalSearch]=useState("");
+const [sortField, setSortField] = useState("");
+const [sortDirection, setSortDirection] = useState("asc");
 return(
 <div className="accountcreationtitle">
 <h2 className="page-title">Account creation</h2>
@@ -68,13 +70,20 @@ Office Staff
   editData={editData}
   setEditData={setEditData}
   setActiveTab={setActiveTab}
-  globalSearch={globalSearch}        // 🔥 ADD
-  setGlobalSearch={setGlobalSearch}   // 🔥 ADD THIS
+
+  sortField={sortField}
+  sortDirection={sortDirection}
+  setSortField={setSortField}          // 🔥 ADD THIS
+  setSortDirection={setSortDirection}   // 🔥 ADD THIS
+  globalSearch={globalSearch}
+  setGlobalSearch={setGlobalSearch}
 />
 {activeTab==="admin" && (
   <Admin
   globalSearch={globalSearch}
   setActivePage={setActivePage}
+  sortField={sortField}
+  sortDirection={sortDirection}
     onEdit={(data) => {
       setEditData({ ...data, type: "admin" });
       setAccountType("admin"); // 🔥 IMPORTANT
@@ -86,6 +95,8 @@ Office Staff
 
   <Teacher
   globalSearch={globalSearch}
+  sortField={sortField}
+  sortDirection={sortDirection}
   setActivePage={setActivePage}
     onEdit={(data) => {
       setEditData({ ...data, type: "teacher" });
@@ -97,6 +108,8 @@ Office Staff
     {activeTab==="parent" && (
  <Parent
  globalSearch={globalSearch}
+ sortField={sortField}
+ sortDirection={sortDirection}
  setActivePage={setActivePage}
    onEdit={(data) => {
     setEditData({ ...data, type: "parent" });
@@ -108,6 +121,8 @@ Office Staff
     {activeTab==="student" && (
   <Student
   globalSearch={globalSearch}
+  sortField={sortField}
+  sortDirection={sortDirection}
   setActivePage={setActivePage}
     onEdit={(data) => {
       setEditData({ ...data, type: "student" });
@@ -119,6 +134,8 @@ Office Staff
     {activeTab==="staff" && (
   <OfficeStaff
   globalSearch={globalSearch}
+  sortField={sortField}
+  sortDirection={sortDirection}
   setActivePage={setActivePage}
     onEdit={(data) => {
      

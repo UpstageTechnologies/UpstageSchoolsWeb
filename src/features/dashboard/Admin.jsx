@@ -25,7 +25,9 @@ const Admin = ({
   globalSearch = "",
   setActivePage,
   editData,
-  onEdit   // 🔥 ADD
+  onEdit,
+  sortField,          // 🔥 ADD THIS
+  sortDirection       // 🔥 ADD THIS
 }) => {
 
   const [admins, setAdmins] = useState([]);
@@ -36,6 +38,7 @@ const Admin = ({
   const [previewOpen, setPreviewOpen] = useState(false);
   const [showGender,setShowGender] =useState(false);
   const [saving, setSaving] = useState(false);
+  
 const [saved, setSaved] = useState(false);
   const selectedAdminId = localStorage.getItem("selectedAdminId");
 
@@ -63,19 +66,24 @@ const [saved, setSaved] = useState(false);
     const ref = collection(db, "users", superAdminUid, "admins");
   
     const unsubscribe = onSnapshot(ref, (snap) => {
-      const list = snap.docs
-        .map(d => ({ id: d.id, ...d.data() }))
-        .sort((a, b) =>
-          (a.name || "")
-            .toLowerCase()
-            .localeCompare((b.name || "").toLowerCase())
-        );
-  
-      setAdmins(list);
+      const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+if (sortField) {
+  list.sort((a, b) => {
+    const aVal = (a[sortField] || "").toString().toLowerCase();
+    const bVal = (b[sortField] || "").toString().toLowerCase();
+
+    return sortDirection === "asc"
+      ? aVal.localeCompare(bVal)
+      : bVal.localeCompare(aVal);
+  });
+}
+
+setAdmins(list);
     });
   
     return () => unsubscribe();
-  }, [superAdminUid]);
+  }, [superAdminUid, sortField, sortDirection]);
   useEffect(() => {
     if (editData) {
       setForm({
@@ -141,7 +149,24 @@ const [saved, setSaved] = useState(false);
         await updateDoc(
           doc(db, "users", superAdminUid, "admins", editId),
           updateData
-        );
+        );  
+        // 🔥 HISTORY UPDATE
+await addDoc(
+  collection(db, "users", superAdminUid, "Account", "accounts", "History"),
+  {
+    entryType: "people",
+    module: "ADMIN",
+    name: form.name,
+    role: "admin",
+    action: "UPDATE",
+    date: Timestamp.now(),
+    createdAt: Timestamp.now(),
+    originalData: {
+      id: editId,
+      ...updateData
+    }
+  }
+);
   
       } 
       /* ================= CREATE ================= */
@@ -164,6 +189,24 @@ const [saved, setSaved] = useState(false);
             createdAt: Timestamp.now()
           }
         );
+        // 🔥 HISTORY CREATE
+await addDoc(
+  collection(db, "users", superAdminUid, "Account", "accounts", "History"),
+  {
+    entryType: "people",
+    module: "ADMIN",
+    name: form.name,
+    role: "admin",
+    action: "CREATE",
+    date: Timestamp.now(),
+    createdAt: Timestamp.now(),
+    originalData: {
+      id: form.adminId,   // 🔥 IMPORTANT
+      ...form,
+      adminId: form.adminId
+    }
+  }
+);
       }
   
       /* ================= SUCCESS ================= */
@@ -183,13 +226,41 @@ const [saved, setSaved] = useState(false);
   /* ================= DELETE ================= */
   const handleDelete = async (id) => {
     if (!window.confirm("Delete admin?")) return;
-
-    await deleteDoc(
-      doc(db, "users", superAdminUid, "admins", id)
-    );
- 
+  
+    try {
+      const adminDoc = admins.find(a => a.id === id);
+      if (!adminDoc) return;
+  
+      // 🔥 SAVE HISTORY FIRST
+      await addDoc(
+        collection(db, "users", superAdminUid, "Account", "accounts", "History"),
+        {
+          entryType: "people",
+          module: "ADMIN",
+          name: adminDoc.name,
+          role: "admin",
+          action: "DELETE",
+          date: Timestamp.now(),
+          createdAt: Timestamp.now(),
+          originalData: {
+            id: adminDoc.id,
+            ...adminDoc
+          }
+        }
+      );
+  
+      // 🔥 DELETE
+      await deleteDoc(
+        doc(db, "users", superAdminUid, "admins", id)
+      );
+  
+      alert("Deleted + history saved ✅");
+  
+    } catch (err) {
+      console.error(err);
+      alert("Delete failed ❌");
+    }
   };
-
   const resetForm = () => {
    
     setEditId(null);
@@ -336,7 +407,11 @@ const [saved, setSaved] = useState(false);
 
           <button
             className="delete-btn"
-            onClick={() => requirePremium(() => handleDelete(a.id))}
+            onClick={() =>
+              requirePremium
+                ? requirePremium(() => handleDelete(a.id))
+                : handleDelete(a.id)
+            }
           >
             <FaTrash /> Delete
           </button>

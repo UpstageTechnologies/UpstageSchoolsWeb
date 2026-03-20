@@ -41,7 +41,9 @@
     globalSearch = "",
     setActivePage,
     editData,
-    onEdit
+    onEdit,
+    sortField,        // 🔥 ADD
+    sortDirection   
   }) => {
     const selectedOfficeStaffId =
       localStorage.getItem("selectedOfficeStaffId");
@@ -94,19 +96,74 @@ const [saved, setSaved] = useState(false);
       if (!adminUid) return;
     
       const ref = collection(db, "users", adminUid, "office_staffs");
-      
+    
       const unsubscribe = onSnapshot(ref, (snap) => {
-        const list = snap.docs
-          .map(d => ({ id: d.id, ...d.data() }))
-          .sort((a, b) =>
-            (a.name || "").toLowerCase().localeCompare((b.name || "").toLowerCase())
-          );
+        let list = snap.docs.map(d => ({
+          id: d.id,
+          ...d.data()
+        }));
+        const uniqueMap = new Map();
+
+        list.forEach(item => {
+          if (!uniqueMap.has(item.staffId)) {
+            uniqueMap.set(item.staffId, item);
+          }
+        });
+    
+        list = Array.from(uniqueMap.values());
+        // 🔥 NAME SORT
+        if (sortField === "name") {
+          list.sort((a, b) => {
+            const aVal = (a.name || "").toLowerCase();
+            const bVal = (b.name || "").toLowerCase();
+    
+            return sortDirection === "asc"
+              ? aVal.localeCompare(bVal)
+              : bVal.localeCompare(aVal);
+          });
+        }
+    
+        // 🔥 DEPARTMENT SORT
+        else if (sortField === "department") {
+          list.sort((a, b) => {
+            const aVal = (a.department || "").toLowerCase();
+            const bVal = (b.department || "").toLowerCase();
+    
+            return sortDirection === "asc"
+              ? aVal.localeCompare(bVal)
+              : bVal.localeCompare(aVal);
+          });
+        }
+    
+        // 🔥 ROLE SORT
+        else if (sortField === "role") {
+          list.sort((a, b) => {
+            const aVal = (a.role || "").toLowerCase();
+            const bVal = (b.role || "").toLowerCase();
+    
+            return sortDirection === "asc"
+              ? aVal.localeCompare(bVal)
+              : bVal.localeCompare(aVal);
+          });
+        }
+    
+        // 🔥 DEFAULT
+        else if (sortField) {
+          list.sort((a, b) => {
+            const aVal = (a[sortField] || "").toString().toLowerCase();
+            const bVal = (b[sortField] || "").toString().toLowerCase();
+    
+            return sortDirection === "asc"
+              ? aVal.localeCompare(bVal)
+              : bVal.localeCompare(aVal);
+          });
+        }
     
         setStaffs(list);
       });
     
       return () => unsubscribe();
-    }, [adminUid]);
+    }, [adminUid, sortField, sortDirection]); // 🔥 MUST
     /* ================= SAVE ================= */
     const handleSaveStaff = async () => {
       try {
@@ -181,6 +238,23 @@ const [saved, setSaved] = useState(false);
             doc(db, "users", adminUid, "office_staffs", editId),
             updateData
           );
+          // 🔥 HISTORY UPDATE
+await addDoc(
+  collection(db, "users", adminUid, "Account", "accounts", "History"),
+  {
+    entryType: "people",
+    module: "OFFICE_STAFF",
+    name: form.name,
+    role: form.role,
+    action: "UPDATE",
+    date: Timestamp.now(),
+    createdAt: Timestamp.now(),
+    originalData: {
+      id: editId,
+      ...updateData
+    }
+  }
+);
         } else {
           await addDoc(
             collection(db, "users", adminUid, "office_staffs"),
@@ -191,6 +265,23 @@ const [saved, setSaved] = useState(false);
               createdAt: Timestamp.now()
             }
           );
+          // 🔥 HISTORY (CREATE)
+await addDoc(
+  collection(db, "users", adminUid, "Account", "accounts", "History"),
+  {
+    entryType: "people",
+    module: "OFFICE_STAFF",
+    name: form.name,
+    role: form.role,
+    action: "CREATE",
+    date: Timestamp.now(),
+    createdAt: Timestamp.now(),
+    originalData: {
+      ...form,
+      staffId: staffIdTrimmed
+    }
+  }
+);
         }
     
         setSaved(true);

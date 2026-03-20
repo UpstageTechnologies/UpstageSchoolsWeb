@@ -180,7 +180,10 @@ html,body{overflow-x:hidden;}
 
 .sidebar ul li.active:hover{transform:none;}
 
-.sidebar-close ul li.active{background:#3a9df5;border-radius:10px;}
+.sidebar-close ul li.active{background:linear-gradient(
+  rgba(124,58,237,0.9),
+  rgba(91,33,182,0.9)
+);border-radius:10px;}
 
 .sidebar-close ul li.active svg{color:white;}
 

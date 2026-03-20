@@ -978,4 +978,80 @@
   }
   
   }
-  
+ 
+/* ===============================
+   SEARCH WRAPPER (NEW)
+================================= */
+.search-wrapper{
+  position: relative;
+  margin-left: auto;   /* right align */
+  width: 260px;
+}
+
+.search-wrapper input:focus{
+  border-color:#7b4be0;
+  box-shadow:0 0 0 3px rgba(123,75,224,0.25);
+}
+
+/* ===============================
+   FILTER DROPDOWN (FIXED)
+================================= */
+.filter-list{
+  position: absolute;
+  top: calc(100% + 8px);   /* 🔥 exact கீழ spacing */
+  left: 0;
+  width: 100%;
+
+  background: #fff;
+  padding: 16px;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+  z-index: 999;
+
+}
+
+/* ===============================
+   FILTER ITEMS
+================================= */
+.filter-list label{
+  font-size: 13px;
+  font-weight: 600;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-bottom: 8px;
+}
+
+.filter-list h4{
+  margin: 6px 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+  font-size: 14px;
+}
+
+.filter-list h4:hover{
+  background: #eee7ff;
+  color: #5b2bbf;
+}
+
+/* ===============================
+   MOBILE FIX
+================================= */
+@media (max-width:768px){
+
+  .history-controls{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .search-wrapper{
+    width: 100%;
+  }
+
+  .filter-list{
+    width: 100%;
+    left: 0;
+  }
+}

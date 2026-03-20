@@ -571,19 +571,18 @@ setShowStudentDropdown,
   setFocused={setFocused}
 />{/* CLASS DROPDOWN (NEW ADMISSION) */}
 <div className="student-dropdown">
-<FloatingInput
-  name="newClass"
-  label="Select Class"
-  value={newClass || newClassSearch}
-  onChange={e => {
-    setNewClassSearch(e.target.value);
-    setNewClass("");
-    setShowNewClassDropdown(true);
-  }}
-  onFocus={() => setShowNewClassDropdown(true)}
-  focused={focused}
-  setFocused={setFocused}
-/>
+
+  <input
+    placeholder="Select Class"
+    value={newClass || newClassSearch}
+    onChange={e => {
+      setNewClassSearch(e.target.value);
+      setNewClass("");
+      setShowNewClassDropdown(true);
+    }}
+    onFocus={() => setShowNewClassDropdown(true)}
+  />
+
   {showNewClassDropdown && (
     <div className="student-dropdown-list">
 
@@ -619,19 +618,15 @@ setShowStudentDropdown,
 
         {/* ===== SELECT FEES FROM INVENTORY ===== */}
 <div className="student-dropdown">
-<FloatingInput
-  name="fees"
-  label="Select Fees"
-  value={
-    selectedFees.length
-      ? `${selectedFees[0].name} — ₹${selectedFees[0].amount}`
-      : ""
-  }
-  readOnly
-  onClick={() => setShowFeesDropdown(prev => !prev)}
-  focused={focused}
-  setFocused={setFocused}
-/>
+  <input
+    placeholder="Select Fees"
+    value={
+      selectedFees.length
+        ? `${selectedFees[0].name} — ₹${selectedFees[0].amount}`
+        : ""
+    }
+    readOnly
+    onClick={()=>setShowFeesDropdown(!showFeesDropdown)}/>
   {showFeesDropdown && (
     <div className="student-dropdown-list">
       {getClassFees(newClass || oldClass).map(fee => {
@@ -663,19 +658,16 @@ setShowStudentDropdown,
   />
 )}<div className="student-dropdown">
           
-          <FloatingInput
-  name="paymentType"
-  label="Select Payment Type"
-  value={paymentType || paymentSearch}
-  onChange={e => {
-    setPaymentSearch(e.target.value);
-    setPaymentType("");
-    setShowPaymentDD(true);
-  }}
-  onFocus={() => setShowPaymentDD(true)}
-  focused={focused}
-  setFocused={setFocused}
-/>
+  <input
+    placeholder="Select Payment Type"
+    value={paymentType || paymentSearch}
+    onChange={e => {
+      setPaymentSearch(e.target.value);
+      setPaymentType("");
+      setShowPaymentDD(true);
+    }}
+    onFocus={() => setShowPaymentDD(true)}
+  />
 
   {showPaymentDD && (
     <div className="student-dropdown-list">
@@ -721,15 +713,12 @@ setShowStudentDropdown,
 )}
 
 {newPayType === "partial" && (
- <FloatingInput
- name="payAmount"
- label="Enter Amount"
- type="number"
- value={newPayAmount}
- onChange={e => setNewPayAmount(e.target.value)}
- focused={focused}
- setFocused={setFocused}
-/>
+  <input
+    type="number"
+    placeholder="Enter Amount"
+    value={newPayAmount}
+    onChange={e => setNewPayAmount(e.target.value)}
+  />
 )}
 
 {newPayType.startsWith("term") && (

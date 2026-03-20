@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, onSnapshot , addDoc, deleteDoc, doc , setDoc,query,orderBy} from "firebase/firestore";
+import { collection, onSnapshot , addDoc, deleteDoc, doc , setDoc,query,orderBy,Timestamp} from "firebase/firestore";
 import { db } from "../../../services/firebase";
 import "../../dashboard_styles/History.css";
 import { FaArrowLeft,FaArrowRight, FaUndo } from "react-icons/fa";
@@ -11,6 +11,7 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
    const [sortField, setSortField] = useState("createdAt");
    const [sortDirection, setSortDirection] = useState("desc");
    const [openMenuId, setOpenMenuId] = useState(null);
+   const [showFilterList, setShowFilterList] = useState(false);
   const filteredHistory = historyList.filter(h => {
     const entryType = h.entryType;
     const action =   h.action;
@@ -27,7 +28,7 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
       return entryType === "inventory" && action !== "DELETE";
     }
     else if (activeFilter === "people") {
-      return entryType === "people" && action === "DELETE";
+      return entryType === "people";
     }
     else if (activeFilter === "deleted") {
       return action === "DELETE";
@@ -39,57 +40,87 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
   
   });
   const handleUndo = async (item) => {
-
-    if (!item.originalData) {
-      alert("Old record – No backup data available");
-      return;
+    try {
+      if (!item.originalData || !item.originalData.id) {
+        alert("Old record – No backup data available");
+        return;
+      }
+  
+      let ref = null;
+  
+      // 🔥 MASTER TYPES
+      if (item.module === "SALARY_MASTER" || item.module === "FEES_MASTER") {
+        ref = collection(db, "users", adminUid, "Account", "accounts", "FeesMaster");
+      }
+  
+      else if (item.module === "COMPETITION") {
+        ref = collection(db, "users", adminUid, "Account", "accounts", "Competition");
+      }
+  
+      // 💰 INCOME
+      else if (item.entryType === "income") {
+        ref = collection(db, "users", adminUid, "Account", "accounts", "Income");
+      }
+  
+      // 💸 EXPENSE
+      else if (item.entryType === "expense") {
+        ref = collection(db, "users", adminUid, "Account", "accounts", "Expenses");
+      }
+  
+      // 👥 PEOPLE
+      else if (item.entryType === "people") {
+  
+        if (item.module === "OFFICE_STAFF") {
+          ref = collection(db, "users", adminUid, "office_staffs");
+        }
+  
+        else if (item.module === "STUDENT") {
+          ref = collection(db, "users", adminUid, "students");
+        }
+  
+        else if (item.module === "PARENT") {
+          ref = collection(db, "users", adminUid, "parents");
+        }
+  
+        else if (item.module === "TEACHER") {
+          ref = collection(db, "users", adminUid, "teachers"); // 🔥 ADD THIS
+        }
+      }
+  
+      // ❌ SAFETY CHECK
+      if (!ref) {
+        alert("Invalid undo path ❌");
+        console.error("Missing ref for:", item);
+        return;
+      }
+  
+      // 🔥 RESTORE
+      await setDoc(
+        doc(ref, item.originalData.id),
+        item.originalData
+      );
+  
+      // 🔥 DELETE FROM HISTORY
+      await deleteDoc(
+        doc(db, "users", adminUid, "Account", "accounts", "History", item.id)
+      );
+  
+      alert("Restored successfully ✅");
+  
+    } catch (err) {
+      console.error("UNDO ERROR:", err);
+      alert(err.message);
     }
-  
-    let ref = null;
-  
-    // 🔥 MASTER TYPES
-    if (item.module === "SALARY_MASTER") {
-      ref = collection(db, "users", adminUid, "Account", "accounts", "FeesMaster");
-    }
-  
-    else if (item.module === "FEES_MASTER") {
-      ref = collection(db, "users", adminUid, "Account", "accounts", "FeesMaster");
-    }
-  
-    else if (item.module === "COMPETITION") {
-      ref = collection(db, "users", adminUid, "Account", "accounts", "Competition");
-    }
-  
-    // 💰 INCOME
-    else if (item.entryType === "income") {
-      ref = collection(db, "users", adminUid, "Account", "accounts", "Income");
-    }
-  
-    // 💸 EXPENSE
-    else if (item.entryType === "expense") {
-      ref = collection(db, "users", adminUid, "Account", "accounts", "Expenses");
-    }
-  
-    // 👥 PEOPLE (🔥 FIX HERE)
-    else if (item.entryType === "people") {
-      ref = collection(db, "users", adminUid, "office_staffs");
-    }
-  
-    else {
-      alert("Unknown type ❌");
-      return;
-    }
-  
-    // 🔥 RESTORE
-    await addDoc(ref, item.originalData);
-  
-    // 🔥 DELETE FROM HISTORY
-    await deleteDoc(
-      doc(db, "users", adminUid, "Account", "accounts", "History", item.id)
-    );
-  
-    alert("Restored successfully ✅");
   };
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setShowFilterList(false);
+    };
+  
+    window.addEventListener("click", handleClickOutside);
+  
+    return () => window.removeEventListener("click", handleClickOutside);
+  }, []);
   useEffect(() => {
 
     if (!adminUid) return;
@@ -328,7 +359,6 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
   No history available for this date
   </td>
 </tr>
-
 )}
 {filteredHistory
   .filter(h => {
