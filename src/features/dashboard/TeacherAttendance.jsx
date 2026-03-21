@@ -10,10 +10,11 @@ import {
 import { db } from "../../services/firebase";
 import "../dashboard_styles/Attendance.css";
 
-export default function TeacherAttendance() {
+export default function TeacherAttendance({ teacherId }) {
 
   const adminUid   = localStorage.getItem("adminUid");
-  const teacherId  = localStorage.getItem("teacherId");
+  const teacherIdLocal =
+  teacherId || localStorage.getItem("teacherId");
 
   const [assigned, setAssigned] = useState(null);
 
@@ -27,25 +28,27 @@ export default function TeacherAttendance() {
 
   const [history, setHistory] = useState({});
   const [dayLabels, setDayLabels] = useState([]);
-
   /* 1️⃣ Load teacher assigned class */
   useEffect(() => {
     async function loadTeacher() {
-      if (!adminUid || !teacherId) return;
-
+      console.log("TeacherId:", teacherIdLocal);
+  
+      if (!adminUid || !teacherIdLocal) return;
+  
       const q = collection(db, "users", adminUid, "teachers");
       const snap = await getDocs(q);
-
+  
       snap.forEach(docSnap => {
         const t = docSnap.data();
-        if (t.teacherId === teacherId) {
+  
+        if (t.teacherId === teacherIdLocal) {
           setAssigned((t.assignedClasses || [])[0] || null);
         }
       });
     }
-
+  
     loadTeacher();
-  }, [adminUid, teacherId]);
+  }, [adminUid, teacherIdLocal]);
 
   /* 2️⃣ Load students + attendance + history */
   useEffect(() => {
@@ -152,7 +155,7 @@ export default function TeacherAttendance() {
         section: assigned.section,
         records,
         lateTimes,
-        markedBy: teacherId,
+        markedBy: teacherIdLocal,
         updatedAt: Timestamp.now()
       },
       { merge: true }

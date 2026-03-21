@@ -122,19 +122,27 @@ const handleGoogleSignIn = async () => {
       alert("Invalid credentials");
       return;
     }
-
     const docSnap = snap.docs[0];
     const data = docSnap.data();
+    
+    // 🔥 BLOCK LOGIN
+    if (data.isActive === false) {
+      alert("Account disabled ❌");
+      return;
+    }
+    
     const adminUid = docSnap.ref.parent.parent.id;
 
     localStorage.setItem("role", roleName);
     localStorage.setItem("adminUid", adminUid);
     localStorage.setItem("profilePhoto", data.photoURL || "");
     localStorage.setItem("email", data.email || "");
-
     if (roleName === "teacher") {
       localStorage.setItem("teacherDocId", docSnap.id);
       localStorage.setItem("teacherName", data.name);
+    
+      // 🔥 ADD THIS (CRITICAL FIX)
+      localStorage.setItem("teacherId", data.teacherId);
     }
     if (roleName === "parent") {
       localStorage.setItem("parentDocId", docSnap.id);

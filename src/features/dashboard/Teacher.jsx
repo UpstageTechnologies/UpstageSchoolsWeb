@@ -222,7 +222,53 @@ const [saved, setSaved] = useState(false);
   
     fetchClasses();
   }, [adminUid]);
-
+  const generateTeacherId = async () => {
+    const year = new Date().getFullYear().toString().slice(-2);
+    const roleLetter = "T"; // 🔥 Teacher
+  
+    const snap = await getDocs(
+      collection(db, "users", adminUid, "teachers")
+    );
+  
+    const ids = snap.docs.map(d => d.data().teacherId || "");
+  
+    const filtered = ids.filter(id =>
+      id.startsWith(year + roleLetter)
+    );
+  
+    let lastNumber = 0;
+  
+    filtered.forEach(id => {
+      const num = parseInt(id.slice(-3));
+      if (num > lastNumber) lastNumber = num;
+    });
+  
+    const newNumber = (lastNumber + 1)
+      .toString()
+      .padStart(3, "0");
+  
+    return `${year}${roleLetter}${newNumber}`;
+  };
+  useEffect(() => {
+    if (editData) {
+      // 🔥 EDIT → keep original ID
+      setForm({
+        ...editData,
+        assignedClasses: editData.assignedClasses || []
+      });
+  
+      setEditId(editData.id);
+      setPassword(editData.password || "");
+    } else {
+      // 🔥 CREATE → generate ID
+      const loadId = async () => {
+        const id = await generateTeacherId();
+        setForm(prev => ({ ...prev, teacherId: id }));
+      };
+  
+      loadId();
+    }
+  }, [editData]);
   /* ================= SAVE ================= */
   const handleSaveTeacher = async () => {
     try {
@@ -232,7 +278,7 @@ const [saved, setSaved] = useState(false);
       /* ================= VALIDATION ================= */
       if (
         !form.name ||
-        !form.teacherId ||
+      
         !form.email ||
         !form.phone ||
         (!editId && !password)
@@ -240,33 +286,14 @@ const [saved, setSaved] = useState(false);
         alert("❌ Required fields missing");
         return;
       }
-  
+      
       const phoneClean = form.phone.trim();
   
       if (!/^\d{10}$/.test(phoneClean)) {
         alert("📞 Phone must be 10 digits");
         return;
       }
-  
-      const teacherIdTrimmed = form.teacherId.trim();
-  
-      /* ================= DUPLICATE CHECK ================= */
-      const q = query(
-        collection(db, "users", adminUid, "teachers"),
-        where("teacherId", "==", teacherIdTrimmed)
-      );
-  
-      const snap = await getDocs(q);
-  
-      if (!editId && !snap.empty) {
-        alert("❌ Teacher ID already exists");
-        return;
-      }
-  
-      if (editId && !snap.empty && snap.docs[0].id !== editId) {
-        alert("❌ Duplicate Teacher ID");
-        return;
-      }
+    
   
       /* ================= SUB ADMIN ================= */
       if (role === "admin") {
@@ -278,7 +305,7 @@ const [saved, setSaved] = useState(false);
             targetId: editId || null,
             payload: {
               ...form,
-              teacherId: teacherIdTrimmed,
+              teacherId: form.teacherId,
               password: password || null
             },
             status: "pending",
@@ -295,7 +322,7 @@ const [saved, setSaved] = useState(false);
       if (editId) {
         const updateData = {
           ...form,
-          teacherId: teacherIdTrimmed,
+          teacherId: form.teacherId,
           updatedAt: Timestamp.now()
         };
   
@@ -326,16 +353,19 @@ await addDoc(
 );
   
       } else {
-        await setDoc(
-          doc(db, "users", adminUid, "teachers", teacherIdTrimmed),
-          {
-            ...form,
-            teacherId: teacherIdTrimmed,
-            password,
-            role: "teacher",
-            createdAt: Timestamp.now()
-          }
-        );
+        const newId = await generateTeacherId();
+
+await setDoc(
+  doc(db, "users", adminUid, "teachers", newId),
+  {
+    ...form,
+    teacherId: newId,
+    password,
+    role: "teacher",
+    isActive: true,
+    createdAt: Timestamp.now()
+  }
+);
         // 🔥 HISTORY CREATE
 await addDoc(
   collection(db, "users", adminUid, "Account", "accounts", "History"),
@@ -348,9 +378,9 @@ await addDoc(
     date: Timestamp.now(),
     createdAt: Timestamp.now(),
     originalData: {
-      id: teacherIdTrimmed,   // 🔥 VERY IMPORTANT
+      id: newId,   // 🔥 VERY IMPORTANT
       ...form,
-      teacherId: teacherIdTrimmed
+      teacherId: newId
     }
   }
 );
@@ -367,6 +397,44 @@ await addDoc(
       alert(err.message);
     } finally {
       setSaving(false);
+    }
+  };
+  const handleDisable = async (teacher) => {
+    try {
+      const newStatus = !teacher.isActive;
+  
+      await updateDoc(
+        doc(db, "users", adminUid, "teachers", teacher.id),
+        {
+          isActive: newStatus,
+          updatedAt: Timestamp.now()
+        }
+      );
+  
+      // 🔥 HISTORY
+      await addDoc(
+        collection(db, "users", adminUid, "Account", "accounts", "History"),
+        {
+          entryType: "people",
+          module: "TEACHER",
+          name: teacher.name,
+          role: teacher.category,
+          action: newStatus ? "ENABLE" : "DISABLE",
+          date: Timestamp.now(),
+          createdAt: Timestamp.now(),
+          originalData: {
+            id: teacher.id,
+            ...teacher,
+            isActive: newStatus
+          }
+        }
+      );
+  
+      alert(newStatus ? "Enabled ✅" : "Disabled 🚫");
+  
+    } catch (err) {
+      console.error(err);
+      alert("Failed ❌");
     }
   };
   const handleDelete = async (id) => {
@@ -513,7 +581,7 @@ useEffect(() => {
   })
 
             .map(t => (
-              <tr key={t.id}>
+              <tr key={t.id} style={{ opacity: t.isActive === false ? 0.5 : 1 }} className="mobile-card">
                  <td data-label="Photo">
     {t.photoURL ? (
       <img
@@ -564,14 +632,15 @@ useEffect(() => {
                 <button
   className="view-btn"
   onClick={() => {
-    if (typeof setActivePage === "function") {
-      localStorage.setItem("viewType", "teacher");
-      localStorage.setItem("viewName", t.name);
-      localStorage.setItem("viewId", t.teacherId);
-      localStorage.setItem("viewPhoto", t.photoURL || "");
-
-      setActivePage("subdashboard");
-    }
+    localStorage.setItem("viewType", "teacher");
+    localStorage.setItem("viewName", t.name);
+    localStorage.setItem("viewId", t.teacherId);
+    localStorage.setItem("viewPhoto", t.photoURL || "");
+  
+    // 🔥 ADD THIS LINE (VERY IMPORTANT)
+    localStorage.setItem("teacherId", t.teacherId);
+  
+    setActivePage("subdashboard");
   }}
 >
   <FaEye /> View
@@ -586,7 +655,16 @@ useEffect(() => {
   >
     <FaEdit /> Edit
   </button>
-
+  <button
+  className="disable-btn"
+  style={{
+    background: t.isActive ? "#f59e0b" : "#10b981",
+    color: "#fff"
+  }}
+  onClick={() => handleDisable(t)}
+>
+  {t.isActive ? "Disable" : "Enable"}
+</button>
   <button
     className="delete-btn"
     onClick={() =>
@@ -619,14 +697,10 @@ onChange={e => setForm({ ...form, name: e.target.value })}
 />
 
 <FloatingInput
-name="teacherId"
-label="Teacher ID"
-value={form.teacherId}
-focused={focused}
-setFocused={setFocused}
-onChange={e =>
-setForm({ ...form, teacherId: e.target.value })
-}
+  name="teacherId"
+  label="Teacher ID"
+  value={form.teacherId}
+  readOnly
 />
 
 
@@ -817,7 +891,7 @@ reader.readAsDataURL(file);
 </div>
 {/* Teaching Staff */}
 
-{form.category === "Teaching Staff" && (
+{form.category === "Teaching Staff" &&  (
 
 <>
 <div className="adminpopup-select">

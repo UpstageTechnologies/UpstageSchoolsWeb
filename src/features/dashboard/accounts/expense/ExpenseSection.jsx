@@ -2,7 +2,7 @@ import React from "react";
 import SalaryExpense from "./SalaryExpense";
 import OtherExpense from "./OtherExpense";
 import StudentMiscExpense from "./StudentMiscExpense";
-
+import { useState } from "react";
 export default function ExpenseSection({
   expenseMode,
   setExpenseMode,

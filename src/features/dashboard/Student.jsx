@@ -10,7 +10,7 @@ import {
   Timestamp,
   deleteDoc,
   doc,
-  updateDoc,query, where
+  updateDoc,query, where,setDoc
 } from "firebase/firestore";
 import { auth, db } from "../../services/firebase";
 const selectedStudentId = localStorage.getItem("selectedStudentId");
@@ -144,6 +144,41 @@ const [saved, setSaved] = useState(false);
     fetchClasses()
     
     },[adminUid])
+    const generateStudentId = async () => {
+      const year = new Date().getFullYear().toString().slice(-2);
+      const roleLetter = "S";
+    
+      const snap = await getDocs(
+        collection(db, "users", adminUid, "students")
+      );
+    
+      const ids = snap.docs.map(d => d.data().studentId || "");
+    
+      const filtered = ids.filter(id =>
+        id.startsWith(year + roleLetter)
+      );
+    
+      let lastNumber = 0;
+    
+      filtered.forEach(id => {
+        const num = parseInt(id.slice(-3));
+        if (num > lastNumber) lastNumber = num;
+      });
+    
+      const newNumber = (lastNumber + 1)
+        .toString()
+        .padStart(3, "0");
+    
+      return `${year}${roleLetter}${newNumber}`;
+    };
+    useEffect(() => {
+      const loadId = async () => {
+        const id = await generateStudentId();
+        setForm(prev => ({ ...prev, studentId: id }));
+      };
+    
+      if (!editId) loadId();
+    }, []);
     const handleSaveStudent = async () => {
       try {
         setSaving(true);
@@ -151,7 +186,6 @@ const [saved, setSaved] = useState(false);
     
         if (
           !form.studentName ||
-          !form.studentId ||
           !form.parentId ||
           !form.parentName ||
           !form.class ||
@@ -161,24 +195,6 @@ const [saved, setSaved] = useState(false);
           return;
         }
     
-        const idTrim = form.studentId.trim();
-    
-        const q = query(
-          collection(db, "users", adminUid, "students"),
-          where("studentId", "==", idTrim)
-        );
-    
-        const snap = await getDocs(q);
-    
-        if (!editId && !snap.empty) {
-          alert("❌ Student ID already exists");
-          return;
-        }
-    
-        if (editId && !snap.empty && snap.docs[0].id !== editId) {
-          alert("❌ Duplicate ID");
-          return;
-        }
     
         // 🟢 UPDATE
         if (editId) {
@@ -214,14 +230,17 @@ const [saved, setSaved] = useState(false);
     
         // 🟢 CREATE
         else {
-          const docRef = await addDoc(
-            collection(db, "users", adminUid, "students"),
-            {
-              ...form,
-              studentId: idTrim,
-              createdAt: Timestamp.now()
-            }
-          );
+          const newId = await generateStudentId();
+
+await setDoc(
+  doc(db, "users", adminUid, "students", newId),
+  {
+    ...form,
+    studentId: newId,
+    isActive: true,
+    createdAt: Timestamp.now()
+  }
+);
     
           // ✅ ONLY CREATE HISTORY
           await addDoc(
@@ -235,9 +254,9 @@ const [saved, setSaved] = useState(false);
               date: Timestamp.now(),
               createdAt: Timestamp.now(),
               originalData: {
-                id: docRef.id, // 🔥 IMPORTANT
+                id: newId, // 🔥 IMPORTANT
                 ...form,
-                studentId: idTrim
+                studentId: form.studentId
               }
             }
           );
@@ -253,6 +272,44 @@ const [saved, setSaved] = useState(false);
         alert("❌ Save failed");
       } finally {
         setSaving(false);
+      }
+    };
+    const handleDisable = async (student) => {
+      try {
+        const newStatus = !student.isActive;
+    
+        await updateDoc(
+          doc(db, "users", adminUid, "students", student.id),
+          {
+            isActive: newStatus,
+            updatedAt: Timestamp.now()
+          }
+        );
+    
+        // 🔥 HISTORY
+        await addDoc(
+          collection(db, "users", adminUid, "Account", "accounts", "History"),
+          {
+            entryType: "people",
+            module: "STUDENT",
+            name: student.studentName,
+            role: student.class,
+            action: newStatus ? "ENABLE" : "DISABLE",
+            date: Timestamp.now(),
+            createdAt: Timestamp.now(),
+            originalData: {
+              id: student.id,
+              ...student,
+              isActive: newStatus
+            }
+          }
+        );
+    
+        alert(newStatus ? "Enabled ✅" : "Disabled 🚫");
+    
+      } catch (err) {
+        console.error(err);
+        alert("Failed ❌");
       }
     };
     const handleDeleteStudent = async (student) => {
@@ -353,7 +410,9 @@ const [saved, setSaved] = useState(false);
     );
   })
   .map(s => (
-              <tr key={s.id} className="mobile-card">
+    <tr
+    key={s.id}
+    style={{ opacity: s.isActive === false ? 0.5 : 1 }}className="mobile-card">
                  <td data-label="Photo">
           {s.photoURL ? (
             <img
@@ -392,7 +451,16 @@ const [saved, setSaved] = useState(false);
   >
     <FaEdit /> Edit
   </button>
-
+  <button
+  className="disable-btn"
+  style={{
+    background: s.isActive ? "#f59e0b" : "#10b981",
+    color: "#fff"
+  }}
+  onClick={() => handleDisable(s)}
+>
+  {s.isActive ? "Disable" : "Enable"}
+</button>
   <button
     className="delete-btn"
     onClick={() => safePremium(() => handleDeleteStudent(s))}
@@ -461,11 +529,7 @@ const [saved, setSaved] = useState(false);
   name="studentId"
   label="Student ID"
   value={form.studentId}
-  focused={focused}
-  setFocused={setFocused}
-  onChange={e =>
-    setForm({ ...form, studentId: e.target.value })
-  }
+  readOnly
 />
 <FloatingInput
   name="parentId"

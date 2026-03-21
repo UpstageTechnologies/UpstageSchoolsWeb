@@ -102,9 +102,33 @@ setAdmins(list);
       setPassword(editData.password || "");
     }
   }, [editData]);
-
-
-  /* ================= ADD / EDIT ADMIN ================= */
+  const generateAdminId = async () => {
+    const year = new Date().getFullYear().toString().slice(-2);
+    const roleLetter = "A";
+  
+    const snap = await getDocs(
+      collection(db, "users", superAdminUid, "admins")
+    );
+  
+    const ids = snap.docs.map(d => d.data().adminId || "");
+  
+    const filtered = ids.filter(id =>
+      id.startsWith(year + roleLetter)
+    );
+  
+    let lastNumber = 0;
+  
+    filtered.forEach(id => {
+      const num = parseInt(id.slice(-3));
+      if (num > lastNumber) lastNumber = num;
+    });
+  
+    const newNumber = (lastNumber + 1)
+      .toString()
+      .padStart(3, "0");
+  
+    return `${year}${roleLetter}${newNumber}`;
+  };
   const handleSaveAdmin = async () => {
     try {
       setSaving(true);
@@ -115,7 +139,6 @@ setAdmins(list);
         return;
       }
   
-      /* ================= VALIDATION ================= */
       if (
         !form.name ||
         !form.adminId ||
@@ -179,13 +202,15 @@ await addDoc(
           alert("❌ Admin ID already exists");
           return;
         }
-  
+        const newId = await generateAdminId(); // 🔥 MUST ADD
         await setDoc(
-          doc(db, "users", superAdminUid, "admins", form.adminId),
+          doc(db, "users", superAdminUid, "admins", newId),
           {
             ...form,
+            adminId: newId,
             password,
             role: "admin",
+            isActive: true,
             createdAt: Timestamp.now()
           }
         );
@@ -222,7 +247,44 @@ await addDoc(
       setSaving(false);
     }
   };
-
+  const handleDisable = async (admin) => {
+    try {
+      const newStatus = !admin.isActive;
+  
+      await updateDoc(
+        doc(db, "users", superAdminUid, "admins", admin.id),
+        {
+          isActive: newStatus,
+          updatedAt: Timestamp.now()
+        }
+      );
+  
+      // 🔥 HISTORY
+      await addDoc(
+        collection(db, "users", superAdminUid, "Account", "accounts", "History"),
+        {
+          entryType: "people",
+          module: "ADMIN",
+          name: admin.name,
+          role: "admin",
+          action: newStatus ? "ENABLE" : "DISABLE",
+          date: Timestamp.now(),
+          createdAt: Timestamp.now(),
+          originalData: {
+            id: admin.id,
+            ...admin,
+            isActive: newStatus
+          }
+        }
+      );
+  
+      alert(newStatus ? "Enabled ✅" : "Disabled 🚫");
+  
+    } catch (err) {
+      console.error(err);
+      alert("Failed ❌");
+    }
+  };
   /* ================= DELETE ================= */
   const handleDelete = async (id) => {
     if (!window.confirm("Delete admin?")) return;
@@ -303,7 +365,25 @@ await addDoc(
       window.removeEventListener("click", closeAll);
     };
   }, []);
+  useEffect(() => {
+    if (editData) {
+      // 🔥 EDIT MODE → KEEP OLD ID
+      setForm({
+        ...editData
+      });
   
+      setEditId(editData.id);
+  
+    } else {
+      // 🔥 CREATE MODE → GENERATE NEW ID
+      const loadId = async () => {
+        const id = await generateAdminId();
+        setForm(prev => ({ ...prev, adminId: id }));
+      };
+  
+      loadId();
+    }
+  }, [editData]);
   return (
   
           <>
@@ -347,7 +427,7 @@ await addDoc(
   })
 
     .map(a => (
-      <tr key={a.id} className="mobile-card">
+      <tr key={a.id} style={{ opacity: a.isActive === false ? 0.5 : 1 }}>
          <td data-label="Photo">
     {a.photoURL ? (
       <img
@@ -404,7 +484,17 @@ await addDoc(
 >
   <FaEdit /> Edit
 </button>
-
+<button
+  className="disable-btn"
+  style={{
+    background: a.isActive ? "#f59e0b" : "#10b981",
+    color: "#fff"
+  }}
+  onClick={() => handleDisable(a)}
+>
+  {a.isActive ? "Disable" : "Enable"}
+  
+</button>
           <button
             className="delete-btn"
             onClick={() =>
@@ -433,12 +523,10 @@ setFocused={setFocused}
 onChange={e => setForm({ ...form, name: e.target.value })}
 />
 <FloatingInput
-name="adminId"
-label="Admin ID"
-value={form.adminId}
-focused={focused}
-setFocused={setFocused}
-onChange={e => setForm({ ...form, adminId: e.target.value })}
+  name="adminId"
+  label="Admin ID"
+  value={form.adminId}
+  readOnly
 />
 
 {/* PASSWORD */}
