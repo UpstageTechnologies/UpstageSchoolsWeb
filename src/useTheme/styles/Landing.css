@@ -253,8 +253,9 @@ footer {
 /* 🔥 PURPLE BRAND TEXT */
 .intro-left span{
   background: linear-gradient(90deg,#7c3aed,#5b21b6);
-  -webkit-background-clip:text;
+ 
   -webkit-text-fill-color:transparent;
+  
 }
 
 .intro-left p{
