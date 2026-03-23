@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import LandingIntro from "./useTheme/pages/LandingIntro";
 import Landing from "./useTheme/pages/Landing";
 
 import Register from "./useTheme/pages/Register";
@@ -25,6 +26,7 @@ import UserViewDashboard from "./features/dashboard/UserViewDashboard";
 import EmptyPage from "./useTheme/pages/EmptyPage";
 import UniversalLogin from "./useTheme/pages/UniversalLogin";
 import Course from "./features/dashboard/Courses";
+import ProductHome from "./Product/ProductHome";
 import CoursePlanner from "./features/dashboard/CoursePlanner";
 import Timetable from "./features/dashboard/Timetable";
 import RegularTimetable from "./features/dashboard/RegularTimetable";
@@ -32,7 +34,10 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<EmptyPage />} />
+        <Route path="/" element={<ProductHome />} />
+
+        <Route path="/" element={<LandingIntro />}/>
+        <Route path="/empty" element={<EmptyPage />} />
         <Route path="/UniversalLogin" element={<UniversalLogin />} />
         <Route path="/login" element={<UniversalLogin />} />
 <Route path="/choose-login" element={<ChooseLogin />} />

@@ -89,19 +89,6 @@ export default function EmptyPage() {
 >
   New User →
 </button>
-<button
-  type="button"
-  onClick={() => {
-    // clean start for demo
-    localStorage.removeItem("fromChooseLogin");
-    localStorage.removeItem("prefillUser");
-    localStorage.removeItem("prefillPass");
-
-    navigate("/choose-login");
-  }}
->
-  Demo
-</button>
 
 </form>
       </div>
