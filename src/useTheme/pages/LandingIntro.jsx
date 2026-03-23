@@ -1,4 +1,5 @@
 import React from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../useTheme/styles/Landing.css";
 import studentImg from "../../assets/student.jpg";
@@ -14,74 +15,88 @@ import {
 
 export default function LandingIntro() {
   const navigate = useNavigate();
-
+  const [showAbout, setShowAbout] = useState(false);
   return (
     <div className="intro-page">
-            <LandingNavbar />   
+       <LandingNavbar 
+  showAbout={showAbout} 
+  setShowAbout={setShowAbout}
+  showBack={true}
+/>
       <div className="intro-wrapper">
 
         {/* LEFT */}
-        <div className="intro-left">
-          <h1>
-            Smart School Solutions by <span>Upstage Technologies</span>
-          </h1>
+        <div className={`intro-left ${showAbout ? "about-mode" : ""}`}>
 
-          <p>
-            Upstage Technologies delivers a next-generation platform designed for 
-            modern schools and training environments. From managing daily operations 
-            to enabling continuous learning — everything is streamlined into a 
-            powerful, easy-to-use system.
-          </p>
+  {!showAbout ? (
+    <>
+      <h1>
+        Smart School Solutions by <span>Upstage Technologies</span>
+      </h1>
 
-          <div className="intro-features">
+      <p>
+        Upstage Technologies delivers a next-generation platform designed for 
+        modern schools and training environments.
+      </p>
 
-            <div className="feature-item">
-              <FaLayerGroup className="icon" />
-              <span>All-in-One School & Training Ecosystem</span>
-            </div>
-
-            <div className="feature-item">
-              <FaChartLine className="icon" />
-              <span>Real-Time Insights & Smart Dashboards</span>
-            </div>
-
-            <div className="feature-item">
-              <FaUsers className="icon" />
-              <span>Stronger Parent, Teacher & Admin Collaboration</span>
-            </div>
-
-            <div className="feature-item">
-              <FaGraduationCap className="icon" />
-              <span>Scalable Learning & Skill Development Tools</span>
-            </div>
-
-          </div>
-
-          <p className="trust-line">
-            Built with precision by Upstage Technologies — transforming how 
-            institutions manage, teach, and grow.
-          </p>
-
-          <div className="intro-buttons">
-            <button onClick={() => navigate("/empty")}>
-              Get Started →
-            </button>
-
-            <button
-              className="secondary"
-              onClick={() => {
-                // clean start for demo
-                localStorage.removeItem("fromChooseLogin");
-                localStorage.removeItem("prefillUser");
-                localStorage.removeItem("prefillPass");
-            
-                navigate("/choose-login");
-              }}
-            >
-              Demo →
-            </button>
-          </div>
+      <div className="intro-features">
+        <div className="feature-item">
+          <FaLayerGroup className="icon" />
+          <span>All-in-One School Ecosystem</span>
         </div>
+
+        <div className="feature-item">
+          <FaChartLine className="icon" />
+          <span>Real-Time Insights</span>
+        </div>
+
+        <div className="feature-item">
+          <FaUsers className="icon" />
+          <span>Better Collaboration</span>
+        </div>
+
+        <div className="feature-item">
+          <FaGraduationCap className="icon" />
+          <span>Scalable Learning</span>
+        </div>
+      </div>
+    </>
+  ) : (
+    <>
+      <h1>
+        About <span>Upstage Technologies</span>
+      </h1>
+
+      <p>
+        Upstage Technologies delivers innovative digital solutions that simplify 
+        school management, enhance learning experiences, and empower institutions 
+        with scalable, future-ready technology.
+      </p>
+    </>
+  )}
+{!showAbout && (
+  <div className="intro-buttons">
+    <button onClick={() => navigate("/empty")}>
+      Get Started →
+    </button>
+
+    <button
+      className="secondary"
+      onClick={() => {
+        localStorage.removeItem("fromChooseLogin");
+        localStorage.removeItem("prefillUser");
+        localStorage.removeItem("prefillPass");
+        navigate("/choose-login");
+      }}
+    >
+      Demo →
+    </button>
+  </div>
+)}
+</div>
+
+          
+        
 
         {/* RIGHT */}
         <div className="intro-right">

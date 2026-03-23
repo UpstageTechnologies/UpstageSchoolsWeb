@@ -36,7 +36,7 @@ function App() {
       <Routes>
         <Route path="/" element={<ProductHome />} />
 
-        <Route path="/" element={<LandingIntro />}/>
+        <Route path="/intro" element={<LandingIntro />}/>
         <Route path="/empty" element={<EmptyPage />} />
         <Route path="/UniversalLogin" element={<UniversalLogin />} />
         <Route path="/login" element={<UniversalLogin />} />
@@ -72,7 +72,6 @@ function App() {
         <Route path="/dashboard/view"element={<UserViewDashboard />}/>
         <Route path="/landing" element={<Landing />} />
         <Route path="/courses/:classId/course-planner" element={<CoursePlanner />} />
-
       </Routes>
     </Router>
   );

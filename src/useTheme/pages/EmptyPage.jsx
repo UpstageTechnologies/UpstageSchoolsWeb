@@ -6,7 +6,7 @@ import { db } from "../../services/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import { useEffect } from "react";
 import SearchableDropdown from "../../features/search/SearchableDropdown";
-
+import LandingNavbar from "./LandingNavbar";
 
 export default function EmptyPage() {
   const [schools, setSchools] = useState([]);
@@ -55,7 +55,9 @@ export default function EmptyPage() {
 
   return (
     <div className="hero-page">
+       <LandingNavbar />
         <div className="hero-wrapper">
+       
       {/* LEFT */}
       <div className="hero-left">
         <h1>
