@@ -633,37 +633,43 @@ const unsubClasses = onSnapshot(classesRef, snap => {
       0
     );
   };
-  
-  const getFeeBalance = (studentId, fee) => {
+  const getFeeBalance = (studentId, fee, feeId) => {
 
-    if (!fee) return 0;
+    const normalize = v => String(v).trim();
   
     const payments = incomeList.filter(i => {
   
-      // 🔥 Tuition fees → ignore feeId
-      if (fee.feeType === "Tuition") {
-        return i.studentId === studentId && i.feeType === "Tuition";
-      }
+      const sameStudent =
+        normalize(i.studentId) === normalize(studentId);
   
-      // Other fees → normal check
-      return i.studentId === studentId && i.feeId === fee.id;
+      const sameFee =
+        normalize(i.feeId) === normalize(fee?.id || feeId);
+  
+      const sameTuition =
+        i.feeType === "Tuition" && fee?.feeType === "Tuition";
+  
+      return sameStudent && (sameFee || sameTuition);
   
     });
   
-    // no payment yet
-    if (!payments.length) return fee.amount;
+    console.log("payments:", payments);
+    let total = fee
+    ? fee.amount - (fee.amount * (fee.discount || 0)) / 100
+    : 0;
   
-    const payable =
-      payments[0].payableAmount ||
-      payments[0].totalFees ||
-      fee.amount;
+  if (payments.length > 0) {
+    const first = payments[0];
   
+    if (first.payableAmount) {
+      total = Number(first.payableAmount);
+    }
+  }
     const paid = payments.reduce(
       (t, p) => t + Number(p.paidAmount || 0),
       0
     );
   
-    return Math.max(0, payable - paid);
+    return Math.max(0, total - paid);
   };
 const getPaidAmount = (studentId, feeId) =>
   incomeList
@@ -2000,19 +2006,46 @@ onClick={() => setCurrentPageIndexFull(p => p + 1)}
       : <FiChevronDown size={14}/>
     )}
 </th></tr></thead>
-<tbody>{getSortedData(incomeList
-  .filter(i => i.paymentType === "partial")
-  .filter(i =>
-    tableFilter(
-      i.studentName,
-      i.className,
-      i.date,
-      i.paidAmount
+<tbody>
+{getSortedData(
+  incomeList
+    .filter(i => i.paymentType === "partial")
+    .filter(i =>
+      tableFilter(
+        i.studentName,
+        i.className,
+        i.date,
+        i.paidAmount
+      )
     )
-  
-  )).map(i=>(
-<tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td  data-label="Balance">₹{getFeeBalance(i.studentId,i.feeId)}</td><td  data-label="Date">{i.date}</td></tr>
-))}</tbody>
+).map(i => {
+
+  const feeObj = feesMaster.find(
+    f => String(f.id).trim() === String(i.feeId).trim()
+  );
+
+  // 🔥 fallback (very important)
+  const safeFee = feeObj || {
+    id: i.feeId,
+    amount: i.totalFees || i.payableAmount || 0,
+    feeType: i.feeType
+  };
+
+  return (
+    <tr key={i.id}>
+      <td>{i.studentName}</td>
+      <td>{i.className}</td>
+      <td>₹{i.paidAmount}</td>
+
+      {/* ✅ FIX */}
+      <td>₹{getFeeBalance(i.studentId, safeFee, i.feeId)}</td>
+
+      <td>{i.date}</td>
+    </tr>
+  );
+
+})}
+</tbody>
 </table></div>
 )}
 {incomeTab==="term1"&&(
@@ -2082,9 +2115,34 @@ style={{ marginTop: "18px", marginBottom: "20px" }}
       i.date,
       i.paidAmount
     )
-  )).map(i=>(
-<tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td>₹{getFeeBalance(i.studentId,i.feeId)}</td><td>{i.date}</td></tr>
-))}</tbody>
+  )).map(i => {
+
+    const feeObj = feesMaster.find(
+      f => String(f.id).trim() === String(i.feeId).trim()
+    );
+    
+      // ✅ STEP 3: fallback create பண்ணு
+    const safeFee = feeObj || {
+      id: i.feeId,
+      amount: i.totalFees || i.payableAmount || 0,
+      feeType: i.feeType,
+      discount: i.discount || 0
+    };
+  
+    return (
+      <tr key={i.id}>
+        <td data-label="Student">{i.studentName}</td>
+        <td data-label="Class">{i.className}</td>
+        <td data-label="Paid">₹{i.paidAmount}</td>
+  
+        {/* ✅ STEP 4: correct call */}
+        <td>₹{getFeeBalance(i.studentId, safeFee, i.feeId)}</td>
+  
+        <td>{i.date}</td>
+      </tr>
+    );
+  
+  })}</tbody>
 </table></div>
 )}
   {incomeTab==="term2"&&(

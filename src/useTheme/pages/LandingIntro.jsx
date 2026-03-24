@@ -18,17 +18,33 @@ export default function LandingIntro() {
   const [showAbout, setShowAbout] = useState(false);
   return (
     <div className="intro-page">
-       <LandingNavbar 
+     
+      <div className="intro-wrapper">
+
+      <LandingNavbar 
   showAbout={showAbout} 
   setShowAbout={setShowAbout}
   showBack={true}
 />
-      <div className="intro-wrapper">
+<div className={`about-panel ${showAbout ? "active" : ""}`}>
+  <div className="about-content">
+    <h1>About Upstage Technologies</h1>
 
+    <p>
+      Upstage Technologies delivers innovative digital solutions that simplify 
+      school management, enhance learning experiences, and empower institutions 
+      with scalable, future-ready technology.
+    </p>
+
+    <p>
+      Our platforms are designed for performance, usability, and growth — helping 
+      organizations transition into the digital future seamlessly.
+    </p>
+  </div>
+</div>
         {/* LEFT */}
         <div className={`intro-left ${showAbout ? "about-mode" : ""}`}>
 
-  {!showAbout ? (
     <>
       <h1>
         Smart School Solutions by <span>Upstage Technologies</span>
@@ -61,19 +77,7 @@ export default function LandingIntro() {
         </div>
       </div>
     </>
-  ) : (
-    <>
-      <h1>
-        About <span>Upstage Technologies</span>
-      </h1>
-
-      <p>
-        Upstage Technologies delivers innovative digital solutions that simplify 
-        school management, enhance learning experiences, and empower institutions 
-        with scalable, future-ready technology.
-      </p>
-    </>
-  )}
+  
 {!showAbout && (
   <div className="intro-buttons">
     <button onClick={() => navigate("/empty")}>

@@ -1174,13 +1174,13 @@ const getTermPaidCount = (studentId, feeId) =>
   const getNewTermAmount = (fee) => {
     if (!fee) return 0;
   
+    const discount = fee.discount || fee.discountApplied || 0;
+  
     const total =
       fee.amount -
-      fee.amount * ((fee.discount || 0) / 100);
+      fee.amount * (discount / 100);
   
-    const termAmount = Math.ceil(total / 3);
-  
-    return termAmount;
+    return Math.round(total / 3);
   };
   useEffect(() => {
     if (!oldPayType.startsWith("term") || !selectedFees[0] || !oldStudent) return;

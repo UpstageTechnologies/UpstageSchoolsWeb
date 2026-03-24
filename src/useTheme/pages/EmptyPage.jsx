@@ -7,10 +7,12 @@ import { collection, getDocs } from "firebase/firestore";
 import { useEffect } from "react";
 import SearchableDropdown from "../../features/search/SearchableDropdown";
 import LandingNavbar from "./LandingNavbar";
+import AboutPanel from "../../Product/AboutPanel";
 
 export default function EmptyPage() {
   const [schools, setSchools] = useState([]);
   const [school, setSchool] = useState("");
+  const [showAbout, setShowAbout] = useState(false);
   const roles = [
     { value: "master", label: "School Owner" },
     { value: "admin", label: "Admin" },
@@ -29,7 +31,7 @@ export default function EmptyPage() {
     localStorage.removeItem("fromChooseLogin");
     localStorage.removeItem("prefillUser");
     localStorage.removeItem("prefillPass");
-  
+    localStorage.setItem("selectedSchool", school);
     localStorage.setItem("selectedRole", role);
     navigate("/landing");
   };
@@ -55,7 +57,15 @@ export default function EmptyPage() {
 
   return (
     <div className="hero-page">
-       <LandingNavbar />
+       <LandingNavbar 
+  showAbout={showAbout}
+  setShowAbout={setShowAbout}
+  showBack={true}
+/>
+<AboutPanel 
+  show={showAbout} 
+  onClose={() => setShowAbout(false)} 
+/>
         <div className="hero-wrapper">
        
       {/* LEFT */}

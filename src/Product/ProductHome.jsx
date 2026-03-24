@@ -1,20 +1,38 @@
 import React from "react";
 import { FaHospital, FaSchool, FaShoppingBag } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import LandingNavbar from "../useTheme/pages/LandingNavbar";
+import AboutPanel from "./AboutPanel";
 export default function ProductHome() {
   const navigate = useNavigate();
-
+  const [showAbout, setShowAbout] = useState(false);
   return (
     <>
       <style>
         {`
-        .product-page{
-          min-height:100vh;
-          padding:60px 20px;
-          background:#f5f7fb;
-          font-family:"Segoe UI", sans-serif;
-        }
+       .product-page{
+        min-height:100vh;
+        padding:60px 20px;
+      
+        /* 🔥 SAME PREMIUM GRADIENT */
+        background:
+          radial-gradient(circle at 20% 30%, rgba(139,92,246,0.25), transparent 40%),
+          radial-gradient(circle at 80% 70%, rgba(99,102,241,0.25), transparent 40%),
+          linear-gradient(135deg, #eef2ff, #e0e7ff, #c7d2fe, #a5b4fc);
+      
+        background-size:200% 200%;
+        animation: gradientMove 10s ease infinite;
+      
+        font-family:"Segoe UI", sans-serif;
+        position:relative;
+        overflow:hidden;
+      }
+      @keyframes gradientMove {
+        0%{ background-position: 0% 50%; }
+        50%{ background-position: 100% 50%; }
+        100%{ background-position: 0% 50%; }
+      }
 
         .product-header{
           text-align:center;
@@ -122,7 +140,15 @@ export default function ProductHome() {
       </style>
 
       <div className="product-page">
-      <LandingNavbar showBack={false} />
+      <LandingNavbar 
+  showBack={true}
+  showAbout={showAbout}
+  setShowAbout={setShowAbout}
+/>
+      <AboutPanel 
+  show={showAbout} 
+  onClose={() => setShowAbout(false)} 
+/>
         <div className="product-header">
           <h1>Select a Product</h1>
           <p>Choose a platform to continue</p>

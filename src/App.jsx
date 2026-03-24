@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import IntroLanding from "./Product/IntroLanding";
 import LandingIntro from "./useTheme/pages/LandingIntro";
 import Landing from "./useTheme/pages/Landing";
 
@@ -34,7 +35,8 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<ProductHome />} />
+      <Route path="/" element={<IntroLanding />} />
+        <Route path="/products" element={<ProductHome />} />
 
         <Route path="/intro" element={<LandingIntro />}/>
         <Route path="/empty" element={<EmptyPage />} />

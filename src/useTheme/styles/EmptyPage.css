@@ -17,19 +17,40 @@ html,body,#root{
 /* =========================
    MAIN HERO PAGE
 ========================= */
-
 .hero-page{
   min-height:100vh;
-  padding-top:70px;   /* 🔥 ADD THIS */
   width:100%;
+
   display:flex;
   align-items:center;
   justify-content:center;
-  padding:60px clamp(20px,5vw,120px);
-  background:linear-gradient(120deg,#ffffff,#eef4ff,#f7fbff);
-  background-size:200% 200%;
-  animation:heroGradient 8s ease infinite;
+
+  padding-top:80px;
+  padding-left:clamp(20px,5vw,120px);
+  padding-right:clamp(20px,5vw,120px);
+
+  /* 🔥 SAME PREMIUM MOVING GRADIENT */
+  background:
+    radial-gradient(circle at 20% 30%, rgba(139,92,246,0.25), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(99,102,241,0.25), transparent 40%),
+    linear-gradient(135deg, #eef2ff, #e0e7ff, #c7d2fe, #a5b4fc);
+
+  background-size: 200% 200%;
+  animation: gradientMove 10s ease infinite;
+
+  position:relative;
   overflow:hidden;
+}
+@keyframes gradientMove {
+  0%{
+    background-position: 0% 50%;
+  }
+  50%{
+    background-position: 100% 50%;
+  }
+  100%{
+    background-position: 0% 50%;
+  }
 }
 
 @keyframes heroGradient{

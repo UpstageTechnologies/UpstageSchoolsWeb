@@ -2,7 +2,7 @@ import React from "react";
 import { FaPhoneAlt, FaEnvelope ,FaArrowLeft} from "react-icons/fa";
 import logo from "../../../src/assets/logo.jpg";
 import { useNavigate } from "react-router-dom";
-export default function LandingNavbar({ showAbout = false, setShowAbout }) {
+export default function LandingNavbar({ showAbout = false, setShowAbout ,  showBack = true  , showApply = false  }) {
     const navigate = useNavigate();
 
     const handleBack = () => {
@@ -19,7 +19,7 @@ export default function LandingNavbar({ showAbout = false, setShowAbout }) {
         {`
         /* ===== NAV CONTAINER ===== */
 .nav-search{
-  position:fixed;
+    position:absolute; 
   top:20px;
   left:0;
   right:0;
@@ -33,27 +33,32 @@ export default function LandingNavbar({ showAbout = false, setShowAbout }) {
 
   animation:slideDown 0.5s ease;
 }
-
-/* ===== NAVBAR BOX ===== */
 .search-box{
-  flex:1;                /* 🔥 take full width */
-
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-
-  padding:16px 40px;
-
-  border-radius:999px;
-  background:rgba(241,245,249,0.85);
-  backdrop-filter:blur(10px);
-
-  box-shadow:
-    0 10px 25px rgba(0,0,0,0.08),
-    inset 0 1px 2px rgba(255,255,255,0.6);
-
-  transition:all 0.3s ease;
-}
+    flex:1;
+  
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  
+    padding:14px 35px;
+  
+    border-radius:999px;
+  
+    /* 🔥 GLASS BACKGROUND */
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(20px);
+  
+    /* 🔥 GRADIENT BORDER EFFECT */
+    border: 1px solid transparent;
+    background-clip: padding-box;
+    position: relative;
+  
+    box-shadow:
+      0 10px 30px rgba(0,0,0,0.15),
+      inset 0 1px 1px rgba(255,255,255,0.4);
+  
+    transition: all 0.3s ease;
+  }
 
 /* ===== HOVER EFFECT ===== */
 .search-box:hover{
@@ -61,34 +66,40 @@ export default function LandingNavbar({ showAbout = false, setShowAbout }) {
   box-shadow:
     0 16px 35px rgba(0,0,0,0.12),
     inset 0 1px 2px rgba(255,255,255,0.8);
-}
-.back-btn{
+}.back-btn{
     display:flex;
     align-items:center;
     justify-content:center;
   
-    width:56px;               /* 🔥 थोड़ा bigger */
-    height:56px;
+    width:60px;
+    height:60px;
   
-    font-size:18px;
-    color:#374151;
+    font-size:20px;
+    color:#1f2937;
   
     border-radius:50%;
     cursor:pointer;
   
-    background:#f1f5f9;       /* 🔥 ALWAYS visible */
-    border:1px solid #e5e7eb;
+    /* 🔥 GLASS EFFECT */
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(20px);
   
-    box-shadow:0 4px 10px rgba(0,0,0,0.08);
+    border:1px solid rgba(255,255,255,0.4);
   
-    transition:0.25s;
+    box-shadow:
+      0 10px 25px rgba(0,0,0,0.15),
+      inset 0 1px 1px rgba(255,255,255,0.6);
+  
+    transition: all 0.3s ease;
+    position:relative;
+    overflow:hidden;
   }
 
 .logo{
     display:flex;
     align-items:center;
     justify-content:center;
-    margin-top:-2px;   /* 🔥 center inside */
+    margin-top:-5px;   /* 🔥 center inside */
     padding:0 10px;
     
   }
@@ -116,6 +127,7 @@ export default function LandingNavbar({ showAbout = false, setShowAbout }) {
   font-size:15px;
   font-weight:500;
   cursor:pointer;
+  color:black;
   transition:0.3s;
 }
 
@@ -175,6 +187,9 @@ export default function LandingNavbar({ showAbout = false, setShowAbout }) {
     transform:translateY(0);
   }
 }
+.search-box{
+    height:60px;   /* 🔥 match back button */
+  }
 
 /* ===== MOBILE ===== */
 @media(max-width:768px){
@@ -183,13 +198,16 @@ export default function LandingNavbar({ showAbout = false, setShowAbout }) {
     display:flex;
     align-items:center;
     justify-content:center;
-    margin-top:-10px;   /* 🔥 center inside */
+    margin-top:-5px;   /* 🔥 center inside */
     padding:0 10px;
     
   }
   .nav-search{
     gap:10px;
     padding:0 15px;
+  }
+  .search-box{
+    height:60px;   /* 🔥 match back button */
   }
 
   .search-box{
@@ -204,7 +222,7 @@ export default function LandingNavbar({ showAbout = false, setShowAbout }) {
       </style>
 
       <div className="nav-search">
-      {(setShowAbout || true) && (
+      {showBack && (
   <div className="back-btn" onClick={handleBack}>
     <FaArrowLeft />
   </div>
@@ -219,7 +237,14 @@ export default function LandingNavbar({ showAbout = false, setShowAbout }) {
 
 {/* 🔥 RIGHT SIDE */}
 <div className="nav-content">
-
+{showApply && (
+  <span 
+    className="about"
+    onClick={() => window.location.href = "/application"}
+  >
+    Apply Now
+  </span>
+)}
   {!showAbout && (
     <span 
       className="about"
