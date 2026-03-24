@@ -130,7 +130,7 @@ export default function IntroLanding() {
       }
       @media(max-width:768px){
         .landing-container{
-            padding-top:40px;
+            padding-top:10px;
         }
       }
         `}

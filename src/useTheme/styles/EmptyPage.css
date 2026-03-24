@@ -52,7 +52,6 @@ html,body,#root{
     background-position: 0% 50%;
   }
 }
-
 @keyframes heroGradient{
   0%{background-position:0% 50%;}
   50%{background-position:100% 50%;}
@@ -252,7 +251,7 @@ html,body,#root{
 
 @media(max-width:768px){
   .hero-page{
-    padding-top: 40px;
+    margin-top: 20px;
     margin-top: 70px !important;
   }
   .hero-wrapper{
@@ -287,7 +286,7 @@ html,body,#root{
 @media(max-width:420px){
   .hero-page{
     margin-top: 70px !important;
-    padding-top:40px;
+    margin-top:20px;
   }
   .hero-left h1{
     font-size:26px;
