@@ -128,7 +128,11 @@ export default function IntroLanding() {
         font-size:14px;
         color:#475569;
       }
-
+      @media(max-width:768px){
+        .landing-container{
+            padding-top:40px;
+        }
+      }
         `}
       </style>
 
