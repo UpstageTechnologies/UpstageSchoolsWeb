@@ -432,7 +432,7 @@ footer {
 
 @media(max-width:768px){
   .intro-page{
-    margin-top: 20px;
+    padding-top: 40px;
     margin-top: 70px !important;
   }
   .intro-wrapper{
@@ -467,7 +467,7 @@ footer {
 @media(max-width:420px){
   .intro-page{
     margin-top: 70px !important;
-    margin-top:20px;
+    padding-top:40px;
   }
   .intro-left h1{
     font-size:26px;
