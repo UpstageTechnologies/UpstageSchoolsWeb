@@ -18,15 +18,24 @@ const Register = () => {
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  
-
+  const [schoolName, setSchoolName] = useState("");
+  const [schoolLogo, setSchoolLogo] = useState("");
   const navigate = useNavigate();
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({
     prompt: "select_account"
   });
+  const handleImage = (file) => {
+    const reader = new FileReader();
   
+    reader.onloadend = () => {
+      setSchoolLogo(reader.result); // ✅ base64 string
+    };
+  
+    if (file) {
+      reader.readAsDataURL(file);
+    }
+  };
 
   // GOOGLE SIGN-IN
   const handleGoogleSignIn = async () => {
@@ -77,6 +86,8 @@ const Register = () => {
       await setDoc(doc(db, "users", user.uid), {
         username,
         email,
+        schoolName,
+  schoolLogo,
         isGoogle: false,
         plan: "basic",
         role: "master",
@@ -119,7 +130,20 @@ const Register = () => {
               onChange={(e)=>setUsername(e.target.value)}
               required
             />
-    
+            <input
+  type="text"
+  placeholder="School Name"
+  value={schoolName}
+  onChange={(e)=>setSchoolName(e.target.value)}
+  required
+/>
+<input
+  type="file"
+  accept="image/*"
+  onChange={(e) => handleImage(e.target.files[0])}
+  required
+/>
+
             <input
               type="email"
               placeholder="Email"

@@ -17,15 +17,17 @@ export default function LandingIntro() {
   const navigate = useNavigate();
   const [showAbout, setShowAbout] = useState(false);
   return (
+    <>
+    <LandingNavbar 
+    showAbout={showAbout} 
+    setShowAbout={setShowAbout}
+    showBack={true}
+  />
     <div className="intro-page">
      
       <div className="intro-wrapper">
 
-      <LandingNavbar 
-  showAbout={showAbout} 
-  setShowAbout={setShowAbout}
-  showBack={true}
-/>
+    
 <div className={`about-panel ${showAbout ? "active" : ""}`}>
   <div className="about-content">
     <h1>About Upstage Technologies</h1>
@@ -111,5 +113,6 @@ export default function LandingIntro() {
 
       </div>
     </div>
+    </>
   );
 }

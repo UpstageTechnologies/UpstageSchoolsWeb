@@ -1,18 +1,32 @@
-import React, { useState } from "react";
 
+import React, { useState, useRef, useEffect } from "react";
 export default function SearchableDropdown({
   items = [],
   value,
   onChange,
-  placeholder
+  placeholder,
+  isOpen,
+  setIsOpen
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-
+  const ref = useRef();
   const filtered = items.filter(i =>
     i.toLowerCase().includes(search.toLowerCase())
   );
-
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) {
+        setOpen(false); // ✅ close dropdown
+      }
+    };
+  
+    document.addEventListener("mousedown", handleClickOutside);
+  
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   const styles = {
     wrapper: {
       position: "relative",
@@ -43,7 +57,7 @@ export default function SearchableDropdown({
   };
 
   return (
-    <div style={styles.wrapper}>
+    <div style={styles.wrapper} ref={ref}>
       <input
         style={styles.input}
         placeholder={placeholder}

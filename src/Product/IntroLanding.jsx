@@ -2,7 +2,8 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import LandingNavbar from "../useTheme/pages/LandingNavbar";
-import AboutPanel from "../Product/AboutPanel"; // path correct pannunga
+import AboutPanel from "../Product/AboutPanel";
+import logo from "../assets/intrologo.png" // path correct pannunga
 export default function IntroLanding() {
   const navigate = useNavigate();
   const [showAbout, setShowAbout] = useState(false);
@@ -15,9 +16,9 @@ export default function IntroLanding() {
         display:flex;
         flex-direction:column;
         align-items:center;
-        justify-content:center;
+       
         text-align:center;
-        padding:20px;
+        padding:140px 20px 60px;
       
         /* 🔥 PREMIUM BACKGROUND */
         background:
@@ -30,7 +31,7 @@ export default function IntroLanding() {
       
         font-family:"Inter","Segoe UI",sans-serif;
         position:relative;
-        overflow:hidden;
+        
       }
       
       @keyframes gradientMove {
@@ -128,20 +129,67 @@ export default function IntroLanding() {
         font-size:14px;
         color:#475569;
       }
-      @media(max-width:768px){
-        .landing-container{
-            padding-top:10px;
+      .intrologo{
+        margin-bottom: 20px;
+      
+        display:flex;
+        justify-content:center;
+        align-items:center;
+      
+        animation: logoFade 1s ease forwards;
+      }
+      
+      /* 🔥 LOGO IMAGE */
+      .intrologo img{
+        width:120px;
+        height:auto;
+      
+        padding:12px;
+        border-radius:20px;
+      
+        backdrop-filter: blur(10px);
+        box-shadow:0 10px 30px rgba(0,0,0,0.1);
+      
+        transition:0.3s ease;
+      
+        /* 🔥 floating animation */
+        animation: floatLogo 3s ease-in-out infinite;
+      }
+      
+      /* 🔥 hover effect */
+      .intrologo img:hover{
+        transform: scale(1.08);
+        box-shadow:0 20px 50px rgba(0,0,0,0.2);
+      }
+      
+      /* 🔥 floating animation */
+      @keyframes floatLogo{
+        0%{ transform:translateY(0); }
+        50%{ transform:translateY(-10px); }
+        100%{ transform:translateY(0); }
+      }
+      
+      /* 🔥 fade in */
+      @keyframes logoFade{
+        from{
+          opacity:0;
+          transform:translateY(30px);
+        }
+        to{
+          opacity:1;
+          transform:translateY(0);
         }
       }
         `}
       </style>
-
-      <div className="landing-container">
       <LandingNavbar 
   showAbout={showAbout} 
   setShowAbout={setShowAbout}
   showBack={showAbout}
 />
+      <div className="landing-container">
+        <div className="intrologo"> <img src={logo} alt="Upstage Technologies" /></div>
+     
 <AboutPanel 
   show={showAbout} 
   onClose={() => setShowAbout(false)} 

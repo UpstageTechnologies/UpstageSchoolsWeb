@@ -13,7 +13,7 @@ export default function ProductHome() {
         {`
        .product-page{
         min-height:100vh;
-        padding:60px 20px;
+        padding:120px 20px 60px; 
       
         /* 🔥 SAME PREMIUM GRADIENT */
         background:
@@ -138,13 +138,13 @@ export default function ProductHome() {
         }
         `}
       </style>
-
-      <div className="product-page">
       <LandingNavbar 
   showBack={true}
   showAbout={showAbout}
   setShowAbout={setShowAbout}
 />
+      <div className="product-page">
+     
       <AboutPanel 
   show={showAbout} 
   onClose={() => setShowAbout(false)} 

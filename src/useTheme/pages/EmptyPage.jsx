@@ -13,6 +13,8 @@ export default function EmptyPage() {
   const [schools, setSchools] = useState([]);
   const [school, setSchool] = useState("");
   const [showAbout, setShowAbout] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [activeDropdown, setActiveDropdown] = useState(null);
   const roles = [
     { value: "master", label: "School Owner" },
     { value: "admin", label: "Admin" },
@@ -23,6 +25,7 @@ export default function EmptyPage() {
   
 
   const [role, setRole] = useState("");
+  
   const navigate = useNavigate();
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -38,25 +41,31 @@ export default function EmptyPage() {
   
   useEffect(() => {
     const fetchSchools = async () => {
+      setLoading(true);
+  
       const snap = await getDocs(collection(db, "users"));
       const list = [];
   
       snap.forEach(doc => {
         const data = doc.data();
         if (data.schoolName) {
-          list.push(data.schoolName);
+          list.push({
+            name: data.schoolName,
+            logo: data.schoolLogo
+          });
         }
       });
   
       setSchools(list);
+      setLoading(false);   // ✅ done loading
     };
   
     fetchSchools();
   }, []);
-  
+  const selectedSchoolData = schools.find(s => s.name === school);
 
   return (
-    <div className="hero-page">
+    <div className="intro-page">
        <LandingNavbar 
   showAbout={showAbout}
   setShowAbout={setShowAbout}
@@ -80,12 +89,14 @@ export default function EmptyPage() {
           all from one powerful platform.
         </p>
         <form onSubmit={handleSubmit} className="hero-form">
-
-<SearchableDropdown
-  items={schools}
+        <SearchableDropdown
+  items={schools.map(s => s.name)}
   value={school}
   onChange={setSchool}
-  placeholder="Search school"
+  placeholder={loading ? "Loading schools..." : "Search school"}
+  disabled={loading}
+  isOpen={activeDropdown === "school"}
+  setIsOpen={(val) => setActiveDropdown(val ? "school" : null)}
 />
 
 <SearchableDropdown
@@ -93,6 +104,8 @@ export default function EmptyPage() {
   value={role}
   onChange={setRole}
   placeholder="Search role"
+  isOpen={activeDropdown === "role"}
+  setIsOpen={(val) => setActiveDropdown(val ? "role" : null)}
 />
 <button type="submit">Continue →</button>
 <button
@@ -106,7 +119,10 @@ export default function EmptyPage() {
       </div>
       <div className="hero-right">
         <div className="image-circle">
-          <img src={studentImg} alt="Student" />
+         <img
+  src={selectedSchoolData?.logo || studentImg}
+  alt="School"
+ />
         </div>
 
       </div>

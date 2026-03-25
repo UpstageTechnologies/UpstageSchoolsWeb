@@ -1,6 +1,6 @@
 import React from "react";
 import { FaPhoneAlt, FaEnvelope ,FaArrowLeft} from "react-icons/fa";
-import logo from "../../../src/assets/logo.jpg";
+import logo from "../../../src/assets/searchlogo.png";
 import { useNavigate } from "react-router-dom";
 export default function LandingNavbar({ showAbout = false, setShowAbout ,  showBack = true  , showApply = false  }) {
     const navigate = useNavigate();
@@ -35,12 +35,12 @@ export default function LandingNavbar({ showAbout = false, setShowAbout ,  showB
 }
 .search-box{
     flex:1;
-  
+    height:40px;
     display:flex;
     align-items:center;
     justify-content:space-between;
   
-    padding:14px 35px;
+    padding:35px 35px;
   
     border-radius:999px;
   
@@ -71,8 +71,8 @@ export default function LandingNavbar({ showAbout = false, setShowAbout ,  showB
     align-items:center;
     justify-content:center;
   
-    width:60px;
-    height:60px;
+    width:70px;
+    height:70px;
   
     font-size:20px;
     color:#1f2937;
@@ -99,13 +99,14 @@ export default function LandingNavbar({ showAbout = false, setShowAbout ,  showB
     display:flex;
     align-items:center;
     justify-content:center;
-    margin-top:-5px;   /* 🔥 center inside */
-    padding:0 10px;
+    margin-top:-22px;   /* 🔥 center inside */
+    padding:-7px 10px;
     
   }
   
   .logo img{
-    height:28px;
+    height:80px;
+    width:100px;
     display:block;
     transition:transform 0.3s ease;
   }
@@ -187,37 +188,32 @@ export default function LandingNavbar({ showAbout = false, setShowAbout ,  showB
     transform:translateY(0);
   }
 }
-.search-box{
-    height:60px;   /* 🔥 match back button */
-  }
 
-/* ===== MOBILE ===== */
-@media(max-width:768px){
+  @media(max-width:768px){
 
-.logo{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    margin-top:-5px;   /* 🔥 center inside */
-    padding:0 10px;
-    
+    .logo{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin-top:-25px;
+      padding:0 10px;
+    }
+  
+    .nav-search{
+      gap:10px;
+      padding:4px 10px;   /* ✅ fixed */
+    }
+  
+    .search-box{
+      height:70px; 
+      width:200px;   /* 🔥 increase width here */
+      padding:10px 15px;
+    }
+  
+    .nav-content{
+      gap:20px;
+    }
   }
-  .nav-search{
-    gap:10px;
-    padding:0 15px;
-  }
-  .search-box{
-    height:60px;   /* 🔥 match back button */
-  }
-
-  .search-box{
-    padding:12px 20px;
-  }
-
-  .nav-content{
-    gap:20px;
-  }
-}
         `}
       </style>
 
