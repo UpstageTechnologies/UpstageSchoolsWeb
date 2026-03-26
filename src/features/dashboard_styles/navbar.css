@@ -162,21 +162,7 @@
     display:none !important;
   }
 }  
-.search-school-icon img{
-  width:24px !important;
-  height:24px !important;
-}
-@media (min-width: 768px){
-  .search-school-icon{
-    width:36px !important;
-    height:36px !important;
-  }
 
-  .search-school-icon img{
-    width:34px !important;
-    height:34px !important;
-  }
-}
 
 .navbar{
   background:#f8fafc;
@@ -212,12 +198,12 @@
 }/* Clock container SAME AS school icon */
 .search-history-icon{
   position:absolute;
-  right:55px;
+  right:75px;
   top:50%;
   transform:translateY(-50%);
 
-  width:36px;
-  height:36px;
+  width:46px;
+  height:46px;
   border-radius:50%;
   color: rgb(254, 254, 254);
   background:#010101;
@@ -229,7 +215,59 @@
   box-shadow:0 2px 6px rgba(5, 5, 5, 0.15);
   cursor:pointer;
 }
+.search-notify-icon{
+  position:absolute;
+  right:110px;
+  top:50%;
+  transform:translateY(-50%);
 
+  width:46px;
+  height:46px;
+  border-radius:50%;
+  color: rgb(254, 254, 254);
+  background:#010101;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  box-shadow:0 2px 6px rgba(5, 5, 5, 0.15);
+  cursor:pointer;
+}
+.search-school-icon{
+  position:absolute;
+  right:10px;
+  top:50%;
+  transform:translateY(-50%);
+
+  width:46px;
+  height:46px;
+  border-radius:50%;
+  color: rgb(254, 254, 254);
+  background:white;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  box-shadow:0 2px 6px rgba(5, 5, 5, 0.15);
+  cursor:pointer;
+}
+
+.search-school-icon img{
+  width: 43px;
+  height: 43px;
+  border-radius: 50%;
+  object-fit: cover;
+  padding:30;
+  /* 🌙 light outline */
+  border: 1px solid #e5e7eb;
+
+  /* soft depth */
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
+}
+
+@media (max-width:360px){.search-school-icon{right:8px !important;}}
 .nav-search input{
   padding-right:100px !important;
 }
@@ -253,7 +291,7 @@
   backdrop-filter: blur(8px);
 }
 /* 🔥 MOBILE FIX : SEARCH DROPDOWN CENTER */
-@media (max-width: 360px){
+@media (max-width: 460px){
 
   .search-dropdown{
     position: fixed !important;
@@ -311,7 +349,7 @@
   }
 }
 
-@media (max-width:360px){
+@media (max-width:460px){
   .navbar{
     margin: 0px !important;
     padding: 1px 1px 1px;
@@ -319,13 +357,6 @@
   .nav-search{
     max-width:100%;    /* small mobile */
     padding:-3px 5px 0px -5px; 
-  }
-}
-/* MOBILE ONLY – pull clock & school icon inside */
-@media (max-width: 480px){
-  .search-history-icon,
-  .search-school-icon{
-    transform: translateY(-50%) translateX(-10px) !important;
   }
 }
 /* 🔥 MOBILE ICON FIX */
@@ -341,19 +372,7 @@
     font-size:16px !important;
   }
 
-  /* School logo container */
-  .search-school-icon{
-    width:34px !important;
-    height:34px !important;
-    right:12px !important;      /* 👈 romba corner pogama */
-  }
-
-  /* School logo image */
-  .search-school-icon img{
-    width:30px !important;
-    height:30px !important;
-    object-fit:cover;
-  }
+  
 
   /* Input padding adjust so icons overlap aagadhu */
   .nav-search input{
@@ -376,7 +395,7 @@
   padding:0 95px 0 60px;   /* 👈 more gap */
 }
 /* ===== 360px SEARCH PERFECT ALIGNMENT ===== */
-@media (max-width: 360px){
+@media (max-width: 460px){
 
   .nav-search input{
     height: 62px !important;        /* reduce height */
@@ -480,10 +499,9 @@
 
 /* ================= HISTORY ICON BIG ================= */
 .search-history-icon{
-  width:34px;
-  height:34px;
-  right:52px;              /* adjust for bigger size */
-  
+  width:44px;
+  height:44px;           /* adjust for bigger size */
+  right:60px;
   border-radius:50%;
   display:flex;
   align-items:center;
@@ -494,21 +512,6 @@
   font-size:20px;          /* bigger clock icon */
 }
 
-/* ================= SCHOOL LOGO BIG ================= */
-.search-school-icon{
-  width:154px;
-  height:154px;
-  right:8px;
-}
-
-.search-school-icon img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  border-radius:50%;
-}
-.search-history-icon{ right:52px; }
-.search-school-icon{ right:8px; }
 /* SEARCH DROPDOWN CONTAINER */
 .search-dropdown {
   padding: 20px;

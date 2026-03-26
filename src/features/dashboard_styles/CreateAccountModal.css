@@ -445,7 +445,7 @@
     position:relative;
   }
   .account-card{
-    overflow:hidden;
+   
     
     margin: -15px;   /* instead of negative margin */
   }

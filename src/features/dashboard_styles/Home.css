@@ -681,15 +681,7 @@
     flex-direction: row;
     align-items: flex-start;
   }
-}
-/* 📱 Hide Class Days & Attendance Rate section in mobile */
-@media (max-width: 768px) {
-
-.summary-left {
-    display: none !important;
-  }
-
-} /* 📱 4 SUMMARY CARDS – SAME SIZE BELOW 440px */
+}/* 📱 4 SUMMARY CARDS – SAME SIZE BELOW 440px */
 @media (max-width: 440px) {
 
   .student-top-row h3 {

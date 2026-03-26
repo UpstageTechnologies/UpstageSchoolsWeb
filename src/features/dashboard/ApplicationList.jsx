@@ -9,7 +9,6 @@ import {
   addDoc,
   Timestamp
 } from "firebase/firestore";
-
 import { auth, db } from "../../services/firebase";
 import "../dashboard_styles/ApplicationList.css";
 import bookImg from "../../assets/book.png";
@@ -106,15 +105,6 @@ export default function ApplicationList({ requirePremium }) {
 
   return (
     <div className="appList-wrapper">
-
-<h2 className="teacher-header app-title-bar">
-  <span className="app-title-text">Application Submissions</span>
-  <img src={bookImg} style={{width:"100px"}}alt="Applications" className="header-book-img" />
-</h2>
-
-   
-
-
       {/* ============ PENDING LIST ============ */}
       <div className="appList-grid">
         {pending.length === 0 && (

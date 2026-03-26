@@ -4,6 +4,7 @@ import { useState } from "react";
 import LandingNavbar from "../useTheme/pages/LandingNavbar";
 import AboutPanel from "../Product/AboutPanel";
 import logo from "../assets/intrologo.png" // path correct pannunga
+import Footer from "./footer";
 export default function IntroLanding() {
   const navigate = useNavigate();
   const [showAbout, setShowAbout] = useState(false);
@@ -227,7 +228,7 @@ export default function IntroLanding() {
             <div>Smart school management platform.</div>
           </div>
         </div>
-
+        <Footer/>
       </div>
     </>
   );

@@ -34,6 +34,7 @@ export default function EmptyPage() {
     localStorage.removeItem("fromChooseLogin");
     localStorage.removeItem("prefillUser");
     localStorage.removeItem("prefillPass");
+    localStorage.setItem("adminUid", selectedSchoolData.id);
     localStorage.setItem("selectedSchool", school);
     localStorage.setItem("selectedRole", role);
     navigate("/landing");
@@ -48,10 +49,12 @@ export default function EmptyPage() {
   
       snap.forEach(doc => {
         const data = doc.data();
+      
         if (data.schoolName) {
           list.push({
             name: data.schoolName,
-            logo: data.schoolLogo
+            logo: data.schoolLogo,
+            id: doc.id   // 🔥 ADD THIS LINE
           });
         }
       });

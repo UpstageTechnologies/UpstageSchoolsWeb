@@ -76,85 +76,10 @@
 }
 .add-btn:hover{transform:translateY(-1px);}
 
-/* ================= TABLE ================= */
-.teacher-table{
-  width:100%;
-  border-collapse:collapse;
-  background:#fff;
-}
-
-/* Header */
-.teacher-table thead{
-  background:#fff;
-}
-.teacher-table th{
-  text-align:left;
-  padding:14px 16px;
-  font-size:13px;
-  font-weight:600;
-  color:#1a3ad9;
-  border-bottom:1px solid #e5e7eb;
-}
-
-/* Rows */
-.teacher-table tr{
-  border-bottom:1px solid #f0f0f0;
-}
-.teacher-table tbody tr:hover{
-  background:#fafbff;  
-}
-
-/* Cells */
-.teacher-table td{
-  padding:14px 16px;
-  font-size:14px;
-  vertical-align:middle;
-}
-
-/* Avatar */
-.teacher-table img{
-  width:36px;
-  height:36px;
-  border-radius:50%;
-  object-fit:cover;
-  border:2px solid var(--purple);
-}
-
-/* ================= ACTION BUTTONS ================= */
-.edit-btn,
-.delete-btn,
-.view-btn{
-  min-width:72px;
-  height:32px;
-  padding:0 12px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:6px;
-  border-radius:8px;
-  font-size:13px;
-  font-weight:500;
-  cursor:pointer;
-  background:#fff;
-}
-
-/* colors */
-.edit-btn{border:1px solid var(--purple);color:var(--purple);}
-.delete-btn{border:1px solid #ef4444;color:#ef4444;}
-.view-btn{border:1px solid #3b82f6;color:#3b82f6;}
-
 /* hover */
 .edit-btn:hover{background:var(--purple-soft);}
 .delete-btn:hover{background:#fee2e2;}
 .view-btn:hover{background:#e0ecff;}
-
-/* spacing between buttons */
-.teacher-table td:last-child{
-  white-space:nowrap;
-}
-.teacher-table td:last-child > *{
-  margin-right:8px;
-}
 
 /* ================= MODAL ================= */
 .modal-overlay{
@@ -862,3 +787,49 @@ input:-webkit-autofill{
   }
   
   }
+  @media (min-width: 769px){
+
+    .teacher-table{
+      table-layout: fixed;
+    }
+  
+    .teacher-table td{
+      position: relative;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  
+    /* 🔥 tooltip box */
+    .teacher-table td:hover::after{
+      content: attr(title);
+  
+      position: absolute;
+      left: 0;
+      top: 110%;   /* 🔥 கீழ வரும் (safe position) */
+  
+      background: #fff;
+      color: #333;
+      padding: 6px 10px;
+      border-radius: 8px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  
+      white-space: nowrap;
+      width: max-content;   /* 🔥 text width மட்டும் */
+  
+      z-index: 9999;
+  
+      opacity: 0;
+      transform: translateY(6px) scale(0.95);
+      transition: all 0.18s ease;
+      pointer-events: none;
+    }
+  
+    /* 🔥 show smoothly */
+    .teacher-table td:hover::after{
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  
+  }
+  

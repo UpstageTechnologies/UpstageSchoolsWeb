@@ -207,9 +207,7 @@ useEffect(() => {
           </div>
         ))}
       </div>
-    
-<div className="sc-calendar no-print">
-
+      <div className={`sc-calendar no-print ${compact ? "compact" : ""}`}>
         <div className="sc-header">
         <button
   onClick={() => {

@@ -3,6 +3,7 @@
   import ramesh from ".././assets/image1.png";
   import siva from ".././assets/image2.png"
   import "../useTheme/styles/Landing.css"
+  import Footer from "./footer";
   import "./AboutPanel.css"
   export default function AboutPanel({ show, onClose }) {
     return (
@@ -96,6 +97,7 @@
   </div>
 
         </div>
+        <Footer />
       </div>
     );
   }

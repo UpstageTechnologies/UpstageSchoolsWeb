@@ -7,7 +7,7 @@ import React, { useEffect, useState } from "react";
   import { db } from "../../services/firebase";
   import "../dashboard_styles/Home.css";
   import { getDoc } from "firebase/firestore";
-
+  import SchoolCalendar from "../../components/SchoolCalendar";
   import {
     FaUserGraduate,
     FaUserTimes,
@@ -383,48 +383,11 @@ const parentId = localStorage.getItem("parentDocId");
         {/* -------- LEFT SIDE -------- */} 
         <div className="summary-left">
 
-          {/* Class Days + Attendance Rate */}
-          <div className="attendance-panel">
-            <div>
-              <h4>Class Days</h4>
-              <h2>23 Days</h2>
-            </div>
-
-            <div>
-              <h4>Attendance Rate</h4>
-              <h1>56%</h1>
-            </div>
-          </div>
-
-  <div className="monthly-flow2">
-
-    {/* SVG trend line */}
-    <svg className="trend-line" viewBox="0 0 600 120" preserveAspectRatio="none">
-      <path
-        d="M 0 80 L 200 40 L 400 70 L 600 30"
-        fill="none"
-        stroke="#8ab6f9"
-        strokeWidth="4"
-        strokeLinecap="round"
-      />
-    </svg>
-
-    <div className="flow-item blue" style={{ top: "60px" }}>
-      <small>January</small>
-      <b>57%</b>
-    </div>
-
-    <div className="flow-item orange" style={{ top: "10px" }}>
-      <small>February</small>
-      <b>55%</b>
-    </div>
-
-    <div className="flow-item green" style={{ top: "40px" }}>
-      <small>March</small>
-      <b>—</b>
-    </div>
-
-  </div>
+        <SchoolCalendar
+    adminUid={adminUid}
+    role={effectiveRole}
+    compact={true}   // 👈 view only mode
+  />
 
 
 

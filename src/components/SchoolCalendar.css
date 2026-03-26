@@ -644,3 +644,25 @@
   font-size: 18px;
   font-weight: 800;
 }
+.sc-calendar.compact {
+  padding: 10px;
+  
+  font-size: 12px;
+}
+
+.sc-calendar.compact .sc-header h3 {
+  font-size: 14px;
+}
+
+.sc-calendar.compact .sc-day {
+  height: 90px;
+  font-size: 11px;
+}
+
+.sc-calendar.compact .sc-upcoming {
+  display: none; /* optional */
+}
+
+.sc-calendar.compact .sc-footer {
+  display: none;
+}

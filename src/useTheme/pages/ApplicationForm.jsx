@@ -17,41 +17,51 @@ export default function ApplicationForm() {
   const handleChange = (key, value) =>
     setForm(prev => ({ ...prev, [key]: value }));
 
-  const handleSubmit = async () => {
-    if (
-      !form.studentName ||
-      !form.class ||
-      !form.parentName ||
-      !form.phone ||
-      !form.address ||
-      !form.dob
-    ) {
-      alert("All fields required");
-      return;
-    }
-
-    try {
-      await addDoc(collection(db, "applications"), {
-        ...form,
-        status: "pending",
-        createdAt: Timestamp.now()
-      });
-
-      alert("🎉 Application submitted successfully");
-
-      setForm({
-        studentName: "",
-        class: "",
-        dob: "",
-        parentName: "",
-        phone: "",
-        address: ""
-      });
-    } catch (err) {
-      console.error(err);
-      alert("Something went wrong — try again.");
-    }
-  };
+    const handleSubmit = async () => {
+      if (
+        !form.studentName ||
+        !form.class ||
+        !form.parentName ||
+        !form.phone ||
+        !form.address ||
+        !form.dob
+      ) {
+        alert("All fields required");
+        return;
+      }
+    
+      const adminUid = localStorage.getItem("adminUid");
+    
+      if (!adminUid) {
+        alert("School not selected properly");
+        return;
+      }
+    
+      try {
+        await addDoc(
+          collection(db, "users", adminUid, "applications"),
+          {
+            ...form,
+            status: "pending",
+            createdAt: Timestamp.now()
+          }
+        );
+    
+        alert("🎉 Application submitted successfully");
+    
+        setForm({
+          studentName: "",
+          class: "",
+          dob: "",
+          parentName: "",
+          phone: "",
+          address: ""
+        });
+      } catch (err) {
+        console.error(err);
+        alert("Something went wrong — try again.");
+      }
+    };
 
   return (
     <div className="appform-wrapper">

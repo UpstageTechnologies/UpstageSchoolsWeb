@@ -7,7 +7,7 @@
     import { useNavigate } from "react-router-dom";
     import "../dashboard_styles/Dashboard.css";
     import { collection, getDocs , onSnapshot} from "firebase/firestore"; 
-    import { FaSearch } from "react-icons/fa";
+    import { FaBackspace, FaSearch } from "react-icons/fa";
     import { buildGlobalSearchResults } from "../../utils/globalSearch";
     import Navbar from "../../components/Navbar";
     import UpgradePopup from "../../components/UpgradePopup";
@@ -56,6 +56,7 @@
   const Student = lazy(() => import("./Student"));
   const AccountCreation = lazy(() => import("./AccountCreation"));
   const Classroom = lazy (() => import("./Classroom"))
+  const CombinedPage = lazy(() => import("./CombinedPage"));
     const Dashboard = () => {
     
       const [user, setUser] = useState(null);
@@ -69,7 +70,7 @@
       const [showQuickPanel, setShowQuickPanel] = useState(false);
           const [accountMenuOpen, setAccountMenuOpen] = useState(false);
           const [accountPopupOpen, setAccountPopupOpen] = useState(false);
-      
+          const [notificationCount, setNotificationCount] = useState({});
       const [activePage, setActivePage] = useState("home");
       const [pageHistory, setPageHistory] = useState(["home"]);
       const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -321,7 +322,44 @@
       }, [showSchoolName]);
       
       
-
+      useEffect(() => {
+        const adminUid = localStorage.getItem("adminUid");
+      
+        const unsub1 = onSnapshot(
+          collection(db, "users", adminUid, "applications"),
+          (snap) => {
+            const pendingApps = snap.docs.filter(doc => {
+              const d = doc.data();
+              return !d.status || d.status === "pending";
+            });
+      
+            setNotificationCount(prev => ({
+              ...prev,
+              applications: pendingApps.length
+            }));
+          }
+        );
+      
+        const unsub2 = onSnapshot(
+          collection(db, "users", adminUid, "approval_requests"),
+          (snap) => {
+            const pendingApprovals = snap.docs.filter(doc => {
+              const d = doc.data();
+              return !d.status || d.status === "pending";
+            });
+      
+            setNotificationCount(prev => ({
+              ...prev,
+              approvals: pendingApprovals.length
+            }));
+          }
+        );
+      
+        return () => {
+          unsub1();
+          unsub2();
+        };
+      }, []);
   useEffect(() => {
     const masterUid =
       localStorage.getItem("adminUid") || auth.currentUser?.uid;
@@ -475,7 +513,7 @@
           admin:"admin",
         upgrade: "payment",
           income: "income",       
-          expenseList: "expenses"
+          expenseList: "expenses",
           
         };
         
@@ -602,7 +640,7 @@
             {plan !== "basic" && (
               <div className="plan-row">
                 Expiry: <strong>{formatDate(planExpiry)}</strong>
-              </div>
+              </div>  
             )}
           </li>
         )}
@@ -613,12 +651,19 @@
           role === "admin"
         ) && (
           <>
+          <li className={activePage === "accounts" ? "active" : ""} onClick={() => handleMenuClick("accounts")}>
+              <FaMoneyBillWave /> Accounts
+            </li>
             <li
   className={activePage === "account_creation" ? "active" : ""}
   onClick={() => handleMenuClick("account_creation")}
   >
   <FaUserCircle /> Account Creation
   </li>
+  {/* {role === } */}
+  <li className={activePage === "courses" ? "active" : ""}onClick={() => handleMenuClick("courses")}>
+          <FaBookOpen /> Planner
+        </li>
   <li
   className={activePage === "classroom" ? "active" : ""}
   onClick={() => handleMenuClick("classroom")}
@@ -648,9 +693,7 @@
               </ul>
             )}
 
-            <li className={activePage === "accounts" ? "active" : ""} onClick={() => handleMenuClick("accounts")}>
-              <FaMoneyBillWave /> Accounts
-            </li>
+            
 
             <li className={activePage === "timetable" ? "active" : ""}onClick={() => handleMenuClick("timetable")}>
               <FaCalendarAlt /> Timetable
@@ -698,21 +741,6 @@
       Exit Teacher View
     </button>
   )}
-        {role === "master" && (
-          <li className={activePage === "approvals" ? "active" : ""} onClick={() => handleMenuClick("approvals")}>
-            <FaClipboardCheck /> Approvals
-          </li>
-        )}
-
-        <li className={activePage === "courses" ? "active" : ""}onClick={() => handleMenuClick("courses")}>
-          <FaBookOpen /> Planner
-        </li>
-
-        {role === "master" && (
-          <li className={activePage === "applications" ? "active" : ""}onClick={() => handleMenuClick("applications")}>
-            <FaWpforms /> Applications
-          </li>
-        )}
 
   <li
     className={`calendar-btn ${activePage === "calendar" ? "active" : ""}`}
@@ -760,6 +788,7 @@
     {!hideLayout && 
           <Navbar
     toggleSidebar={toggleSidebar}
+    notificationCount={notificationCount}
     activePage={activePage}
     setPageHistory={setPageHistory}
     setActivePage={setActivePage}
@@ -846,7 +875,7 @@
             window.location.href = "/logout";
           }}
         >
-          🚪 Logout
+          <FaBackspace/> Logout
         </button>
 
       </div>
@@ -872,6 +901,13 @@
         role={role}
       />
     </div>
+  )}
+  {(role === "master" || role === "admin") && activePage === "account_creation" && (
+  <AccountCreation
+    requirePremium={requirePremium}
+    globalSearch={searchQuery}
+    setActivePage={handleMenuClick}
+  />
   )}
   {role === "teacher" && activePage === "teacher-home" && (
     <TeacherHome
@@ -944,13 +980,7 @@
   showUpgrade={() => setShowUpgrade(true)}
   />
   )}
-  {(role === "master" || role === "admin") && activePage === "account_creation" && (
-  <AccountCreation
-    requirePremium={requirePremium}
-    globalSearch={searchQuery}
-    setActivePage={handleMenuClick}
-  />
-  )}
+  
  {activePage.startsWith("classroom") && (
   <Classroom
     handleMenuClick={handleMenuClick}
@@ -1003,6 +1033,7 @@
     activePage === "teacher-timetable" && (
       <TeacherTimetable teacherId={viewTeacherId} />
   )}
+  
 
               
             {isAdminOrSubAdmin && activePage === "attendance" && (
@@ -1048,6 +1079,9 @@
                 {activePage === "profile" && (
       <Profile />
     )}
+    {role === "master" && activePage === "combined" && (
+  <CombinedPage requirePremium={requirePremium}  notificationCount={notificationCount}  />
+)}
   {activePage === "subdashboard" && (
     <SubDashboard setActivePage={handleMenuClick} />
   )}

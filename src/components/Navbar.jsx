@@ -4,12 +4,15 @@ import {
   FaArrowLeft,
   FaSchool,
   FaClock,
-  FaBars
+  FaBars,
+  FaRegBell
 } from "react-icons/fa";
 import "../features/dashboard_styles/navbar.css";
 import { ROLE_ACCESS } from "../config/roleAccess";
 import { useRef, useEffect , useState } from "react";
-
+import { onSnapshot , collection  } from "firebase/firestore";
+import { db } from "../services/firebase";
+import CombinedPage from "../features/dashboard/CombinedPage";
 const PARENT_PAGE = {
   profit: "accounts",
   income: "accounts",
@@ -65,8 +68,54 @@ const Navbar = ({
   localStorage.getItem("role");
 
   const [allUsers, setAllUsers] = useState([]);
-
-
+  const [notificationCount, setNotificationCount] = useState(0);
+  useEffect(() => {
+    const adminUid = localStorage.getItem("adminUid");
+  
+    // 🔹 Applications (ONLY PENDING)
+    const unsub1 = onSnapshot(
+      collection(db, "applications"),
+      (snap) => {
+        const pendingApps = snap.docs.filter(
+          doc => {
+            const data = doc.data();
+            return !data.status || data.status === "pending";
+          }
+        );
+  
+        setNotificationCount(prev => ({
+          ...prev,
+          applications: pendingApps.length
+        }));
+      }
+    );
+  
+    // 🔹 Approvals (ONLY PENDING)
+    const unsub2 = onSnapshot(
+      collection(db, "users", adminUid, "approval_requests"),
+      (snap) => {
+        const pendingApprovals = snap.docs.filter(
+          doc => {
+            const data = doc.data();
+            return !data.status || data.status === "pending";
+          }
+        );
+  
+        setNotificationCount(prev => ({
+          ...prev,
+          approvals: pendingApprovals.length
+        }));
+      }
+    );
+  
+    return () => {
+      unsub1();
+      unsub2();
+    };
+  }, []);
+  const totalCount =
+  (notificationCount.applications || 0) +
+  (notificationCount.approvals || 0);
 const roleAccess = ROLE_ACCESS[role] || { pages: [] };
 const searchInputRef = useRef(null);
 const QUICK_TILES = [
@@ -211,6 +260,37 @@ if (
   setTimeout(() => setShowQuickPanel(false), 200);
   }}
   />
+<div
+  className="search-notify-icon"
+  onClick={() => {
+    handleMenuClick("combined");
+  }}
+>
+<div
+  style={{ position: "relative", cursor: "pointer" }}
+  onClick={() => handleMenuClick("combined")}
+>
+  <FaRegBell size={20} />
+
+  {totalCount > 0 && (
+    <span
+      style={{
+        position: "absolute",
+        top: -6,
+        right: -6,
+        background: "red",
+        color: "#fff",
+        borderRadius: "50%",
+        padding: "2px 6px",
+        fontSize: 10,
+        fontWeight: "bold"
+      }}
+    >
+      {totalCount}
+    </span>
+  )}
+</div>
+</div>
   <FaClock
     className="search-history-icon"
     onClick={() => {
@@ -219,6 +299,7 @@ if (
       setShowQuickPanel(false);
     }}
   />
+  
 <div
   className="search-school-icon"
   onClick={() => setAccountPopupOpen(prev => !prev)}
@@ -363,7 +444,7 @@ if (
 pageResults.length === 0 &&
 peopleResults.length === 0 && (
 <div className="no-search-results">
-  ❌ No search results found
+   No search results found
 </div>
 )}
 </div>

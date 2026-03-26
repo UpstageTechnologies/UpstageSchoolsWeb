@@ -33,7 +33,25 @@ export default function Landing() {
       fetchLogo();
     }
   }, []);
+  const [adminUid, setAdminUid] = useState(null);
 
+  useEffect(() => {
+    const fetchAdmin = async () => {
+      const selectedSchool = localStorage.getItem("selectedSchool");
+  
+      const snap = await getDocs(collection(db, "users"));
+  
+      snap.forEach(doc => {
+        const data = doc.data();
+  
+        if (data.schoolName === selectedSchool) {
+          setAdminUid(doc.id); // ✅ முக்கியம்
+        }
+      });
+    };
+  
+    fetchAdmin();
+  }, []);
   const navigate = useNavigate();
   return (
     <div className="intro-page">
@@ -66,13 +84,7 @@ export default function Landing() {
   alt="School"
 />
         </div>
-
-
       </div>
-
-        {/* FOOTER */}
-       
-     
     </div>
   );
 }
