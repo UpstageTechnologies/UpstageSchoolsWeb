@@ -13,6 +13,8 @@ import { useRef, useEffect , useState } from "react";
 import { onSnapshot , collection  } from "firebase/firestore";
 import { db } from "../services/firebase";
 import CombinedPage from "../features/dashboard/CombinedPage";
+
+
 const PARENT_PAGE = {
   profit: "accounts",
   income: "accounts",
@@ -66,7 +68,7 @@ const Navbar = ({
   viewAs ??
   localStorage.getItem("viewAs") ??
   localStorage.getItem("role");
-
+  const dropdownRef = useRef(null);
   const [allUsers, setAllUsers] = useState([]);
   const [notificationCount, setNotificationCount] = useState(0);
   useEffect(() => {
@@ -166,7 +168,6 @@ const filteredQuickTiles = QUICK_TILES.filter(tile =>
   
   useEffect(() => {
     const handleTouch = (e) => {
-      const dropdown = document.querySelector(".search-dropdown");
 
 if (
   searchInputRef.current &&
@@ -187,20 +188,23 @@ if (
     };
   }, []);
   useEffect(() => {
-    const dropdown = document.querySelector(".search-dropdown");
+    const dropdown = dropdownRef.current;
   
     if (!dropdown) return;
   
     const handleDropdownScroll = () => {
-      searchInputRef.current?.blur(); // keyboard மட்டும் close
+      searchInputRef.current?.blur(); // 🔥 keyboard close மட்டும்
     };
   
     dropdown.addEventListener("scroll", handleDropdownScroll);
+    dropdown.addEventListener("touchmove", handleDropdownScroll); // 🔥 mobile fix
   
     return () => {
       dropdown.removeEventListener("scroll", handleDropdownScroll);
+      dropdown.removeEventListener("touchmove", handleDropdownScroll);
     };
-  }, [showQuickPanel, globalResults]);
+  }, [showQuickPanel]);
+ 
   useEffect(() => {
     const onScroll = () => {
       searchInputRef.current?.blur();     // keyboard close
@@ -339,7 +343,7 @@ if (
   )}
     </div>
   {(showQuickPanel || globalResults.length > 0) && (
-  <div className="search-dropdown">
+ <div className="search-dropdown" ref={dropdownRef}>
   <div className="search-header">
   <span className="search-back" onClick={closeSearch}>
   ←
