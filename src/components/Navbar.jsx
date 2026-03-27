@@ -168,16 +168,17 @@ const filteredQuickTiles = QUICK_TILES.filter(tile =>
   
   useEffect(() => {
     const handleTouch = (e) => {
-
-if (
-  searchInputRef.current &&
-  !searchInputRef.current.contains(e.target) &&
-  (!dropdown || !dropdown.contains(e.target))
-) {
-  searchInputRef.current.blur();
-  setShowQuickPanel(false);
-}
-    }
+      const dropdown = dropdownRef.current; // ✅ FIX
+  
+      if (
+        searchInputRef.current &&
+        !searchInputRef.current.contains(e.target) &&
+        (!dropdown || !dropdown.contains(e.target))
+      ) {
+        searchInputRef.current.blur();
+        setShowQuickPanel(false);
+      }
+    };
   
     document.addEventListener("touchstart", handleTouch);
     document.addEventListener("mousedown", handleTouch);
@@ -191,17 +192,24 @@ if (
     const dropdown = dropdownRef.current;
   
     if (!dropdown) return;
-  
     const handleDropdownScroll = () => {
-      searchInputRef.current?.blur(); // 🔥 keyboard close மட்டும்
+      if (document.activeElement === searchInputRef.current) {
+        searchInputRef.current.blur();
+    
+        setTimeout(() => {
+          searchInputRef.current?.blur();
+        }, 0);
+      }
     };
   
     dropdown.addEventListener("scroll", handleDropdownScroll);
-    dropdown.addEventListener("touchmove", handleDropdownScroll); // 🔥 mobile fix
+    dropdown.addEventListener("touchmove", handleDropdownScroll);
+    dropdown.addEventListener("wheel", handleDropdownScroll);
   
     return () => {
       dropdown.removeEventListener("scroll", handleDropdownScroll);
       dropdown.removeEventListener("touchmove", handleDropdownScroll);
+      dropdown.removeEventListener("wheel", handleDropdownScroll);
     };
   }, [showQuickPanel]);
  
