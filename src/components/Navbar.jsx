@@ -188,18 +188,19 @@ const filteredQuickTiles = QUICK_TILES.filter(tile =>
       document.removeEventListener("mousedown", handleTouch);
     };
   }, []);
+  const isScrollingRef = useRef(false);
   useEffect(() => {
     const dropdown = dropdownRef.current;
   
     if (!dropdown) return;
     const handleDropdownScroll = () => {
-      if (document.activeElement === searchInputRef.current) {
-        searchInputRef.current.blur();
+      isScrollingRef.current = true;
     
-        setTimeout(() => {
-          searchInputRef.current?.blur();
-        }, 0);
-      }
+      searchInputRef.current?.blur();
+    
+      setTimeout(() => {
+        isScrollingRef.current = false;
+      }, 200);
     };
   
     dropdown.addEventListener("scroll", handleDropdownScroll);
@@ -281,8 +282,15 @@ const filteredQuickTiles = QUICK_TILES.filter(tile =>
   value={searchQuery}
   onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
   onFocus={() => setShowQuickPanel(true)}
-  onBlur={() => {
-  setTimeout(() => setShowQuickPanel(false), 200);
+  onBlur={(e) => {
+    const dropdown = dropdownRef.current;
+  
+    // 👇 if focus inside dropdown → close panna koodathu
+    if (dropdown && dropdown.contains(e.relatedTarget)) {
+      return;
+    }
+  
+    setTimeout(() => setShowQuickPanel(false), 200);
   }}
   />
 <div
