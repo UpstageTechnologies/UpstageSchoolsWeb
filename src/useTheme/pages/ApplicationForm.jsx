@@ -38,7 +38,7 @@ export default function ApplicationForm() {
       }
     
       try {
-        await addDoc(
+        const ref = await addDoc(
           collection(db, "users", adminUid, "applications"),
           {
             ...form,
@@ -46,20 +46,15 @@ export default function ApplicationForm() {
             createdAt: Timestamp.now()
           }
         );
-    
+      
+        console.log("✅ SAVED ID:", ref.id);
+        console.log("✅ PATH:", "users/" + adminUid + "/applications");
+      
         alert("🎉 Application submitted successfully");
-    
-        setForm({
-          studentName: "",
-          class: "",
-          dob: "",
-          parentName: "",
-          phone: "",
-          address: ""
-        });
+      
       } catch (err) {
-        console.error(err);
-        alert("Something went wrong — try again.");
+        console.error("❌ FIRESTORE ERROR:", err);
+        alert("Error: " + err.message);
       }
     };
 

@@ -29,7 +29,7 @@ export default function EmptyPage() {
   const navigate = useNavigate();
   const handleSubmit = (e) => {
     e.preventDefault();
-  
+    console.log("SETTING adminUid:", selectedSchoolData.id); // DEBUG
     // ❌ clear demo state
     localStorage.removeItem("fromChooseLogin");
     localStorage.removeItem("prefillUser");

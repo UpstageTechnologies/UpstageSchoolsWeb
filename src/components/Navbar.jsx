@@ -71,17 +71,13 @@ const Navbar = ({
   const [notificationCount, setNotificationCount] = useState(0);
   useEffect(() => {
     const adminUid = localStorage.getItem("adminUid");
-  
-    // 🔹 Applications (ONLY PENDING)
     const unsub1 = onSnapshot(
-      collection(db, "applications"),
+      collection(db, "users", adminUid, "applications"),
       (snap) => {
-        const pendingApps = snap.docs.filter(
-          doc => {
-            const data = doc.data();
-            return !data.status || data.status === "pending";
-          }
-        );
+        const pendingApps = snap.docs.filter(doc => {
+          const d = doc.data();
+          return !d.status || d.status === "pending";
+        });
   
         setNotificationCount(prev => ({
           ...prev,
@@ -191,11 +187,28 @@ if (
     };
   }, []);
   useEffect(() => {
+    const dropdown = document.querySelector(".search-dropdown");
+  
+    if (!dropdown) return;
+  
+    const handleDropdownScroll = () => {
+      searchInputRef.current?.blur(); // keyboard மட்டும் close
+    };
+  
+    dropdown.addEventListener("scroll", handleDropdownScroll);
+  
+    return () => {
+      dropdown.removeEventListener("scroll", handleDropdownScroll);
+    };
+  }, [showQuickPanel, globalResults]);
+  useEffect(() => {
     const onScroll = () => {
-      searchInputRef.current?.blur();
+      searchInputRef.current?.blur();     // keyboard close
+      setShowQuickPanel(false);           // dropdown close
     };
   
     window.addEventListener("scroll", onScroll);
+  
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
   

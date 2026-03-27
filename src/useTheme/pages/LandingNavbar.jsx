@@ -4,7 +4,6 @@ import logo from "../../../src/assets/searchlogo.png";
 import { useNavigate } from "react-router-dom";
 export default function LandingNavbar({ showAbout = false, setShowAbout ,  showBack = true  , showApply = false  }) {
     const navigate = useNavigate();
-
     const handleBack = () => {
       if (showAbout && setShowAbout) {
         setShowAbout(false);   // 👈 About close

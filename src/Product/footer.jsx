@@ -1,6 +1,6 @@
     import React from "react";
-    import { FaCopyright } from "react-icons/fa";
-    import logo from "../assets/searchlogo.png";
+    import { FaCopyright , FaDotCircle, FaRegCopyright, FaRegRegistered } from "react-icons/fa";
+    import logo from "../assets/upstage.png";
 
     export default function Footer() {
     return (
@@ -16,9 +16,9 @@
 
 /* Logo on top */
 .footer-logo img {
-  width: 80px;
-  height: auto;
-  margin-bottom: 10px;
+  width: 60px;
+  height: 60px;
+  
 }
 
 /* Copyright line */
@@ -40,7 +40,7 @@
         </div>
 
         <div className="footer-copy">
-        <FaCopyright /><span>2026</span> <p>UPSTAGE All rights reserved</p>
+        <FaRegCopyright /><span>2026</span> <p>UPSTAGE <FaRegRegistered/><FaDotCircle/>All rights reserved</p>
             </div>
 
         </footer>

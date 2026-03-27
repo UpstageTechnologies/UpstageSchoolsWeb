@@ -57,6 +57,7 @@
   const AccountCreation = lazy(() => import("./AccountCreation"));
   const Classroom = lazy (() => import("./Classroom"))
   const CombinedPage = lazy(() => import("./CombinedPage"));
+  const Library = lazy(() => import("./Library"));
     const Dashboard = () => {
     
       const [user, setUser] = useState(null);
@@ -670,7 +671,12 @@
 >
   <FaSchool/>Classroom
 </li>
-
+<li
+  className={activePage === "library" ? "active" : ""}
+  onClick={() => handleMenuClick("library")}
+>
+  📚 Library
+</li>
             {accountMenuOpen && (
               <ul className="account-submenu">
                 {role === "master" && (
@@ -1079,6 +1085,9 @@
                 {activePage === "profile" && (
       <Profile />
     )}
+    {(role === "master" || role === "admin") && activePage === "library" && (
+  <Library adminUid={adminUid} />
+)}
     {role === "master" && activePage === "combined" && (
   <CombinedPage requirePremium={requirePremium}  notificationCount={notificationCount}  />
 )}

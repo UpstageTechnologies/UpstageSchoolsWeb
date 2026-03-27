@@ -17,9 +17,7 @@ import { FaCheckCircle ,FaTimesCircle} from "react-icons/fa";
 
 
 export default function ApplicationList({ requirePremium }) {
-
-  const adminUid =
-    auth.currentUser?.uid || localStorage.getItem("adminUid");
+  const adminUid = localStorage.getItem("adminUid");
 
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,8 +26,9 @@ export default function ApplicationList({ requirePremium }) {
 
   /* ================= LOAD ================= */
   const loadApps = async () => {
+    console.log("LIST adminUid:", adminUid);
     const q = query(
-      collection(db, "applications"),
+      collection(db, "users", adminUid, "applications"),
       orderBy("createdAt", "desc")
     );
 
@@ -38,17 +37,18 @@ export default function ApplicationList({ requirePremium }) {
     setApps(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     setLoading(false);
   };
-
   useEffect(() => {
-    loadApps();
-  }, []);
+    if (adminUid) {
+      loadApps();
+    }
+  }, [adminUid]);
 
   /* ================= ACTIONS ================= */
 
   const handleReject = async (app) => {
     if (!window.confirm("Reject this application?")) return;
 
-    await updateDoc(doc(db, "applications", app.id), {
+    await updateDoc(doc(db, "users", adminUid, "applications", app.id), {
       status: "rejected"
     });
 
@@ -88,7 +88,7 @@ export default function ApplicationList({ requirePremium }) {
     );
 
     // 3️⃣ update application
-    await updateDoc(doc(db, "applications", app.id), {
+    await updateDoc(doc(db, "users", adminUid, "applications", app.id), {
       status: "selected"
     });
 

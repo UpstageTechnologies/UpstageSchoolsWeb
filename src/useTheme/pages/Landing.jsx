@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { FaArrowRight } from "react-icons/fa";
 import { db } from "../../services/firebase";
 import { collection, getDocs } from "firebase/firestore";
+import Footer from "../../Product/footer";
 export default function Landing() {
   const [schoolName, setSchoolName] = useState("SchoolTrain");
   const [schoolLogo, setSchoolLogo] = useState("");
@@ -55,7 +56,7 @@ export default function Landing() {
   const navigate = useNavigate();
   return (
     <div className="intro-page">
-    <LandingNavbar showApply={true} />
+    <LandingNavbar showApply={true} setShowAbout={true} />
        
         <div className="hero-left">
           <h1>
@@ -73,7 +74,7 @@ export default function Landing() {
 
           </div>
           <footer>
-          <p>© 2025 SchoolTrain. All rights reserved.</p>
+       <Footer/>
         </footer>
         </div>
         
