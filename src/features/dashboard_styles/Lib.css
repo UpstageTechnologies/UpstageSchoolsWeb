@@ -1,0 +1,159 @@
+.library-container {
+  background: #f3efe7;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+/* TOP */
+.top-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.hero-rack {
+  background: #debaf8; /* 🔥 cream */
+  border-radius: 25px;
+  padding: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* LEFT */
+.hero-left h1 {
+  font-size: 28px;
+}
+.center-book img {
+  width: 160px;
+  height: 220px;
+  border-radius: 12px;
+
+  box-shadow: 
+    0 25px 40px rgba(0,0,0,0.3),
+    0 5px 10px rgba(0,0,0,0.2);
+
+  transform: rotate(-2deg);
+}
+.side-card {
+  width: 110px;
+  height: 190px;
+  background: #f1f1f1;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+/* 🪵 SHELF */
+.shelf {
+  height: 15px;
+  background: rgb(242, 205, 242);
+  margin: 20px 0;
+  border-radius: 10px;
+  box-shadow: inset 0 4px 6px rgba(0,0,0,0.2);
+}
+
+/* 📚 TOPIC RACK */
+.topic-rack {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+}
+
+/* BOOK */
+.book-item {
+  width: 110px;
+  text-align: center;
+}
+
+.book-item img {
+  width: 100%;
+  height: 150px;
+  border-radius: 10px;
+}
+
+/* 🔥 LOADER */
+.book-loader {
+  width: 160px;
+  height: 220px;
+  border-radius: 12px;
+  background: linear-gradient(
+    90deg,
+    #c8afeb 25%,
+    #d9b6f6 50%,
+    #e88af2 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.book-loader.small {
+  width: 100px;
+  height: 140px;
+}
+
+/* SHIMMER */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.shelf {
+  height: 18px;
+  background: linear-gradient(
+    to bottom,
+    #d5baf0,
+    #e4a8f4
+  );
+  border-radius: 10px;
+  margin: 30px 0;
+  box-shadow: 
+    0 8px 15px rgba(0,0,0,0.25),
+    inset 0 3px 5px rgba(255,255,255,0.3);
+}
+.topic-rack {
+  position: relative;
+}
+
+.books-row {
+  display: flex;
+  gap: 25px;
+  align-items: flex-end; /* 🔥 IMPORTANT */
+  padding: 10px 10px 0;
+}
+
+/* BOOK ITEM */
+.book-item {
+  width: 110px;
+  text-align: center;
+  position: relative;
+}
+
+/* 🔥 BOOK IMAGE */
+.book-item img {
+  width: 100%;
+  height: 150px;
+  border-radius: 8px;
+
+  /* 🔥 DEPTH SHADOW */
+  box-shadow: 
+    0 10px 20px rgba(0,0,0,0.25),
+    0 2px 4px rgba(0,0,0,0.15);
+
+  transform: translateY(0);
+  transition: 0.3s;
+}
+
+/* 🔥 HOVER LIFT */
+.book-item:hover img {
+  transform: translateY(-10px);
+}
+
+/* TEXT */
+.book-item p {
+  font-size: 11px;
+  margin-top: 6px;
+}

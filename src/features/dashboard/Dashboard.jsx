@@ -7,7 +7,7 @@
     import { useNavigate } from "react-router-dom";
     import "../dashboard_styles/Dashboard.css";
     import { collection, getDocs , onSnapshot} from "firebase/firestore"; 
-    import { FaBackspace, FaSearch } from "react-icons/fa";
+    import { FaBackspace, FaBookReader, FaPlane, FaSearch } from "react-icons/fa";
     import { buildGlobalSearchResults } from "../../utils/globalSearch";
     import Navbar from "../../components/Navbar";
     import UpgradePopup from "../../components/UpgradePopup";
@@ -663,7 +663,7 @@
   </li>
   {/* {role === } */}
   <li className={activePage === "courses" ? "active" : ""}onClick={() => handleMenuClick("courses")}>
-          <FaBookOpen /> Planner
+          <FaPlane/> Planner
         </li>
   <li
   className={activePage === "classroom" ? "active" : ""}
@@ -675,7 +675,7 @@
   className={activePage === "library" ? "active" : ""}
   onClick={() => handleMenuClick("library")}
 >
-  📚 Library
+  <FaBookReader/> Library
 </li>
             {accountMenuOpen && (
               <ul className="account-submenu">

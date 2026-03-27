@@ -7,20 +7,20 @@ import {
   getDoc
 } from "firebase/firestore";
 import "../dashboard_styles/courses.css";
-import { FaArrowRight, FaArrowLeft } from "react-icons/fa";
-
+import "../dashboard_styles/Lib.css"
+import { FaArrowLeft } from "react-icons/fa";
 export default function Library() {
   const adminUid =
     auth.currentUser?.uid || localStorage.getItem("adminUid");
 
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedClass, setSelectedClass] = useState(null);
   const [subjects, setSubjects] = useState([]);
 
-  const [bookResults, setBookResults] = useState({});
-  const [loadingBooks, setLoadingBooks] = useState(false);
+  const [subjectBooks, setSubjectBooks] = useState({});
+  const [topicBooks, setTopicBooks] = useState({});
 
   // 📥 Load Classes
   useEffect(() => {
@@ -31,12 +31,13 @@ export default function Library() {
         collection(db, "users", adminUid, "Classes")
       );
 
-      const classList = snap.docs.map((doc) => ({
-        id: doc.id,
-        name: doc.data().name,
-      }));
+      setClasses(
+        snap.docs.map((doc) => ({
+          id: doc.id,
+          name: doc.data().name
+        }))
+      );
 
-      setClasses(classList);
       setLoading(false);
     };
 
@@ -73,28 +74,42 @@ export default function Library() {
     }
 
     setSubjects(subjectData);
+
+    // 🔥 AUTO FETCH BOOKS
+    fetchAllBooks(classSnap.data()?.name, subjectData);
   };
 
-  // 📚 Fetch Books
-  const fetchBooks = async (className, subject, topic) => {
-    setLoadingBooks(true);
+  // 📚 Fetch Books for all
+  const fetchAllBooks = async (className, subjectData) => {
+    let subjectTemp = {};
+    let topicTemp = {};
 
-    try {
-      const query = `${className} ${subject} ${topic}`;
-      const res = await fetch(
-        `https://www.googleapis.com/books/v1/volumes?q=${query}`
+    for (let sub of subjectData) {
+      // 🔥 SUBJECT → 1 BOOK
+      const subQuery = `${className} ${sub.name} textbook`;
+      const subRes = await fetch(
+        `https://www.googleapis.com/books/v1/volumes?q=${subQuery}`
       );
-      const data = await res.json();
+      const subData = await subRes.json();
 
-      setBookResults((prev) => ({
-        ...prev,
-        [topic]: data.items || []
-      }));
-    } catch (err) {
-      console.error(err);
+      subjectTemp[sub.name] =
+        subData.items?.[0]?.volumeInfo?.imageLinks?.thumbnail || null;
+
+      // 🔥 TOPICS → BOOKS
+      for (let t of sub.topics) {
+        const topicQuery = `${className} ${sub.name} ${t.name}`;
+        const res = await fetch(
+          `https://www.googleapis.com/books/v1/volumes?q=${topicQuery}`
+        );
+        const data = await res.json();
+
+        topicTemp[t.name] =
+          data.items?.[0]?.volumeInfo?.imageLinks?.thumbnail || null;
+      }
     }
 
-    setLoadingBooks(false);
+    setSubjectBooks(subjectTemp);
+    setTopicBooks(topicTemp);
   };
 
   // 🟦 CLASS VIEW
@@ -118,7 +133,7 @@ export default function Library() {
                     loadSubjects(c.id);
                   }}
                 >
-                  View Subjects <FaArrowRight />
+                  Open Library
                 </button>
               </div>
             ))}
@@ -127,139 +142,62 @@ export default function Library() {
       </div>
     );
   }
-
-  // 📚 SUBJECT + TOPIC VIEW
   return (
-    <div style={{ padding: 20 }}>
-      <button
-        onClick={() => setSelectedClass(null)}
-        style={{ marginBottom: 10 }}
-      >
-        <FaArrowLeft /> Back to Classes
-      </button>
-
-      <h2>📚 Class {selectedClass.name} - Subjects</h2>
-
-      {subjects.length === 0 ? (
-        <p>No subjects added</p>
-      ) : (
-        subjects.map((sub, i) => (
-          <div
-            key={i}
-            style={{
-              padding: 15,
-              marginBottom: 15,
-              borderRadius: 12,
-              background: "#fff",
-              boxShadow: "0 2px 6px rgba(0,0,0,0.06)"
-            }}
-          >
-            <h3 style={{ marginBottom: 10 }}>📘 {sub.name}</h3>
-
-            {sub.topics.length > 0 ? (
-              sub.topics.map((t, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    marginBottom: 12,
-                    padding: 10,
-                    background: "#f1f5f9",
-                    borderRadius: 8
-                  }}
-                >
-                  <b>{t.name}</b>
-
-                  {/* 🔘 Button */}
-                  <div>
-                    <button
-                      onClick={() =>
-                        fetchBooks(
-                          selectedClass.name,
-                          sub.name,
-                          t.name
-                        )
-                      }
-                      style={{
-                        marginTop: 5,
-                        fontSize: 12,
-                        background: "#2563eb",
-                        color: "#fff",
-                        border: "none",
-                        padding: "5px 10px",
-                        borderRadius: 5
-                      }}
-                    >
-                      📚 Show Books
-                    </button>
-                  </div>
-
-                  {/* ⏳ Loading */}
-                  {loadingBooks && <p>Loading books...</p>}
-
-                  {/* 📚 Books UI */}
-                  {bookResults[t.name] && (
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: 10,
-                        marginTop: 10,
-                        flexWrap: "wrap"
-                      }}
-                    >
-                      {bookResults[t.name]
-                        .slice(0, 5)
-                        .map((b) => (
-                          <div
-                            key={b.id}
-                            style={{
-                              width: 120,
-                              border: "1px solid #ddd",
-                              borderRadius: 8,
-                              padding: 5,
-                              textAlign: "center",
-                              background: "#fff"
-                            }}
-                          >
-                            <img
-                              src={
-                                b.volumeInfo.imageLinks
-                                  ?.thumbnail ||
-                                "https://via.placeholder.com/120x160"
-                              }
-                              alt=""
-                              style={{
-                                width: "100%",
-                                height: 140,
-                                objectFit: "cover"
-                              }}
-                            />
-                            <p style={{ fontSize: 12 }}>
-                              {b.volumeInfo.title?.slice(0, 40)}
-                            </p>
-
-                            <a
-                              href={b.volumeInfo.previewLink}
-                              target="_blank"
-                              rel="noreferrer"
-                              style={{
-                                fontSize: 11,
-                                color: "#2563eb"
-                              }}
-                            >
-                              View
-                            </a>
-                          </div>
-                        ))}
-                    </div>
-                  )}
-                </div>
-              ))
-            ) : (
-              <p style={{ opacity: 0.6 }}>No topics</p>
-            )}
+    <div className="library-container">
+  
+      {/* 🔥 HERO RACK */}
+      <div className="hero-rack">
+  
+        {/* LEFT TEXT */}
+        <div className="hero-left">
+          <h1>{subjects[currentIndex]?.name}</h1>
+          <p>Explore books from this subject</p>
+  
+          <div className="controls">
+            <button onClick={() =>
+              setCurrentIndex(prev =>
+                prev === 0 ? subjects.length - 1 : prev - 1
+              )
+            }>◀</button>
+  
+            <button onClick={() =>
+              setCurrentIndex(prev =>
+                prev === subjects.length - 1 ? 0 : prev + 1
+              )
+            }>▶</button>
           </div>
-        ))
-      )}
+        </div>
+  
+        {/* 🔥 CENTER BIG BOOK */}
+        <div className="center-book">
+          {subjectBooks[subjects[currentIndex]?.name] ? (
+            <img
+              src={subjectBooks[subjects[currentIndex]?.name]}
+            />
+          ) : (
+            <div className="book-loader" />
+          )}
+        </div>
+  
+      </div>
+  
+      {/* 🪵 SHELF LINE */}
+      <div className="shelf" />
+      <div className="topic-rack">
+  <div className="books-row">
+    {subjects[currentIndex]?.topics.map((t) => (
+      <div className="book-item" key={t.name}>
+        {topicBooks[t.name] ? (
+          <img src={topicBooks[t.name]} />
+        ) : (
+          <div className="book-loader small" />
+        )}
+        <p>{t.name}</p>
+      </div>
+    ))}
+  </div>
+</div>
+  
     </div>
   );
 }

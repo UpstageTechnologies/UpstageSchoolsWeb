@@ -165,10 +165,12 @@ const filteredQuickTiles = QUICK_TILES.filter(tile =>
       </div>
     );
   };
-  
   useEffect(() => {
     const handleTouch = (e) => {
-      const dropdown = dropdownRef.current; // ✅ FIX
+      const dropdown = dropdownRef.current;
+  
+      // 🔥 if scrolling → ignore
+      if (isScrollingRef.current) return;
   
       if (
         searchInputRef.current &&
