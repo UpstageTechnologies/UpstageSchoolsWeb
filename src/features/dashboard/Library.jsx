@@ -145,58 +145,58 @@ export default function Library() {
   return (
     <div className="library-container">
   
-      {/* 🔥 HERO RACK */}
-      <div className="hero-rack">
+      {/* HEADER */}
+      <div className="header">
+        
+        <h1>{subjects[currentIndex]?.name}</h1>
+        <p>Explore books from this subject</p>
+      </div>
   
-        {/* LEFT TEXT */}
-        <div className="hero-left">
-          <h1>{subjects[currentIndex]?.name}</h1>
-          <p>Explore books from this subject</p>
-  
-          <div className="controls">
-            <button onClick={() =>
-              setCurrentIndex(prev =>
-                prev === 0 ? subjects.length - 1 : prev - 1
-              )
-            }>◀</button>
-  
-            <button onClick={() =>
-              setCurrentIndex(prev =>
-                prev === subjects.length - 1 ? 0 : prev + 1
-              )
-            }>▶</button>
+      {/* 🔥 SUBJECT CAROUSEL */}
+      <div
+        className="carousel"
+        onScroll={(e) => {
+          const scrollLeft = e.target.scrollLeft;
+          const width = e.target.clientWidth;
+          const index = Math.round(scrollLeft / width);
+          setCurrentIndex(index);
+        }}
+      >
+        {subjects.map((sub) => (
+          <div className="carousel-item" key={sub.name}>
+            {subjectBooks[sub.name] ? (
+              <img src={subjectBooks[sub.name]} />
+            ) : (
+              <div className="book-loader" />
+            )}
           </div>
+        ))}
+      </div>
+  
+      {/* 🔥 TOPIC RACK */}
+      <div className="rack-container">
+  
+        <div className="books-row horizontal-scroll">
+          {subjects[currentIndex]?.topics.map((t) => (
+            <div className="book-item" key={t.name}>
+              {topicBooks[t.name] ? (
+                <img src={topicBooks[t.name]} />
+              ) : (
+                <div className="book-loader small" />
+              )}
+            </div>
+          ))}
         </div>
   
-        {/* 🔥 CENTER BIG BOOK */}
-        <div className="center-book">
-          {subjectBooks[subjects[currentIndex]?.name] ? (
-            <img
-              src={subjectBooks[subjects[currentIndex]?.name]}
-            />
-          ) : (
-            <div className="book-loader" />
-          )}
+        <div className="rack">
+          {subjects[currentIndex]?.topics.map((t) => (
+            <div className="rack-label" key={t.name}>
+              {t.name}
+            </div>
+          ))}
         </div>
   
       </div>
-  
-      {/* 🪵 SHELF LINE */}
-      <div className="shelf" />
-      <div className="topic-rack">
-  <div className="books-row">
-    {subjects[currentIndex]?.topics.map((t) => (
-      <div className="book-item" key={t.name}>
-        {topicBooks[t.name] ? (
-          <img src={topicBooks[t.name]} />
-        ) : (
-          <div className="book-loader small" />
-        )}
-        <p>{t.name}</p>
-      </div>
-    ))}
-  </div>
-</div>
   
     </div>
   );

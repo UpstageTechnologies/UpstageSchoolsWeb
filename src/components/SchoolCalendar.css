@@ -8,12 +8,8 @@
     border-radius: 18px;
     padding: 16px;
     box-shadow: 0 18px 45px rgba(0,0,0,0.12);
-    animation: fadeIn 0.3s ease;
+   
   }
-  
-  /* =====================================================
-     HEADER
-  ===================================================== */
   .sc-header {
     display: flex;
     align-items: center;
@@ -27,7 +23,7 @@
   }
   
   .sc-header button {
-    background: #2140df;
+    background: #a78bfa;   /* light purple */
     color: #fff;
     border: none;
     width: 34px;
@@ -134,7 +130,7 @@
      SELECTED (OPTIONAL)
   ===================================================== */
   .sc-day.selected {
-    background: #2140df;
+    background: #a78bfa;   /* same purple */
     color: #fff;
   }
   
@@ -356,7 +352,7 @@
 
 /* common icon button */
 .sc-icon-btn {
-  background: #2140df;
+  background: #a78bfa;   /* same purple */
   color: #fff;
   border: none;
   width: 34px;
@@ -374,7 +370,7 @@
 
 .sc-icon-btn:hover {
   transform: scale(1.08);
-  background: #1a35c7;
+  background: #8b5cf6;   /* slightly darker purple */
 }
 
 /* print specific */
@@ -612,7 +608,10 @@
   background: #16a34a;
   color: #fff;
 }
-
+.sc-icon-btn svg {
+  color: #fff !important;
+  fill: #fff !important;
+}
 /* Manual holiday */
 .sc-day.holiday {
   background: #ff3d71;

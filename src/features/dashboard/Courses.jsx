@@ -12,7 +12,7 @@ export default function Course({ handleMenuClick }) {
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
+  const classId = localStorage.getItem("selectedClassId");
   useEffect(() => {
     if (!adminUid) return;
 
@@ -62,7 +62,10 @@ export default function Course({ handleMenuClick }) {
 </button>
 <button
   className="button"
-  onClick={() => handleMenuClick("calendar")}
+  onClick={() => {
+    localStorage.setItem("selectedClassId", c.id);  // 🔥 store class
+    handleMenuClick("calendar");
+  }}
 >
   Calendar Planner <FaArrowRight />
 </button>

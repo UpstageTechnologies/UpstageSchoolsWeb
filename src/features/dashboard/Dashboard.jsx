@@ -559,7 +559,7 @@
           }
         }, [role]);
         
-        
+        const selectedClassId = localStorage.getItem("selectedClassId");
       return (
         <>
       
@@ -901,13 +901,14 @@
     </div>
   }>
   {activePage === "calendar" && (
-    <div className="calendar-fullpage">
-      <SchoolCalendar
-        adminUid={adminUid}
-        role={role}
-      />
-    </div>
-  )}
+  <div className="calendar-fullpage">
+    <SchoolCalendar
+      adminUid={adminUid}
+      role={role}
+      classId={selectedClassId}   // 🔥 ADD THIS
+    />
+  </div>
+)}
   {(role === "master" || role === "admin") && activePage === "account_creation" && (
   <AccountCreation
     requirePremium={requirePremium}

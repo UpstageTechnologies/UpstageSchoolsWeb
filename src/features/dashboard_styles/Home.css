@@ -848,3 +848,7 @@
 .view-close-btn:hover {
   opacity: 0.9;
 }
+.home-calendar-wrapper .sc-calendar {
+  background: transparent !important;
+  box-shadow: none !important;
+}

@@ -55,7 +55,8 @@
   };
   
 
-  export default function SchoolCalendar({ adminUid, role, onDateSelect , compact }) {
+  export default function SchoolCalendar({ adminUid, role, onDateSelect , compact ,classId }) {
+   
     const [currentDate, setCurrentDate] = useState(new Date());
     const [events, setEvents] = useState({});
     const [editingDate, setEditingDate] = useState(null);
@@ -87,19 +88,56 @@ useEffect(() => {
 useEffect(() => {
   if (!adminUid) return;
 
-  const ref = collection(db, "users", adminUid, "calendar");
+  const globalRef = collection(db, "users", adminUid, "calendar");
 
-  const unsub = onSnapshot(ref, (snap) => {
-    const data = {};
+  let globalData = {};
+
+  const unsubGlobal = onSnapshot(globalRef, (snap) => {
+    const temp = {};
     snap.forEach(d => {
-      data[d.id] = d.data();
+      temp[d.id] = d.data();
     });
 
-    setEvents(data);
+    globalData = temp;
+
+    // 👉 no class → only global
+    if (!classId) {
+      setEvents(globalData);
+    }
   });
 
-  return () => unsub();
-}, [adminUid]);
+  if (classId) {
+    const classRef = collection(
+      db,
+      "users",
+      adminUid,
+      "Classes",
+      classId,
+      "calendar"
+    );
+
+    const unsubClass = onSnapshot(classRef, (snap) => {
+      const classData = {};
+      snap.forEach(d => {
+        classData[d.id] = d.data();
+      });
+
+      // 🔥 MERGE (IMPORTANT)
+      setEvents({
+        ...globalData,
+        ...classData
+      });
+    });
+
+    return () => {
+      unsubGlobal();
+      unsubClass();
+    };
+  }
+
+  return () => unsubGlobal();
+
+}, [adminUid, classId]);
 
     /* APPROVAL (SUB ADMIN) */
     const requestEventApproval = async (dateStr, data) => {
@@ -125,9 +163,18 @@ useEffect(() => {
       if (!EVENT_COLORS[type]) return alert("Invalid type");
 
       const data = { title, type, date: dateStr, createdAt: Timestamp.now() };
-
-
-      await setDoc(doc(db, "users", adminUid, "calendar", dateStr), data);
+      await setDoc(
+        doc(
+          db,
+          "users",
+          adminUid,
+          ...(classId
+            ? ["Classes", classId, "calendar", dateStr]
+            : ["calendar", dateStr])
+        ),
+        data,
+        { merge: true }
+      );
 
       // instant UI update
       setEvents(prev => ({ ...prev, [dateStr]: data }));
@@ -136,8 +183,16 @@ useEffect(() => {
     /* SAVE EDITED EVENT */
     const saveEdit = async () => {
       await setDoc(
-        doc(db, "users", adminUid, "calendar", editingDate),
-        events[editingDate]
+        doc(
+          db,
+          "users",
+          adminUid,
+          ...(classId
+            ? ["Classes", classId, "calendar", editingDate]
+            : ["calendar", editingDate])
+        ),
+        events[editingDate],
+        { merge: true }   // 🔥 ADD THIS
       );
       alert("Updated");
       setEditingDate(null);
@@ -145,8 +200,16 @@ useEffect(() => {
 
     /* DELETE EVENT */
     const deleteEvent = async () => {
-      await deleteDoc(doc(db, "users", adminUid, "calendar", editingDate));
-
+      await deleteDoc(
+        doc(
+          db,
+          "users",
+          adminUid,
+          ...(classId
+            ? ["Classes", classId, "calendar", editingDate]
+            : ["calendar", editingDate])
+        )
+      );
       const copy = { ...events };
       delete copy[editingDate];
       setEvents(copy);
@@ -207,7 +270,9 @@ useEffect(() => {
           </div>
         ))}
       </div>
-      <div className={`sc-calendar no-print ${compact ? "compact" : ""}`}>
+    
+<div className="sc-calendar no-print">
+
         <div className="sc-header">
         <button
   onClick={() => {
@@ -294,7 +359,7 @@ useEffect(() => {
           })}
         </div>
 
-        {upcoming.length > 0 && (
+        {!compact && upcoming.length > 0 && (
           <div className="sc-upcoming">
             <h4>Upcoming</h4>
 

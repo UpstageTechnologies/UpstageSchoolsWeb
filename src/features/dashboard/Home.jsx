@@ -382,13 +382,13 @@ const parentId = localStorage.getItem("parentDocId");
 
         {/* -------- LEFT SIDE -------- */} 
         <div className="summary-left">
-
+        <div className="home-calendar-wrapper">   {/* 👈 add this */}
         <SchoolCalendar
     adminUid={adminUid}
     role={effectiveRole}
     compact={true}   // 👈 view only mode
   />
-
+</div>
 
 
         </div>

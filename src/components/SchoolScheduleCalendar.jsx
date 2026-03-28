@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs ,onSnapshot ,setDoc,doc } from "firebase/firestore";
 import { db } from "../services/firebase";
 import "./SchoolCalendar.css";
 
@@ -26,13 +26,13 @@ export default function SchoolScheduleCalendar({ adminUid }) {
   ===================================================== */
   useEffect(() => {
     if (!adminUid) return;
-
-    const loadData = async () => {
-
+  
+    // 🔥 1. School settings (one time ok)
+    const loadSettings = async () => {
       const snap = await getDocs(
         collection(db, "users", adminUid, "SchoolSettings")
       );
-
+  
       snap.forEach(doc => {
         const data = doc.data();
         if (data.startDate && data.endDate) {
@@ -40,20 +40,26 @@ export default function SchoolScheduleCalendar({ adminUid }) {
           setSchoolEnd(new Date(data.endDate));
         }
       });
-
-      const eventSnap = await getDocs(
-        collection(db, "users", adminUid, "calendar")
-      );
-
+    };
+  
+    loadSettings();
+  
+    // 🔥 2. EVENTS → LIVE UPDATE
+    const ref = collection(db, "users", adminUid, "calendar");
+  
+    const unsub = onSnapshot(ref, (snap) => {
       const evData = {};
-      eventSnap.forEach(d => {
+      snap.forEach(d => {
         evData[d.id] = d.data();
       });
-
+  
+      console.log("🔥 LIVE EVENTS", evData);
+  
       setEvents(evData);
-    };
-
-    loadData();
+    });
+  
+    return () => unsub();
+  
   }, [adminUid]);
 
   /* =====================================================
@@ -318,20 +324,26 @@ new Date(year, month + 1, 1) <=
             </select>
 
             <div className="sc-actions">
-              <button
-                onClick={() => {
-                  setEvents(prev => ({
-                    ...prev,
-                    [editingDate]: {
-                      date: editingDate,
-                      ...editData
-                    }
-                  }));
-                  setEditingDate(null);
-                }}
-              >
-                Save
-              </button>
+            <button
+  onClick={async () => {
+    console.log("🔥 SAVING", editingDate, editData);
+
+    await setDoc(
+      doc(db, "users", adminUid, "calendar", editingDate),
+      {
+        ...editData,
+        date: editingDate
+      },
+      { merge: true }
+    );
+
+    console.log("✅ SAVED TO FIRESTORE");
+
+    setEditingDate(null);
+  }}
+>
+  Save
+</button>
 
               <button
                 onClick={() => {

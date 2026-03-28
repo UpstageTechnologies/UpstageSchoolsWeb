@@ -13,8 +13,6 @@ import { useRef, useEffect , useState } from "react";
 import { onSnapshot , collection  } from "firebase/firestore";
 import { db } from "../services/firebase";
 import CombinedPage from "../features/dashboard/CombinedPage";
-
-
 const PARENT_PAGE = {
   profit: "accounts",
   income: "accounts",
@@ -165,22 +163,20 @@ const filteredQuickTiles = QUICK_TILES.filter(tile =>
       </div>
     );
   };
+  
   useEffect(() => {
     const handleTouch = (e) => {
-      const dropdown = dropdownRef.current;
-  
-      // 🔥 if scrolling → ignore
-      if (isScrollingRef.current) return;
-  
-      if (
-        searchInputRef.current &&
-        !searchInputRef.current.contains(e.target) &&
-        (!dropdown || !dropdown.contains(e.target))
-      ) {
-        searchInputRef.current.blur();
-        setShowQuickPanel(false);
-      }
-    };
+      const dropdown = document.querySelector(".search-dropdown");
+
+if (
+  searchInputRef.current &&
+  !searchInputRef.current.contains(e.target) &&
+  (!dropdown || !dropdown.contains(e.target))
+) {
+  searchInputRef.current.blur();
+  setShowQuickPanel(false);
+}
+    }
   
     document.addEventListener("touchstart", handleTouch);
     document.addEventListener("mousedown", handleTouch);
@@ -190,32 +186,21 @@ const filteredQuickTiles = QUICK_TILES.filter(tile =>
       document.removeEventListener("mousedown", handleTouch);
     };
   }, []);
-  const isScrollingRef = useRef(false);
   useEffect(() => {
-    const dropdown = dropdownRef.current;
+    const dropdown = document.querySelector(".search-dropdown");
   
     if (!dropdown) return;
+  
     const handleDropdownScroll = () => {
-      isScrollingRef.current = true;
-    
-      searchInputRef.current?.blur();
-    
-      setTimeout(() => {
-        isScrollingRef.current = false;
-      }, 200);
+      searchInputRef.current?.blur(); // keyboard மட்டும் close
     };
   
     dropdown.addEventListener("scroll", handleDropdownScroll);
-    dropdown.addEventListener("touchmove", handleDropdownScroll);
-    dropdown.addEventListener("wheel", handleDropdownScroll);
   
     return () => {
       dropdown.removeEventListener("scroll", handleDropdownScroll);
-      dropdown.removeEventListener("touchmove", handleDropdownScroll);
-      dropdown.removeEventListener("wheel", handleDropdownScroll);
     };
-  }, [showQuickPanel]);
- 
+  }, [showQuickPanel, globalResults]);
   useEffect(() => {
     const onScroll = () => {
       searchInputRef.current?.blur();     // keyboard close
@@ -284,15 +269,8 @@ const filteredQuickTiles = QUICK_TILES.filter(tile =>
   value={searchQuery}
   onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
   onFocus={() => setShowQuickPanel(true)}
-  onBlur={(e) => {
-    const dropdown = dropdownRef.current;
-  
-    // 👇 if focus inside dropdown → close panna koodathu
-    if (dropdown && dropdown.contains(e.relatedTarget)) {
-      return;
-    }
-  
-    setTimeout(() => setShowQuickPanel(false), 200);
+  onBlur={() => {
+  setTimeout(() => setShowQuickPanel(false), 200);
   }}
   />
 <div
