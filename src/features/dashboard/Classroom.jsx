@@ -13,7 +13,7 @@ const Classroom = ({ handleMenuClick, activePage }) => {
   const [students, setStudents] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [attendance,setAttendanceData]=useState("");
-  
+  const [selectedSection, setSelectedSection] = useState(null);
   const [attendanceMap, setAttendanceMap] = useState({}); 
   // 🔥 Fetch classes
   useEffect(() => {
@@ -87,7 +87,7 @@ const Classroom = ({ handleMenuClick, activePage }) => {
   
       for (const c of classes) {
         for (const sec of c.sections) {
-          const key = `${selectedClass.name}_${sec}`;
+          const key = `${c.name}_${sec}`;
 
   
           const snap = await getDoc(
@@ -180,53 +180,190 @@ const Classroom = ({ handleMenuClick, activePage }) => {
 
       {loading ? (
         <p>Loading...</p>
-      ) : isSectionView && selectedClass ? (
-        <>
+        ) : isSectionView && selectedClass && !selectedSection ? (
+
+          <>
+            <h3 style={{ marginTop: 20 }}>
+              Class {selectedClass.name} - Sections
+            </h3>
         
+            <div className="class-grid">
+              {selectedClass.sections.map((sec, i) => {
+                const count = getStudentCount(selectedClass.name, sec);
+                const teacher = getClassTeacher(selectedClass, sec);
+                const key = `${selectedClass.name}_${sec}`;
+                const attendance = attendanceMap[key] || { present: 0, absent: 0 };
+        
+                return (
+                  <div
+                    key={i}
+                    className={`class-card card-${i % 6}`}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => setSelectedSection(sec)}
+                  >
+                    <h3>[{sec}]</h3>
+        
+                    <p>👨‍🎓 {count} Students</p>
+                    <p>✅ {attendance.present}</p>
+                    <p>❌ {attendance.absent}</p>
+        
+                    <p style={{ color: "#555" }}>
+                      👩‍🏫 {teacher}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+          ) : isSectionView && selectedClass && selectedSection ? (
 
-          <h3 style={{ marginTop: 20 }}>
-            Class {selectedClass.name} - Sections
-          </h3>
+            <>
+              <button onClick={() => setSelectedSection(null)}>
+                ← Back
+              </button>
+          
+              {/* 🔝 TEACHERS */}
+              <div style={{
+                display: "flex",
+                overflowX: "auto",
+                gap: 10,
+                margin: "20px 0"
+              }}>
+               <div style={{
+  display: "flex",
+  overflowX: "auto",
+  gap: 10,
+  margin: "20px 0"
+}}>
+  {teachers.filter(t =>
+  t.assignedClasses?.some(c =>
+    String(c.class) === String(selectedClass.name) &&
+    String(c.section).toUpperCase() === selectedSection
+  )
+)
+    .map((t, i) => (
+      <div key={i} style={{
+        minWidth: 100,
+        padding: 10,
+        background: "#fff",
+        borderRadius: 10,
+        textAlign: "center"
+      }}>
+       {t.photoURL ? (
+  <img
+    src={t.photoURL}
+    alt="teacher"
+    style={{
+      width: 50,
+      height: 50,
+      borderRadius: "50%",
+      objectFit: "cover",
+      margin: "0 auto 5px"
+    }}
+  />
+) : (
+  <div style={{
+    width: 50,
+    height: 50,
+    borderRadius: "50%",
+    background: "#ddd",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    margin: "0 auto 5px"
+  }}>
+    {t.name?.charAt(0)}
+  </div>
+)}
+        {t.name}
+      </div>
+    ))}
+</div>
+              </div>
+          
+              {/* 🔽 STUDENTS */}
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))",
+                gap: 15
+              }}>
+                {students
+                  .filter(s =>
+                    String(s.class) === String(selectedClass.name) &&
+                    String(s.section).toUpperCase() === selectedSection
+                  )
+                  .map((s, i) => (
+                    <div key={i} style={{
+                      background: "#fff",
+                      padding: 15,
+                      borderRadius: 12,
+                      textAlign: "center"
+                    }}>
+                    {s.photoURL ? (
+  <img
+    src={s.photoURL}
+    alt="student"
+    style={{
+      width: 60,
+      height: 60,
+      borderRadius: "50%",
+      objectFit: "cover",
+      margin: "0 auto 10px"
+    }}
+  />
+) : (
+  <div style={{
+    width: 60,
+    height: 60,
+    borderRadius: "50%",
+    background: "#ccc",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    margin: "0 auto 10px",
+    fontWeight: "bold"
+  }}>
+    {s.studentName?.charAt(0)}
+  </div>
+)}
+          
+                      <div>{s.studentName}</div>
+          
+                      {(() => {
+  const key = `${selectedClass.name}_${selectedSection}`;
+const todayData = attendance[key] || {};
+  const status = todayData[s.studentId];
 
-          <div className="class-grid">
-          {selectedClass.sections.map((sec, i) => {
-  const count = getStudentCount(selectedClass.name, sec);
-  const teacher = getClassTeacher(selectedClass, sec);
-  const key = `${selectedClass.name}_${sec}`;
-  const attendance = attendanceMap[key] || { present: 0, absent: 0 };
+  let bg = "#999";
+  let text = "Not Updated";
+
+  if (status === "present") {
+    bg = "green";
+    text = "Present";
+  } else if (status === "absent") {
+    bg = "red";
+    text = "Absent";
+  } else if (status === "late") {
+    bg = "orange";
+    text = "Late";
+  }
+
   return (
-    <div
-      key={i}
-      className={`class-card card-${i % 6}`}
-      style={{ cursor: "pointer" }}
-      onClick={() =>
-        handleMenuClick(
-          `classroom-${selectedClass.id}-section-${sec}`
-        )
-      }
-    >
-      <h3>[{sec}]</h3>
-
-      <p style={{ fontSize: 14, marginTop: 8 }}>
-        👨‍🎓 {count} Students
-      </p>
-      <p>✅ Present: {attendance.present}</p>
-<p>❌ Absent: {attendance.absent}</p>
-
-      <p
-        style={{
-          fontSize: 13,
-          marginTop: 4,
-          color: teacher === "Not Assigned" ? "red" : "#555"
-        }}
-      >
-        👩‍🏫 {teacher}
-      </p>
+    <div style={{
+      marginTop: 8,
+      padding: "5px 10px",
+      borderRadius: 6,
+      background: bg,
+      color: "#fff"
+    }}>
+      {text}
     </div>
   );
-})}
-          </div>
-        </>
+})()}
+                    </div>
+                  ))}
+              </div>
+            </>
       ) : (
         <div className="class-grid">
           {classes.map((c, index) => (

@@ -55,6 +55,7 @@
   const Parent = lazy(() => import("./Parent"));
   const Student = lazy(() => import("./Student"));
   const AccountCreation = lazy(() => import("./AccountCreation"));
+  const UniversalAttendance = lazy(() => import("./UniversalAttendance"));
   const Classroom = lazy (() => import("./Classroom"))
   const CombinedPage = lazy(() => import("./CombinedPage"));
   const Library = lazy(() => import("./Library"));
@@ -515,6 +516,7 @@
         upgrade: "payment",
           income: "income",       
           expenseList: "expenses",
+          account_creation: "account_creation",
           
         };
         
@@ -560,6 +562,10 @@
         }, [role]);
         
         const selectedClassId = localStorage.getItem("selectedClassId");
+
+  
+  console.log("activePage:", activePage);
+  console.log("isAdminOrSubAdmin:", isAdminOrSubAdmin);
       return (
         <>
       
@@ -705,11 +711,22 @@
               <FaCalendarAlt /> Timetable
             </li>
 
-            {role === "admin" && (
-              <li className={activePage === "attendance" ? "active" : ""} onClick={() => handleMenuClick("attendance")}>
-                <FaUserCheck /> Teacher Attendance
-              </li>
-            )}
+            {(role === "admin" || role === "master") && (
+  <li
+    className={activePage === "attendance" ? "active" : ""}
+    onClick={() => handleMenuClick("attendance")}
+  >
+    <FaUserCheck /> Teacher Attendance
+  </li>
+)}
+{(role === "admin" || role === "master") && (
+  <li
+    className={activePage === "universal-attendance" ? "active" : ""}
+    onClick={() => handleMenuClick("universal-attendance")}
+  >
+    <FaClipboardCheck /> Attendance
+  </li>
+)}
           </>
         )}
                   {(role === "teacher" || role === "parent" || viewAs === "parent") && (
@@ -721,11 +738,19 @@
                 <li className={activePage === "teacher-timetable" ? "active" : ""} onClick={() => handleMenuClick("teacher-timetable")}>
                 <FaCalendarAlt/> Teacher Timetable
               </li>
-              <li className={activePage === "teacher-attendance" ? "active" : ""}onClick={() => handleMenuClick("teacher-attendance")}>
+              <li className={activePage === "teacher-attendance" ? "active" : ""}onClick={() =>handleMenuClick("attendance")}>
               <FaUserCheck/>Students Attendance
               </li>
               </>
               )}
+            {(role === "admin" || role === "master") && (
+  <li
+  className={activePage === "teacher-attendance" ? "active" : ""}
+  onClick={() => handleMenuClick("teacher-attendance")}
+>
+  <FaUserCheck /> Students Attendance
+</li>
+)}
               {viewAs === "teacher" && (
     <button
       onClick={() => {
@@ -1021,7 +1046,7 @@
   )}
               {(role === "teacher" || role === "parent") &&
                 activePage === "studentDetails" && <StudentDetails />}
-
+           
               {isAdminOrSubAdmin && activePage === "timetable" && (
                 <AdminTimetable />
               )}
@@ -1040,12 +1065,13 @@
     activePage === "teacher-timetable" && (
       <TeacherTimetable teacherId={viewTeacherId} />
   )}
-  
-
-              
-            {isAdminOrSubAdmin && activePage === "attendance" && (
-                <Attendance adminUid={adminUid} />
-                )}
+{isAdminOrSubAdmin && activePage === "attendance" && (
+  <Attendance />
+)}
+{isAdminOrSubAdmin && activePage === "universal-attendance" && (
+  <UniversalAttendance />
+)}
+   
   {isAdminOrSubAdmin && activePage === "todays-absent" && (
     isPremium ? (
       <ShowTodaysAbsent adminUid={adminUid} setActivePage={setActivePage} />
@@ -1069,7 +1095,9 @@
       classId={activePage.replace("timetable-planner-", "")}
     />
   )}
-
+{isAdminOrSubAdmin && activePage === "teacher-attendance" && (
+  <TeacherAttendance />
+)}
 {(role === "teacher") &&
   activePage === "teacher-attendance" && (
     <TeacherAttendance />

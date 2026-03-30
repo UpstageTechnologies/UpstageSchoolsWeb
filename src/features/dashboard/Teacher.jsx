@@ -323,6 +323,7 @@ const [saved, setSaved] = useState(false);
         const updateData = {
           ...form,
           teacherId: form.teacherId,
+          photoURL: form.photoURL || "",
           updatedAt: Timestamp.now()
         };
   
@@ -360,6 +361,7 @@ await setDoc(
   {
     ...form,
     teacherId: newId,
+    photoURL: form.photoURL || "", 
     password,
     role: "teacher",
     isActive: true,

@@ -5,6 +5,7 @@ export const ROLE_ACCESS = {
         "home",
         "calendar",
         "applications",
+        "account_creation",
         "accounts",
         "approvals",
         "courses",
@@ -14,7 +15,8 @@ export const ROLE_ACCESS = {
         "parent",
         "office_staff",
         "timetable",
-        "attendance"
+        "attendance",
+
       ],
       people: ["admin", "teacher", "student", "parent", "office_staff"]
     },
@@ -23,6 +25,7 @@ export const ROLE_ACCESS = {
       pages: [
         "home",
         "calendar",
+        "account_creation",
         "accounts",
         "timetable",
         "attendance",

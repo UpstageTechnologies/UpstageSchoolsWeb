@@ -1,16 +1,10 @@
-  import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
   import { collection, doc, getDocs, setDoc, addDoc, Timestamp, deleteDoc , onSnapshot } from "firebase/firestore";
   import { db } from "../services/firebase";
   import "./SchoolCalendar.css";
 
   const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-  const EVENT_COLORS = {
-    holiday: "#ff3d71",
-    exam: "#2140df",
-    meeting: "#00bcd4",
-    birthday: "#ff9800"
-  };
+  
   const buildPrintWeeks = (year, month, events) => {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const firstDay = new Date(year, month, 1).getDay();
@@ -21,22 +15,30 @@
     for (let d = 1; d <= daysInMonth; d++) {
       const date = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
       const ev = events[date] || null;
+
+      const dayOfWeek = new Date(date).getDay();
+      const isSunday = dayOfWeek === 0;
+      
+      const finalEvent = ev || (isSunday ? {
+        title: "Sunday",
+        type: "holiday"
+      } : null);
   
       const prev = week[week.length - 1];
   
       if (
-        ev &&
+        finalEvent &&
         prev &&
         prev.event &&
-        prev.event.type === ev.type &&
-        prev.event.title === ev.title
+        prev.event.type === finalEvent.type &&
+        prev.event.title === finalEvent.title
       ) {
         prev.span += 1;   // 🔥 merge
       } else {
         week.push({
           day: d,
           span: 1,
-          event: ev
+          event: finalEvent
         });
       }
   
@@ -55,8 +57,44 @@
   };
   
 
-  export default function SchoolCalendar({ adminUid, role, onDateSelect , compact ,classId }) {
-   
+  export default function SchoolCalendar({ adminUid, role, onDateSelect , compact ,classId ,hidePrint}) {
+    const [eventType, setEventType] = useState("");
+const [eventSearch, setEventSearch] = useState("");
+const [showEventDropdown, setShowEventDropdown] = useState(false);
+const dropdownRef = useRef(null);
+const modalRef = useRef(null);
+useEffect(() => {
+  const handleClickOutside = (e) => {
+
+    // 🔻 DROPDOWN CLOSE
+    if (
+      dropdownRef.current &&
+      !dropdownRef.current.contains(e.target)
+    ) {
+      setShowEventDropdown(false);
+    }
+
+    // 🔻 MODAL CLOSE (only if dropdown already closed)
+    if (
+      modalRef.current &&
+      !modalRef.current.contains(e.target)
+    ) {
+      setEditingDate(null);
+    }
+  };
+
+  document.addEventListener("mousedown", handleClickOutside);
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, []);
+const [eventTypeList, setEventTypeList] = useState([
+  { name: "Holiday", color: "#ff3d71" },
+  { name: "Exam", color: "#2140df" },
+  { name: "Meeting", color: "#00bcd4" },
+  { name: "Birthday", color: "#ff9800" }
+]);
     const [currentDate, setCurrentDate] = useState(new Date());
     const [events, setEvents] = useState({});
     const [editingDate, setEditingDate] = useState(null);
@@ -65,6 +103,12 @@
     const todayStr = new Date().toLocaleDateString("en-CA");
     const [academicStart, setAcademicStart] = useState(null);
 const [academicEnd, setAcademicEnd] = useState(null);
+const [newEvent, setNewEvent] = useState({
+  title: "",
+  subtitle: "",
+  message: "",
+  type: "holiday"
+});
 useEffect(() => {
   if (!adminUid) return;
 
@@ -156,13 +200,45 @@ useEffect(() => {
 
     /* ADD EVENT */
     const addEvent = async (dateStr) => {
-      const title = prompt("Event name");
+     
+      const addEvent = async () => {
+        if (!newEvent.title) return alert("Title required");
+        const data = {
+          ...newEvent,
+          type: eventType.toLowerCase(), // 🔥 use this
+          date: editingDate,
+          createdAt: Timestamp.now()
+        };
+      
+        await setDoc(
+          doc(
+            db,
+            "users",
+            adminUid,
+            ...(classId
+              ? ["Classes", classId, "calendar", editingDate]
+              : ["calendar", editingDate])
+          ),
+          data,
+          { merge: true }
+        );
+      
+        setEvents(prev => ({ ...prev, [editingDate]: data }));
+        setEditingDate(null);
+      };
       if (!title) return;
 
       const type = prompt("Type: holiday / exam / meeting / birthday");
       if (!EVENT_COLORS[type]) return alert("Invalid type");
 
-      const data = { title, type, date: dateStr, createdAt: Timestamp.now() };
+      const data = { 
+        title,
+        subtitle,
+        message,
+        type,
+        date: dateStr,
+        createdAt: Timestamp.now()
+      };
       await setDoc(
         doc(
           db,
@@ -225,13 +301,16 @@ useEffect(() => {
       `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 
       const upcoming = useMemo(() => {
-        const yearStr = String(year);
-        const monthStr = String(month + 1).padStart(2, "0");
-      
-        return Object.values(events)
-          .filter(e =>
-            e?.date && e.date.startsWith(`${yearStr}-${monthStr}`)
-          )
+        return Object.entries(events)
+          .filter(([date, e]) => {
+            return date.startsWith(
+              `${year}-${String(month + 1).padStart(2, "0")}`
+            );
+          })
+          .map(([date, e]) => ({
+            ...e,
+            date // 🔥 force correct date
+          }))
           .sort((a, b) => a.date.localeCompare(b.date));
       }, [events, year, month]);
      
@@ -261,7 +340,25 @@ useEffect(() => {
                   style={{ gridColumn: `span ${cell.span}` }}
                 >
                   <strong>{cell.day}</strong>
-                  {cell.event && <div>{cell.event.title}</div>}
+                  {cell.event && (
+  <div className="print-event">
+    <div className="print-title">
+      {cell.event.title}
+    </div>
+
+    {cell.event.subtitle && (
+      <div className="print-subtitle">
+        {cell.event.subtitle}
+      </div>
+    )}
+
+    {cell.event.message && (
+      <div className="print-message">
+        {cell.event.message}
+      </div>
+    )}
+  </div>
+)}
                 </div>
               ) : (
                 <div key={j} />
@@ -290,12 +387,14 @@ useEffect(() => {
   </h3>
 
   <div className="sc-header-actions">
+  {!hidePrint && (
   <button
-  className="sc-icon-btn sc-print-btn"
-  onClick={() => window.print()}
->
-  🖨️
-</button>
+    className="sc-icon-btn sc-print-btn"
+    onClick={() => window.print()}
+  >
+    🖨️
+  </button>
+)}
 
 
 
@@ -326,6 +425,15 @@ useEffect(() => {
             const day = i + 1;
             const dateStr = formatDate(day);
             const ev = events[dateStr];
+            const dayOfWeek = new Date(dateStr).getDay();
+const isSunday = dayOfWeek === 0;
+const finalEvent = ev || (isSunday ? {
+  title: "Sunday",
+  type: "holiday"
+} : null);
+const typeObj = eventTypeList.find(
+  t => t.name.toLowerCase() === finalEvent?.type
+);
             const dateObj = new Date(dateStr);
 
             const isOutside =
@@ -343,17 +451,50 @@ useEffect(() => {
               style={
                 isOutside
                   ? { opacity: 0.3, pointerEvents: "none" }
-                  : ev
-                  ? { background: EVENT_COLORS[ev.type], color: "#fff" }
+                  : finalEvent
+                  ? { background: typeObj?.color || "#ff3d71", color: "#fff" }
                   : {}
               }
               onClick={() => !isOutside && onDateSelect?.(dateStr)}
-              onDoubleClick={() =>
-                !isOutside && (ev ? setEditingDate(dateStr) : addEvent(dateStr))
-              }
+              onDoubleClick={() => {
+                if (isOutside) return;
+              
+                if (ev) {
+                  setNewEvent(ev);
+                } else {
+                  setNewEvent({
+                    title: "",
+                    subtitle: "",
+                    message: "",
+                    type: "holiday"
+                  });
+                }
+              
+                setEditingDate(dateStr);
+              }}
             >
                 <span>{day}</span>
-                {ev && <small>{ev.title}</small>}
+                {finalEvent && (
+  <div className="event-box">
+    <small className="event-title">{finalEvent.title}</small>
+
+    <div className="event-tooltip">
+      <div className="tooltip-title">{finalEvent.title}</div>
+
+      {finalEvent.subtitle && (
+        <div className="tooltip-subtitle">
+          {finalEvent.subtitle}:
+        </div>
+      )}
+
+      {finalEvent.message && (
+        <div className="tooltip-message">
+          {finalEvent.message}
+        </div>
+      )}
+    </div>
+  </div>
+)}
               </div>
             );
           })}
@@ -363,15 +504,50 @@ useEffect(() => {
           <div className="sc-upcoming">
             <h4>Upcoming</h4>
 
-            {upcoming.map((e, i) => (
-              <div key={i} className="sc-up-item">
-                <span className="dot" style={{ background: EVENT_COLORS[e.type] }} />
-                <div>
-                  <strong>{e.title}</strong>
-                  <p>{e.date}</p>
-                </div>
-              </div>
-            ))}
+            {upcoming.map((e, i) => {
+  const typeObj = eventTypeList.find(
+    t => t.name.toLowerCase() === e.type
+  );
+
+  return (
+    <div key={i} className="sc-up-item">
+
+      {/* 🎨 COLOR DOT */}
+      <span
+        className="dot"
+        style={{ background: typeObj?.color || "#999" }}
+      />
+
+      <div className="up-content">
+
+        {/* 🟣 TITLE */}
+        <div className="up-title">
+          {e.title}
+        </div>
+
+        {/* 🟪 SUBTITLE */}
+        {e.subtitle && (
+          <div className="up-subtitle">
+            {e.subtitle}:
+          </div>
+        )}
+
+        {/* 📜 MESSAGE */}
+        {e.message && (
+          <div className="up-message">
+            {e.message}
+          </div>
+        )}
+
+        {/* 📅 DATE */}
+        <div className="up-date">
+          {e.date}
+        </div>
+
+      </div>
+    </div>
+  );
+})}
           </div>
         )}
 
@@ -382,47 +558,129 @@ useEffect(() => {
 
         {/* EDIT POPUP */}
         {editingDate && (
-          <div className="sc-modal">
-            <div className="sc-modal-box">
-              <h4>Edit Event</h4>
+  <div className="sc-modal">
+    <div className="sc-modal-box" ref={modalRef}>
+      <h4>Edit Event</h4>
 
-              <input
-                value={events[editingDate].title}
-                onChange={e =>
-                  setEvents(prev => ({
-                    ...prev,
-                    [editingDate]: { ...prev[editingDate], title: e.target.value }
-                  }))
-                }
-              />
+      {/* TITLE */}
+      <input
+        placeholder="Title"
+        value={events[editingDate]?.title || ""}
+        onChange={e =>
+          setEvents(prev => ({
+            ...prev,
+            [editingDate]: {
+              ...prev[editingDate],
+              title: e.target.value
+            }
+          }))
+        }
+      />
 
-              <select
-                value={events[editingDate].type}
-                onChange={e =>
-                  setEvents(prev => ({
-                    ...prev,
-                    [editingDate]: { ...prev[editingDate], type: e.target.value }
-                  }))
-                }
-              >
-                <option value="holiday">Holiday</option>
-                <option value="exam">Exam</option>
-                <option value="meeting">Meeting</option>
-                <option value="birthday">Birthday</option>
-              </select>
+      {/* SUBTITLE */}
+      <input
+        placeholder="Subtitle"
+        value={events[editingDate]?.subtitle || ""}
+        onChange={e =>
+          setEvents(prev => ({
+            ...prev,
+            [editingDate]: {
+              ...prev[editingDate],
+              subtitle: e.target.value
+            }
+          }))
+        }
+      />
 
-              <div className="sc-actions">
-                <button onClick={saveEdit}>Save</button>
+      {/* MESSAGE */}
+      <textarea
+        placeholder="Message"
+        value={events[editingDate]?.message || ""}
+        onChange={e =>
+          setEvents(prev => ({
+            ...prev,
+            [editingDate]: {
+              ...prev[editingDate],
+              message: e.target.value
+            }
+          }))
+        }
+      />
+<div className="student-dropdown" ref={dropdownRef}>
 
-                <button style={{ background: "#e74c3c", color: "#fff" }} onClick={deleteEvent}>
-                  Delete
-                </button>
+<input
+  placeholder="Event Type"
+  value={eventType || eventSearch}
+  onChange={e => {
+    setEventSearch(e.target.value);
+    setEventType("");
+    setShowEventDropdown(true);
+  }}
+  onFocus={() => setShowEventDropdown(true)}
+/>
 
-                <button onClick={() => setEditingDate(null)}>Cancel</button>
-              </div>
-            </div>
-          </div>
-        )}
+{showEventDropdown && (
+  <div className="student-dropdown-list">
+
+    {eventTypeList
+      .filter(t =>
+        t.name.toLowerCase().includes(eventSearch.toLowerCase())
+      )
+      .map((t, i) => (
+        <div
+          key={i}
+          className="student-option"
+          onClick={() => {
+            setEventType(t.name);
+            setEventSearch("");
+            setShowEventDropdown(false);
+          }}
+        >
+          <span
+            className="dot"
+            style={{ background: t.color }}
+          />
+          {t.name}
+        </div>
+      ))}
+
+    {/* ➕ ADD NEW TYPE */}
+    {eventSearch && (
+      <div
+        className="student-option"
+        style={{ color: "#2563eb" }}
+        onClick={() => {
+          const newType = eventSearch;
+
+          // 🔥 random color OR default yellow
+          const newColor = "#facc15"; // yellow
+
+          setEventTypeList(prev => [
+            ...prev,
+            { name: newType, color: newColor }
+          ]);
+
+          setEventType(newType);
+          setEventSearch("");
+          setShowEventDropdown(false);
+        }}
+      >
+        ➕ Add "{eventSearch}"
+      </div>
+    )}
+
+  </div>
+)}
+</div>
+
+      <div className="sc-actions">
+        <button onClick={saveEdit}>Save</button>
+        <button onClick={deleteEvent}>Delete</button>
+        <button onClick={() => setEditingDate(null)}>Cancel</button>
+      </div>
+    </div>
+  </div>
+)}
       </div>
       </>
     );

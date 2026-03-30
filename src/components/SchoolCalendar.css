@@ -56,6 +56,7 @@
   ===================================================== */
   .sc-grid {
     display: grid;
+    overflow: visible;
     grid-template-columns: repeat(7, 1fr);
     gap: 6px;
   }
@@ -82,7 +83,7 @@
     text-align: center;
     transition: all 0.2s ease;
   
-    overflow: hidden;        /* 🔥 important */
+    overflow: visible;        /* 🔥 important */
     outline: none;
     border: none;
   }
@@ -250,57 +251,166 @@
       height: 44px;
     }
   }
-  /* =======================
-   EDIT MODAL
-======================= */
+ /* 🔥 MODAL BACKDROP */
 .sc-modal {
   position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.35);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 999;
 }
 
+/* 💎 MODAL BOX */
 .sc-modal-box {
   background: #fff;
+  padding: 24px;
   border-radius: 16px;
-  padding: 16px;
-  width: 360px;
-  max-width: 95%;
-  box-shadow: 0 18px 40px rgba(0,0,0,.18);
+  width: 340px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+  animation: fadeInScale 0.25s ease;
 }
 
+/* ✨ TITLE */
 .sc-modal-box h4 {
-  margin-bottom: 10px;
+  margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
 }
 
+/* 🧾 INPUT + TEXTAREA */
 .sc-modal-box input,
-.sc-modal-box select {
+.sc-modal-box textarea {
   width: 100%;
-  padding: 10px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
   border-radius: 10px;
-  border: 1px solid #ddd;
-  margin-bottom: 10px;
+  border: 1px solid #e5e7eb;
+  outline: none;
+  font-size: 14px;
+  transition: all 0.2s ease;
 }
 
-/* buttons */
-.sc-actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+/* 🔥 HOVER + FOCUS PURPLE */
+.sc-modal-box input:focus,
+.sc-modal-box textarea:focus {
+  border-color: rgba(124,58,237,0.9);
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.15);
 }
 
-.sc-actions button {
-  flex: 1;
-  padding: 10px;
-  border-radius: 12px;
-  border: none;
-  font-weight: 700;
+/* ✍️ TEXTAREA HEIGHT */
+.sc-modal-box textarea {
+  min-height: 80px;
+  resize: none;
+}
+
+/* 🔽 DROPDOWN */
+.student-dropdown input {
   cursor: pointer;
 }
 
+/* 📜 DROPDOWN LIST */
+.student-dropdown-list {
+  border-radius: 10px;
+  margin-top: 4px;
+  background: #fff;
+  border: 1px solid #eee;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+/* 🔘 OPTION */
+.student-option {
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+
+/* 🔥 OPTION HOVER */
+.student-option:hover {
+  background: rgba(124,58,237,0.08);
+}
+
+/* 🎨 COLOR DOT */
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+/* 🔘 BUTTON AREA */
+.sc-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  gap: 8px;
+}
+
+/* 💜 PRIMARY BUTTON */
+.sc-actions button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+/* 💜 SAVE BUTTON */
+.sc-actions button:first-child {
+  background: rgba(124,58,237,0.9);
+  color: #fff;
+}
+
+/* 🔥 SAVE HOVER */
+.sc-actions button:first-child:hover {
+  background: rgba(124,58,237,1);
+  transform: translateY(-1px);
+}
+
+/* ❌ DELETE BUTTON */
+.sc-actions button:nth-child(2) {
+  background: #ef4444;
+  color: #fff;
+}
+
+.sc-actions button:nth-child(2):hover {
+  background: #dc2626;
+}
+
+/* ⚪ CANCEL BUTTON */
+.sc-actions button:last-child {
+  background: #f3f4f6;
+  color: #111;
+}
+
+.sc-actions button:last-child:hover {
+  background: #e5e7eb;
+}
+
+/* ✨ ANIMATION */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
 @media (max-width: 480px) {
 
   .sc-modal-box {
@@ -664,4 +774,107 @@
 
 .sc-calendar.compact .sc-footer {
   display: none;
+}
+.sub {
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+textarea {
+  min-height: 80px;
+  resize: none;
+}
+/* 📦 EVENT BOX */
+.event-box {
+  position: relative;
+  display: inline-block;
+}
+
+/* 🧾 TITLE (calendar view) */
+.event-title {
+  font-size: 11px;
+  font-weight: 600;
+  display: block;
+}
+
+/* 🪄 TOOLTIP (hidden default) */
+.event-tooltip {
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+
+  background: #fff;
+  color: #111;
+  padding: 10px;
+  border-radius: 10px;
+
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  font-size: 12px;
+
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  z-index: 9999;
+}
+
+/* 🔥 SHOW ON HOVER */
+.event-box:hover .event-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-4px);
+}
+
+/* 🟣 TITLE CENTER */
+.tooltip-title {
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+/* 🟪 SUBTITLE LEFT */
+.tooltip-subtitle {
+  font-weight: 600;
+  color: rgba(124,58,237,0.9); /* your purple */
+  margin-bottom: 4px;
+}
+
+/* 📜 MESSAGE */
+.tooltip-message {
+  font-weight: 400;
+  line-height: 1.4;
+  color: #374151;
+}
+
+/* 🔺 SMALL ARROW */
+.event-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: #fff transparent transparent transparent;
+}
+/* 🖨️ PRINT EVENT STYLING */
+
+.print-event {
+  font-size: 10px;
+  margin-top: 2px;
+}
+
+.print-title {
+  font-weight: 700;
+}
+
+.print-subtitle {
+  font-weight: 600;
+  color: #7c3aed; /* purple */
+}
+
+.print-message {
+  font-weight: 400;
+  color: #444;
+  line-height: 1.2;
 }

@@ -120,6 +120,7 @@ const QUICK_TILES = [
   { title: "Calendar", page: "calendar" },
   { title: "Applications", page: "applications" },
   { title: "Accounts", page: "accounts" },
+  { title: "Account Creation", page: "account_creation" },
   { title: "Fees", page: "fees" },
   { title: "Income", page: "income" },
   { title: "Expenses", page: "expenses" },

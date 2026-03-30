@@ -201,6 +201,7 @@ const [saved, setSaved] = useState(false);
           const updateData = {
             ...form,
             studentId: idTrim,
+            photoURL: form.photoURL || "",   // ✅ ADD THIS
             updatedAt: Timestamp.now()
           };
     
@@ -237,6 +238,7 @@ await setDoc(
   {
     ...form,
     studentId: newId,
+    photoURL: form.photoURL || "",   // ✅ ADD THIS
     isActive: true,
     createdAt: Timestamp.now()
   }

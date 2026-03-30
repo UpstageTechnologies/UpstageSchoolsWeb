@@ -386,7 +386,8 @@ const parentId = localStorage.getItem("parentDocId");
         <SchoolCalendar
     adminUid={adminUid}
     role={effectiveRole}
-    compact={true}   // 👈 view only mode
+    compact={true} 
+    hidePrint={true}  // 👈 view only mode
   />
 </div>
 
