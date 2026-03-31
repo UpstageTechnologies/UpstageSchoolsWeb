@@ -7,7 +7,6 @@ import "../dashboard_styles/courses.css";
 const Classroom = ({ handleMenuClick, activePage }) => {
   const adminUid =
     auth.currentUser?.uid || localStorage.getItem("adminUid");
-
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [students, setStudents] = useState([]);
@@ -88,8 +87,6 @@ const Classroom = ({ handleMenuClick, activePage }) => {
       for (const c of classes) {
         for (const sec of c.sections) {
           const key = `${c.name}_${sec}`;
-
-  
           const snap = await getDoc(
             doc(db, "users", adminUid, "attendance", key, "dates", today)
           );
@@ -218,9 +215,7 @@ const Classroom = ({ handleMenuClick, activePage }) => {
           ) : isSectionView && selectedClass && selectedSection ? (
 
             <>
-              <button onClick={() => setSelectedSection(null)}>
-                ← Back
-              </button>
+            
           
               {/* 🔝 TEACHERS */}
               <div style={{

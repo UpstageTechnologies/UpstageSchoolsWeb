@@ -10,7 +10,7 @@ import {
 import { db } from "../../services/firebase";
 import "../dashboard_styles/Attendance.css";
 
-export default function TeacherAttendance() {
+export default function TeacherAttendance({globalSearch}) {
 
   const adminUid = localStorage.getItem("adminUid");
 
@@ -28,7 +28,7 @@ export default function TeacherAttendance() {
   const [date, setDate] = useState(
     new Date().toISOString().substring(0, 10)
   );
-
+   
   /* 1️⃣ LOAD TEACHERS */
   useEffect(() => {
     async function loadTeachers() {
@@ -58,9 +58,16 @@ export default function TeacherAttendance() {
       );
 
       if (todayDoc.exists()) {
-        setRecords(todayDoc.data().records || {});
-        setLateTimes(todayDoc.data().lateTimes || {});
-      } else {
+        const saved = todayDoc.data().records || {};
+      
+        const merged = {};
+      
+        teachers.forEach(t => {
+          merged[t.id] = saved[t.id] || "";
+        });
+      
+        setRecords(merged);
+      }else {
         const init = {};
         teachers.forEach(t => (init[t.id] = ""));
         setRecords(init);
@@ -125,7 +132,11 @@ export default function TeacherAttendance() {
       alert("❌ Save failed — check console");
     }
   }
-
+  const filteredTeachers = teachers.filter((t) =>
+  `${t.name || ""} ${t.teacherId || ""} ${t.assignedClasses?.[0]?.class || ""} ${t.assignedClasses?.[0]?.section || ""}`
+    .toLowerCase()
+    .includes(globalSearch?.toLowerCase() || "")
+);
   return (
     <div className="tt-container">
       <h2 className="tt-title">Teacher Attendance</h2>
@@ -163,7 +174,7 @@ export default function TeacherAttendance() {
           </thead>
 
           <tbody>
-            {teachers.map(t => (
+            {filteredTeachers.map(t => (
               <React.Fragment key={t.id}>
                 <tr>
                   <td data-label="Name">{t.name}</td>

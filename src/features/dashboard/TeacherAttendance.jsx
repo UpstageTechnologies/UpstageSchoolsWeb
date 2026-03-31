@@ -10,27 +10,38 @@
   import { db } from "../../services/firebase";
   import "../dashboard_styles/Attendance.css";
 
-  export default function TeacherAttendance({ teacherId }) {
+  export default function TeacherAttendance({ teacherId, 
+    globalSearch,
+    selectedClass,
+  selectedSection }) {
     console.log("✅ PAGE:", "TeacherAttendance");
     const adminUid   = localStorage.getItem("adminUid");
     const teacherIdLocal =
     teacherId || localStorage.getItem("teacherId");
 
     const [assigned, setAssigned] = useState(null);
-
+    const [classes, setClasses] = useState([]);
     const [students, setStudents] = useState([]);
+    const filteredStudents = students.filter((s) => {
+
+      const matchSearch =
+        `${s.studentName || ""} ${s.studentId || ""}`
+          .toLowerCase()
+          .includes(globalSearch?.toLowerCase() || "");
+    
+      const matchClass = selectedClass
+        ? s.class === selectedClass
+        : true;
+    
+      const matchSection = selectedSection
+        ? s.section === selectedSection
+        : true;
+    
+      return matchSearch && matchClass && matchSection;
+    });
     const [records, setRecords]   = useState({});
     const [lateTimes, setLateTimes] = useState({});
     
-const [sections, setSections] = useState([]);
-const [classes, setClasses] = useState([]);
-
-useEffect(() => {
-  console.log("classes:", classes);
-}, [classes]);
-const [selectedClass, setSelectedClass] = useState(null);
-const [selectedSection, setSelectedSection] = useState(null);
-
 const role = localStorage.getItem("role");
 const isAdmin = role === "admin" || role === "master";
 useEffect(() => {
@@ -58,13 +69,7 @@ useEffect(() => {
 
   loadClasses();
 }, [adminUid]);
-function handleClassClick(c) {
-  setSelectedClass(c.name); 
-  setSections(c.sections);
-}
-function handleSectionClick(sec) {
-  setSelectedSection(sec);
-}
+
     const [date, setDate] = useState(
       new Date().toISOString().substring(0, 10)
     );
@@ -96,38 +101,48 @@ function handleSectionClick(sec) {
     /* 2️⃣ Load students + attendance + history */
     useEffect(() => {
       async function load() {
-        if (!assigned && (!selectedClass || !selectedSection)) return;
+     
 
         const sSnap = await getDocs(
           collection(db, "users", adminUid, "students")
         );
 
         const list = sSnap.docs
-          .map(d => ({ id: d.id, ...d.data() }))
-          .filter(s =>
-            assigned
-              ? String(s.class) === String(assigned.class) &&
-                String(s.section).toUpperCase() === String(assigned.section).toUpperCase()
-              : String(s.class) === String(selectedClass) &&
-                String(s.section).toUpperCase() === String(selectedSection).toUpperCase()
-          )
-          .sort((a, b) => a.studentName.localeCompare(b.studentName));
+  .map(d => ({ id: d.id, ...d.data() }))
+  .sort((a, b) => a.studentName.localeCompare(b.studentName));
 
         setStudents(list);
+        const classKey =
+        selectedClass && selectedSection
+          ? `${selectedClass}_${selectedSection}`
+          : "all_students";
+     
 
-        const classKey = assigned
-        ? `${assigned.class}_${assigned.section}`
-        : `${selectedClass}_${selectedSection}`;
-
-        /* today */
         const today = await getDoc(
           doc(db, "users", adminUid, "attendance", classKey, "dates", date)
         );
-
         if (today.exists()) {
           const data = today.data();
-          setRecords(data.records || {});
-          setLateTimes(data.lateTimes || {});
+        
+          const saved = data.records || {};
+          const merged = {};
+        
+          list.forEach(s => {
+            merged[s.id] = saved[s.id] || "";
+          });
+        
+          setRecords(merged);
+        
+          const savedLate = data.lateTimes || {};
+          const mergedLate = {};
+        
+          list.forEach(s => {
+            if (savedLate[s.id]) {
+              mergedLate[s.id] = savedLate[s.id];
+            }
+          });
+        
+          setLateTimes(mergedLate);
         } else {
           const init = {};
           list.forEach(s => (init[s.id] = ""));
@@ -146,7 +161,6 @@ function handleSectionClick(sec) {
           const y = d.toISOString().substring(0, 10);
           const day = String(d.getDate()).padStart(2, "0");
           labels.push(day);
-
           const past = await getDoc(
             doc(db, "users", adminUid, "attendance", classKey, "dates", y)
           );
@@ -172,55 +186,56 @@ function handleSectionClick(sec) {
 
       load();
     }, [assigned, date, adminUid, selectedClass, selectedSection]);
-
-    /* 3️⃣ SAVE */
-  async function saveAttendance() {
-    if (!assigned && (!selectedClass || !selectedSection)) return;
-
-    const classKey = assigned
-    ? `${assigned.class}_${assigned.section}`
-    : `${selectedClass}_${selectedSection}`;
-
-    try {
-
-      // ⭐ ensure parent attendance document exists
-      await setDoc(
-        doc(db, "users", adminUid, "attendance", classKey),
-        {
-          class: assigned?.class || selectedClass,
-          section: assigned?.section || selectedSection,
-          createdAt: Timestamp.now()
-        },
-        { merge: true }
-      );
-
-      // 📅 save selected date
-      await setDoc(
-        doc(db, "users", adminUid, "attendance", classKey, "dates", date),
-        {
-          date,
-          class: assigned?.class || selectedClass,
-          section: assigned?.section || selectedSection,
-          records,
-          lateTimes,
-          markedBy: teacherIdLocal,
-          updatedAt: Timestamp.now()
-        },
-        { merge: true }
-      );
-
-      alert("✅ Attendance saved");
-    } catch (err) {
-      console.error("SAVE ERROR:", err);
-      alert("❌ Failed to save attendance (check console).");
+    async function saveAttendance() {
+      try {
+        // 🔥 group students by class + section
+        const grouped = {};
+    
+        students.forEach((s) => {
+          const key = `${s.class}_${s.section}`;
+    
+          if (!grouped[key]) {
+            grouped[key] = {
+              records: {},
+              lateTimes: {}
+            };
+          }
+    
+          grouped[key].records[s.id] = records[s.id] || "";
+          
+          if (lateTimes[s.id]) {
+            grouped[key].lateTimes[s.id] = lateTimes[s.id];
+          }
+        });
+    
+        // 🔥 save each class separately
+        for (const classKey in grouped) {
+          await setDoc(
+            doc(db, "users", adminUid, "attendance", classKey, "dates", date),
+            {
+              date,
+              class: classKey.split("_")[0],
+              section: classKey.split("_")[1],
+              records: grouped[classKey].records,
+              lateTimes: grouped[classKey].lateTimes,
+              updatedAt: Timestamp.now()
+            },
+            { merge: true }
+          );
+        }
+    
+        alert("✅ Attendance Saved (Class Wise)");
+      } catch (err) {
+        console.error(err);
+        alert("❌ Save failed");
+      }
     }
-  }
 
 
     return (
       
       <div className="tt-container">
-  {isAdmin && !selectedClass && (
+ {false && (
   <div>
     {classes.length === 0 ? (
       <p>Loading classes...</p>
@@ -235,8 +250,7 @@ function handleSectionClick(sec) {
     )}
   </div>
 )}
-
-{isAdmin && selectedClass && !selectedSection && (
+{false && (
   <div>
     <h3>Select Section</h3>
     {sections.map(sec => (
@@ -246,13 +260,10 @@ function handleSectionClick(sec) {
     ))}
   </div>
 )}
-        <h2 className="tt-title">Teacher Attendance</h2>
-
-        {(assigned || (selectedClass && selectedSection)) && (
+        {true && (
           <>
             <h3>
-  Class {assigned?.class || selectedClass} — 
-  Section {assigned?.section || selectedSection}
+            All Students Attendance
 </h3>
 
             <input
@@ -288,7 +299,7 @@ function handleSectionClick(sec) {
                 </thead>
 
                 <tbody>
-                  {students.map(s => (
+                {filteredStudents.map(s => (
                     < React.Fragment key={s.id}>
                     <tr>
                       <td data-label="Name ">{s.studentName}</td>
@@ -299,15 +310,24 @@ function handleSectionClick(sec) {
                           {["present", "absent", "late"].map(st => (
                             <button
                               key={st}
-                              onClick={() => {
-                                setRecords({ ...records, [s.id]: st });
-
-                                if (st === "late") {
-                                  const t = prompt("Enter late time (HH:MM)", "00:00");
-                                  if (t) {
-                                    setLateTimes(prev => ({ ...prev, [s.id]: t }));
-                                  }
-                                }
+                              onClick={async () => {
+                                const updated = { ...records, [s.id]: st };
+                                setRecords(updated);
+                              
+                                const classKey =
+                                  selectedClass && selectedSection
+                                    ? `${selectedClass}_${selectedSection}`
+                                    : "all_students";
+                              
+                                await setDoc(
+                                  doc(db, "users", adminUid, "attendance", classKey, "dates", date),
+                                  {
+                                    records: updated,
+                                    lateTimes,
+                                    updatedAt: Timestamp.now()
+                                  },
+                                  { merge: true }
+                                );
                               }}
                               style={{
                                 padding: "6px 10px",

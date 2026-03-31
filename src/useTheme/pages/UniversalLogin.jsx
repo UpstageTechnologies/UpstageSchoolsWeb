@@ -65,6 +65,7 @@ const handleGoogleSignIn = async () => {
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
+  const selectedSchool = localStorage.getItem("selectedSchool") || "";
   useEffect(() => {
     if (!isFromChooseLogin) return;
   
@@ -221,7 +222,9 @@ const handleGoogleSignIn = async () => {
   
       <div className="ul-card">
   
-        <h1 className="ul-logo">LOGO</h1>
+      <h1 className="ul-logo">
+  {selectedSchool || "Your School"}
+</h1>
         <p className="ul-welcome">Hello 👋 Welcome!</p>
   
         <h2>Login</h2>

@@ -2,183 +2,230 @@ import React, { useEffect, useState } from "react";
 import {
   collection,
   getDocs,
-  setDoc,
   doc,
-  Timestamp,
-  getDoc
+  getDoc,
+  setDoc,
+  Timestamp
 } from "firebase/firestore";
 import { db } from "../../services/firebase";
+import "../dashboard_styles/Attendance.css";
 
-export default function OfficeStaffAttendance() {
+export default function OfficeStaffAttendance({ globalSearch }) {
   const adminUid = localStorage.getItem("adminUid");
+
+  const userId =
+    localStorage.getItem("adminUid") ||
+    localStorage.getItem("subAdminId");
 
   const [staffs, setStaffs] = useState([]);
   const [records, setRecords] = useState({});
+  const [lateTimes, setLateTimes] = useState({});
+  const [history, setHistory] = useState({});
+  const [dayLabels, setDayLabels] = useState([]);
+
   const [date, setDate] = useState(
     new Date().toISOString().substring(0, 10)
   );
 
-  /* ================= LOAD STAFF ================= */
+  /* 1️⃣ LOAD STAFF */
   useEffect(() => {
-    async function load() {
+    async function loadStaff() {
       if (!adminUid) return;
 
       const snap = await getDocs(
         collection(db, "users", adminUid, "office_staffs")
       );
 
-      const list = snap.docs.map(d => ({
-        id: d.id,
-        ...d.data()
-      }));
-
-      setStaffs(list);
-
-      // 🔥 init empty records
-      const init = {};
-      list.forEach(s => (init[s.id] = ""));
-      setRecords(init);
+      setStaffs(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     }
 
-    load();
+    loadStaff();
   }, [adminUid]);
 
-  /* ================= LOAD TODAY DATA ================= */
+  /* 2️⃣ LOAD ATTENDANCE + HISTORY */
   useEffect(() => {
-    async function loadToday() {
-      if (!adminUid) return;
+    async function loadAttendance() {
+      if (!adminUid || staffs.length === 0) return;
 
-      const ref = doc(
-        db,
-        "users",
-        adminUid,
-        "attendance",
-        "office_staff",
-        "dates",
-        date
+      // ⭐ Today
+      const todayDoc = await getDoc(
+        doc(db, "users", adminUid, "officeStaffAttendance", date)
       );
 
-      const snap = await getDoc(ref);
-
-      if (snap.exists()) {
-        setRecords(snap.data().records || {});
+      if (todayDoc.exists()) {
+        setRecords(todayDoc.data().records || {});
+        setLateTimes(todayDoc.data().lateTimes || {});
+      } else {
+        const init = {};
+        staffs.forEach(s => (init[s.id] = ""));
+        setRecords(init);
+        setLateTimes({});
       }
+
+      // ⭐ Previous 7 days
+      const hist = {};
+      const labels = [];
+
+      for (let i = 1; i <= 7; i++) {
+        const d = new Date(date);
+        d.setDate(d.getDate() - i);
+
+        const y = d.toISOString().substring(0, 10);
+        labels.push(String(d.getDate()).padStart(2, "0"));
+
+        const past = await getDoc(
+          doc(db, "users", adminUid, "officeStaffAttendance", y)
+        );
+
+        if (past.exists()) {
+          const rec = past.data().records || {};
+          staffs.forEach(s => {
+            if (!hist[s.id]) hist[s.id] = [];
+            hist[s.id].push(rec[s.id] || null);
+          });
+        } else {
+          staffs.forEach(s => {
+            if (!hist[s.id]) hist[s.id] = [];
+            hist[s.id].push(null);
+          });
+        }
+      }
+
+      Object.keys(hist).forEach(k => hist[k].reverse());
+      setHistory(hist);
+      setDayLabels(labels.reverse());
     }
 
-    loadToday();
-  }, [date, adminUid]);
+    loadAttendance();
+  }, [staffs, date, adminUid]);
 
-  /* ================= SAVE ================= */
+  /* 3️⃣ SAVE */
   async function saveAttendance() {
     try {
       await setDoc(
-        doc(
-          db,
-          "users",
-          adminUid,
-          "attendance",
-          "office_staff",
-          "dates",
-          date
-        ),
+        doc(db, "users", adminUid, "officeStaffAttendance", date),
         {
-          date,
-          type: "office_staff",
           records,
-          updatedAt: Timestamp.now()
+          lateTimes,
+          updatedAt: Timestamp.now(),
+          markedBy: userId,
+          date
         },
         { merge: true }
       );
 
-      alert("✅ Staff Attendance Saved");
-    } catch (err) {
-      console.error(err);
+      alert("✅ Office staff attendance saved");
+    } catch (e) {
+      console.error(e);
       alert("❌ Save failed");
     }
   }
 
-  /* ================= UI ================= */
-  return (
-    <div style={{ padding: 20 }}>
-      <h3>Office Staff Attendance</h3>
+  const filteredStaffs = staffs.filter(s =>
+    `${s.name || ""}`
+      .toLowerCase()
+      .includes(globalSearch?.toLowerCase() || "")
+  );
 
-      {/* DATE */}
+  return (
+    <div className="tt-container">
+      <h2 className="tt-title">Office Staff Attendance</h2>
+
       <input
         type="date"
         value={date}
         onChange={e => setDate(e.target.value)}
-        style={{ marginBottom: 20 }}
       />
 
-      {/* STAFF LIST */}
-      {staffs.map(s => {
-        const status = records[s.id];
-
-        return (
-          <div
-            key={s.id}
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 10,
-              padding: 10,
-              border: "1px solid #ddd",
-              borderRadius: 8
-            }}
-          >
-            {/* NAME */}
-            <span>{s.name || "No Name"}</span>
-
-            {/* STATUS BUTTONS */}
-            <div>
-              {["present", "absent"].map(st => (
-                <button
-                  key={st}
-                  onClick={() =>
-                    setRecords({ ...records, [s.id]: st })
-                  }
-                  style={{
-                    marginLeft: 5,
-                    padding: "5px 10px",
-                    borderRadius: 6,
-                    border: "1px solid #ccc",
-                    background:
-                      status === st
-                        ? st === "present"
-                          ? "green"
-                          : "red"
-                        : "#eee",
-                    color: status === st ? "#fff" : "#000",
-                    fontWeight: 600
-                  }}
-                >
-                  {st}
-                </button>
-              ))}
-            </div>
-          </div>
-        );
-      })}
-
-      {/* SAVE BUTTON */}
       {staffs.length > 0 && (
-        <button
-          onClick={saveAttendance}
-          style={{
-            marginTop: 20,
-            padding: "10px 20px",
-            borderRadius: 8,
-            border: "none",
-            background: "linear-gradient(90deg, #7c3aed, #2563eb)",
-            color: "#fff",
-            fontWeight: "bold",
-            cursor: "pointer"
-          }}
-        >
-          Save Attendance
-        </button>
+        <table className="attendance-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Status</th>
+
+              <th colSpan={dayLabels.length} style={{ textAlign: "center" }}>
+                Previous 7 Days
+              </th>
+            </tr>
+
+            <tr>
+              <th></th><th></th>
+
+              {dayLabels.map((d, i) => (
+                <th key={i}>{d}</th>
+              ))}
+            </tr>
+          </thead>
+
+          <tbody>
+            {filteredStaffs.map(s => (
+              <tr key={s.id}>
+                <td>{s.name}</td>
+
+                <td>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    {["present", "absent", "late"].map(st => (
+                      <button
+                        key={st}
+                        onClick={() => {
+                          setRecords(prev => ({ ...prev, [s.id]: st }));
+
+                          if (st === "late") {
+                            const time = prompt("Late time HH:MM", "00:00");
+                            if (time) {
+                              setLateTimes(prev => ({
+                                ...prev,
+                                [s.id]: time
+                              }));
+                            }
+                          }
+                        }}
+                        style={{
+                          background:
+                            records[s.id] === st
+                              ? st === "present"
+                                ? "#4caf50"
+                                : st === "absent"
+                                ? "#e74c3c"
+                                : "#f1c40f"
+                              : "#fff",
+                          color: records[s.id] === st ? "#fff" : "#333",
+                          border: "1px solid #ccc",
+                          borderRadius: 6,
+                          padding: "6px 10px"
+                        }}
+                      >
+                        {st}
+                      </button>
+                    ))}
+                  </div>
+                </td>
+
+                {/* Previous */}
+                {dayLabels.map((_, i) => {
+                  const st = (history[s.id] || [])[i];
+                  return (
+                    <td key={i} style={{ textAlign: "center" }}>
+                      {st === "present"
+                        ? "✔"
+                        : st === "absent"
+                        ? "✖"
+                        : st
+                        ? "L"
+                        : "—"}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
+
+      <button className="save-btn" onClick={saveAttendance}>
+        Save Attendance
+      </button>
     </div>
   );
 }

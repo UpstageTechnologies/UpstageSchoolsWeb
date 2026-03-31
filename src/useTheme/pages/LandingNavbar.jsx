@@ -2,7 +2,7 @@ import React from "react";
 import { FaPhoneAlt, FaEnvelope ,FaArrowLeft} from "react-icons/fa";
 import logo from "../../../src/assets/searchlogo.png";
 import { useNavigate } from "react-router-dom";
-export default function LandingNavbar({ showAbout = false, setShowAbout ,  showBack = true  , showApply = false  }) {
+export default function LandingNavbar({ showAbout = false, setShowAbout ,  showBack = true  , showApply = false ,hideAbout = false }) {
     const navigate = useNavigate();
     const handleBack = () => {
       if (showAbout && setShowAbout) {
@@ -239,8 +239,7 @@ export default function LandingNavbar({ showAbout = false, setShowAbout ,  showB
   >
     Apply Now
   </span>
-)}
-  {!showAbout && (
+)}{!hideAbout && !showAbout && (
     <span 
       className="about"
       onClick={() => setShowAbout(true)}

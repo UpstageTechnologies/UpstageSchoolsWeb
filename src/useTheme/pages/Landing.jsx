@@ -56,7 +56,7 @@ export default function Landing() {
   const navigate = useNavigate();
   return (
     <div className="intro-page">
-    <LandingNavbar showApply={true} setShowAbout={true} />
+    <LandingNavbar showApply={true} setShowAbout={true} hideAbout={true} />
        
         <div className="hero-left">
           <h1>
