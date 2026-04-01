@@ -23,6 +23,7 @@ const [classes, setClasses] = useState([]);
 const [appliedClass, setAppliedClass] = useState("");
 const [appliedSection, setAppliedSection] = useState("");
 const [statusFilter, setStatusFilter] = useState("");
+const [showAttendanceGuide, setShowAttendanceGuide] = useState(true);
 const selectedClassData = classes.find(
   c => c.name === selectedClass
 );
@@ -195,7 +196,33 @@ useEffect(() => {
   return (
     <div className="accountcreationtitle">
       <h2 className="page-title">Attendance</h2>
+      {showAttendanceGuide && (
+  <div className="guide-banner">
+    <p>
+      Manage attendance for all users from here.
 
+      • Mark Present, Absent, or Late for students, teachers, admin, and staff  
+      • Save attendance to keep records updated  
+      • Use search to quickly find users  
+      • Apply filters (status, class, section) to view specific data  
+
+      Try marking a records and click <strong>Finish</strong>.
+    </p>
+    <button
+  className="finish-btn"
+  onClick={() => {
+    setShowAttendanceGuide(false);
+
+    // 🔥 OPEN NEW POPUP
+    if (window.openIntroPopup) {
+      window.openIntroPopup("attendance_final");
+    }
+  }}
+>
+  Finish →
+</button>
+  </div>
+)}
       <div className="account-card">
 
         {/* TABS */}
@@ -325,4 +352,4 @@ onClick={() => {
       </div>
     </div>
   );
-} 
+}

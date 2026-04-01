@@ -5,7 +5,7 @@ import "../dashboard_styles/courses.css";
 import { FaArrowCircleRight, FaArrowRight } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 export default function Course({ handleMenuClick }) {
-
+  const [showCourseGuide, setShowCourseGuide] = useState(true);
   const adminUid =
     auth.currentUser?.uid || localStorage.getItem("adminUid");
 
@@ -37,7 +37,35 @@ export default function Course({ handleMenuClick }) {
   return (
     <div className="course-container">
       <h2 className="page-title">Courses</h2>
+      {showCourseGuide && (
+  <div className="guide-banner">
+    <p>
+      Plan and organize your school activities from here.
 
+      • Course Planner – Click and add subjects, topics, periods, and days based on your settings  
+      • Timetable Planner – Your subjects, periods, and assigned teachers will be used to create the timetable  
+      • Calendar Planner – Add class-wise schedules, events, and academic activities  
+
+      You can also print the calendar for easy reference.
+
+      Explore each planner and click <strong>Finish</strong>.
+    </p>
+
+    <button
+  className="finish-btn"
+  onClick={() => {
+    setShowCourseGuide(false);
+
+    // 🔥 OPEN ATTENDANCE INTRO POPUP
+    if (window.openIntroPopup) {
+      window.openIntroPopup("attendance");
+    }
+  }}
+>
+  Finish →
+</button>
+  </div>
+)}
       {loading ? (
         <p>Loading...</p>
       ) : (

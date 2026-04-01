@@ -4,8 +4,9 @@ import { db } from "../../../services/firebase";
 import "../../dashboard_styles/ac.css";
 import "../../dashboard_styles/accountwrapper.css"
 import "../../dashboard_styles/design.css"
+import "../../../components/IntroPopup.css"
 export default function ExpensesPage({ adminUid, setActivePage }) {
-
+  const [showInventoryGuide, setShowInventoryGuide] = useState(true);
   const [incomeList, setIncomeList] = useState([]);
   const [expenseList, setExpenseList] = useState([]);
   const [hoverItem, setHoverItem] = useState(null);
@@ -193,7 +194,30 @@ const todayProfit = todayIncome - todayExpense;
   return (
 
     <div className="account-wrapper"><>
-    
+    {showInventoryGuide && (
+  <div className="guide-banner">
+    <p>
+      Start by setting up your inventory.
+
+      Add items, track stock, and manage entries using journal.
+      Monitor income, expenses, and overall summary easily.
+
+      Click <strong>Next</strong> to continue.
+    </p>
+
+    <button
+  className="finish-btn"
+  onClick={() => {
+    setShowInventoryGuide(false);
+
+    // 🔥 DIRECT OPEN INVENTORY
+    setActivePage("inventory");
+  }}
+>
+  Next →
+</button>
+  </div>
+)}
       {!isOfficeStaff && (
         <>
         
@@ -378,6 +402,7 @@ style={{background:d.color}}
 
     </>
     </div>
+
   );
 }
  

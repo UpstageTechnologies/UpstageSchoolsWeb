@@ -11,6 +11,7 @@ import IncomeSection from "./Income/IncomeSection";
 import ExpenseSection from "./expense/ExpenseSection";
 import BillPage from "./BillPage";
 import "../../dashboard_styles/IE.css";
+import "../../../components/IntroPopup.css";
 import {  FaArrowLeft, FaTrash } from "react-icons/fa";
 export default function ProfitPage({adminUid,setActivePage,activePage = "",plan,trialAccess,trialExpiresAt,showUpgrade}) {
   const role = localStorage.getItem("role");
@@ -59,7 +60,7 @@ const [expenseSubName, setExpenseSubName] = useState(""); // Decoration
 const [expenseNameSearch, setExpenseNameSearch] = useState("");
 const [showExpenseNameDD, setShowExpenseNameDD] = useState(false);
 
-
+const [showJournalGuide, setShowJournalGuide] = useState(true);
 const expenseNames = [
   ...new Set(
     expenseList
@@ -1308,6 +1309,40 @@ const getTermPaidCount = (studentId, feeId) =>
       <>
     
 <h2 className="page-title">Accounts Dashboard</h2>
+{showJournalGuide && (
+  <div
+    style={{
+      background: "linear-gradient(90deg, rgba(124,58,237,0.9), rgba(91,33,182,0.9))",
+      color: "#fff",
+      padding: "14px 18px",
+      borderRadius: "12px",
+      marginBottom: "16px",
+      width: "100%",
+      minHeight: "120px"
+    }}
+  >
+    <p style={{ whiteSpace: "pre-line" }}>
+      Manage all your school finances here.
+
+      Entries are based on your Inventory setup.
+      Income and expenses are recorded and profit is calculated automatically.
+
+      Try adding a few entries and click Next.
+    </p>
+
+    <button
+      className="finish-btn"
+      onClick={() => {
+        setShowJournalGuide(false);
+      
+        // 🔥 GO TO INCOME PAGE
+        setActivePage("income");
+      }}
+    >
+      Next →
+    </button>
+  </div>
+)}
 {!isOfficeStaff && (
   <TodaySummary
     todayIncome={todayIncome}

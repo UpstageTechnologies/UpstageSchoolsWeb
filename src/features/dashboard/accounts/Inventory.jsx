@@ -25,7 +25,7 @@ const [showStaffType, setShowStaffType] = useState(false);
   const [teachers, setTeachers] = useState([]);
   const [teacherSearch, setTeacherSearch] = useState("");
   const [competitionClassSearch, setCompetitionClassSearch] = useState("");
- 
+  const [showInventoryGuide, setShowInventoryGuide] = useState(true);
 const [competitionList, setCompetitionList] = useState([]);
 const [competitionSearch, setCompetitionSearch] = useState("");
 const [showCompetitionDropdown, setShowCompetitionDropdown] = useState(false);
@@ -645,7 +645,32 @@ setNewStaffPhone("");
   
   return (
     <div className="inventry-wrapper">
+      
       <h2 className="page-title">Inventory</h2>
+      {showInventoryGuide && (
+  <div className="guide-banner">
+    <p>
+  Set up your inventory to manage school finances.
+
+  Add fees, salaries, and other entries.
+  Try creating a few records to explore the system.
+
+  Then click <strong>Next</strong> to continue.
+</p>
+
+<button
+  className="finish-btn"
+  onClick={() => {
+    setShowInventoryGuide(false);
+
+    // 🔥 GO TO JOURNAL ENTRY
+    setActivePage("profit");
+  }}
+>
+  Next →
+</button>
+  </div>
+)}
       <div className="section-card entries-card">
         <h3 className="section-title">Add Item</h3>
 

@@ -4,6 +4,7 @@ import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
 import "../../dashboard_styles/History.css";
 import "../../dashboard_styles/ios.css";
+import "../../../components/IntroPopup.css"
 import { FiChevronUp, FiChevronDown } from "react-icons/fi";
 import { FaBible, FaFileInvoice ,FaPrint } from "react-icons/fa";
 
@@ -36,7 +37,8 @@ const [tableSearch, setTableSearch] = useState("");
 const [allDates, setAllDates] = useState([]);
 const [allDatesFull, setAllDatesFull] = useState([]);
 const [currentPageIndexFull, setCurrentPageIndexFull] = useState(0);
-
+const [showExpenseGuide, setShowExpenseGuide] = useState(true);
+const [showIncomeGuide, setShowIncomeGuide] = useState(true);
 const currentDateFull = allDatesFull[currentPageIndexFull] || "";
 const [tableData, setTableData] = useState([]);
 const [oldTableData, setOldTableData] = useState([]);
@@ -873,12 +875,64 @@ const feeRows = React.useMemo(() => {
   return (
     <div className="income-wrapper">
 
- 
-
       <h2 className="page-title">
         {mode === "income" ? "Income Details" : "Expenses Details"}
       </h2>
-      
+      {mode === "income" && showIncomeGuide && (
+  <div className="guide-banner">
+    <p>
+      Manage all your school finances here.
+
+      All the entries you add here will be safely stored and organized.
+      Income entries will be tracked separately and used for calculations.
+
+      Based on these entries, you can view reports, track performance,
+      and understand your overall financial status.
+
+      Check few entries and click <strong>Next</strong>.
+    </p>
+
+    <button
+      className="finish-btn"
+      onClick={() => {
+        setShowIncomeGuide(false);
+        setActivePage("expenses");
+      }}
+    >
+      Next →
+    </button>
+  </div>
+)}
+
+{mode === "expenses" && showExpenseGuide && (
+  <div className="guide-banner">
+    <p>
+      Track all your school expenses here.
+
+      Expenses will be recorded separately such as salaries,
+      competition costs, and other operational expenses.
+
+      This helps you clearly understand where your money is spent
+      and manage your school finances effectively.
+
+      Review a few entries and click <strong>Next</strong>.
+    </p>
+
+    <button
+  className="finish-btn"
+  onClick={() => {
+    setShowExpenseGuide(false);
+
+    // 🔥 NEXT STEP (Account Creation popup)
+    if (window.openIntroPopup) {
+      window.openIntroPopup("account_creation");
+    }
+  }}
+>
+  Finish →
+</button>
+  </div>
+)}
       {mode === "income" && (
         <>
          <div className="history-filters">

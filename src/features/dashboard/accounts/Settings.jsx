@@ -24,16 +24,21 @@ const [breakTimes, setBreakTimes] = useState([]);
 const [activeSection, setActiveSection] = useState("home");
 const [breakCount, setBreakCount] = useState("");
 const [breakDuration, setBreakDuration] = useState("");
-
+const [showCalendarGuide, setShowCalendarGuide] = useState(true);
 const [timingValidationError, setTimingValidationError] = useState("");
-
+const [showTimingGuide, setShowTimingGuide] = useState(true);
   const [saveStatus, setSaveStatus] = useState("");
   const [savedYear, setSavedYear] = useState(null);
   
   const [startDate, setStartDate] = useState("");
 const [endDate, setEndDate] = useState("");
 const [saving, setSaving] = useState(false);
-
+const [showClassGuide, setShowClassGuide] = useState(true);
+useEffect(() => {
+  if (localStorage.getItem("isDemoUser") === "true") {
+    setShowClassGuide(true);
+  }
+}, []);
 useEffect(() => {
   window.settingsSectionState = () => activeSection;
   window.resetSettingsSection = () => setActiveSection("home");
@@ -449,6 +454,27 @@ if (slotErrors.length > 0) {
   </div>
 )}
 {activeSection === "calendar" && (
+  <>{showCalendarGuide && (
+    <div className="guide-banner">
+      <p>
+        Set your Academic Year by selecting start and end dates.
+        This helps track attendance, timetable, and reports correctly.
+        Once done, click <strong>Next</strong>.
+      </p>
+  
+      <button
+        className="finish-btn"
+        onClick={() => {
+          setShowCalendarGuide(false);
+  
+          // 🔥 GO TO TIMING PAGE
+          setActiveSection("timing");
+        }}
+      >
+        Next →
+      </button>
+    </div>
+  )}
   <div className="settings-card">
       <h2 className="card-title">📅 School Schedule Calendar</h2>
  
@@ -501,7 +527,32 @@ if (slotErrors.length > 0) {
 )}
 
       </div>
+      </>
 )}{activeSection === "timing" && (
+  <>{showTimingGuide && (
+    <div className="guide-banner">
+      <p>
+        Configure your school daily schedule.
+  
+        Set school start & end time, define periods and breaks.
+        This will be used for timetable and attendance tracking.
+  
+        Once completed, click <strong>Next</strong>.
+      </p>
+  
+      <button
+        className="finish-btn"
+        onClick={() => {
+          setShowTimingGuide(false);
+  
+          // 🔥 GO BACK TO CLASSES
+          setActiveSection("classes");
+        }}
+      >
+        Next →
+      </button>
+    </div>
+  )}
   <div className="settings-card timing-card">
   <h2 className="card-title">🕒 School Schedule & Period Setup</h2>
 
@@ -685,7 +736,9 @@ if (slotErrors.length > 0) {
     {timeSaving ? "Saving..." : "Save Timing"}
   </button>
 </div>
+</>
 )}
+
 
 {validateTimeRanges().length === 0 &&
   generatePreviewTable().length > 0 && (
@@ -711,8 +764,32 @@ if (slotErrors.length > 0) {
         </tbody>
       </table>
     </div>
+    
 )}
 {activeSection === "classes" && (
+  <>{showClassGuide && (
+    <div className="guide-banner">
+      <p>
+        Setup your Classes & Sections to organize your school structure.
+        Add classes, sections, and subjects.  
+        Once done, click <strong>Finish Setup</strong>.
+      </p>
+      <button
+  className="finish-btn"
+  onClick={() => {
+    setShowClassGuide(false);
+
+    // 🔥 OPEN POPUP WITH TYPE
+    if (window.openIntroPopup) {
+      window.openIntroPopup("accounts");
+    }
+  }}
+>
+  Finish Setup →
+</button>
+    </div>
+  )}
+  
   <div className="settings-card">
         <h2 className="card-title">🏫 Classes</h2>
   
@@ -772,6 +849,7 @@ if (slotErrors.length > 0) {
       [c.id]: e.target.value
     })
   }
+  
 />
 
         <button
@@ -795,6 +873,7 @@ if (slotErrors.length > 0) {
           </div>
         )}
       </div>
+      </>
 )}
       </div>
 
@@ -1130,6 +1209,32 @@ input:focus {
     padding: 24px 16px;
     font-size: 16px;
   }
+}
+.guide-banner {
+  background: linear-gradient(
+    90deg,
+    rgba(124, 58, 237, 0.9),
+    rgba(91, 33, 182, 0.9)
+  );
+  color: #fff;
+  padding: 14px 18px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.finish-btn {
+  align-self: flex-start;
+  background: #fff;
+  color: #7c3aed; 
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
 }
 `;
   

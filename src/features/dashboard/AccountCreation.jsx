@@ -18,9 +18,38 @@ const [activeTab,setActiveTab] = useState("admin")
 const [globalSearch,setGlobalSearch]=useState("");
 const [sortField, setSortField] = useState("");
 const [sortDirection, setSortDirection] = useState("asc");
+const [showAccountGuide, setShowAccountGuide] = useState(true);
 return(
 <div className="accountcreationtitle">
 <h2 className="page-title">Account creation</h2>
+{showAccountGuide && (
+  <div className="guide-banner">
+    <p>
+      Manage all your school accounts from here.
+
+      You can create and manage Admin, Teacher, Parent,
+      Student, and Office Staff accounts easily.
+
+      • Add, edit, disable, or delete accounts  
+      • Use search and filters to quickly find users  
+      • View all account details in one place  
+
+      Try exploring the options and click <strong>Finish</strong>.
+    </p>
+    <button
+  className="finish-btn"
+  onClick={() => {
+    setShowAccountGuide(false);
+
+    if (window.openIntroPopup) {
+      window.openIntroPopup("planner"); // 🔥 NEXT FLOW
+    }
+  }}
+>
+  Finish →
+</button>
+  </div>
+)}
 <div className="account-card">
 <div className="accountcreationbuttons">
 

@@ -12,6 +12,7 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
    const [sortDirection, setSortDirection] = useState("desc");
    const [openMenuId, setOpenMenuId] = useState(null);
    const [showFilterList, setShowFilterList] = useState(false);
+   const [showHistoryGuide, setShowHistoryGuide] = useState(true);
   const filteredHistory = historyList.filter(h => {
     const entryType = h.entryType;
     const action =   h.action;
@@ -233,6 +234,30 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
   return (
     <div className="accounts-wrapper">
       <h2 className="page-title">History</h2>
+      {showHistoryGuide && (
+  <div className="guide-banner">
+   <p>
+  All your data is safely stored in History and will never be lost.
+
+  You can search, filter, and restore deleted records anytime using Undo.
+
+  Try exploring and click Finish.
+</p>
+
+    <button
+      className="finish-btn"
+      onClick={() => {
+        setShowHistoryGuide(false);
+
+        // 🔥 BACK TO DASHBOARD
+        window.setActivePageDirect &&
+          window.setActivePageDirect("home");
+      }}
+    >
+      Finish →
+    </button>
+  </div>
+)}
       <div className="history-filters">
   <button
     className={activeFilter==="all" ? "tab-btn active" : "tab-btn"}

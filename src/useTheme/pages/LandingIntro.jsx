@@ -92,6 +92,7 @@ export default function LandingIntro() {
         localStorage.removeItem("fromChooseLogin");
         localStorage.removeItem("prefillUser");
         localStorage.removeItem("prefillPass");
+        localStorage.setItem("isDemoUser", "true"); // 🔥 optional early set
         navigate("/choose-login");
       }}
     >

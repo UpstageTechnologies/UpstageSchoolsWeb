@@ -12,6 +12,7 @@
     import Navbar from "../../components/Navbar";
     import UpgradePopup from "../../components/UpgradePopup";
     import BackConfirm from "../../components/BackConfirm";
+    import IntroPopup from "../../components/IntroPopup";
     import SubDashboard from "./SubDashboard";
     import {
       FaUserCircle,FaArrowLeft,
@@ -60,7 +61,7 @@
   const CombinedPage = lazy(() => import("./CombinedPage"));
   const Library = lazy(() => import("./Library"));
     const Dashboard = () => {
-    
+      
       const [user, setUser] = useState(null);
       const [role, setRole] = useState(null);
       const [school, setSchool] = useState("");
@@ -77,6 +78,16 @@
       const [pageHistory, setPageHistory] = useState(["home"]);
       const [userMenuOpen, setUserMenuOpen] = useState(false);
       const [homeStats, setHomeStats] = useState(null);
+      const [showIntro, setShowIntro] = useState(false);
+      useEffect(() => {
+        if (!role) return;
+      
+        const isDemo = localStorage.getItem("isDemoUser");
+      
+        if (isDemo === "true") {
+          setShowIntro(true); // 🔥 always show
+        }
+      }, [role]);
       const [logo, setLogo] = useState(""); 
       const [adminsList, setAdminsList] = useState([]);
   const [officeStaffList, setOfficeStaffList] = useState([]);
@@ -249,7 +260,47 @@
           window.removeEventListener("enable-upgrade-popup", on);
         };
       }, []);
+      useEffect(() => {
+        window.openSettingsPage = () => {
+          setActivePage("settings");
+        };
       
+        window.openAccountsPage = () => {
+          setActivePage("accounts"); // 🔥 accounts dashboard
+        };
+      
+        window.openAccountCreationPage = () => {
+          setActivePage("account_creation"); // 🔥 account creation page
+        };
+      
+        window.openInventoryPage = () => {
+          setActivePage("inventory");
+        };
+        
+      }, []);
+      useEffect(() => {
+        window.openPlannerPage = () => {
+          setActivePage("courses"); // 🔥 your planner page name
+        };
+      }, []);
+     useEffect(() => {
+  window.openAttendancePage = () => {
+    setActivePage("universal-attendance"); // ✅ FIXED
+  };
+}, []);
+useEffect(() => {
+  window.setActivePageDirect = (page) => {
+    setActivePage(page);
+  };
+}, []);
+const [introType, setIntroType] = useState("default");
+
+useEffect(() => {
+  window.openIntroPopup = (type = "default") => {
+    setIntroType(type);   // 🔥 IMPORTANT
+    setShowIntro(true);
+  };
+}, []);
       useEffect(() => {
         const storedRole = localStorage.getItem("role");
 
@@ -550,16 +601,20 @@
         }, [role]);
         
         const adminUid = localStorage.getItem("adminUid");
-        useEffect(() => {
-          if (
-            role === "teacher" ||
-            role === "parent" ||
-            role === "admin" ||
-            role === "office_staff"
-          ) {
-            setActivePage("subdashboard");
-          }
-        }, [role]);
+       useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const open = params.get("open");
+
+  if (
+    role === "teacher" ||
+    role === "parent" ||
+    role === "admin" ||
+    role === "office_staff"
+  ) {
+    if (open === "settings") return; // ✅ stop override
+    setActivePage("subdashboard");
+  }
+}, [role]);
         
         const selectedClassId = localStorage.getItem("selectedClassId");
 
@@ -571,6 +626,12 @@
       
 
         <BackConfirm />
+        {showIntro && (
+  <IntroPopup
+    type={introType}   // 🔥 PASS HERE
+    onClose={() => setShowIntro(false)}
+  />
+)}
         <div
     style={{ background: "#F2F4F7" }}
     className={`dashboard-container 
