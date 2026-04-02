@@ -170,17 +170,9 @@ const filteredQuickTiles = QUICK_TILES.filter(tile =>
       const clickedInsideInput = searchInputRef.current?.contains(e.target);
       const clickedInsideDropdown = dropdownRef.current?.contains(e.target);
   
-     // 👉 input click → nothing
-if (clickedInsideInput) {
-  return;
-}
-
-// 👉 dropdown touch → keyboard மட்டும் close
-if (clickedInsideDropdown) {
-  searchInputRef.current?.blur(); // ✅ keyboard close
-  return;
-}
-
+      if (clickedInsideInput) return;
+      if (clickedInsideDropdown) return;
+  
       setShowQuickPanel(false);
       searchInputRef.current?.blur();
     };
@@ -252,9 +244,6 @@ if (clickedInsideDropdown) {
   value={searchQuery}
   onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
   onFocus={() => setShowQuickPanel(true)}
-  onBlur={() => {
-  setTimeout(() => setShowQuickPanel(false), 200);
-  }}
   />
 <div
   className="search-notify-icon"
@@ -322,7 +311,10 @@ if (clickedInsideDropdown) {
   )}
     </div>
   {(showQuickPanel || globalResults.length > 0) && (
- <div className="search-dropdown" ref={dropdownRef}>
+ <div className="search-dropdown" ref={dropdownRef}
+ onTouchStart={() => {
+  searchInputRef.current?.blur(); // 🔥 keyboard மட்டும் close
+}}>
   <div className="search-header">
   <span className="search-back" onClick={closeSearch}>
   ←
