@@ -34,9 +34,14 @@ const [showTimingGuide, setShowTimingGuide] = useState(true);
 const [endDate, setEndDate] = useState("");
 const [saving, setSaving] = useState(false);
 const [showClassGuide, setShowClassGuide] = useState(true);
+const isSkipped = localStorage.getItem("skipIntro") === "true";
 useEffect(() => {
-  if (localStorage.getItem("isDemoUser") === "true") {
-    setShowClassGuide(true);
+  const isSkipped = localStorage.getItem("skipIntro") === "true";
+
+  if (isSkipped) {
+    setShowCalendarGuide(false);
+    setShowTimingGuide(false);
+    setShowClassGuide(false);
   }
 }, []);
 useEffect(() => {

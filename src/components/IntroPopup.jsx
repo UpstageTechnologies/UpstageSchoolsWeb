@@ -133,6 +133,27 @@ Click Go to History to view all saved data.`,
     ? "Go to Accounts →"
     : "Go to Settings →"}
 </button>
+<button
+ onClick={() => {
+  localStorage.setItem("skipIntro", "true");
+
+  // 🔥 IMPORTANT
+  window.dispatchEvent(new Event("introSkipped"));
+
+  onClose();
+}}
+  style={{
+    marginTop: 10,
+    background: "transparent",
+    border: "none",
+    color: "#6b7280",
+    fontSize: 13,
+    cursor: "pointer",
+    textDecoration: "underline",
+  }}
+>
+  Skip Guidance
+</button>
         </div>
 
         <div className="intro-image">

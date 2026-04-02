@@ -14,6 +14,7 @@
     import BackConfirm from "../../components/BackConfirm";
     import IntroPopup from "../../components/IntroPopup";
     import SubDashboard from "./SubDashboard";
+    import FloatingRobot from "../dashboard/FloatingRobot"
     import {
       FaUserCircle,FaArrowLeft,
       FaUserGraduate,
@@ -83,9 +84,10 @@
         if (!role) return;
       
         const isDemo = localStorage.getItem("isDemoUser");
+        const isSkipped = localStorage.getItem("skipIntro") === "true";
       
-        if (isDemo === "true") {
-          setShowIntro(true); // 🔥 always show
+        if (isDemo === "true" && !isSkipped) {
+          setShowIntro(true);
         }
       }, [role]);
       const [logo, setLogo] = useState(""); 
@@ -294,13 +296,14 @@ useEffect(() => {
   };
 }, []);
 const [introType, setIntroType] = useState("default");
+window.openIntroPopup = (type = "default") => {
+  const isSkipped = localStorage.getItem("skipIntro") === "true";
 
-useEffect(() => {
-  window.openIntroPopup = (type = "default") => {
-    setIntroType(type);   // 🔥 IMPORTANT
-    setShowIntro(true);
-  };
-}, []);
+  if (isSkipped) return; 
+
+  setIntroType(type);
+  setShowIntro(true);
+};
       useEffect(() => {
         const storedRole = localStorage.getItem("role");
 
@@ -352,8 +355,6 @@ useEffect(() => {
           setPlan((data.plan || "basic").toLowerCase());
           setTrialAccess(data.trialAccess === true);
   setTrialExpiresAt(data.trialExpiresAt || null);
-
-
           localStorage.setItem("plan", (data.plan || "basic").toLowerCase());
 
 
@@ -624,7 +625,7 @@ useEffect(() => {
       return (
         <>
       
-
+      <FloatingRobot />
         <BackConfirm />
         {showIntro && (
   <IntroPopup

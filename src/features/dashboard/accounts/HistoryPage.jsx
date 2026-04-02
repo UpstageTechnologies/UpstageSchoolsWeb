@@ -12,7 +12,15 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
    const [sortDirection, setSortDirection] = useState("desc");
    const [openMenuId, setOpenMenuId] = useState(null);
    const [showFilterList, setShowFilterList] = useState(false);
-   const [showHistoryGuide, setShowHistoryGuide] = useState(true);
+   const isSkipped = localStorage.getItem("skipIntro") === "true";
+   const [showHistoryGuide, setShowHistoryGuide] = useState(!isSkipped);
+   useEffect(() => {
+    const isSkipped = localStorage.getItem("skipIntro") === "true";
+  
+    if (isSkipped) {
+      setShowHistoryGuide(false);
+    }
+  }, []);
   const filteredHistory = historyList.filter(h => {
     const entryType = h.entryType;
     const action =   h.action;

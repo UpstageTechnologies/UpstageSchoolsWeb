@@ -6,7 +6,15 @@ import "../../dashboard_styles/accountwrapper.css"
 import "../../dashboard_styles/design.css"
 import "../../../components/IntroPopup.css"
 export default function ExpensesPage({ adminUid, setActivePage }) {
-  const [showInventoryGuide, setShowInventoryGuide] = useState(true);
+  const isSkipped = localStorage.getItem("skipIntro") === "true";
+  const [showInventoryGuide, setShowInventoryGuide] = useState(!isSkipped);
+  useEffect(() => {
+    const isSkipped = localStorage.getItem("skipIntro") === "true";
+  
+    if (isSkipped) {
+      setShowInventoryGuide(false);
+    }
+  }, []);
   const [incomeList, setIncomeList] = useState([]);
   const [expenseList, setExpenseList] = useState([]);
   const [hoverItem, setHoverItem] = useState(null);

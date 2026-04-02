@@ -37,8 +37,17 @@ const [tableSearch, setTableSearch] = useState("");
 const [allDates, setAllDates] = useState([]);
 const [allDatesFull, setAllDatesFull] = useState([]);
 const [currentPageIndexFull, setCurrentPageIndexFull] = useState(0);
-const [showExpenseGuide, setShowExpenseGuide] = useState(true);
-const [showIncomeGuide, setShowIncomeGuide] = useState(true);
+const isSkipped = localStorage.getItem("skipIntro") === "true";
+const [showExpenseGuide, setShowExpenseGuide] = useState(!isSkipped);
+const [showIncomeGuide, setShowIncomeGuide] = useState(!isSkipped);
+useEffect(() => {
+  const isSkipped = localStorage.getItem("skipIntro") === "true";
+
+  if (isSkipped) {
+    setShowExpenseGuide(false);
+    setShowIncomeGuide(false);
+  }
+}, []);
 const currentDateFull = allDatesFull[currentPageIndexFull] || "";
 const [tableData, setTableData] = useState([]);
 const [oldTableData, setOldTableData] = useState([]);

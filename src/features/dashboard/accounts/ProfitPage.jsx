@@ -59,8 +59,15 @@ const [miscName, setMiscName] = useState("");       // Sports Day
 const [expenseSubName, setExpenseSubName] = useState(""); // Decoration
 const [expenseNameSearch, setExpenseNameSearch] = useState("");
 const [showExpenseNameDD, setShowExpenseNameDD] = useState(false);
+const isSkipped = localStorage.getItem("skipIntro") === "true";
+const [showJournalGuide, setShowJournalGuide] = useState(!isSkipped);
+useEffect(() => {
+  const isSkipped = localStorage.getItem("skipIntro") === "true";
 
-const [showJournalGuide, setShowJournalGuide] = useState(true);
+  if (isSkipped) {
+    setShowJournalGuide(false);
+  }
+}, []);
 const expenseNames = [
   ...new Set(
     expenseList

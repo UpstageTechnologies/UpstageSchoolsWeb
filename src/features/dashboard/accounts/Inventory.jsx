@@ -25,7 +25,16 @@ const [showStaffType, setShowStaffType] = useState(false);
   const [teachers, setTeachers] = useState([]);
   const [teacherSearch, setTeacherSearch] = useState("");
   const [competitionClassSearch, setCompetitionClassSearch] = useState("");
-  const [showInventoryGuide, setShowInventoryGuide] = useState(true);
+  const isSkipped = localStorage.getItem("skipIntro") === "true";
+
+const [showInventoryGuide, setShowInventoryGuide] = useState(!isSkipped);
+useEffect(() => {
+  const isSkipped = localStorage.getItem("skipIntro") === "true";
+
+  if (isSkipped) {
+    setShowInventoryGuide(false);
+  }
+}, []);
 const [competitionList, setCompetitionList] = useState([]);
 const [competitionSearch, setCompetitionSearch] = useState("");
 const [showCompetitionDropdown, setShowCompetitionDropdown] = useState(false);

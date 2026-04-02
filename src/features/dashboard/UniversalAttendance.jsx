@@ -23,7 +23,15 @@ const [classes, setClasses] = useState([]);
 const [appliedClass, setAppliedClass] = useState("");
 const [appliedSection, setAppliedSection] = useState("");
 const [statusFilter, setStatusFilter] = useState("");
-const [showAttendanceGuide, setShowAttendanceGuide] = useState(true);
+const isSkipped = localStorage.getItem("skipIntro") === "true";
+const [showAttendanceGuide, setShowAttendanceGuide] = useState(!isSkipped);
+useEffect(() => {
+  const isSkipped = localStorage.getItem("skipIntro") === "true";
+
+  if (isSkipped) {
+    setShowAttendanceGuide(false);
+  }
+}, []);
 const selectedClassData = classes.find(
   c => c.name === selectedClass
 );

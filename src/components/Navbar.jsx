@@ -69,6 +69,7 @@ const Navbar = ({
   const dropdownRef = useRef(null);
   const [allUsers, setAllUsers] = useState([]);
   const [notificationCount, setNotificationCount] = useState(0);
+  
   useEffect(() => {
     const adminUid = localStorage.getItem("adminUid");
     const unsub1 = onSnapshot(
@@ -164,54 +165,35 @@ const filteredQuickTiles = QUICK_TILES.filter(tile =>
       </div>
     );
   };
-  
   useEffect(() => {
     const handleTouch = (e) => {
-      const dropdown = document.querySelector(".search-dropdown");
-
-if (
-  searchInputRef.current &&
-  !searchInputRef.current.contains(e.target) &&
-  (!dropdown || !dropdown.contains(e.target))
-) {
-  searchInputRef.current.blur();
-  setShowQuickPanel(false);
+      const clickedInsideInput = searchInputRef.current?.contains(e.target);
+      const clickedInsideDropdown = dropdownRef.current?.contains(e.target);
+  
+     // 👉 input click → nothing
+if (clickedInsideInput) {
+  return;
 }
-    }
+
+// 👉 dropdown touch → keyboard மட்டும் close
+if (clickedInsideDropdown) {
+  searchInputRef.current?.blur(); // ✅ keyboard close
+  return;
+}
+
+      setShowQuickPanel(false);
+      searchInputRef.current?.blur();
+    };
   
-    document.addEventListener("touchstart", handleTouch);
     document.addEventListener("mousedown", handleTouch);
+    document.addEventListener("touchstart", handleTouch);
   
     return () => {
-      document.removeEventListener("touchstart", handleTouch);
       document.removeEventListener("mousedown", handleTouch);
+      document.removeEventListener("touchstart", handleTouch);
     };
   }, []);
-  useEffect(() => {
-    const dropdown = document.querySelector(".search-dropdown");
   
-    if (!dropdown) return;
-  
-    const handleDropdownScroll = () => {
-      searchInputRef.current?.blur(); // keyboard மட்டும் close
-    };
-  
-    dropdown.addEventListener("scroll", handleDropdownScroll);
-  
-    return () => {
-      dropdown.removeEventListener("scroll", handleDropdownScroll);
-    };
-  }, [showQuickPanel, globalResults]);
-  useEffect(() => {
-    const onScroll = () => {
-      searchInputRef.current?.blur();     // keyboard close
-      setShowQuickPanel(false);           // dropdown close
-    };
-  
-    window.addEventListener("scroll", onScroll);
-  
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
   
 
     return (

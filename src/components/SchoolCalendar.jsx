@@ -122,7 +122,7 @@ useEffect(() => {
         const data = doc.data();
         setAcademicStart(new Date(data.startDate));
         setAcademicEnd(new Date(data.endDate));
-        setCurrentDate(new Date(data.startDate)); // 🔥 Start from academic month
+        setCurrentDate(new Date()); // 🔥 always current month
       }
     });
   };

@@ -5,7 +5,15 @@ import "../dashboard_styles/courses.css";
 import { FaArrowCircleRight, FaArrowRight } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 export default function Course({ handleMenuClick }) {
-  const [showCourseGuide, setShowCourseGuide] = useState(true);
+  const isSkipped = localStorage.getItem("skipIntro") === "true";
+  const [showCourseGuide, setShowCourseGuide] = useState(!isSkipped);
+  useEffect(() => {
+    const isSkipped = localStorage.getItem("skipIntro") === "true";
+  
+    if (isSkipped) {
+      setShowCourseGuide(false);
+    }
+  }, []);
   const adminUid =
     auth.currentUser?.uid || localStorage.getItem("adminUid");
 

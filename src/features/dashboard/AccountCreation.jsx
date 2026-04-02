@@ -18,7 +18,15 @@ const [activeTab,setActiveTab] = useState("admin")
 const [globalSearch,setGlobalSearch]=useState("");
 const [sortField, setSortField] = useState("");
 const [sortDirection, setSortDirection] = useState("asc");
-const [showAccountGuide, setShowAccountGuide] = useState(true);
+const isSkipped = localStorage.getItem("skipIntro") === "true";
+const [showAccountGuide, setShowAccountGuide] = useState(!isSkipped);
+useEffect(() => {
+  const isSkipped = localStorage.getItem("skipIntro") === "true";
+
+  if (isSkipped) {
+    setShowAccountGuide(false);
+  }
+}, []);
 return(
 <div className="accountcreationtitle">
 <h2 className="page-title">Account creation</h2>
