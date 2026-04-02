@@ -20,63 +20,36 @@ html,body{overflow-x:hidden;}
     width: calc(100% - var(--sidebar-width));
     transition: margin-left 0.35s ease, width 0.35s ease;
   }
-  .sidebar {
-    overflow-y: auto;
-    overflow-x: hidden;
-  
-    /* Firefox */
-    scrollbar-width: thin;
-    scrollbar-color: rgba(124,58,237,0.8) transparent;
-  }
-  
-  /* Chrome, Edge, Safari */
-  .sidebar::-webkit-scrollbar {
-    width: 6px;
-  }
-  
-  .sidebar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  
-  .sidebar::-webkit-scrollbar-thumb {
-    background: linear-gradient(
-      to bottom,
-      rgba(124,58,237,0.9),
-      rgba(59,130,246,0.9)
-    );
-    border-radius: 10px;
-  }
-  
-  /* Hover effect */
-  .sidebar::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(
-      to bottom,
-      rgba(124,58,237,1),
-      rgba(59,130,246,1)
-    );
-  }
+  /* =========================
+   UNIVERSAL SAME SCROLLBAR
+========================= */
+
+.sidebar {
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: #7c3aed transparent; /* 🔥 solid color only */
+}
 
 /* Chrome / Edge / Safari */
 .sidebar::-webkit-scrollbar {
   width: 6px;
 }
 
-.sidebar::-webkit-scrollbar-thumb {
-  background: linear-gradient(
-    rgba(124,58,237,0.9),
-    rgba(91,33,182,0.9)
-  );          /* 💙 your color */
-  border-radius: 10px;
-}
-
-.sidebar::-webkit-scrollbar-thumb:hover {
-  background:rgba(124,58,237,0.9),;          /* slightly darker hover */
-}
-
 .sidebar::-webkit-scrollbar-track {
   background: transparent;
 }
 
+.sidebar::-webkit-scrollbar-thumb {
+  background: #7c3aed;   /* 🔥 SAME color */
+  border-radius: 10px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: #6d28d9;   /* थोड़ा darker hover */
+}
 .sidebar{position:fixed;top:0;left:0;height:100vh;width:clamp(160px,22vw,220px);min-width:100px;background:#ffffff;padding:20px;transition:all 0.35s ease;z-index:300;}
 .sidebar ul{list-style:none;padding:0;margin-top:20px;}
 .sidebar ul li{padding:10px;margin:10px 0;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all 0.25s ease;}
