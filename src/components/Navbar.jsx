@@ -174,7 +174,11 @@ const filteredQuickTiles = QUICK_TILES.filter(tile =>
       if (clickedInsideDropdown) return;
   
       setShowQuickPanel(false);
-      searchInputRef.current?.blur();
+  
+      // 👉 blur only if focused
+      if (document.activeElement === searchInputRef.current) {
+        searchInputRef.current.blur();
+      }
     };
   
     document.addEventListener("mousedown", handleTouch);
