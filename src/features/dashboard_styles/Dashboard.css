@@ -20,17 +20,41 @@ html,body{overflow-x:hidden;}
     width: calc(100% - var(--sidebar-width));
     transition: margin-left 0.35s ease, width 0.35s ease;
   }
-  /* Enable sidebar scroll */
-.sidebar {
-  overflow-y: auto;
-  overflow-x: hidden;
-
-  /* Firefox */
-  scrollbar-width: thin;
-  scrollbar-color:linear-gradient(
-    rgba(124,58,237,0.9)
-  ) transparent;
-}
+  .sidebar {
+    overflow-y: auto;
+    overflow-x: hidden;
+  
+    /* Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(124,58,237,0.8) transparent;
+  }
+  
+  /* Chrome, Edge, Safari */
+  .sidebar::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .sidebar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .sidebar::-webkit-scrollbar-thumb {
+    background: linear-gradient(
+      to bottom,
+      rgba(124,58,237,0.9),
+      rgba(59,130,246,0.9)
+    );
+    border-radius: 10px;
+  }
+  
+  /* Hover effect */
+  .sidebar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(
+      to bottom,
+      rgba(124,58,237,1),
+      rgba(59,130,246,1)
+    );
+  }
 
 /* Chrome / Edge / Safari */
 .sidebar::-webkit-scrollbar {
