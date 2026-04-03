@@ -1,34 +1,56 @@
-
 import React, { useState, useEffect } from "react";
+
 const FloatingRobot = () => {
   const [position, setPosition] = useState({ x: 50, y: 400 });
   const [dragging, setDragging] = useState(false);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [showHelp, setShowHelp] = useState(true);
+
   useEffect(() => {
-    const handleSkip = () => {
-      setShowHelp(true); 
-    };
-  
+    const handleSkip = () => setShowHelp(true);
     window.addEventListener("introSkipped", handleSkip);
-  
     return () => window.removeEventListener("introSkipped", handleSkip);
   }, []);
-  const handleMouseDown = () => setDragging(true);
-  const handleMouseUp = () => setDragging(false);
 
-  const handleMouseMove = (e) => {
-    if (!dragging) return;
+  // 🔥 POINTER DOWN (mouse + touch)
+  const handlePointerDown = (e) => {
+    setDragging(true);
 
-    setPosition({
-      x: e.clientX - 30,
-      y: e.clientY - 30,
+    // where user touched inside robot
+    setOffset({
+      x: e.clientX - position.x,
+      y: e.clientY - position.y,
     });
   };
 
+  // 🔥 POINTER MOVE
+  const handlePointerMove = (e) => {
+    if (!dragging) return;
+
+    setPosition({
+      x: e.clientX - offset.x,
+      y: e.clientY - offset.y,
+    });
+  };
+
+  // 🔥 POINTER UP
+  const handlePointerUp = () => {
+    setDragging(false);
+  };
+
+  // 🔥 global listeners (smooth)
+  useEffect(() => {
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+    };
+  });
+
   return (
     <div
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
       style={{
         position: "fixed",
         left: position.x,
@@ -37,9 +59,10 @@ const FloatingRobot = () => {
         display: "flex",
         alignItems: "center",
         gap: 10,
+        touchAction: "none", // 🔥 VERY IMPORTANT for mobile
       }}
     >
-      {/* 🔥 Help Box */}
+      {/* Help Box */}
       {showHelp && (
         <div
           style={{
@@ -54,37 +77,41 @@ const FloatingRobot = () => {
         >
           Need help?{" "}
           <button
-  onClick={() => {
-    localStorage.removeItem("skipIntro");
+            onClick={() => {
+              localStorage.removeItem("skipIntro");
 
-    if (window.openIntroPopup) {
-      window.openIntroPopup("default");
-    }
+              if (window.openIntroPopup) {
+                window.openIntroPopup("default");
+              }
 
-    setShowHelp(false);
-  }}
-  style={{
-    marginLeft: 8,
-    background: "#2563eb",
-    color: "#fff",
-    border: "none",
-    borderRadius: 6,
-    padding: "4px 8px",
-    cursor: "pointer",
-    fontSize: 12,
-  }}
->
-  Yes
-</button>
+              setShowHelp(false);
+            }}
+            style={{
+              marginLeft: 8,
+              background: "#2563eb",
+              color: "#fff",
+              border: "none",
+              borderRadius: 6,
+              padding: "4px 8px",
+              cursor: "pointer",
+              fontSize: 12,
+            }}
+          >
+            Yes
+          </button>
         </div>
       )}
+
       <img
         src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png"
         alt="robot"
         width={60}
-        onMouseDown={handleMouseDown}
+        onPointerDown={handlePointerDown}
         draggable={false}
-        style={{ cursor: "grab" }}
+        style={{
+          cursor: dragging ? "grabbing" : "grab",
+          userSelect: "none",
+        }}
       />
     </div>
   );

@@ -716,7 +716,7 @@
   >
     {saving ? "Saving..." : saved ? "Saved ✅" : "Save"}
   </button>
-                  <button className="cancel" onClick={resetForm}>Cancel</button>
+                  <button className="cancel" onClick={resetForm}>Reset</button>
               
               </div>
           

@@ -37,6 +37,25 @@ const [tableSearch, setTableSearch] = useState("");
 const [allDates, setAllDates] = useState([]);
 const [allDatesFull, setAllDatesFull] = useState([]);
 const [currentPageIndexFull, setCurrentPageIndexFull] = useState(0);
+const [currentPageIndexPartial, setCurrentPageIndexPartial] = useState(0);
+const [allDatesPartial, setAllDatesPartial] = useState([]);
+const currentDatePartial = allDatesPartial[currentPageIndexPartial] || "";
+const [allDatesTerm1, setAllDatesTerm1] = useState([]);
+const [currentPageIndexTerm1, setCurrentPageIndexTerm1] = useState(0);
+const [term1TableData, setTerm1TableData] = useState([]);
+
+const currentDateTerm1 = allDatesTerm1[currentPageIndexTerm1] || "";
+const [allDatesTerm2, setAllDatesTerm2] = useState([]);
+const [currentPageIndexTerm2, setCurrentPageIndexTerm2] = useState(0);
+const [term2TableData, setTerm2TableData] = useState([]);
+
+const currentDateTerm2 = allDatesTerm2[currentPageIndexTerm2] || "";
+const [allDatesTerm3, setAllDatesTerm3] = useState([]);
+const [currentPageIndexTerm3, setCurrentPageIndexTerm3] = useState(0);
+const [term3TableData, setTerm3TableData] = useState([]);
+
+const currentDateTerm3 = allDatesTerm3[currentPageIndexTerm3] || "";
+
 const isSkipped = localStorage.getItem("skipIntro") === "true";
 const [showExpenseGuide, setShowExpenseGuide] = useState(!isSkipped);
 const [showIncomeGuide, setShowIncomeGuide] = useState(!isSkipped);
@@ -48,11 +67,13 @@ useEffect(() => {
     setShowIncomeGuide(false);
   }
 }, []);
+
 const currentDateFull = allDatesFull[currentPageIndexFull] || "";
 const [tableData, setTableData] = useState([]);
 const [oldTableData, setOldTableData] = useState([]);
 const [currentPageIndex, setCurrentPageIndex] = useState(0);
 const [fullTableData, setFullTableData] = useState([]);
+const [partialTableData, setPartialTableData] = useState([]);
 const currentDate = allDates[currentPageIndex] || "";
 const dropdownRef = useRef(null);
 useEffect(() => {
@@ -140,8 +161,40 @@ useEffect(() => {
 }, [adminUid]);
 useEffect(() => {
 
-  if (!adminUid || !currentDate) return;
+  if (!adminUid) return;
 
+  const incomeRef = collection(
+    db,
+    "users",
+    adminUid,
+    "Account",
+    "accounts",
+    "Income"
+  );
+
+  const q = query(
+    incomeRef,
+    where("paymentType","==","full")
+  );
+
+  const unsub = onSnapshot(q, snap => {
+
+    const dates = [
+      ...new Set(
+        snap.docs.map(d => d.data().date).filter(Boolean)
+      )
+    ].sort((a,b)=>b.localeCompare(a));
+
+    setAllDatesFull(dates); 
+
+  });
+
+  return () => unsub();
+
+}, [adminUid]);
+useEffect(() => {
+
+  if (!adminUid || !currentDate) return;
   const incomeRef = collection(
     db,
     "users",
@@ -206,10 +259,9 @@ useEffect(() => {
 
 }, [adminUid,currentDate]);
 
-
 useEffect(() => {
 
-  if (!adminUid || !currentDate) return;
+  if (!adminUid || !currentDateFull) return;
 
   const incomeRef = collection(
     db,
@@ -223,7 +275,7 @@ useEffect(() => {
   const q = query(
     incomeRef,
     where("paymentType","==","full"),
-    where("date","==",currentDate)
+    where("date","==",currentDateFull) 
   );
 
   const unsub = onSnapshot(q, snap => {
@@ -239,7 +291,327 @@ useEffect(() => {
 
   return () => unsub();
 
-}, [adminUid,currentDate]);
+}, [adminUid,currentDateFull]);
+useEffect(() => {
+
+  if (!adminUid) return;
+
+  const incomeRef = collection(
+    db,
+    "users",
+    adminUid,
+    "Account",
+    "accounts",
+    "Income"
+  );
+
+  const q = query(
+    incomeRef,
+    where("paymentType","==","partial")
+  );
+
+  const unsub = onSnapshot(q, snap => {
+
+    const dates = [
+      ...new Set(
+        snap.docs.map(d => d.data().date).filter(Boolean)
+      )
+    ].sort((a,b)=>b.localeCompare(a));
+
+    setAllDatesPartial(dates);
+
+  });
+
+  return () => unsub();
+
+}, [adminUid]);
+useEffect(() => {
+
+  if (!adminUid || !currentDatePartial) return;
+
+  const incomeRef = collection(
+    db,
+    "users",
+    adminUid,
+    "Account",
+    "accounts",
+    "Income"
+  );
+
+  const q = query(
+    incomeRef,
+    where("paymentType","==","partial"),
+    where("date","==",currentDatePartial)   // 🔥 IMPORTANT
+  );
+
+  const unsub = onSnapshot(q, snap => {
+
+    setPartialTableData(
+      snap.docs.map(d => ({
+        id:d.id,
+        ...d.data()
+      }))
+    );
+
+  });
+
+  return () => unsub();
+
+}, [adminUid, currentDatePartial]);
+useEffect(() => {
+
+  if (!adminUid) return;
+
+  const incomeRef = collection(
+    db,
+    "users",
+    adminUid,
+    "Account",
+    "accounts",
+    "Income"
+  );
+
+  const q = query(
+    incomeRef,
+    where("paymentType","==","term1")
+  );
+
+  const unsub = onSnapshot(q, snap => {
+
+    const dates = [
+      ...new Set(
+        snap.docs.map(d => d.data().date).filter(Boolean)
+      )
+    ].sort((a,b)=>b.localeCompare(a));
+
+    setAllDatesTerm1(dates);
+
+  });
+
+  return () => unsub();
+
+}, [adminUid]);
+useEffect(() => {
+
+  if (!adminUid || !currentDateTerm1) return;
+
+  const incomeRef = collection(
+    db,
+    "users",
+    adminUid,
+    "Account",
+    "accounts",
+    "Income"
+  );
+
+  const q = query(
+    incomeRef,
+    where("paymentType","==","term1"),
+    where("date","==",currentDateTerm1)
+  );
+
+  const unsub = onSnapshot(q, snap => {
+
+    setTerm1TableData(
+      snap.docs.map(d => ({
+        id:d.id,
+        ...d.data()
+      }))
+    );
+
+  });
+
+  return () => unsub();
+
+}, [adminUid, currentDateTerm1]);
+const filteredTerm1Data = React.useMemo(() => {
+  return getSortedData(
+    term1TableData.filter(i =>
+      tableFilter(
+        i.studentName,
+        i.className,
+        i.date,
+        i.paidAmount
+      )
+    )
+  );
+}, [term1TableData, tableSearch, sortField, sortDirection]);
+
+const totalTerm1Income = React.useMemo(() => {
+  return filteredTerm1Data.reduce(
+    (sum, item) => sum + Number(item.paidAmount || 0),
+    0
+  );
+}, [filteredTerm1Data]);
+useEffect(() => {
+
+  if (!adminUid) return;
+
+  const incomeRef = collection(
+    db,
+    "users",
+    adminUid,
+    "Account",
+    "accounts",
+    "Income"
+  );
+
+  const q = query(
+    incomeRef,
+    where("paymentType","==","term2")
+  );
+
+  const unsub = onSnapshot(q, snap => {
+
+    const dates = [
+      ...new Set(
+        snap.docs.map(d => d.data().date).filter(Boolean)
+      )
+    ].sort((a,b)=>b.localeCompare(a));
+
+    setAllDatesTerm2(dates);
+
+  });
+
+  return () => unsub();
+
+}, [adminUid]);
+useEffect(() => {
+
+  if (!adminUid || !currentDateTerm2) return;
+
+  const incomeRef = collection(
+    db,
+    "users",
+    adminUid,
+    "Account",
+    "accounts",
+    "Income"
+  );
+
+  const q = query(
+    incomeRef,
+    where("paymentType","==","term2"),
+    where("date","==",currentDateTerm2)
+  );
+
+  const unsub = onSnapshot(q, snap => {
+
+    setTerm2TableData(
+      snap.docs.map(d => ({
+        id:d.id,
+        ...d.data()
+      }))
+    );
+
+  });
+
+  return () => unsub();
+
+}, [adminUid, currentDateTerm2]);
+const filteredTerm2Data = React.useMemo(() => {
+  return getSortedData(
+    term2TableData.filter(i =>
+      tableFilter(
+        i.studentName,
+        i.className,
+        i.date,
+        i.paidAmount
+      )
+    )
+  );
+}, [term2TableData, tableSearch, sortField, sortDirection]);
+const totalTerm2Income = React.useMemo(() => {
+  return filteredTerm2Data.reduce(
+    (sum, item) => sum + Number(item.paidAmount || 0),
+    0
+  );
+}, [filteredTerm2Data]);
+useEffect(() => {
+
+  if (!adminUid) return;
+
+  const incomeRef = collection(
+    db,
+    "users",
+    adminUid,
+    "Account",
+    "accounts",
+    "Income"
+  );
+
+  const q = query(
+    incomeRef,
+    where("paymentType","==","term3")
+  );
+
+  const unsub = onSnapshot(q, snap => {
+
+    const dates = [
+      ...new Set(
+        snap.docs.map(d => d.data().date).filter(Boolean)
+      )
+    ].sort((a,b)=>b.localeCompare(a));
+
+    setAllDatesTerm3(dates);
+
+  });
+
+  return () => unsub();
+
+}, [adminUid]);
+useEffect(() => {
+
+  if (!adminUid || !currentDateTerm3) return;
+
+  const incomeRef = collection(
+    db,
+    "users",
+    adminUid,
+    "Account",
+    "accounts",
+    "Income"
+  );
+
+  const q = query(
+    incomeRef,
+    where("paymentType","==","term3"),
+    where("date","==",currentDateTerm3)
+  );
+
+  const unsub = onSnapshot(q, snap => {
+
+    setTerm3TableData(
+      snap.docs.map(d => ({
+        id:d.id,
+        ...d.data()
+      }))
+    );
+
+  });
+
+  return () => unsub();
+
+}, [adminUid, currentDateTerm3]);
+const filteredTerm3Data = React.useMemo(() => {
+  return getSortedData(
+    term3TableData.filter(i =>
+      tableFilter(
+        i.studentName,
+        i.className,
+        i.date,
+        i.paidAmount
+      )
+    )
+  );
+}, [term3TableData, tableSearch, sortField, sortDirection]);
+
+const totalTerm3Income = React.useMemo(() => {
+  return filteredTerm3Data.reduce(
+    (sum, item) => sum + Number(item.paidAmount || 0),
+    0
+  );
+}, [filteredTerm3Data]);
 const handleSort = (field) => {
   if (sortField === field) {
     setSortDirection(prev => prev === "asc" ? "desc" : "asc");
@@ -294,6 +666,13 @@ const filteredTableData = React.useMemo(() => {
   );
 
 }, [tableData, tableSearch, sortField, sortDirection]);
+const totalIncome = React.useMemo(() => {
+  return filteredTableData.reduce(
+    (sum, item) => sum + Number(item.paidAmount || 0),
+    0
+  );
+}, [filteredTableData]);
+
 const filteredOldData = React.useMemo(() => {
 
   return getSortedData(
@@ -308,6 +687,12 @@ const filteredOldData = React.useMemo(() => {
   );
 
 }, [oldTableData, tableSearch, sortField, sortDirection]);
+const totalOldIncome = React.useMemo(() => {
+  return filteredOldData.reduce(
+    (sum, item) => sum + Number(item.paidAmount || 0),
+    0
+  );
+}, [filteredOldData]);
 const filteredFullData = React.useMemo(() => {
 
   return getSortedData(
@@ -322,6 +707,26 @@ const filteredFullData = React.useMemo(() => {
   );
 
 }, [fullTableData, tableSearch, sortField, sortDirection]);
+const filteredPartialData = React.useMemo(() => {
+  return getSortedData(
+    partialTableData.filter(i =>
+      tableFilter(
+        i.studentName,
+        i.className,
+        i.date,
+        i.paidAmount
+      )
+    )
+  );
+}, [partialTableData, tableSearch, sortField, sortDirection]);
+
+const totalFullIncome = React.useMemo(() => {
+  return filteredFullData.reduce(
+    (sum, item) => sum + Number(item.paidAmount || 0),
+    0
+  );
+}, [filteredFullData]);
+
 const maxVisiblePages = 3;
 
 const getVisiblePages = () => {
@@ -346,6 +751,12 @@ const paginate = (data) => {
   const end = start + rowsPerPage;
   return data.slice(start, end);
 };
+const totalPartialIncome = React.useMemo(() => {
+  return filteredPartialData.reduce(
+    (sum, item) => sum + Number(item.paidAmount || 0),
+    0
+  );
+}, [filteredPartialData]);
 const [showPendingPopup, setShowPendingPopup] = useState(false);
 
 
@@ -559,7 +970,11 @@ const applyDateFilter = (list) => {
     "FeesMaster"
   );
   const studentsRef = collection(db, "users", adminUid, "students");
-
+  useEffect(() => {
+    if (allDatesPartial.length > 0) {
+      setCurrentPageIndexPartial(0);
+    }
+  }, [allDatesPartial]);
 useEffect(() => {
     if (!adminUid) return;
     let unsubIncome = () => {};
@@ -822,7 +1237,9 @@ const competitionClasses = [
 
 const totalPages = Math.ceil(filteredNewPayments.length / rowsPerPage);
 const feeRows = React.useMemo(() => {
-
+  console.log("feeCategory:", feeCategory);
+  console.log("feesMaster:", feesMaster);
+  console.log("incomeList:", incomeList);
   return students
     .filter(s =>
       tableFilter(
@@ -831,11 +1248,10 @@ const feeRows = React.useMemo(() => {
       )
     )
     .flatMap(student => {
-
       const feesForClass = feesMaster.filter(fee =>
         fee.type === "fees" &&
-        fee.feeType === feeCategory &&
-        fee.className === student.class &&
+        fee.feeType?.toLowerCase() === feeCategory.toLowerCase() &&
+        String(fee.className).trim() === String(student.class).trim() &&
         (filterClass === "All" || student.class === filterClass)
       );
 
@@ -881,6 +1297,30 @@ const feeRows = React.useMemo(() => {
     });
 
 }, [students, feesMaster, incomeList, feeCategory, filterClass, savedYear,tableSearch]);
+const [currentPageTuition, setCurrentPageTuition] = useState(0);
+const rowsPerPageTuition = 10;
+
+const paginatedTuitionData = React.useMemo(() => {
+
+  const sorted = getSortedData(feeRows);
+
+  const start = currentPageTuition * rowsPerPageTuition;
+
+  return sorted.slice(
+    start,
+    start + rowsPerPageTuition
+  );
+
+}, [feeRows, currentPageTuition, sortField, sortDirection]);
+const totalTuitionIncome = React.useMemo(() => {
+  return paginatedTuitionData.reduce(
+    (sum, row) => sum + Number(row.paid || 0),
+    0
+  );
+}, [paginatedTuitionData]);
+const totalPagesTuition = Math.ceil(
+  feeRows.length / rowsPerPageTuition
+);
   return (
     <div className="income-wrapper">
 
@@ -1396,6 +1836,7 @@ onClick={() => window.print()}
          
             <th>Expense</th>
             <th>Balance</th>
+            
           </tr>
         </thead>
         <tbody>
@@ -1582,63 +2023,117 @@ onClick={() => window.print()}
   }
 </th>
 </tr>
-</thead>
-<tbody>
-{
-getSortedData(feeRows).map(row => {
+</thead><tbody>
 
-  const { student, fee, paid, balance, statusInfo } = row;
-      return (
-        <tr key={`${student.id}_${fee.id}`}>
-          <td data-label="StudentName">{student.studentName}</td>
-          <td data-label="class">{student.class}</td>
-          <td data-label="Feesname">{fee.name}</td>
-          <td data-label="paid">₹{paid}</td>
-          <td data-label="Balance">₹{balance}</td>
+{paginatedTuitionData.length === 0 ? (
 
-          <td>
-  <div
-    style={{
-      fontWeight: 600,
-      color: statusInfo.color
-    }}
-  >
-    {statusInfo.title}
-  </div>
+  <tr>
+    <td colSpan="6" style={{ textAlign: "center" }}>
+      No records
+    </td>
+  </tr>
 
-  {/* 🔴 Overdue / Due in X days */}
-  {statusInfo.sub && (
-    <div
-      style={{
-        fontSize: 12,
-        marginTop: 2,
-        color: statusInfo.color
-      }}
-    >
-      {statusInfo.sub}
-    </div>
-  )}
+) : (
 
-  {/* 📅 Due Date */}
-  {statusInfo.dateText && (
-    <div
-      style={{
-        fontSize: 11,
-        marginTop: 2,
-        color: "#9ca3af"
-      }}
-    >
-      {statusInfo.dateText}
-    </div>
-  )}
-</td>
+  paginatedTuitionData.map(row => {
 
-        </tr>
-      );
-    })
-}
+    const { student, fee, paid, balance, statusInfo } = row;
+
+    return (
+      <tr key={`${student.id}_${fee.id}`}>
+
+        <td data-label="StudentName">{student.studentName}</td>
+
+        <td data-label="class">{student.class}</td>
+
+        <td data-label="Feesname">{fee.name}</td>
+
+        <td data-label="paid">₹{paid}</td>
+
+        <td data-label="Balance">₹{balance}</td>
+
+        <td>
+          <div
+            style={{
+              fontWeight: 600,
+              color: statusInfo.color
+            }}
+          >
+            {statusInfo.title}
+          </div>
+
+          {statusInfo.sub && (
+            <div
+              style={{
+                fontSize: 12,
+                marginTop: 2,
+                color: statusInfo.color
+              }}
+            >
+              {statusInfo.sub}
+            </div>
+          )}
+
+          {statusInfo.dateText && (
+            <div
+              style={{
+                fontSize: 11,
+                marginTop: 2,
+                color: "#9ca3af"
+              }}
+            >
+              {statusInfo.dateText}
+            </div>
+          )}
+        </td>
+
+      </tr>
+    );
+
+  })
+
+)}
+
+{/* ✅ TOTAL ROW */}
+<tr className="total-row">
+  <td colSpan="3"><strong>TOTAL</strong></td>
+  <td><strong>₹{totalTuitionIncome}</strong></td>
+  <td colSpan="2"></td>
+</tr>
+
 </tbody>
 </table>
+<div className="pagination-bar">
+  <div className="tab-buttons">
+
+    <button
+      className="tab-btn"
+      disabled={currentPageTuition === 0}
+      onClick={() => setCurrentPageTuition(p => p - 1)}
+    >
+      ←
+    </button>
+
+    {Array.from({ length: totalPagesTuition }, (_, i) => (
+      <button
+        key={i}
+        className={`tab-btn ${i === currentPageTuition ? "active" : ""}`}
+        onClick={() => setCurrentPageTuition(i)}
+      >
+        {i + 1}
+      </button>
+    ))}
+
+    <button
+      className="tab-btn"
+      disabled={currentPageTuition === totalPagesTuition - 1}
+      onClick={() => setCurrentPageTuition(p => p + 1)}
+    >
+      →
+    </button>
+
+  </div>
+</div>
 </div>
 )}
 
@@ -1712,7 +2207,7 @@ className="table-search"
                   </thead>
                   
                   <tbody>
-
+<>
 {filteredTableData.length === 0 ? (
 
 <tr>
@@ -1721,8 +2216,8 @@ No data found
 </td>
 </tr>
 
-) : (
 
+) : (
 filteredTableData.map(i => (
 
 <tr key={i.id}>
@@ -1733,10 +2228,17 @@ filteredTableData.map(i => (
 <td>{i.date}</td>
 </tr>
 
+
 ))
 
-)}
 
+)}
+<tr className="total-row">
+<td colSpan="3"><strong>TOTAL</strong></td>
+<td><strong>₹{totalIncome}</strong></td>
+<td></td>
+</tr>
+</>
 </tbody>
                 </table>
                 <div className="pagination-bar">
@@ -1830,7 +2332,7 @@ className="table-search"
                     </tr>
                   </thead>
                   <tbody>
-
+<>
 {filteredOldData.length === 0 ? (
 
 <tr>
@@ -1853,7 +2355,12 @@ filteredOldData.map(i => (
 ))
 
 )}
-
+<tr className="total-row">
+    <td colSpan="2"><strong>TOTAL</strong></td>
+    <td><strong>₹{totalOldIncome}</strong></td>
+    <td></td>
+  </tr>
+</>
 </tbody>
                 </table>
                 <div className="pagination-bar">
@@ -1964,6 +2471,13 @@ className="table-search"
 
 ))}
 
+{/* ✅ TOTAL ROW */}
+<tr className="total-row">
+  <td colSpan="2"><strong>TOTAL</strong></td>
+  <td><strong>₹{totalFullIncome}</strong></td>
+  <td></td>
+</tr>
+
 </tbody>
 </table>
 <div className="pagination-bar">
@@ -2070,24 +2584,24 @@ onClick={() => setCurrentPageIndexFull(p => p + 1)}
     )}
 </th></tr></thead>
 <tbody>
-{getSortedData(
-  incomeList
-    .filter(i => i.paymentType === "partial")
-    .filter(i =>
-      tableFilter(
-        i.studentName,
-        i.className,
-        i.date,
-        i.paidAmount
-      )
-    )
-).map(i => {
+
+<>
+{filteredPartialData.length === 0 ? (
+
+<tr>
+<td colSpan="5" style={{textAlign:"center"}}>
+No records
+</td>
+</tr>
+
+) : (
+
+filteredPartialData.map(i => {
 
   const feeObj = feesMaster.find(
     f => String(f.id).trim() === String(i.feeId).trim()
   );
 
-  // 🔥 fallback (very important)
   const safeFee = feeObj || {
     id: i.feeId,
     amount: i.totalFees || i.payableAmount || 0,
@@ -2099,17 +2613,66 @@ onClick={() => setCurrentPageIndexFull(p => p + 1)}
       <td>{i.studentName}</td>
       <td>{i.className}</td>
       <td>₹{i.paidAmount}</td>
-
-      {/* ✅ FIX */}
       <td>₹{getFeeBalance(i.studentId, safeFee, i.feeId)}</td>
-
       <td>{i.date}</td>
     </tr>
   );
+})
 
-})}
+)}
+
+{/* ✅ TOTAL ROW */}
+<tr className="total-row">
+  <td colSpan="2"><strong>TOTAL</strong></td>
+  <td><strong>₹{totalPartialIncome}</strong></td>
+  <td colSpan="2"></td>
+</tr>
+
+</>
+
 </tbody>
-</table></div>
+</table>
+<div className="pagination-bar">
+  <div className="tab-buttons">
+
+    <button
+      className="tab-btn"
+      disabled={currentPageIndexPartial === 0}
+      onClick={() => setCurrentPageIndexPartial(p => p - 1)}
+    >
+      ←
+    </button>
+
+    {allDatesPartial
+      .slice(
+        Math.max(0, currentPageIndexPartial - 1),
+        currentPageIndexPartial + 2
+      )
+      .map((date, i) => {
+
+        const realIndex = allDatesPartial.indexOf(date);
+
+        return (
+          <button
+            key={date}
+            className={`tab-btn ${realIndex === currentPageIndexPartial ? "active" : ""}`}
+            onClick={() => setCurrentPageIndexPartial(realIndex)}
+          >
+            {realIndex + 1}
+          </button>
+        );
+      })}
+
+    <button
+      className="tab-btn"
+      disabled={currentPageIndexPartial === allDatesPartial.length - 1}
+      onClick={() => setCurrentPageIndexPartial(p => p + 1)}
+    >
+      →
+    </button>
+
+  </div>
+</div></div>
 )}
 {incomeTab==="term1"&&(
   <div className="section-card pop">  <div className="history-controls"><div className="table-header">
@@ -2169,44 +2732,95 @@ style={{ marginTop: "18px", marginBottom: "20px" }}
       : <FiChevronDown size={14}/>
     )}
 </th></tr></thead>
-<tbody>{getSortedData(applyDateFilter(incomeList)
-  .filter(i => i.paymentType === "term1")
-  .filter(i =>
-    tableFilter(
-      i.studentName,
-      i.className,
-      i.date,
-      i.paidAmount
-    )
-  )).map(i => {
+<tbody>
+
+{filteredTerm1Data.length === 0 ? (
+
+  <tr>
+    <td colSpan="5" style={{ textAlign: "center" }}>
+      No records
+    </td>
+  </tr>
+
+) : (
+
+  filteredTerm1Data.map(i => {
 
     const feeObj = feesMaster.find(
       f => String(f.id).trim() === String(i.feeId).trim()
     );
-    
-      // ✅ STEP 3: fallback create பண்ணு
+
     const safeFee = feeObj || {
       id: i.feeId,
       amount: i.totalFees || i.payableAmount || 0,
       feeType: i.feeType,
       discount: i.discount || 0
     };
-  
+
     return (
       <tr key={i.id}>
         <td data-label="Student">{i.studentName}</td>
         <td data-label="Class">{i.className}</td>
         <td data-label="Paid">₹{i.paidAmount}</td>
-  
-        {/* ✅ STEP 4: correct call */}
         <td>₹{getFeeBalance(i.studentId, safeFee, i.feeId)}</td>
-  
         <td>{i.date}</td>
       </tr>
     );
-  
-  })}</tbody>
-</table></div>
+
+  })
+
+)}
+
+{/* ✅ TOTAL ROW */}
+<tr className="total-row">
+  <td colSpan="2"><strong>TOTAL</strong></td>
+  <td><strong>₹{totalTerm1Income}</strong></td>
+  <td colSpan="2"></td>
+</tr>
+
+</tbody>
+</table>
+<div className="pagination-bar">
+  <div className="tab-buttons">
+
+    <button
+      className="tab-btn"
+      disabled={currentPageIndexTerm1 === 0}
+      onClick={() => setCurrentPageIndexTerm1(p => p - 1)}
+    >
+      ←
+    </button>
+
+    {allDatesTerm1
+      .slice(
+        Math.max(0, currentPageIndexTerm1 - 1),
+        currentPageIndexTerm1 + 2
+      )
+      .map((date) => {
+
+        const realIndex = allDatesTerm1.indexOf(date);
+
+        return (
+          <button
+            key={date}
+            className={`tab-btn ${realIndex === currentPageIndexTerm1 ? "active" : ""}`}
+            onClick={() => setCurrentPageIndexTerm1(realIndex)}
+          >
+            {realIndex + 1}
+          </button>
+        );
+      })}
+
+    <button
+      className="tab-btn"
+      disabled={currentPageIndexTerm1 === allDatesTerm1.length - 1}
+      onClick={() => setCurrentPageIndexTerm1(p => p + 1)}
+    >
+      →
+    </button>
+
+  </div>
+</div></div>
 )}
   {incomeTab==="term2"&&(
     <div className="section-card pop"><div className="history-controls"><div className="table-header">
@@ -2265,71 +2879,237 @@ style={{ marginTop: "18px", marginBottom: "20px" }}
         : <FiChevronDown size={14}/>
       )}
   </th></tr></thead>
-  <tbody>{getSortedData(incomeList.filter(i=>i.paymentType==="term2")).map(i=>(
-  <tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td>₹{getFeeBalance(i.studentId,i.feeId)}</td><td>{i.date}</td></tr>
-  ))}</tbody>
-  </table></div>
+  <tbody>
+
+{filteredTerm2Data.length === 0 ? (
+
+  <tr>
+    <td colSpan="5" style={{ textAlign: "center" }}>
+      No records
+    </td>
+  </tr>
+
+) : (
+
+  filteredTerm2Data.map(i => {
+
+    const feeObj = feesMaster.find(
+      f => String(f.id).trim() === String(i.feeId).trim()
+    );
+
+    const safeFee = feeObj || {
+      id: i.feeId,
+      amount: i.totalFees || i.payableAmount || 0,
+      feeType: i.feeType,
+      discount: i.discount || 0
+    };
+
+    return (
+      <tr key={i.id}>
+        <td>{i.studentName}</td>
+        <td>{i.className}</td>
+        <td>₹{i.paidAmount}</td>
+        <td>₹{getFeeBalance(i.studentId, safeFee, i.feeId)}</td>
+        <td>{i.date}</td>
+      </tr>
+    );
+
+  })
+
+)}
+
+<tr className="total-row">
+  <td colSpan="2"><strong>TOTAL</strong></td>
+  <td><strong>₹{totalTerm2Income}</strong></td>
+  <td colSpan="2"></td>
+</tr>
+
+</tbody>
+  </table><div className="pagination-bar">
+  <div className="tab-buttons">
+
+    <button
+      className="tab-btn"
+      disabled={currentPageIndexTerm2 === 0}
+      onClick={() => setCurrentPageIndexTerm2(p => p - 1)}
+    >
+      ←
+    </button>
+
+    {allDatesTerm2
+      .slice(
+        Math.max(0, currentPageIndexTerm2 - 1),
+        currentPageIndexTerm2 + 2
+      )
+      .map((date) => {
+
+        const realIndex = allDatesTerm2.indexOf(date);
+
+        return (
+          <button
+            key={date}
+            className={`tab-btn ${realIndex === currentPageIndexTerm2 ? "active" : ""}`}
+            onClick={() => setCurrentPageIndexTerm2(realIndex)}
+          >
+            {realIndex + 1}
+          </button>
+        );
+      })}
+
+    <button
+      className="tab-btn"
+      disabled={currentPageIndexTerm2 === allDatesTerm2.length - 1}
+      onClick={() => setCurrentPageIndexTerm2(p => p + 1)}
+    >
+      →
+    </button>
+
+  </div>
+</div></div>
   )}
 {incomeTab==="term3"&&(
   <div className="section-card pop">
-  <div className="history-controls"><div className="table-header">
 
-<h3 className="section-title">
-  Term 3 Payments
-</h3>
+    <div className="history-controls">
+      <div className="table-header">
+        <h3 className="section-title">Term 3 Payments</h3>
+      </div>
 
+      <input
+        type="text"
+        placeholder="Search in table..."
+        value={tableSearch}
+        onChange={(e) => setTableSearch(e.target.value)}
+        className="table-search"
+      />
+    </div>
 
-</div>
+    <table className="history-table">
+      <thead>
+        <tr>
 
-<input
-  type="text"
-  placeholder="Search in table..."
-  value={tableSearch}
-  onChange={(e) => setTableSearch(e.target.value)}
-  className="search-input"
-/>
-</div><table className="history-table">
-<thead><tr><th onClick={() => handleSort("studentName")}>
-  Student
-  {sortField === "studentName" &&
-    (sortDirection === "asc"
-      ? <FiChevronUp size={14}/>
-      : <FiChevronDown size={14}/>
-    )
-  }
-</th><th onClick={() => handleSort("className")}>
-  Class {sortField === "className" && (sortDirection === "asc" ? <FiChevronUp size={14}/> : <FiChevronDown size={14}/>)}
-</th>
-<th onClick={() => handleSort("paidAmount")}>
-  Paid
-  {sortField === "paidAmount" &&
-    (sortDirection === "asc"
-      ? <FiChevronUp size={14}/>
-      : <FiChevronDown size={14}/>
-    )}
-</th>
+          <th onClick={() => handleSort("studentName")}>
+            Student
+            {sortField === "studentName" &&
+              (sortDirection === "asc"
+                ? <FiChevronUp size={14}/>
+                : <FiChevronDown size={14}/>
+              )
+            }
+          </th>
 
-<th onClick={() => handleSort("balance")}>
-  Balance
-  {sortField === "balance" &&
-    (sortDirection === "asc"
-      ? <FiChevronUp size={14}/>
-      : <FiChevronDown size={14}/>
-    )}
-</th>
+          <th onClick={() => handleSort("className")}>
+            Class
+          </th>
 
-<th onClick={() => handleSort("date")}>
-  Date
-  {sortField === "date" &&
-    (sortDirection === "asc"
-      ? <FiChevronUp size={14}/>
-      : <FiChevronDown size={14}/>
-    )}
-</th></tr></thead>
-<tbody>{getSortedData(incomeList.filter(i=>i.paymentType==="term3")).map(i=>(
-<tr key={i.id}><td data-label="Student">{i.studentName}</td><td data-label="Class">{i.className}</td><td data-label="Paid">₹{i.paidAmount}</td><td>₹{getFeeBalance(i.studentId,i.feeId)}</td><td>{i.date}</td></tr>
-))}</tbody>
-</table></div>
+          <th onClick={() => handleSort("paidAmount")}>
+            Paid
+          </th>
+
+          <th onClick={() => handleSort("balance")}>
+            Balance
+          </th>
+
+          <th onClick={() => handleSort("date")}>
+            Date
+          </th>
+
+        </tr>
+      </thead>
+
+      <tbody>
+
+        {filteredTerm3Data.length === 0 ? (
+
+          <tr>
+            <td colSpan="5" style={{ textAlign: "center" }}>
+              No records
+            </td>
+          </tr>
+
+        ) : (
+
+          filteredTerm3Data.map(i => {
+
+            const feeObj = feesMaster.find(
+              f => String(f.id).trim() === String(i.feeId).trim()
+            );
+
+            const safeFee = feeObj || {
+              id: i.feeId,
+              amount: i.totalFees || i.payableAmount || 0,
+              feeType: i.feeType,
+              discount: i.discount || 0
+            };
+
+            return (
+              <tr key={i.id}>
+                <td>{i.studentName}</td>
+                <td>{i.className}</td>
+                <td>₹{i.paidAmount}</td>
+                <td>₹{getFeeBalance(i.studentId, safeFee, i.feeId)}</td>
+                <td>{i.date}</td>
+              </tr>
+            );
+
+          })
+
+        )}
+
+        {/* ✅ TOTAL */}
+        <tr className="total-row">
+          <td colSpan="2"><strong>TOTAL</strong></td>
+          <td><strong>₹{totalTerm3Income}</strong></td>
+          <td colSpan="2"></td>
+        </tr>
+
+      </tbody>
+    </table>
+
+    {/* ✅ PAGINATION */}
+    <div className="pagination-bar">
+      <div className="tab-buttons">
+
+        <button
+          className="tab-btn"
+          disabled={currentPageIndexTerm3 === 0}
+          onClick={() => setCurrentPageIndexTerm3(p => p - 1)}
+        >
+          ←
+        </button>
+
+        {allDatesTerm3
+          .slice(
+            Math.max(0, currentPageIndexTerm3 - 1),
+            currentPageIndexTerm3 + 2
+          )
+          .map((date) => {
+
+            const realIndex = allDatesTerm3.indexOf(date);
+
+            return (
+              <button
+                key={date}
+                className={`tab-btn ${realIndex === currentPageIndexTerm3 ? "active" : ""}`}
+                onClick={() => setCurrentPageIndexTerm3(realIndex)}
+              >
+                {realIndex + 1}
+              </button>
+            );
+          })}
+
+        <button
+          className="tab-btn"
+          disabled={currentPageIndexTerm3 === allDatesTerm3.length - 1}
+          onClick={() => setCurrentPageIndexTerm3(p => p + 1)}
+        >
+          →
+        </button>
+
+      </div>
+    </div>
+
+  </div>
 )}</>)}
       {mode==="expenses" && (
 

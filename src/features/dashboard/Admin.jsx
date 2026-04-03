@@ -730,7 +730,7 @@ className="photo-modal-img"
 className="cancel"
 onClick={resetForm}
 >
-Cancel
+Reset
 </button>
 </div>
 )}</> 

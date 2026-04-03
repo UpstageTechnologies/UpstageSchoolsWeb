@@ -921,22 +921,46 @@ window.openIntroPopup = (type = "default") => {
       >
 
         {/* 🔹 SCHOOL NAME */}
-        <div className="popup-school-name">
-          {school || localStorage.getItem("schoolName") || "School Name"}
-        </div>
+        {/* 🔹 LOGO + USER IMAGE */}
+<div className="popup-top-section">
 
-        {/* 🔹 ROLE */}
-        <div className="popup-role">
-          {(role || localStorage.getItem("role") || "USER").toUpperCase()}
-        </div>
+{/* School Logo */}
+{logo ? (
+  <img src={logo} className="popup-school-logo" />
+) : (
+  <FaSchool className="popup-school-logo fallback" />
+)}
 
-        {/* 🔹 USER NAME (NEW) */}
-        <div className="popup-user-name">
-          {localStorage.getItem("adminName") ||
-          localStorage.getItem("teacherName") ||
-          localStorage.getItem("parentName") ||
-          "User"}
-        </div>
+{/* User Image */}
+
+
+</div>
+
+{/* 🔹 SCHOOL NAME */}
+<div className="popup-school-name">
+{school || localStorage.getItem("schoolName") || "School Name"}
+</div>
+{localStorage.getItem("profilePhoto") ? (
+  <img
+    src={localStorage.getItem("profilePhoto")}
+    className="popup-user-avatar"
+  />
+) : (
+  <FaUserCircle className="popup-user-avatar fallback" />
+)}
+{/* 🔹 USER NAME */}
+<div className="popup-user-name">
+{localStorage.getItem("adminName") ||
+localStorage.getItem("teacherName") ||
+localStorage.getItem("parentName") ||
+"User"}
+
+</div>
+{/* 🔹 ROLE */}
+<div className="popup-role">
+{(role || localStorage.getItem("role") || "USER").toUpperCase()}
+</div>
+
 
         <div className="popup-divider" />
 

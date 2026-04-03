@@ -692,7 +692,7 @@ hidden
 className="cancel"
 onClick={resetForm}
 >
-Cancel
+Reset
 </button>
 
 </div>

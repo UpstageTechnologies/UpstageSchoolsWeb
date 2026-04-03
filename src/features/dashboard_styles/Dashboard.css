@@ -20,6 +20,38 @@ html,body{overflow-x:hidden;}
     width: calc(100% - var(--sidebar-width));
     transition: margin-left 0.35s ease, width 0.35s ease;
   }
+  .popup-top-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+  
+  /* 🏫 School logo */
+  .popup-school-logo {
+    width: 144px;
+    height: 144px;
+    border-radius: 12px;
+    object-fit: cover;
+    background: #f1f5f9;
+    padding: 5px;
+  }
+  
+  /* 👤 User image */
+  .popup-user-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #e2e8f0;
+  }
+  
+  /* fallback icons */
+  .fallback {
+    font-size: 55px;
+    color: #94a3b8;
+  }
   /* =========================
    UNIVERSAL SAME SCROLLBAR
 ========================= */
@@ -524,9 +556,10 @@ html,body{overflow-x:hidden;}
 /* popup card */
 .profile-modal {
   background: #fff;
-  border-radius: 14px;
-  padding: 18px 20px;
-  width: 260px;
+  width: 380px;          /* ⬅ increase (before ~300-320 irukum) */
+  padding: 30px 25px;    /* ⬅ more breathing space */
+  border-radius: 20px;
+  
   box-shadow: 0 20px 40px rgba(0,0,0,0.2);
   text-align: center;
 }

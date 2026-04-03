@@ -1073,7 +1073,7 @@ setClassForm({ ...classForm, subject: e.target.value })
 className="cancel"
 onClick={resetForm}
 >
-Cancel
+Reset
 </button>
 
 </div>

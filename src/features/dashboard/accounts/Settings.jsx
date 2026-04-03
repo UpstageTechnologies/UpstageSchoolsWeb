@@ -29,7 +29,7 @@ const [timingValidationError, setTimingValidationError] = useState("");
 const [showTimingGuide, setShowTimingGuide] = useState(true);
   const [saveStatus, setSaveStatus] = useState("");
   const [savedYear, setSavedYear] = useState(null);
-  
+  const [oldYears, setOldYears] = useState([]);
   const [startDate, setStartDate] = useState("");
 const [endDate, setEndDate] = useState("");
 const [saving, setSaving] = useState(false);
@@ -53,7 +53,18 @@ useEffect(() => {
     delete window.resetSettingsSection;
   };
 }, [activeSection]);
+useEffect(() => {
+  if (!adminUid) return;
 
+  const ref = collection(db, "users", adminUid, "AcademicYearHistory");
+
+  const unsub = onSnapshot(ref, (snap) => {
+    const data = snap.docs.map(doc => doc.data());
+    setOldYears(data);
+  });
+
+  return () => unsub();
+}, [adminUid]);
   useEffect(() => {
     if (!adminUid) return;
 
@@ -163,36 +174,56 @@ useEffect(() => {
     loadDates();
   }, [adminUid]);
   const saveSchoolDates = async () => {
-    if (!startDate || !endDate) {
-      setSaveStatus("Please select both dates");
-      return;
+    try {
+      if (!startDate || !endDate) {
+        setSaveStatus("Please select both dates");
+        return;
+      }
+  
+      if (new Date(startDate) >= new Date(endDate)) {
+        setSaveStatus("End date must be after start date");
+        return;
+      }
+  
+      setSaving(true);
+      setSaveStatus("");
+  
+      const ref = doc(db, "users", adminUid, "SchoolSettings", "academicYear");
+  
+      const snap = await getDoc(ref);
+  
+      // 🔥 SAFE CHECK (VERY IMPORTANT)
+      if (snap.exists()) {
+        const oldData = snap.data();
+  
+        if (oldData.startDate && oldData.endDate) {
+          await addDoc(
+            collection(db, "users", adminUid, "AcademicYearHistory"),
+            oldData
+          );
+        }
+      }
+  
+      // 🔥 SAVE NEW
+      await setDoc(ref, { startDate, endDate });
+  
+      const startYear = new Date(startDate).getFullYear();
+      const endYear = new Date(endDate).getFullYear();
+  
+      setSavedYear({
+        year: `${startYear} - ${endYear}`,
+        startDate,
+        endDate,
+      });
+  
+      setSaving(false);
+      setSaveStatus("Saved successfully ✅");
+  
+    } catch (err) {
+      console.error(err);
+      setSaving(false);
+      setSaveStatus("Something went wrong ❌");
     }
-  
-    if (new Date(startDate) >= new Date(endDate)) {
-      setSaveStatus("End date must be after start date");
-      return;
-    }
-  
-    setSaving(true);
-    setSaveStatus("");
-  
-    await setDoc(
-      doc(db, "users", adminUid, "SchoolSettings", "academicYear"),
-      { startDate, endDate },
-      { merge: true }
-    );
-  
-    const startYear = new Date(startDate).getFullYear();
-    const endYear = new Date(endDate).getFullYear();
-  
-    setSavedYear({
-      year: `${startYear} - ${endYear}`,
-      startDate,
-      endDate,
-    });
-  
-    setSaving(false);
-    setSaveStatus("Saved successfully ✅");
   };
   useEffect(() => {
     if (!adminUid) return;
@@ -520,13 +551,33 @@ if (slotErrors.length > 0) {
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>{savedYear.year}</td>
-          <td>{savedYear.startDate}</td>
-          <td>{savedYear.endDate}</td>
-          <td className="success">Saved</td>
-        </tr>
-      </tbody>
+
+{/* ✅ CURRENT */}
+{savedYear && (
+  <tr>
+    <td>{savedYear.year}</td>
+    <td>{savedYear.startDate}</td>
+    <td>{savedYear.endDate}</td>
+    <td className="current">Current</td>
+  </tr>
+)}
+
+{/* ✅ PREVIOUS */}
+{oldYears.map((y, index) => {
+  const startYear = new Date(y.startDate).getFullYear();
+  const endYear = new Date(y.endDate).getFullYear();
+
+  return (
+    <tr key={index}>
+      <td>{startYear} - {endYear}</td>
+      <td>{y.startDate}</td>
+      <td>{y.endDate}</td>
+      <td className="previous">Previous</td>
+    </tr>
+  );
+})}
+
+</tbody>
     </table>
   </div>
 )}
@@ -1240,6 +1291,15 @@ input:focus {
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
+}
+.current {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.previous {
+  color: #64748b;
+  font-weight: 500;
 }
 `;
   
