@@ -253,12 +253,12 @@ export default function LandingNavbar({ showAbout = false, setShowAbout ,  showB
     <span className="hover-text">95260960260</span>
   </div>
 
-  <div className="nav-item">
-    <FaEnvelope />
-    <span className="hover-text">
-      upstagetechnologies@gmail.com
-    </span>
-  </div>
+  {/* <div className="nav-item"> */}
+    {/* <FaEnvelope /> */}
+    {/* <span className="hover-text"> */}
+      {/* upstagetechnologies@gmail.com */}
+    {/* </span> */}
+  {/* </div> */}
 
 </div>
 

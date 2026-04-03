@@ -840,21 +840,6 @@
     color:#fff;
     cursor:pointer;
   }
-  
-  /* mobile */
-  @media (max-width:768px){
-  
-    .report-text{
-      display:none;
-    }
-  
-    .report-btn{
-      width:42px;
-      height:42px;
-      justify-content:center;
-    }
-  
-  }
   /* Mobile: only 3 dots */
 @media (max-width:768px){
 

@@ -7,8 +7,7 @@ import "../../dashboard_styles/ios.css";
 import "../../../components/IntroPopup.css"
 import { FiChevronUp, FiChevronDown } from "react-icons/fi";
 import { FaBible, FaFileInvoice ,FaPrint } from "react-icons/fa";
-
-
+import Report from "./Report";
 export default function FeesPage({ adminUid, mode, setActivePage , globalSearch = ""}) {
 const [incomeList, setIncomeList] = useState([]);
 const [expenseList, setExpenseList] = useState([]);
@@ -53,7 +52,7 @@ const currentDateTerm2 = allDatesTerm2[currentPageIndexTerm2] || "";
 const [allDatesTerm3, setAllDatesTerm3] = useState([]);
 const [currentPageIndexTerm3, setCurrentPageIndexTerm3] = useState(0);
 const [term3TableData, setTerm3TableData] = useState([]);
-
+const [allReportData, setAllReportData] = useState([]);
 const currentDateTerm3 = allDatesTerm3[currentPageIndexTerm3] || "";
 
 const isSkipped = localStorage.getItem("skipIntro") === "true";
@@ -828,74 +827,83 @@ const historyRef = collection(
 );
 
 const normalizePaymentType = (i) => {
-  if (!i.paymentType) return "";
+
+  if (!i.paymentType) {
+    return "unknown";   // 🔥 IMPORTANT
+  }
 
   return i.paymentType
     .toLowerCase()
     .replace(/\s+/g, "");
 };
+useEffect(() => {
+  if (!adminUid) return;
+
+  const reportRef = collection(
+    db,
+    "users",
+    adminUid,
+    "Account",
+    "accounts",
+    "Report"
+  );
+
+  const unsub = onSnapshot(reportRef, snap => {
+    const data = snap.docs.map(d => ({
+      id: d.id,
+      ...d.data()
+    }));
+
+    console.log("🔥 REPORT FETCH:", data);
+
+    setAllReportData(data); // 🔥 VERY IMPORTANT
+  });
+
+  return () => unsub();
+}, [adminUid]);
 const generateReport = () => {
 
-  let data = filterIncomeByDate().map(i => ({
-    ...i,
-    paymentType: normalizePaymentType(i)
-  }));
-  
-  /* DATE FILTER */
-  
-  if (fromDate) {
-    data = data.filter(i => i.date >= fromDate);
-  }
-  
-  if (toDate) {
-    data = data.filter(i => i.date <= toDate);
-  }
-  
-  /* REPORT FILTER */
-  
-  if (reportFilter === "new") {
-    data = data.filter(i => i.isNew === true);
-  }
-  
-  else if (reportFilter !== "all" && reportFilter !== "pending") {
-    data = data.filter(i => i.paymentType === reportFilter);
-  }
-  
-  /* PENDING FILTER */
-  
-  if (reportFilter === "pending") {
-  
-    if (!reportPendingClass || !reportPendingFee) {
-      alert("Please select class and fees");
-      return;
+  let data = [...allReportData];
+
+  if (reportFilter !== "all") {
+
+    if (reportFilter === "new") {
+      data = data.filter(i => i.admissionType === "new");   // ✅ FIX
     }
-  
-    data = students
-      .filter(s => s.class === reportPendingClass)
-      .map(s => {
-  
-        const balance = getBalance(s.id, reportPendingFee);
-  
-        if (balance <= 0) return null;
-  
-        return {
-          id: s.id,
-          studentName: s.studentName,
-          className: reportPendingClass,
-          balance,
-          paidAmount: getPaidAmount(s.id, reportPendingFee.id),
-          paymentType: "pending"
-        };
-  
-      })
-      .filter(Boolean);
+
+    // ✅ OLD FIX
+    else if (reportFilter === "old") {
+      data = data.filter(i =>
+        i.isNew === false || i.admissionType === "old"
+      );
+    }
+
+    // ✅ OTHER FILTERS
+    else {
+      data = data.filter(i => {
+        const payment = i.paymentType?.toLowerCase();
+        const income = i.incomeType?.toLowerCase();
+
+        return (
+          payment === reportFilter.toLowerCase() ||
+          income === reportFilter.toLowerCase()
+        );
+      });
+    }
   }
-  
+
+  // ✅ DATE FILTER
+  if (fromDate && toDate) {
+    data = data.filter(i =>
+      i.date >= fromDate && i.date <= toDate
+    );
+  }
+
+  console.log("FILTERED DATA:", data);
+
   setReportData(data);
   setShowGeneratedReport(true);
-  
-  };
-
+};
 const filterIncomeByDate = () => {
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0];
@@ -1478,204 +1486,30 @@ Competition
 
 </div>
 {incomeTab === "report" && (
-  <div className="section-card pop">
-<div className="history-controls">
-<h3 className="section-title">
-      Income Report – {reportFilter.toUpperCase()}
-    </h3>
-
-<div className="report-toolbar">
-
-<div className="filter-dropdown" ref={dropdownRef}>
-
-<input
-type="text"
-placeholder="Search filter..."
-value={filterSearch}
-onChange={(e)=>setFilterSearch(e.target.value)}
-onFocus={()=>setShowFilterList(true)}
-className="report-search"
-/>
-
-    {showFilterList && (
-
-      <div className="filter-list">
-        <h5 className="filter-section-title">Date Range</h5>
-        <div className="report-actions">
-        <label>From:</label>
-          <input
-            type="date"
-            value={fromDate}
-            onChange={(e)=>setFromDate(e.target.value)}
-            className="report-date"
-          />
-          <label>To:</label>
-          <input
-            type="date"
-            value={toDate}
-            onChange={(e)=>setToDate(e.target.value)}
-            className="report-date"
-          />
-
-<label>Activity type</label>
-          <select
-            value={reportFilter}
-            onChange={(e)=>setReportFilter(e.target.value)}
-            className="report-dropdown"
-          >
-            <option value="all">All</option>
-            <option value="new">New Admission</option>
-            <option value="old">Old Admission</option>
-            <option value="full">Full Payment</option>
-            <option value="partial">Partial Payment</option>
-            <option value="term1">Term 1</option>
-            <option value="term2">Term 2</option>
-            <option value="term3">Term 3</option>
-          </select>
-          <label>Actions</label>
-          <button className="action-btn generate" onClick={generateReport}>
-            Generate
-          </button>
-
-          <button
-            className="action-btn close"
-            onClick={()=>{
-              setShowGeneratedReport(false)
-              setReportData([])
-            }}
-          >
-            Close
-          </button>
-
-          <button
-className="action-btn print"
-onClick={() => window.print()}
->
-<FaPrint/> Print
-</button>
-
-        </div>
-
-      </div>
-
-    )}
-</div>
-  </div>
-
-</div>
-<div style={{marginTop:15}}>
-
-{showGeneratedReport && (
-  <>
-    
-    <div className="print-area">
-    <table className="history-table">
-  <thead>
-    <tr>
-    <th onClick={() => handleSort("studentName")}>
-  Student
-  {sortField === "studentName" &&
-    (sortDirection === "asc"
-      ? <FiChevronUp size={14}/>
-      : <FiChevronDown size={14}/>
-    )}
-</th>
-
-<th onClick={() => handleSort("className")}>
-  Class
-  {sortField === "className" &&
-    (sortDirection === "asc"
-      ? <FiChevronUp size={14}/>
-      : <FiChevronDown size={14}/>
-    )}
-</th>
-
-<th onClick={() => handleSort("paymentType")}>
-  Payment Type
-  {sortField === "paymentType" &&
-    (sortDirection === "asc"
-      ? <FiChevronUp size={14}/>
-      : <FiChevronDown size={14}/>
-    )}
-</th>
-
-<th onClick={() => handleSort("paidAmount")}>
-  Paid
-  {sortField === "paidAmount" &&
-    (sortDirection === "asc"
-      ? <FiChevronUp size={14}/>
-      : <FiChevronDown size={14}/>
-    )}
-</th>
-
-<th onClick={() => handleSort("balance")}>
-  Balance
-  {sortField === "balance" &&
-    (sortDirection === "asc"
-      ? <FiChevronUp size={14}/>
-      : <FiChevronDown size={14}/>
-    )}
-</th>
-
-<th onClick={() => handleSort("date")}>
-  Date
-  {sortField === "date" &&
-    (sortDirection === "asc"
-      ? <FiChevronUp size={14}/>
-      : <FiChevronDown size={14}/>
-    )}
-</th>
-    </tr>
-  </thead>
-
-  <tbody>
-    {reportData.length === 0 ? (
-      <tr>
-        <td colSpan="6" style={{ textAlign: "center" }}>
-          No data found
-        </td>
-      </tr>
-    ) : (
-      paginate(reportData).map(i => {
-        const balance =
-          i.paymentType === "pending"
-            ? i.balance
-            : getFeeBalance(i.studentId, i.feeId);
-
-        return (
-          <tr key={i.id}>
-            
-            <td data-label="Student">{i.studentName}</td>
-            <td data-label="Class">{i.className}</td>
-
-            <td
-              data-label="Payment Type"
-              style={{ textTransform: "capitalize" }}
-            >
-              {i.paymentType}
-            </td>
-
-            <td data-label="Paid">₹{i.paidAmount || 0}</td>
-
-            <td
-              data-label="Balance"
-              style={{ color: balance > 0 ? "red" : "green" }}>
-              ₹{balance}
-            </td>
-
-            <td data-label="Date">{i.date || "-"}</td>
-          </tr>
-        );
-      })
-    )}
-  </tbody>
-</table>
-</div>
-  </>
-)}
-</div>
-
-</div>
+  <Report
+    reportFilter={reportFilter}
+    setReportFilter={setReportFilter}
+    filterSearch={filterSearch}
+    setFilterSearch={setFilterSearch}
+    showFilterList={showFilterList}
+    setShowFilterList={setShowFilterList}
+    fromDate={fromDate}
+    setFromDate={setFromDate}
+    toDate={toDate}
+    setToDate={setToDate}
+    generateReport={generateReport}
+    setShowGeneratedReport={setShowGeneratedReport}
+    setReportData={setReportData}
+    showGeneratedReport={showGeneratedReport}
+    reportData={reportData}
+    handleSort={handleSort}
+    sortField={sortField}
+    sortDirection={sortDirection}
+    paginate={paginate}
+    getFeeBalance={getFeeBalance}
+    dropdownRef={dropdownRef}
+    allReportData={allReportData}   // 🔥 ADD THIS
+  />
 )}
 {incomeTab === "expenseAnalysis" && (
  <div className="section-card pop">

@@ -1031,7 +1031,11 @@ input:focus {
 .primary-btn {
   width: 100%;
   margin-top: 14px;
-  background: var(--primary);
+  background: linear-gradient(
+    90deg,
+    rgba(124, 58, 237, 0.9),
+    rgba(91, 33, 182, 0.9)
+  );
   color: #fff;
   border: none;
   padding: 12px;

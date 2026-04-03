@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import ApplicationList from "./ApplicationList";
 import Approvals from "./Approvals";
-
+import "../../components/IntroPopup.css";
 const CombinedPage = ({ requirePremium, notificationCount }) => {
   const [activeTab, setActiveTab] = useState("applications");
+  const isSkipped = localStorage.getItem("skipAppGuide") === "true";
+  const [showGuide, setShowGuide] = useState(!isSkipped);
 
   const appCount = notificationCount?.applications || 0;
   const approvalCount = notificationCount?.approvals || 0;
@@ -15,7 +17,32 @@ const CombinedPage = ({ requirePremium, notificationCount }) => {
       <h2 style={{ textAlign: "center", marginBottom: 10 }}>
         Applications & Approvals
       </h2>
+      {showGuide && (
+  <div className="guide-banner">
+    <p>
+      Manage all your school applications and approvals here.
 
+      Applications from students, teachers, and staff will appear in the Applications tab.
+
+      Admin can review and approve requests in the Approvals tab.
+
+      Then click <strong>Finish</strong> to continue.
+    </p>
+
+    <button
+      className="finish-btn"
+      onClick={() => {
+        setShowGuide(false);
+        localStorage.setItem("skipAppGuide", "true");
+
+        window.setActivePageDirect &&
+          window.setActivePageDirect("home");
+      }}
+    >
+      Finish →
+    </button>
+  </div>
+)}
       {/* 🔘 Toggle Wrapper */}
       <div
         style={{
@@ -72,8 +99,6 @@ const CombinedPage = ({ requirePremium, notificationCount }) => {
               </span>
             )}
           </div>
-
-          {/* 🟩 Approvals */}
           <div
             onClick={() => setActiveTab("approvals")}
             style={{
@@ -113,8 +138,6 @@ const CombinedPage = ({ requirePremium, notificationCount }) => {
           </div>
         </div>
       </div>
-
-      {/* 📄 Content */}
       <div>
         {activeTab === "applications" && (
           <ApplicationList requirePremium={requirePremium} />

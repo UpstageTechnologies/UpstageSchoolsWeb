@@ -224,8 +224,8 @@
   width:46px;
   height:46px;
   border-radius:50%;
-  color: rgb(254, 254, 254);
-  background:#010101;
+  color: rgb(16, 16, 16);
+  background:#f5f4f4;
 
   display:flex;
   align-items:center;

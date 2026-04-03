@@ -1,5 +1,5 @@
 import React, { useEffect, useState ,useMemo ,useCallback } from "react";
-import { collection, onSnapshot, addDoc, updateDoc,  deleteDoc, doc ,getDoc ,query, where, getDocs,Timestamp} from "firebase/firestore";
+import { collection, onSnapshot, addDoc, updateDoc,  deleteDoc, doc ,getDoc ,setDoc,query, where, getDocs,Timestamp} from "firebase/firestore";
   import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
 import "../../dashboard_styles/studentSearch.css";
@@ -425,15 +425,34 @@ useEffect(() => {
       return alert("Fill all source fields");
   
     try {
-      await addDoc(incomesRef, {
-        type: "source",
+      const docRef = await addDoc(incomesRef, {
+                type: "source",
         name: srcName,              // 🔥 CHANGE HERE
         paidAmount: Number(srcAmt),
         paymentMode: paymentMode,
         date: entryDate,
         createdAt: new Date()
       });
-  
+      await setDoc(
+        doc(
+          db,
+          "users",
+          adminUid,
+          "Account",
+          "accounts",
+          "Report",
+          docRef.id   // 🔥 SAME ID
+        ),
+        {
+          type: "income",
+          incomeType: "source",
+          name: srcName,
+          paidAmount: Number(srcAmt),
+          paymentMode: paymentMode,
+          date: entryDate,
+          createdAt: new Date()
+        }
+      );
       // 2️⃣ Save History
       await addDoc(historyRef, {
         entryType: "income",     // 🔥 IMPORTANT
@@ -656,13 +675,14 @@ await addDoc(
         ]
       }
     );
-    await addDoc(incomesRef, {
+    const docRef = await addDoc(incomesRef,{
 
       studentId: studentDocRef.id,
       studentName: newName,
       parentName: newParent,
       className: newClass,
-    
+      admissionType: "new",
+      
       feeId: fee.id,
       feeName: fee.name,
     
@@ -675,6 +695,7 @@ await addDoc(
       balanceAfter: balanceAfter,
     
       paymentType: newPayType.toLowerCase(),
+      
       paymentMode: paymentMode,
     
       paymentStage: "Admission",
@@ -688,6 +709,31 @@ await addDoc(
       createdAt: new Date()
     
     });
+    await setDoc(
+      doc(
+        db,
+        "users",
+        adminUid,
+        "Account",
+        "accounts",
+        "Report",
+        docRef.id   // 🔥 SAME ID
+      ),
+      {
+        type: "income",              // 🔥 IMPORTANT
+        studentName: newName,
+        parentName: newParent,
+        className: newClass,
+        feeName: fee.name,
+        paidAmount: final,
+        paymentType: newPayType.toLowerCase(),
+        admissionType: "new",
+        isNew: true,   // 🔥 MUST ADD
+        paymentMode: paymentMode,
+        date: entryDate,
+        createdAt: new Date()
+      }
+    );
     await addDoc(historyRef,{
       entryType: "income",
       action: "ADD",
@@ -879,15 +925,14 @@ if (oldPayType === "monthly") {
    
     
     const balanceAfter = balanceBefore - final;    // 👈 correct
-  
-    await addDoc(incomesRef, {
+    const docRef = await addDoc(incomesRef, {
       studentId: stu.id,
       studentName: stu.studentName,
       className: stu.class,
       isNew: false,
-
+    
       feeId: selectedFees[0]?.id || null,
-      feeType: selectedFees[0].feeType, 
+      feeType: selectedFees[0]?.feeType || "",
 feeName: selectedFees[0]?.name || "",
 feeAmount: selectedFees[0]?.amount || 0,
       totalFees: total,
@@ -899,9 +944,34 @@ feeAmount: selectedFees[0]?.amount || 0,
       paymentType: oldPayType,
       paymentMode:paymentMode,
       paymentStage: paidSoFar === 0 ? "Admission" : "Term",
+      admissionType: "old",
       date: entryDate,
       createdAt: new Date()
     });
+    await setDoc(
+      doc(
+        db,
+        "users",
+        adminUid,
+        "Account",
+        "accounts",
+        "Report",
+        docRef.id   // 🔥 SAME ID
+      ),
+      {
+        type: "income",
+        studentName: stu.studentName,
+        className: stu.class,
+        feeName: selectedFees[0]?.name || "",
+        paidAmount: final,
+        paymentType: oldPayType,
+        paymentMode: paymentMode,
+        admissionType: "old",
+        paymentStage: paidSoFar === 0 ? "Admission" : "Term",
+        date: entryDate,
+        createdAt: new Date()
+      }
+    );
     await addDoc(historyRef,{
       entryType: "income",
       action: "ADD",
@@ -971,10 +1041,10 @@ setShowPaymentDD(false);
       alert("Fill all competition fields");
       return;
     }
-  
-    // 1️⃣ Income
-    await addDoc(incomesRef, {
+    const docRef = await addDoc(incomesRef, {
       incomeType: "competition",
+      paymentType: "competition",   // ✅ ADD THIS
+      admissionType: "other", 
       className: competitionClass,
       studentName: competitionStudent,
       competitionName,
@@ -983,6 +1053,30 @@ setShowPaymentDD(false);
       date: entryDate,
       createdAt: new Date()
     });
+    await setDoc(
+      doc(
+        db,
+        "users",
+        adminUid,
+        "Account",
+        "accounts",
+        "Report",
+        docRef.id   // 🔥 SAME ID
+      ),
+      {
+        type: "income",
+        incomeType: "competition",
+        paymentType: "competition",   // ✅ ADD THIS
+        admissionType: "other",  
+        className: competitionClass,
+        studentName: competitionStudent,
+        competitionName,
+        paidAmount: Number(competitionAmount),
+        paymentMode: paymentMode,
+        date: entryDate,
+        createdAt: new Date()
+      }
+    );
   
     // 2️⃣ History
     await addDoc(historyRef, {

@@ -67,6 +67,17 @@ All your data is securely stored and will never be lost.
 You can view, track, and even restore previous records anytime.
 
 Click Go to History to view all saved data.`,
+applications: `Now manage your school applications and approvals.
+
+• All applications from students, teachers, or staff will appear here  
+
+• Admin and teachers can review and approve requests easily  
+
+• Notifications will alert you when new requests arrive  
+
+Everything is organized in one place.
+
+Go to Applications & Approvals to continue.`,
     };
   
     const text = contentMap[type] || contentMap.default;
@@ -116,6 +127,10 @@ Click Go to History to view all saved data.`,
     else if (type === "accounts") {
       window.openAccountsPage && window.openAccountsPage();
     }
+    else if (type === "applications") {
+      window.setActivePageDirect &&
+        window.setActivePageDirect("combined"); // ✅ correct
+    }
     else {
       window.openSettingsPage && window.openSettingsPage();
     }
@@ -131,6 +146,8 @@ Click Go to History to view all saved data.`,
     ? "Go to Account Creation →"
     : type === "accounts"
     ? "Go to Accounts →"
+    : type === "applications"
+? "Go to Applications →"
     : "Go to Settings →"}
 </button>
 <button

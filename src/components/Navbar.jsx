@@ -259,7 +259,7 @@ const filteredQuickTiles = QUICK_TILES.filter(tile =>
   style={{ position: "relative", cursor: "pointer" }}
   onClick={() => handleMenuClick("combined")}
 >
-  <FaRegBell size={20} />
+  <FaRegBell size={30} />
 
   {totalCount > 0 && (
     <span

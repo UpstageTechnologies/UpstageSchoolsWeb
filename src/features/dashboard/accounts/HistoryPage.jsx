@@ -256,10 +256,10 @@ export default function HistoryPage({ adminUid, setActivePage , globalSearch = "
       className="finish-btn"
       onClick={() => {
         setShowHistoryGuide(false);
-
-        // 🔥 BACK TO DASHBOARD
-        window.setActivePageDirect &&
-          window.setActivePageDirect("home");
+      
+        // 🔥 next intro open
+        window.openIntroPopup &&
+          window.openIntroPopup("applications");
       }}
     >
       Finish →
