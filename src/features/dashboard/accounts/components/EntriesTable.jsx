@@ -15,39 +15,65 @@ export default function EntriesTable({
   prevPage,
   nextPage,
   getVisiblePages,
-  goToPage
+  goToPage,
+  searchText,
+  fromDate,
+  toDate,
+  activityType,
+  appliedFilter
 }) {
-
-  const all = [
-    ...incomeList
-      .filter(i => i.date === entryDate)
-      .map(i => ({
-        id: i.id,
-        type: "income",
-        date: i.date,
-        source: i.competitionName || i.studentName || i.name || "Income",
-        income: i.paidAmount || 0,
-        expense: "",
-        mode: i.paymentMode || "",
-        hidden: isOfficeStaff,
-        studentId: i.studentId || null
-      })),
-
-    ...expenseList
-      .filter(e => e.date === entryDate)
-      .map(e => ({
-        id: e.id,
-        type: "expense",
-        date: e.date,
-        source: e.name,
-        income: "",
-        expense: e.amount || 0,
-        mode: e.paymentMode || "",
-        hidden: isOfficeStaff,
-        studentId: null
-      }))
+  let all = [
+    ...incomeList.map(i => ({
+      id: i.id,
+      type: "income",
+      date: i.date,
+      source: i.competitionName || i.studentName || i.name || "Income",
+      income: i.paidAmount || 0,
+      expense: "",
+      mode: i.paymentMode || "",
+      hidden: isOfficeStaff,
+      studentId: i.studentId || null
+    })),
+  
+    ...expenseList.map(e => ({
+      id: e.id,
+      type: "expense",
+      date: e.date,
+      source: e.name,
+      income: "",
+      expense: e.amount || 0,
+      mode: e.paymentMode || "",
+      hidden: isOfficeStaff,
+      studentId: null
+    }))
   ];
+  
+  if (appliedFilter) {
 
+    const { searchText, fromDate, toDate, activityType } = appliedFilter;
+  
+    if (searchText) {
+      all = all.filter(row =>
+        row.source?.toLowerCase().includes(searchText.toLowerCase())
+      );
+    }
+  
+    if (fromDate) {
+      all = all.filter(row => row.date >= fromDate);
+    }
+  
+    if (toDate) {
+      all = all.filter(row => row.date <= toDate);
+    }
+  
+    if (activityType) {
+      all = all.filter(row => row.type === activityType);
+    }
+  
+  } else {
+    // 👉 DEFAULT → selected date
+    all = all.filter(row => row.date === entryDate);
+  }
   all.sort((a, b) => {
     if (a.date !== b.date) {
       return a.date > b.date ? -1 : 1;
@@ -61,6 +87,7 @@ export default function EntriesTable({
 
   return (
     <div style={{marginTop:10}}className="section-card pop">
+      <div className="print-area">
       <table className="history-table
 ">
         <thead>
@@ -172,6 +199,7 @@ export default function EntriesTable({
           })}
         </tbody>
       </table>
+       </div>
 
       {/* PAGINATION */}
       <div className="pagination-bar">
@@ -206,5 +234,6 @@ export default function EntriesTable({
         </div>
       </div>
     </div>
+   
   );
 }

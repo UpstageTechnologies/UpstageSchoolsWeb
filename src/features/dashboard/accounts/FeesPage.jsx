@@ -4,7 +4,8 @@ import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
 import "../../dashboard_styles/History.css";
 import "../../dashboard_styles/ios.css";
-import "../../../components/IntroPopup.css"
+import "../../../components/IntroPopup.css";
+import ExpenseReport from "./ExpenseReport";
 import { FiChevronUp, FiChevronDown } from "react-icons/fi";
 import { FaBible, FaFileInvoice ,FaPrint } from "react-icons/fa";
 import Report from "./Report";
@@ -66,7 +67,22 @@ useEffect(() => {
     setShowIncomeGuide(false);
   }
 }, []);
-
+const [visibleCount, setVisibleCount] = useState(20);
+const handleScroll = () => {
+  if (
+    window.innerHeight + window.scrollY >=
+    document.body.offsetHeight - 100
+  ) {
+    setVisibleCount(prev => prev + 20);
+  }
+};
+useEffect(() => {
+  window.addEventListener("scroll", handleScroll);
+  return () => window.removeEventListener("scroll", handleScroll);
+}, []);
+useEffect(() => {
+  setVisibleCount(20);
+}, [expenseList, reportData]); 
 const currentDateFull = allDatesFull[currentPageIndexFull] || "";
 const [tableData, setTableData] = useState([]);
 const [oldTableData, setOldTableData] = useState([]);
@@ -611,6 +627,20 @@ const totalTerm3Income = React.useMemo(() => {
     0
   );
 }, [filteredTerm3Data]);
+const getGrandTotal = (type) => {
+  return incomeList
+    .filter(i => {
+      if (type === "new") return i.isNew === true;
+      if (type === "old") return i.isNew === false;
+      if (type === "full") return i.paymentType === "full";
+      if (type === "partial") return i.paymentType === "partial";
+      if (type === "term1") return i.paymentType === "term1";
+      if (type === "term2") return i.paymentType === "term2";
+      if (type === "term3") return i.paymentType === "term3";
+      return true;
+    })
+    .reduce((sum, i) => sum + Number(i.paidAmount || 0), 0);
+};
 const handleSort = (field) => {
   if (sortField === field) {
     setSortDirection(prev => prev === "asc" ? "desc" : "asc");
@@ -900,6 +930,29 @@ const generateReport = () => {
   }
 
   console.log("FILTERED DATA:", data);
+
+  setReportData(data);
+  setShowGeneratedReport(true);
+};
+const generateExpenseReport = () => {
+
+  let data = [...expenseList]; // 🔥 use expenseList NOT report collection
+
+  // ✅ TYPE FILTER
+  if (reportFilter !== "all") {
+    data = data.filter(i =>
+      i.type?.toLowerCase() === reportFilter.toLowerCase()
+    );
+  }
+
+  // ✅ DATE FILTER
+  if (fromDate && toDate) {
+    data = data.filter(i =>
+      i.date >= fromDate && i.date <= toDate
+    );
+  }
+
+  console.log("EXPENSE REPORT:", data);
 
   setReportData(data);
   setShowGeneratedReport(true);
@@ -1326,6 +1379,7 @@ const totalTuitionIncome = React.useMemo(() => {
     0
   );
 }, [paginatedTuitionData]);
+const grandTotal = getGrandTotal(incomeTab);
 const totalPagesTuition = Math.ceil(
   feeRows.length / rowsPerPageTuition
 );
@@ -1475,10 +1529,18 @@ Competition
 
 <button
   className="report-btn"
-  onClick={() => {setShowReport(true) 
-  setReportFilter("all")
-  generateReport()         // auto generate
-  setIncomeTab("report") }}
+  onClick={() => {
+    console.log("MODE:", mode);
+    setShowReport(true);
+    setReportFilter("all");
+    generateReport();
+  
+    if (mode === "income") {
+      setIncomeTab("report");
+    } else {
+      setExpenseTab("report"); // 🔥 MUST
+    }
+  }}
 >
   <FaFileInvoice />
   <span className="report-text">Report</span>
@@ -1511,6 +1573,7 @@ Competition
     allReportData={allReportData}   // 🔥 ADD THIS
   />
 )}
+
 {incomeTab === "expenseAnalysis" && (
  <div className="section-card pop">
 
@@ -1934,6 +1997,11 @@ Competition
   <td><strong>₹{totalTuitionIncome}</strong></td>
   <td colSpan="2"></td>
 </tr>
+<tr className="total-row" style={{ color: "#fff" }}>
+  <td colSpan="3"><strong>Grand Total</strong></td>
+  <td><strong>₹{getGrandTotal(incomeTab)}</strong></td>
+  <td></td>
+</tr>
 
 </tbody>
 </table>
@@ -2072,6 +2140,11 @@ filteredTableData.map(i => (
 <td><strong>₹{totalIncome}</strong></td>
 <td></td>
 </tr>
+<tr className="total-row" style={{ color: "#fff" }}>
+  <td colSpan="3"><strong>Grand Total</strong></td>
+  <td><strong>₹{getGrandTotal(incomeTab)}</strong></td>
+  <td></td>
+</tr>
 </>
 </tbody>
                 </table>
@@ -2194,6 +2267,11 @@ filteredOldData.map(i => (
     <td><strong>₹{totalOldIncome}</strong></td>
     <td></td>
   </tr>
+  <tr className="total-row" style={{ color: "#fff" }}>
+  <td colSpan="3"><strong>Grand Total</strong></td>
+  <td><strong>₹{getGrandTotal(incomeTab)}</strong></td>
+  <td></td>
+</tr>
 </>
 </tbody>
                 </table>
@@ -2311,6 +2389,12 @@ className="table-search"
   <td><strong>₹{totalFullIncome}</strong></td>
   <td></td>
 </tr>
+<tr className="total-row" style={{  color: "#fff" }}>
+  <td colSpan="3"><strong>Grand Total</strong></td>
+  <td><strong>₹{getGrandTotal(incomeTab)}</strong></td>
+  <td></td>
+</tr>
+
 
 </tbody>
 </table>
@@ -2461,7 +2545,11 @@ filteredPartialData.map(i => {
   <td><strong>₹{totalPartialIncome}</strong></td>
   <td colSpan="2"></td>
 </tr>
-
+<tr className="total-row" style={{color: "#fff" }}>
+  <td colSpan="3"><strong>Grand Total</strong></td>
+  <td><strong>₹{getGrandTotal(incomeTab)}</strong></td>
+  <td></td>
+</tr>
 </>
 
 </tbody>
@@ -2611,6 +2699,11 @@ style={{ marginTop: "18px", marginBottom: "20px" }}
   <td><strong>₹{totalTerm1Income}</strong></td>
   <td colSpan="2"></td>
 </tr>
+<tr className="total-row" style={{  color: "#fff" }}>
+  <td colSpan="3"><strong>Grand Total</strong></td>
+  <td><strong>₹{getGrandTotal(incomeTab)}</strong></td>
+  <td></td>
+</tr>
 
 </tbody>
 </table>
@@ -2757,6 +2850,11 @@ style={{ marginTop: "18px", marginBottom: "20px" }}
   <td><strong>₹{totalTerm2Income}</strong></td>
   <td colSpan="2"></td>
 </tr>
+<tr className="total-row" style={{  color: "#fff" }}>
+  <td colSpan="3"><strong>Grand Total</strong></td>
+  <td><strong>₹{getGrandTotal(incomeTab)}</strong></td>
+  <td></td>
+</tr>
 
 </tbody>
   </table><div className="pagination-bar">
@@ -2896,6 +2994,11 @@ style={{ marginTop: "18px", marginBottom: "20px" }}
           <td><strong>₹{totalTerm3Income}</strong></td>
           <td colSpan="2"></td>
         </tr>
+        <tr className="total-row" style={{  color: "#fff" }}>
+  <td colSpan="3"><strong>Grand Total</strong></td>
+  <td><strong>₹{getGrandTotal(incomeTab)}</strong></td>
+  <td></td>
+</tr>
 
       </tbody>
     </table>
@@ -2946,141 +3049,135 @@ style={{ marginTop: "18px", marginBottom: "20px" }}
   </div>
 )}</>)}
       {mode==="expenses" && (
-
 <>
+  {/* FILTER BUTTONS */}
+  <div className="history-filters">
 
+    <button
+      className={expenseTab === "all" ? "tab-btn active" : "tab-btn"}
+      onClick={() => setExpenseTab("all")}
+    >
+      All
+    </button>
 
-{/* FILTER BUTTONS */}
-<div className="history-filters">
+    <button
+      className={expenseTab === "salary" ? "tab-btn active" : "tab-btn"}
+      onClick={() => setExpenseTab("salary")}
+    >
+      Salary
+    </button>
 
-<button
-  className={expenseTab === "all" ? "tab-btn active" : "tab-btn"}
-  onClick={() => setExpenseTab("all")}
->
-All
-</button>
+    <button
+      className={expenseTab === "competition" ? "tab-btn active" : "tab-btn"}
+      onClick={() => setExpenseTab("competition")}
+    >
+      Competition
+    </button>
 
-<button
-  className={expenseTab === "salary" ? "tab-btn active" : "tab-btn"}
-  onClick={() => setExpenseTab("salary")}
->
-Salary
-</button>
+    <button
+      className={expenseTab === "others" ? "tab-btn active" : "tab-btn"}
+      onClick={() => setExpenseTab("others")}
+    >
+      Other
+    </button>
 
-<button
-  className={expenseTab === "competition" ? "tab-btn active" : "tab-btn"}
-  onClick={() => setExpenseTab("competition")}
->
-Competition
-</button>
+    <button
+      className="report-btn"
+      onClick={() => {
+        setExpenseTab("report");
+        setReportFilter("all");
+        generateExpenseReport();
+      }}
+    >
+      <FaFileInvoice />
+      <span>Report</span>
+    </button>
+  </div>
 
-<button
-  className={expenseTab === "others" ? "tab-btn active" : "tab-btn"}
-  onClick={() => setExpenseTab("others")}
->
-Other
-</button>
+  {/* 🔥 NORMAL TABLE (ONLY WHEN NOT REPORT) */}
+  {expenseTab !== "report" && (
+    <div className="section-card pop">
 
-</div>
+      <div className="history-controls">
+        <div className="table-header">
+          <h3 className="section-title">
+            Expenses Details
+          </h3>
+        </div>
 
-<div className="section-card pop">
- <div className="history-controls">
-{/* HEADER */}
-<div className="table-header">
+        <input
+          type="text"
+          placeholder="Search in table..."
+          value={tableSearch}
+          onChange={(e) => setTableSearch(e.target.value)}
+          className="table-search"
+          style={{ marginTop: "18px", marginBottom: "20px" }}
+        />
+      </div>
 
-<h3 className="section-title">
-  Expenses Details
-</h3>
+      <table className="history-table">
+        <thead>
+          <tr>
+            <th onClick={() => handleSort("type")}>Type</th>
+            <th onClick={() => handleSort("name")}>Name</th>
+            <th onClick={() => handleSort("amount")}>Amount</th>
+            <th onClick={() => handleSort("date")}>Date</th>
+          </tr>
+        </thead>
 
+        <tbody>
+          {getSortedData(
+            expenseList
+              .filter(e => {
 
-</div>
+                if (expenseTab === "all") return true;
+                if (expenseTab === "salary") return e.type === "salary";
+                if (expenseTab === "competition") return e.type === "student_misc";
+                if (expenseTab === "others") return e.type === "others";
 
-{/* SEARCH */}
-<input
-type="text"
-placeholder="Search in table..."
-value={tableSearch}
-onChange={(e) => setTableSearch(e.target.value)}
-className="table-search"
-style={{ marginTop: "18px", marginBottom: "20px" }}
-/>
-</div>
+                return true;
+              })
+              .filter(e =>
+                tableFilter(e.name, e.type, e.amount, e.date)
+              )
+          ).map(e => (
+            <tr key={e.id}>
+              <td>{e.type}</td>
+              <td>{e.name}</td>
+              <td>₹{e.amount}</td>
+              <td>{e.date}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
-  <table className="history-table">
-<thead><tr>
-<th onClick={() => handleSort("type")}>
-  Type
-  {sortField === "type" &&
-    (sortDirection === "asc"
-      ? <FiChevronUp size={14}/>
-      : <FiChevronDown size={14}/>
-    )
-  }
-</th><th onClick={() => handleSort("name")}>
-  Name
-  {sortField === "name" &&
-    (sortDirection === "asc"
-      ? <FiChevronUp size={14}/>
-      : <FiChevronDown size={14}/>
-    )
-  }
-</th>
+    </div>
+  )}
 
+  {/* 🔥 REPORT */}
+  {expenseTab === "report" && (
+    <ExpenseReport
+      expenseList={expenseList}
+      fromDate={fromDate}
+      setFromDate={setFromDate}
+      toDate={toDate}
+      setToDate={setToDate}
+      reportFilter={reportFilter}
+      setReportFilter={setReportFilter}
+      generateReport={generateExpenseReport}
+      reportData={reportData}
+      showGeneratedReport={showGeneratedReport}
+      setShowGeneratedReport={setShowGeneratedReport}
+      setReportData={setReportData}
+      showFilterList={showFilterList}
+      setShowFilterList={setShowFilterList}
+      filterSearch={filterSearch}
+      setFilterSearch={setFilterSearch}
+      dropdownRef={dropdownRef}
+    />
+  )}
 
-<th onClick={() => handleSort("amount")}>
-  Amount
-  {sortField === "amount" &&
-    (sortDirection === "asc"
-      ? <FiChevronUp size={14}/>
-      : <FiChevronDown size={14}/>
-    )
-  }
-</th>
-
-<th onClick={() => handleSort("date")}>
-  Date
-  {sortField === "date" &&
-    (sortDirection === "asc"
-      ? <FiChevronUp size={14}/>
-      : <FiChevronDown size={14}/>
-    )
-  }
-</th></tr></thead>
-<tbody>
-{getSortedData(
-  expenseList
-  .filter(e => {
-  
-    if (expenseTab === "all") return true;
-  
-    if (expenseTab === "salary") {
-      return e.type === "salary";
-    }
-  
-    if (expenseTab === "competition") {
-      return e.type === "student_misc";
-    }
-  
-    if (expenseTab === "others") {
-      return e.type === "others";
-    }
-  
-    return true;
-  })
-  .filter(e =>
-    tableFilter(
-      e.name,
-      e.type,
-      e.amount,
-      e.date
-    )
-  )
-)
-.map(e => (
-<tr key={e.id}><td data-label="Type">{e.type}</td><td data-label="Name">{e.name}</td><td data-label="Amount">₹{e.amount}</td><td>{e.date}</td></tr>
-))}</tbody>
-</table>
-</div></>
+</>
 )}</div>
   );
 }

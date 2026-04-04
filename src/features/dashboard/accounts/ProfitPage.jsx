@@ -1,4 +1,4 @@
-import React, { useEffect, useState ,useMemo ,useCallback } from "react";
+import React, { useEffect, useState ,useMemo ,useCallback,useRef } from "react";
 import { collection, onSnapshot, addDoc, updateDoc,  deleteDoc, doc ,getDoc ,setDoc,query, where, getDocs,Timestamp} from "firebase/firestore";
   import { db } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
@@ -12,7 +12,7 @@ import ExpenseSection from "./expense/ExpenseSection";
 import BillPage from "./BillPage";
 import "../../dashboard_styles/IE.css";
 import "../../../components/IntroPopup.css";
-import {  FaArrowLeft, FaTrash } from "react-icons/fa";
+import {  FaArrowLeft, FaPrint, FaTrash } from "react-icons/fa";
 export default function ProfitPage({adminUid,setActivePage,activePage = "",plan,trialAccess,trialExpiresAt,showUpgrade}) {
   const role = localStorage.getItem("role");
 const isOfficeStaff = role === "office_staff";
@@ -59,6 +59,12 @@ const [miscName, setMiscName] = useState("");       // Sports Day
 const [expenseSubName, setExpenseSubName] = useState(""); // Decoration
 const [expenseNameSearch, setExpenseNameSearch] = useState("");
 const [showExpenseNameDD, setShowExpenseNameDD] = useState(false);
+const [showFilterList, setShowFilterList] = useState(false);
+const [searchText, setSearchText] = useState("");
+const [fromDate, setFromDate] = useState("");
+const [toDate, setToDate] = useState("");
+const [activityType, setActivityType] = useState("");
+const [appliedFilter, setAppliedFilter] = useState(null); // income / expense
 const isSkipped = localStorage.getItem("skipIntro") === "true";
 const [showJournalGuide, setShowJournalGuide] = useState(!isSkipped);
 useEffect(() => {
@@ -214,6 +220,28 @@ const loaded = incomeLoaded && expenseLoaded;
     const today = new Date();
     return today.toISOString().split("T")[0]; // yyyy-mm-dd
   });
+  const dropdownRef = useRef(null);
+  const handleReset = () => {
+    setSearchText("");
+    setFromDate("");
+    setToDate("");
+    setActivityType("");
+    setAppliedFilter(null);
+    setShowFilterList(false); // 🔥 close dropdown
+  };
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowFilterList(false);
+      }
+    };
+  
+    document.addEventListener("mousedown", handleClickOutside);
+  
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   const [incomeMode, setIncomeMode] = useState("");
   const [studentMode, setStudentMode] = useState("");
   const [showEntryType, setShowEntryType] = useState(false);
@@ -1457,6 +1485,85 @@ const getTermPaidCount = (studentId, feeId) =>
 >
 
   <h3 className="section-title">Entries</h3>
+  <div className="history-controls">
+
+<div className="filter-dropdown" ref={dropdownRef}>
+
+  <input
+    type="text"
+    placeholder="Search filter..."
+    value={searchText}
+    onChange={(e)=>setSearchText(e.target.value)}
+    onFocus={()=>setShowFilterList(true)}
+    className="report-search"
+  />
+ <button
+      className="print-btn-inside"
+      onClick={() => window.print()}
+    >
+      <FaPrint />
+    </button>
+
+  {showFilterList && (
+    <div className="filter-list">
+
+      <h5 className="filter-section-title">Date Range</h5>
+
+      <div className="report-actions">
+
+        <label>From:</label>
+        <input
+          type="date"
+          value={fromDate}
+          onChange={(e)=>setFromDate(e.target.value)}
+          className="report-date"
+        />
+
+        <label>To:</label>
+        <input
+          type="date"
+          value={toDate}
+          onChange={(e)=>setToDate(e.target.value)}
+          className="report-date"
+        />
+
+        <label>Type</label>
+        <select
+          value={activityType}
+          onChange={(e)=>setActivityType(e.target.value)}
+          className="report-dropdown"
+        >
+          <option value="">All</option>
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+
+        <label>Actions</label>
+
+        <button
+          className="action-btn generate"
+          onClick={()=>{
+            onGenerate();
+            setShowFilterList(false);
+          }}
+        >
+          Generate
+        </button>
+
+        <button
+          className="action-btn close"
+          onClick={handleReset}
+        >
+          Reset
+        </button>
+
+
+      </div>
+
+    </div>
+  )}
+</div>
+</div>
   <div className="entries-box">
 
 
@@ -1734,7 +1841,11 @@ Save Fee</button>
   nextPage={nextPage}
   getVisiblePages={getVisiblePages}
   goToPage={goToPage}
-
+  searchText={searchText}
+  fromDate={fromDate}
+  toDate={toDate}
+  activityType={activityType}
+  appliedFilter={appliedFilter}
 />
         </div>
         </>

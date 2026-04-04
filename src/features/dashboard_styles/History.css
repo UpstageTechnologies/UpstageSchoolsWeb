@@ -720,7 +720,58 @@
 .history-controls input[type="date"]{
   width:180px;
 }
+@media print {
 
+  /* remove browser margin */
+  @page {
+    margin: 0;
+  }
+
+  /* hide everything */
+  body * {
+    visibility: hidden;
+  }
+
+  /* show only print area */
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+
+  /* 🔥 MAIN FIX */
+  .print-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    margin: 0 !important;
+    padding: 10px !important;   /* small padding ok */
+    background: white;
+  }
+
+  /* remove card layout */
+  .section-card {
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* full width table */
+  table {
+    width: 100% !important;
+    margin: 0 !important;
+    border-collapse: collapse;
+  }
+
+  /* hide unwanted */
+  .pagination-bar,
+  .table-actions,
+  .invoice-btn,
+  button {
+    display: none !important;
+  }
+}
 /* search right corner */
 .history-controls input[type="text"]{
   margin-left:auto;
@@ -1039,4 +1090,16 @@
     width: 100%;
     left: 0;
   }
+}
+
+.print-btn-inside {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: rgb(142, 122, 222);
+  cursor: pointer;
+  font-size: 16px;
 }

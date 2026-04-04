@@ -1,7 +1,7 @@
 import React from "react";
 import { FiChevronUp, FiChevronDown } from "react-icons/fi";
 import { FaPrint } from "react-icons/fa";
-import { useEffect } from "react";
+import { useEffect ,useState} from "react";
 export default function Report({
     adminUid,
   reportFilter,
@@ -27,7 +27,21 @@ export default function Report({
   dropdownRef
 }) {
  
-
+  const [visibleCount, setVisibleCount] = useState(20);
+  const visibleData = reportData.slice(0, visibleCount);
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + window.scrollY >=
+        document.body.offsetHeight - 100
+      ) {
+        setVisibleCount(prev => prev + 20); // load more
+      }
+    };
+  
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
     useEffect(() => {
       if (!adminUid) return;
     
@@ -70,8 +84,9 @@ export default function Report({
         else if (type === "term2") type = "Term2";
         else if (type === "term3") type = "Term3";
         else type = "Other";
-      
-        const admission = i.isNew ? "New" : "Old";
+        const admission = (i.admissionType || "old").toLowerCase() === "new"
+        ? "New"
+        : "Old";
       
         return `${type} (${admission})`;
       };
@@ -96,6 +111,12 @@ export default function Report({
               onFocus={()=>setShowFilterList(true)}
               className="report-search"
             />
+             <button
+    className="print-btn-inside"
+    onClick={() => window.print()}
+  >
+    <FaPrint />
+  </button>
 
             {showFilterList && (
               <div className="filter-list">
@@ -155,12 +176,6 @@ export default function Report({
                     Close
                   </button>
 
-                  <button
-                    className="action-btn print"
-                    onClick={() => window.print()}
-                  >
-                    <FaPrint/> Print
-                  </button>
 
                 </div>
 
@@ -247,7 +262,7 @@ export default function Report({
                     </td>
                   </tr>
                 ) : (
-                  paginate(reportData).map(i => {
+                  visibleData.map(i => {
 
                     const balance =
                       i.paymentType === "pending"
