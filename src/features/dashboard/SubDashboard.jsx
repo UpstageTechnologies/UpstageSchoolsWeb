@@ -6,10 +6,20 @@ const SubDashboard = ({ setActivePage, setAccountPopupOpen }) => {
   console.log("Popup function:", setAccountPopupOpen);
 
   const role = localStorage.getItem("role");
-
+  
   const type =
   localStorage.getItem("viewType") ||
   localStorage.getItem("role");
+
+const classId = localStorage.getItem("classId");
+
+// 🔥 ADD HERE
+const adminUid =
+  localStorage.getItem("adminUid") ||
+  localStorage.getItem("adminId");
+
+console.log("ADMIN UID USED:", adminUid);
+console.log("CLASS ID USED:", classId);
 
 const name =
   localStorage.getItem("viewName") ||
@@ -24,7 +34,7 @@ const id =
   localStorage.getItem("teacherId") ||
   localStorage.getItem("parentId") ||
   localStorage.getItem("staffId");
-
+ 
 const photo =
   localStorage.getItem("viewPhoto") ||
   localStorage.getItem("profilePhoto");
@@ -164,12 +174,12 @@ const photo =
 {/* FULL WIDTH CALENDAR SECTION */}
 <div className="">
   <h3>Academic Calendar</h3>
-
   <SchoolCalendar
-    adminUid={localStorage.getItem("adminId")}
-    role={type}
-    compact={true}
-  />
+  adminUid={adminUid}
+  role={type}
+  compact={true}
+  classId={type === "teacher" ? classId : null}
+/>
 </div>
 
       </div>

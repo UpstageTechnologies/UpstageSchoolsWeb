@@ -39,10 +39,12 @@ import React, { useEffect, useState } from "react";
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState(null);
   const [viewMode, setViewMode] = useState("student");
+  const [selectedDate, setSelectedDate] = useState(null);
 
   const [totalStudents, setTotalStudents] = useState(0);
   const [totalTeachers, setTotalTeachers] = useState(0);
 const [showUpgrade, setShowUpgrade] = useState(false);
+
 
     const userPlan = (plan || "basic").toLowerCase();
     const isPremium = userPlan === "premium" || userPlan === "lifetime";
@@ -272,6 +274,50 @@ const parentId = localStorage.getItem("parentDocId");
       if (!adminUid) {
         return <div>Loading...</div>;
       }
+
+      const TimeGrid = () => {
+        const times = [];
+      
+        let hour = 8;
+        let minute = 30;
+      
+        while (hour < 18) {
+          const formatted =
+            `${hour}:${minute === 0 ? "00" : minute}`;
+      
+          times.push(formatted);
+      
+          minute += 30;
+          if (minute === 60) {
+            minute = 0;
+            hour++;
+          }
+        }
+      
+        // 🔴 CURRENT TIME LINE
+        const now = new Date();
+        const totalMinutes =
+          (now.getHours() * 60 + now.getMinutes()) - (8 * 60 + 30);
+      
+        const position = totalMinutes * 1; // 🔥 IMPORTANT FIX
+      
+        return (
+          <div className="time-grid">
+            {/* 🔴 LINE */}
+            <div
+              className="current-line"
+              style={{ top: position }}
+            />
+      
+            {times.map((t, i) => (
+              <div key={i} className="time-slot">
+                <div className="time-label">{t}</div>
+                <div className="time-box"></div>
+              </div>
+            ))}
+          </div>
+        );
+      };
     return (
   <>
       {profile && (
@@ -384,121 +430,142 @@ const parentId = localStorage.getItem("parentDocId");
         <div className="summary-left">
         <div className="home-calendar-wrapper">   {/* 👈 add this */}
         <SchoolCalendar
-    adminUid={adminUid}
-    role={effectiveRole}
-    compact={true} 
-    hidePrint={true}  // 👈 view only mode
-  />
+  adminUid={adminUid}
+  role={effectiveRole}
+  compact={true}
+  hidePrint={true}
+  onDateSelect={(date) => setSelectedDate(date)}
+/>
 </div>
+
 
 
         </div>
 
-        {/* -------- RIGHT SIDE (SUMMARY PILLS) -------- */}
         <div className="summary-wrapper">
-          <div className="summary-title">
-    Today’s Attendance
+
+{/* 🔥 IF DATE CLICKED → SHOW TIMELINE */}
+{selectedDate ? (
+  <div className="day-view">
+    <h3>{selectedDate}</h3>
+
+    <button
+      onClick={() => setSelectedDate(null)}
+      style={{
+        marginBottom: "10px",
+        padding: "5px 10px",
+        background: "#334155",
+        color: "#fff",
+        border: "none",
+        borderRadius: "6px",
+        cursor: "pointer"
+      }}
+    >
+      ← Back
+    </button>
+
+    <TimeGrid />
   </div>
-<div className="oval-toggle">
-  <div
-    className={`oval-slider ${viewMode === "teacher" ? "right" : "left"}`}
-  />
+) : (
+  <>
+    {/* 🔥 NORMAL ATTENDANCE UI */}
 
-  <button
-    className={viewMode === "student" ? "active" : ""}
-    onClick={() => setViewMode("student")}
-  >
-    Students
-  </button>
-
-  <button
-    className={viewMode === "teacher" ? "active" : ""}
-    onClick={() => setViewMode("teacher")}
-  >
-    Teachers
-  </button>
-</div>
-
-
-
-        <div className="summary-cards">
-
-          {/* TOTAL */}
-  <div className="summary-card total-card">
-    <div className="summary-top">
-      {viewMode === "student" ? totalStudents : totalTeachers}
+    <div className="summary-title">
+      Today’s Attendance
     </div>
 
-    <div
-      className="summary-fill fill-green"
-      style={{ height: "100%" }}
-    />
+    <div className="oval-toggle">
+      <div
+        className={`oval-slider ${viewMode === "teacher" ? "right" : "left"}`}
+      />
 
-    <div className="summary-content">
-      <i className="fa fa-users"></i>
-      <span>Total</span>
-    </div>
-  </div>
+      <button
+        className={viewMode === "student" ? "active" : ""}
+        onClick={() => setViewMode("student")}
+      >
+        Students
+      </button>
 
-
-    {/* Attendance */}
-    <div className="summary-card">
-      
-      <div className="summary-top">{activeStats.present}</div>
-<div
-  className="summary-fill fill-blue"
-  style={{ height: `${getPercent(activeStats.present, totalBase)}%` }}
-/>
-
-      <div className="summary-content">
-        <i className="fa fa-user-check"></i>
-        <span>Prasent</span>
-      </div>
+      <button
+        className={viewMode === "teacher" ? "active" : ""}
+        onClick={() => setViewMode("teacher")}
+      >
+        Teachers
+      </button>
     </div>
 
-    {/* Late */}
-    <div className="summary-card">
-      <div className="summary-top">{activeStats.late}</div>
-<div
-  className="summary-fill fill-yellow"
-  style={{ height: `${getPercent(activeStats.late, totalBase)}%` }}
-/>
+    <div className="summary-cards">
 
-      <div className="summary-content">
-        <i className="fa fa-clock"></i>
-        <span>Late</span>
-      </div>
-    </div>
-
-    {/* Absent */}
-<div
-  className="summary-card clickable"
-  onClick={() => {
-    if (viewMode === "student") {
-      setActivePage("todays-absent");
-    } else {
-      setActivePage("teacher-absents");
-    }
-  }}
-
->
-  <div className="summary-top">{activeStats.absent}</div>
-  <div
-    className="summary-fill fill-red"
-    style={{ height: `${getPercent(activeStats.absent, totalBase)}%` }}
-  />
-  <div className="summary-content">
-    <i className="fa fa-user-times"></i>
-    <span>Absent</span>
-  </div>
-</div>
-
-
-  </div>
-
-
+      {/* TOTAL */}
+      <div className="summary-card total-card">
+        <div className="summary-top">
+          {viewMode === "student" ? totalStudents : totalTeachers}
         </div>
 
+        <div
+          className="summary-fill fill-green"
+          style={{ height: "100%" }}
+        />
+
+        <div className="summary-content">
+          <i className="fa fa-users"></i>
+          <span>Total</span>
+        </div>
+      </div>
+
+      {/* Attendance */}
+      <div className="summary-card">
+        <div className="summary-top">{activeStats.present}</div>
+        <div
+          className="summary-fill fill-blue"
+          style={{ height: `${getPercent(activeStats.present, totalBase)}%` }}
+        />
+        <div className="summary-content">
+          <i className="fa fa-user-check"></i>
+          <span>Present</span>
+        </div>
+      </div>
+
+      {/* Late */}
+      <div className="summary-card">
+        <div className="summary-top">{activeStats.late}</div>
+        <div
+          className="summary-fill fill-yellow"
+          style={{ height: `${getPercent(activeStats.late, totalBase)}%` }}
+        />
+        <div className="summary-content">
+          <i className="fa fa-clock"></i>
+          <span>Late</span>
+        </div>
+      </div>
+
+      {/* Absent */}
+      <div
+        className="summary-card clickable"
+        onClick={() => {
+          if (viewMode === "student") {
+            setActivePage("todays-absent");
+          } else {
+            setActivePage("teacher-absents");
+          }
+        }}
+      >
+        <div className="summary-top">{activeStats.absent}</div>
+        <div
+          className="summary-fill fill-red"
+          style={{ height: `${getPercent(activeStats.absent, totalBase)}%` }}
+        />
+        <div className="summary-content">
+          <i className="fa fa-user-times"></i>
+          <span>Absent</span>
+        </div>
+      </div>
+
+    </div>
+  </>
+)}
+
+</div>
       </div>
 
     

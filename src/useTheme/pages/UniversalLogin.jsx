@@ -141,9 +141,29 @@ const handleGoogleSignIn = async () => {
     if (roleName === "teacher") {
       localStorage.setItem("teacherDocId", docSnap.id);
       localStorage.setItem("teacherName", data.name);
-    
-      // 🔥 ADD THIS (CRITICAL FIX)
       localStorage.setItem("teacherId", data.teacherId);
+    
+      // 🔥 ADD THIS (VERY IMPORTANT)
+      const teacherRef = doc(
+        db,
+        "users",
+        adminUid,
+        "teachers",
+        docSnap.id
+      );
+    
+      const teacherSnap = await getDoc(teacherRef);
+    
+      if (teacherSnap.exists()) {
+        const tData = teacherSnap.data();
+    
+        console.log("Teacher Data:", tData);
+    
+        if (tData.assignedClassId) {
+       // ✅ NEW (IMPORTANT)
+localStorage.setItem("classId", tData.assignedClassId);
+        }
+      }
     }
     if (roleName === "parent") {
       localStorage.setItem("parentDocId", docSnap.id);

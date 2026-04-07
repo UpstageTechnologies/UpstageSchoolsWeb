@@ -852,3 +852,49 @@
   background: transparent !important;
   box-shadow: none !important;
 }
+
+
+.day-view {
+  width: 320px;
+  background: #0f172a;
+  color: white;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+/* 🔥 GRID */
+.time-grid {
+  position: relative;
+}
+
+/* 🔥 EACH SLOT */
+.time-slot {
+  display: flex;
+  align-items: center;
+  height: 50px; /* 🔥 IMPORTANT */
+  border-bottom: 1px solid #1e293b;
+}
+
+/* TIME TEXT */
+.time-label {
+  width: 60px;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* EMPTY BOX */
+.time-box {
+  flex: 1;
+  height: 100%;
+  border-left: 1px solid #1e293b;
+}
+
+/* 🔴 CURRENT TIME LINE */
+.current-line {
+  position: absolute;
+  left: 60px;
+  right: 0;
+  height: 2px;
+  background: red;
+  z-index: 10;
+}

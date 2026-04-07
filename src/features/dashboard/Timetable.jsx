@@ -7,7 +7,7 @@ import { FaCalendar } from "react-icons/fa";
 
 
 export default function Timetable({ classId }) {
- 
+ console.log("hihello")
 const navigate = useNavigate();
   const adminUid =
     auth.currentUser?.uid || localStorage.getItem("adminUid");
@@ -275,12 +275,19 @@ const [saveStatus, setSaveStatus] = useState("idle");
       },
       { merge: true }
     );
-  
+    await setDoc(
+      doc(db, "users", adminUid, "teachers", teacher.id),
+      {
+        assignedClassId: classId,
+        assignedSection: section
+      },
+      { merge: true }
+    );
     setSectionTeachers(prev => ({
       ...prev,
       [section]: teacherData
     }));
-  
+    console.log("Assigning:", classId, section, teacher.id);
     // 🔥 Automatically open timetable
     setActiveSection(section);
   };
