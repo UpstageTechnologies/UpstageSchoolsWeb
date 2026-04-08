@@ -1103,3 +1103,82 @@
   cursor: pointer;
   font-size: 16px;
 }
+.entry-edit-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+
+  background:transparent !important;
+  border:none !important;
+  cursor:pointer;
+
+  color:#2563eb;   /* blue text */
+  font-weight:600;
+}
+
+/* icon */
+.entry-edit-btn .icon{
+  color:#2563eb;
+  font-size:16px;
+}
+@media (max-width:768px){
+
+  .entry-edit-btn{
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+  }
+
+  .entry-edit-btn .label{
+    display: none;   /* 🔥 hide text */
+  }
+
+  .entry-edit-btn .icon{
+    font-size: 20px;   /* 🔥 big icon */
+    margin: 8px;       /* spacing */
+  }
+
+}
+/* DESKTOP */
+.entry-delete-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+
+  background:transparent !important;
+  border:none !important;
+  cursor:pointer;
+
+  color:#ef4444;
+  font-weight:600;
+}
+
+/* icon */
+.entry-delete-btn svg{
+  color:#ef4444;
+  font-size:16px;
+}
+@media (max-width:768px){
+
+  .entry-delete-btn{
+    padding:0 !important;
+    background:transparent !important;
+    border:none !important;
+  }
+
+  .entry-delete-btn .label{
+    display:none;   /* 🔥 hide Delete text */
+  }
+
+  .entry-delete-btn svg{
+    font-size:20px;   /* 🔥 big icon */
+    margin:8px;       /* spacing */
+  }
+
+}
+/* 🔥 FINAL FIX – ACTION மட்டும் ellipsis remove */
+.history-table td.action-cell{
+  overflow: visible !important;
+  text-overflow: unset !important;
+  white-space: nowrap !important;
+}

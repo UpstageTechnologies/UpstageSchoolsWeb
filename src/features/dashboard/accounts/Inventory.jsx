@@ -1325,40 +1325,23 @@ setNewStaffPhone("");
     <td data-label="Name">{i.name}</td>
     <td data-label="Amount">₹{i.amount}</td>
     <td data-label="Discount">{i.discount || 0}%</td>
-    <td className="action-cell">
+    <td className="table-actions">
 
-  {/* Desktop buttons */}
-  <button className="edit-btn undo-btn" onClick={() => startEdit(i)}>
-    <FaEdit />
+  <button
+    className="entry-edit-btn"
+    onClick={() => startEdit(i)}
+  >
+    <FaEdit className="icon" />
     <span className="label">Edit</span>
   </button>
 
-  <button className="delete-btn undo-btn" onClick={() => deleteFee(i.id)}>
-    <FaTrash />
+  <button
+    className="entry-delete-btn"
+    onClick={() => deleteFee(i.id)}
+  >
+    <FaTrash className="icon" />
     <span className="label">Delete</span>
   </button>
-
-  {/* Mobile 3 dots */}
-  <button
-    className="menu-dots"
-    onClick={() =>
-      setOpenMenuId(openMenuId === i.id ? null : i.id)
-    }
-  >
-    ⋮
-  </button>
-
-  {openMenuId === i.id && (
-    <div className="menu-popup">
-      <button onClick={() => startEdit(i)}>
-        <FaEdit /> Edit
-      </button>
-
-      <button onClick={() => deleteFee(i.id)}>
-        <FaTrash /> Delete
-      </button>
-    </div>
-  )}
 
 </td>
   </tr>
@@ -1405,12 +1388,11 @@ setNewStaffPhone("");
           <td data-label="Date">
             {item.createdAt?.toDate().toLocaleDateString()}
           </td>
-
           <td className="action-cell">
 
   {/* Desktop buttons */}
   <button
-    className="edit-btn undo-btn"
+    className="entry-edit-btn"
     onClick={() => editSalary(item)}
   >
     <FaEdit /> 
@@ -1418,35 +1400,12 @@ setNewStaffPhone("");
   </button>
 
   <button
-    className="delete-btn undo-btn"
+    className="entry-delete-btn"
     onClick={() => deleteSalary(item.id)}
   >
     <FaTrash /> 
     <span className="label">Delete</span>
   </button>
-
-  {/* Mobile 3 dots */}
-  <button
-    className="menu-dots"
-    onClick={() =>
-      setOpenMenuId(openMenuId === item.id ? null : item.id)
-    }
-  >
-    ⋮
-  </button>
-
-  {openMenuId === item.id && (
-    <div className="menu-popup">
-      <button onClick={() => editSalary(item)}>
-        <FaEdit /> Edit
-      </button>
-
-      <button onClick={() => deleteSalary(item.id)}>
-        <FaTrash /> Delete
-      </button>
-    </div>
-  )}
-
 </td>
         </tr>
       ))}
@@ -1489,7 +1448,7 @@ setNewStaffPhone("");
           <td data-label="Amount">₹{c.amount}</td>
           <td className="action-cell">
         <button
-          className="delete-btn"
+          className="entry-delete-btn"
           onClick={() => deleteCompetition(c)}
         >
           <FaTrash /> Delete

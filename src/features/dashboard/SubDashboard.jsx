@@ -1,17 +1,25 @@
 import React from "react";
 import "../dashboard_styles/SubDashboard.css";
 import SchoolCalendar from "../../components/SchoolScheduleCalendar"
+import { auth ,db } from "../../services/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { useState,useEffect } from "react";
+
 const SubDashboard = ({ setActivePage, setAccountPopupOpen }) => {
-  
+ 
+const [teacherClassId, setTeacherClassId] = useState(null);
+
   console.log("Popup function:", setAccountPopupOpen);
 
   const role = localStorage.getItem("role");
-  
+ 
   const type =
   localStorage.getItem("viewType") ||
   localStorage.getItem("role");
-
-const classId = localStorage.getItem("classId");
+  console.log("ROLE:", type);
+  console.log("ADMIN UID:", localStorage.getItem("adminId"));
+  console.log("CLASS ID:", teacherClassId);
+console.log("CLASS ID USED:", teacherClassId);
 
 // 🔥 ADD HERE
 const adminUid =
@@ -19,7 +27,7 @@ const adminUid =
   localStorage.getItem("adminId");
 
 console.log("ADMIN UID USED:", adminUid);
-console.log("CLASS ID USED:", classId);
+console.log("CLASS ID USED:", teacherClassId);
 
 const name =
   localStorage.getItem("viewName") ||
@@ -65,7 +73,27 @@ const photo =
       "Marks & Exams"
     ]
   };
+ 
+  useEffect(() => {
+    const loadTeacher = async () => {
+      const teacherId =
+      localStorage.getItem("viewId") ||
+      localStorage.getItem("teacherId");
+      console.log("Teacher ID:", teacherId);
+      if (!teacherId || !adminUid) return;
   
+      const ref = doc(db, "users", adminUid, "teachers", teacherId);
+      const snap = await getDoc(ref);
+  
+      if (snap.exists()) {
+        const data = snap.data();
+        console.log("🔥 TEACHER DATA:", data);
+        setTeacherClassId(data.assignedClassId); // 🔥 correct class
+      }
+    };
+  
+    loadTeacher();
+  }, [adminUid]);
   return (
     
     <div className="sub-wrapper">
@@ -174,12 +202,17 @@ const photo =
 {/* FULL WIDTH CALENDAR SECTION */}
 <div className="">
   <h3>Academic Calendar</h3>
+  {teacherClassId && (
   <SchoolCalendar
-  adminUid={adminUid}
-  role={type}
-  compact={true}
-  classId={type === "teacher" ? classId : null}
-/>
+  adminUid={
+    localStorage.getItem("adminUid") ||
+    localStorage.getItem("adminId")
+  }
+    role={type}
+    compact={true}
+    classId={teacherClassId}
+  />
+)}
 </div>
 
       </div>

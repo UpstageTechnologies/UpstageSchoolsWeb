@@ -35,6 +35,7 @@
   const TeacherHome = lazy(() => import("./TeacherHome"));
   const ParentHome = lazy(() => import("./ParentHome"));
     const Attendance = lazy(() => import("./Attendance"));
+    const Payment = lazy(() => import("../payment/PaymentSelection"));
     const ShowTodaysAbsent = lazy(() => import("./ShowTodaysAbsent"));
   const TeacherAttendance = lazy(() => import("../dashboard/TeacherAttendance"));
   const ShowTodaysTeacherAbsent = lazy(() => import("./ShowTodaysTeacherAbsent"));
@@ -696,9 +697,12 @@ window.openIntroPopup = (type = "default") => {
   </li>
 
   {role === "master" && (
-          <li className={activePage === "payment" ? "active" : ""}onClick={() => navigate("/payment")}>
-            <FaSignOutAlt /> Upgrade
-          </li>
+       <li 
+       className={activePage === "payment" ? "active" : ""}
+       onClick={() => handleMenuClick("payment")}
+     >
+       <FaSignOutAlt /> Upgrade
+     </li>
         )}
 
         {role === "master" && (
@@ -773,14 +777,6 @@ window.openIntroPopup = (type = "default") => {
               <FaCalendarAlt /> Timetable
             </li>
 
-            {(role === "admin" || role === "master") && (
-  <li
-    className={activePage === "attendance" ? "active" : ""}
-    onClick={() => handleMenuClick("attendance")}
-  >
-    <FaUserCheck /> Teacher Attendance
-  </li>
-)}
 {(role === "admin" || role === "master") && (
   <li
     className={activePage === "universal-attendance" ? "active" : ""}
@@ -805,14 +801,7 @@ window.openIntroPopup = (type = "default") => {
               </li>
               </>
               )}
-            {(role === "admin" || role === "master") && (
-  <li
-  className={activePage === "teacher-attendance" ? "active" : ""}
-  onClick={() => handleMenuClick("teacher-attendance")}
->
-  <FaUserCheck /> Students Attendance
-</li>
-)}
+            
               {viewAs === "teacher" && (
     <button
       onClick={() => {
@@ -834,18 +823,6 @@ window.openIntroPopup = (type = "default") => {
       Exit Teacher View
     </button>
   )}
-
-  <li
-    className={`calendar-btn ${activePage === "calendar" ? "active" : ""}`}
-    onClick={() => handleMenuClick("calendar")}
-  >
-    <FaCalendarAlt className="calendar-icon" />
-
-    {/* 🔹 Text only when sidebar open */}
-    {sidebarState === "open" && (
-      <span className="calendar-text">Calendar</span>
-    )}
-  </li>
   {sidebarState === "open" && trialAccess && trialExpiresAt && (
     <div
       style={{
@@ -1056,7 +1033,11 @@ localStorage.getItem("parentName") ||
     setActivePage={setActivePage}
     globalSearch={searchQuery}
   />
+  
   )}
+  {activePage === "payment" && (
+  <Payment />
+)}
   {activePage === "income" && (
     <FeesPage adminUid={adminUid} mode="income" globalSearch={searchQuery} setActivePage={setActivePage}/>
   )}

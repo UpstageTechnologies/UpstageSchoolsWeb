@@ -1,205 +1,143 @@
 /* ---------- GLOBAL ---------- */
-.wrapper {
-    margin: 0;
-    padding: 0;
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #2140df, #bbcff2);
-    min-height: 100vh;
-    width: 100%;
-  
-    display: flex;
-    justify-content: center;
-    align-items: flex-start; /* start content from top */
-    flex-wrap: wrap;
-    overflow-x: hidden;
-    overflow-y: auto;
-}
-
-/* ---------- PAYMENT BODY ---------- */
 .payment-body {
     width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px 10px;
+    justify-content: center;
+    background: #f2f4f7; /* dashboard match */
     box-sizing: border-box;
 }
 
-/* ---------- PAYMENT WRAPPER ---------- */
+/* ---------- WRAPPER ---------- */
 .payment-wrapper {
     width: 100%;
-    max-width: 1200px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    box-sizing: border-box;
+    max-width: 1100px;
 }
-
-/* ---------- PAYMENT TITLE ---------- */
+/* ---------- TITLE ---------- */
 .payment-title {
-    color: #f9f9f9;
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 600;
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+    color: #1e293b;
 }
 
-/* ---------- PAYMENT CONTAINER ---------- */
+/* ---------- CONTAINER ---------- */
 .payment-container {
     display: flex;
-    flex-wrap: wrap;
     justify-content: center;
     gap: 20px;
-    width: 100%;
-    padding: 20px 10px 50px;
-    box-sizing: border-box;
 }
 
-/* ---------- PLAN BOX ---------- */
+/* ---------- PLAN CARD ---------- */
 .plan-box {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: inset 0 0 10px rgba(255,255,255,0.3);
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 22px;
+    width: 280px;
+    min-height: 460px;
+
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
     align-items: center;
-    width: 280px;
-    min-height: 480px;
-    transition: 0.5s;
-    box-sizing: border-box;
+
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    transition: 0.3s ease;
+    border: 1px solid #e5e7eb;
 }
 
 .plan-box:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
-    background-color: #f9f9f9;
-    color: black;
+    transform: translateY(-6px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
 }
 
-.plan-box:hover h3,
-.plan-box:hover .desc {
-    color: black !important;
-}
-
-.plan-box:hover .price {
-    color: #0a53e4;
-}
-
-/* ---------- PLAN TEXT ---------- */
+/* ---------- TEXT ---------- */
 .plan-box h3 {
-    color: white;
-    font-size: 22px;
-    margin-bottom: 8px;
-    text-align: center;
+    font-size: 20px;
+    margin-bottom: 6px;
+    color: #111827;
 }
 
 .price {
-    color: #ffe680;
-    font-size: 26px;
+    font-size: 24px;
     font-weight: 700;
-    margin-bottom: 5px;
+    color: #2563eb;
+    margin-bottom: 6px;
 }
 
 .desc {
-    color: #f3f3f3;
     font-size: 14px;
-    margin-bottom: 12px;
+    color: #6b7280;
     text-align: center;
+    margin-bottom: 12px;
 }
 
-/* ---------- BUTTON ---------- */
-.choose-btn {
-    background: #0a53e4;
-    color: white;
-    padding: 10px 20px;
-    font-size: 15px;
-    font-weight: 600;
-    border-radius: 12px;
-    border: none;
-    cursor: pointer;
-    transition: 0.25s;
-    margin-top: auto; /* push to bottom */
-}
-
-.choose-btn:hover {
-    background: white;
-    color: #0a53e4;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-}
-
-/* ---------- TICK LIST ---------- */
+/* ---------- FEATURES ---------- */
 .tick, .wrong {
     list-style: none;
     padding: 0;
-    margin: 0;
     width: 100%;
+    margin-bottom: 15px;
 }
 
 .tick li, .wrong li {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 15px;
+    font-size: 14px;
     margin: 6px 0;
+    display: flex;
+    gap: 8px;
 }
 
 .tick li::before {
     content: "✓";
-    color: green;
-    font-size: 18px;
+    color: #16a34a;
     font-weight: bold;
 }
 
 .wrong li::before {
     content: "✘";
-    color: rgb(195, 39, 7);
-    font-size: 18px;
-    font-weight: bold;
+    color: #dc2626;
 }
 
-.old {
-    text-decoration: line-through;
+/* ---------- BUTTON ---------- */
+.choose-btn {
+    margin-top: auto;
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.25s;
+}
+
+.choose-btn:hover {
+    background: #1d4ed8;
+}
+
+/* ---------- HIGHLIGHT (RECOMMENDED) ---------- */
+.plan-box.popular {
+    border: 2px solid #2563eb;
+    transform: scale(1.03);
+}
+
+.plan-box.popular::before {
+    content: "Most Popular";
+    background: #2563eb;
+    color: white;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    position: absolute;
+    top: -10px;
 }
 
 /* ---------- RESPONSIVE ---------- */
-@media (max-width: 1024px) {
-    .payment-container {
-        gap: 15px;
-    }
-    .plan-box {
-        width: 45%;
-        min-height: 450px;
-    }
-}
-
 @media (max-width: 768px) {
     .payment-container {
         flex-direction: column;
         align-items: center;
-        padding-top: 40px;
     }
+
     .plan-box {
         width: 90%;
-        min-height: auto;
-        margin-bottom: 20px;
-    }
-    .payment-title {
-        font-size: 24px;
-    }
-}
-
-@media (max-width: 480px) {
-    .plan-box {
-        width: 95%;
-        padding: 15px;
-    }
-    .price {
-        font-size: 22px;
-    }
-    .plan-box h3 {
-        font-size: 20px;
     }
 }

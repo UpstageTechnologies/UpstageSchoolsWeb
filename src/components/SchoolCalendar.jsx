@@ -14,6 +14,7 @@ import React, { useEffect, useMemo, useState, useRef } from "react";
   
     for (let d = 1; d <= daysInMonth; d++) {
       const date = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+   
       const ev = events[date] || null;
 
       const dayOfWeek = new Date(date).getDay();
@@ -58,6 +59,7 @@ import React, { useEffect, useMemo, useState, useRef } from "react";
   
 
   export default function SchoolCalendar({ adminUid, role, onDateSelect , compact ,classId ,hidePrint}) {
+   
     const [eventType, setEventType] = useState("");
 const [eventSearch, setEventSearch] = useState("");
 const [showEventDropdown, setShowEventDropdown] = useState(false);
@@ -130,6 +132,7 @@ useEffect(() => {
   loadAcademicYear();
 }, [adminUid]);
 useEffect(() => {
+
   if (!adminUid) return;
 
   const globalRef = collection(db, "users", adminUid, "calendar");
@@ -143,13 +146,15 @@ useEffect(() => {
     });
 
     globalData = temp;
-
-    // 👉 no class → only global
+    console.log("🌍 GLOBAL:", globalData);
     if (!classId) {
+      // 👉 admin / no class
+      setEvents(globalData);
+    } else {
       setEvents(globalData);
     }
+    
   });
-
   if (classId) {
     const classRef = collection(
       db,
@@ -165,7 +170,15 @@ useEffect(() => {
       snap.forEach(d => {
         classData[d.id] = d.data();
       });
-
+      console.log("CLASS DATA:", classData);
+      const final = {
+        ...globalData,
+        ...classData
+      };
+    
+      console.log("🔥 FINAL:", final);
+    
+      setEvents(final); // 🔥 ADD THIS
       // 🔥 MERGE (IMPORTANT)
       setEvents({
         ...globalData,

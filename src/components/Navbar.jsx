@@ -166,6 +166,9 @@ const filteredQuickTiles = QUICK_TILES.filter(tile =>
     );
   };
   useEffect(() => {
+    setShowQuickPanel(false);
+  }, [activePage]);
+  useEffect(() => {
     const handleTouch = (e) => {
       const clickedInsideInput = searchInputRef.current?.contains(e.target);
       const clickedInsideDropdown = dropdownRef.current?.contains(e.target);

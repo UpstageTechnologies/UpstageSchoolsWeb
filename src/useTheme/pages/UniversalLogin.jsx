@@ -143,7 +143,7 @@ const handleGoogleSignIn = async () => {
       localStorage.setItem("teacherName", data.name);
       localStorage.setItem("teacherId", data.teacherId);
     
-      // 🔥 ADD THIS (VERY IMPORTANT)
+      // 🔥 👇 இதுதான் correct place
       const teacherRef = doc(
         db,
         "users",
@@ -157,11 +157,8 @@ const handleGoogleSignIn = async () => {
       if (teacherSnap.exists()) {
         const tData = teacherSnap.data();
     
-        console.log("Teacher Data:", tData);
-    
-        if (tData.assignedClassId) {
-       // ✅ NEW (IMPORTANT)
-localStorage.setItem("classId", tData.assignedClassId);
+        if (tData.assignedClassId && tData.assignedSection) {
+          localStorage.setItem("classId", tData.assignedClassId);
         }
       }
     }
