@@ -1146,9 +1146,9 @@ localStorage.getItem("parentName") ||
       <UpgradePopup onClose={() => handleMenuClick("home")}    />
     )
   )}
-  {isAdminOrSubAdmin && activePage === "courses" && (
-    <Courses handleMenuClick={handleMenuClick} />
-  )}
+  {activePage === "courses" && (
+  <Courses handleMenuClick={handleMenuClick} />
+)}
 
   {/* COURSE PLANNER PAGE */}
   {isAdminOrSubAdmin && activePage.startsWith("course-planner-") && (

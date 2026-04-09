@@ -4,7 +4,9 @@ import { collection, getDocs } from "firebase/firestore";
 import "../dashboard_styles/courses.css";
 import { FaArrowCircleRight, FaArrowRight } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { doc, getDoc } from "firebase/firestore";
 export default function Course({ handleMenuClick }) {
+  
   const isSkipped = localStorage.getItem("skipIntro") === "true";
   const [showCourseGuide, setShowCourseGuide] = useState(!isSkipped);
   useEffect(() => {
@@ -14,34 +16,83 @@ export default function Course({ handleMenuClick }) {
       setShowCourseGuide(false);
     }
   }, []);
+  
   const adminUid =
     auth.currentUser?.uid || localStorage.getItem("adminUid");
-
+    const [teacherClassId, setTeacherClassId] = useState(null);
+    const role = localStorage.getItem("role");
+    useEffect(() => {
+      const loadTeacherClass = async () => {
+        if (role !== "teacher") return;
+    
+        const teacherId =
+          localStorage.getItem("teacherId") ||
+          localStorage.getItem("viewId");
+    
+        if (!teacherId || !adminUid) return;
+    
+        const ref = doc(db, "users", adminUid, "teachers", teacherId);
+        const snap = await getDoc(ref);
+    
+        if (snap.exists()) {
+          const data = snap.data();
+          setTeacherClassId(data.assignedClassId);
+        }
+      };
+    
+      loadTeacherClass();
+    }, [adminUid, role]);
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const classId = localStorage.getItem("selectedClassId");
   useEffect(() => {
     if (!adminUid) return;
-
+  
     const loadClasses = async () => {
       const snap = await getDocs(
         collection(db, "users", adminUid, "Classes")
       );
-
-      const classList = snap.docs.map((doc) => ({
+  
+      let classList = snap.docs.map((doc) => ({
         id: doc.id,
         name: doc.data().name,
         sections: doc.data().sections || [],
       }));
-
+  
+      // 🔥 ROLE CHECK
+      const role = localStorage.getItem("role");
+  
+      if (role === "teacher") {
+        const teacherId =
+          localStorage.getItem("teacherId") ||
+          localStorage.getItem("viewId");
+  
+        if (teacherId) {
+          const ref = doc(db, "users", adminUid, "teachers", teacherId);
+          const teacherSnap = await getDoc(ref);
+  
+          if (teacherSnap.exists()) {
+            const teacherData = teacherSnap.data();
+            const assignedClassId = teacherData.assignedClassId;
+  
+            // ✅ FILTER ONLY TEACHER CLASS
+            classList = classList.filter(
+              (c) => c.id === assignedClassId
+            );
+          }
+        }
+      }
+  
       setClasses(classList);
       setLoading(false);
     };
-
+  
     loadClasses();
   }, [adminUid]);
-
+  useEffect(() => {
+    if (!adminUid) return;
+  }, [adminUid, teacherClassId]); // 🔥 IMPORTANT
   return (
     <div className="course-container">
       <h2 className="page-title">Courses</h2>

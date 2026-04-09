@@ -197,6 +197,7 @@ const filteredQuickTiles = QUICK_TILES.filter(tile =>
 
     return (
       <nav style={{margin:"0px"}}className="navbar">
+        
       <div className="nav-left">
           
         <div className="mobile-back">

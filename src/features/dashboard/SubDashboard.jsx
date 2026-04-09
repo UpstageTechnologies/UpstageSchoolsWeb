@@ -4,9 +4,9 @@ import SchoolCalendar from "../../components/SchoolScheduleCalendar"
 import { auth ,db } from "../../services/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useState,useEffect } from "react";
-
+import { FaArrowLeft } from "react-icons/fa";
 const SubDashboard = ({ setActivePage, setAccountPopupOpen }) => {
- 
+  const [innerPage, setInnerPage] = useState("home");
 const [teacherClassId, setTeacherClassId] = useState(null);
 
   console.log("Popup function:", setAccountPopupOpen);
@@ -97,6 +97,28 @@ const photo =
   return (
     
     <div className="sub-wrapper">
+      <div style={{ padding: "10px" }}>
+      <div
+  onClick={() => setInnerPage("home")}
+  style={{
+    position: "fixed",
+    top: "20px",
+    left: "20px",
+    width: "45px",
+    height: "45px",
+    borderRadius: "50%",
+    background: "#fff",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    zIndex: 9999
+  }}
+>
+  <FaArrowLeft />
+</div>
+</div>
       <div className="sub-container">
         
 
@@ -201,6 +223,14 @@ const photo =
 </div>
 {/* FULL WIDTH CALENDAR SECTION */}
 <div className="">
+<button
+  onClick={() => {
+    localStorage.setItem("selectedClassId", teacherClassId); // optional
+    setInnerPage("courses");
+  }}
+>
+  Class Calendar
+</button>
   <h3>Academic Calendar</h3>
   {teacherClassId && (
   <SchoolCalendar
