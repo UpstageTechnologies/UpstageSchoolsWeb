@@ -519,6 +519,42 @@ setNewStaffPhone("");
       alert("Salary update failed");
     }
   };
+  const editCompetition = (item) => {
+    setEditId(item.id);
+    setEntryType("competition");
+  
+    setCompetitionName(item.name || "");
+    setCompetitionAmount(item.amount || "");
+    setSelectedClass(item.className || "all");
+  };
+  const updateCompetition = async () => {
+    if (!editId) return;
+  
+    if (!competitionName || !competitionAmount) {
+      return alert("Fill all fields");
+    }
+  
+    try {
+      await updateDoc(
+        doc(db, "users", adminUid, "Account", "accounts", "Competition", editId),
+        {
+          name: competitionName,
+          amount: Number(competitionAmount),
+          className: selectedClass || "all",
+          updatedAt: new Date()
+        }
+      );
+  
+      // reset
+      setEditId(null);
+      setCompetitionName("");
+      setCompetitionAmount("");
+  
+    } catch (err) {
+      console.error(err);
+      alert("Update failed");
+    }
+  };
   const deleteCompetition = async (item) => {
     if (!window.confirm("Delete competition?")) return;
   
@@ -972,9 +1008,11 @@ setNewStaffPhone("");
   value={competitionAmount}
   onChange={e => setCompetitionAmount(e.target.value)}
 />
-
-<button className="save-btn" onClick={saveCompetition}>
-  Save
+<button
+  className="save-btn"
+  onClick={editId ? updateCompetition : saveCompetition}
+>
+  {editId ? "Update" : "Save"}
 </button>
 
 </div>
@@ -1388,24 +1426,16 @@ setNewStaffPhone("");
           <td data-label="Date">
             {item.createdAt?.toDate().toLocaleDateString()}
           </td>
-          <td className="action-cell">
+          <td className="table-actions">
+          <button className="entry-edit-btn" onClick={() => editSalary(item)}>
+  <FaEdit className="icon" />
+  <span className="label">Edit</span>
+</button>
 
-  {/* Desktop buttons */}
-  <button
-    className="entry-edit-btn"
-    onClick={() => editSalary(item)}
-  >
-    <FaEdit /> 
-    <span className="label">Edit</span>
-  </button>
-
-  <button
-    className="entry-delete-btn"
-    onClick={() => deleteSalary(item.id)}
-  >
-    <FaTrash /> 
-    <span className="label">Delete</span>
-  </button>
+<button className="entry-delete-btn" onClick={() => deleteSalary(item.id)}>
+  <FaTrash className="icon" />
+  <span className="label">Delete</span>
+</button>
 </td>
         </tr>
       ))}
@@ -1446,14 +1476,25 @@ setNewStaffPhone("");
           <td data-label="ClassName">{c.className}</td>
           <td data-label="Name">{c.name}</td>
           <td data-label="Amount">₹{c.amount}</td>
-          <td className="action-cell">
-        <button
-          className="entry-delete-btn"
-          onClick={() => deleteCompetition(c)}
-        >
-          <FaTrash /> Delete
-        </button>
-      </td>
+          <td className="table-actions">
+
+  <button
+    className="entry-edit-btn"
+    onClick={() => editCompetition(c)}
+  >
+    <FaEdit className="icon" />
+    <span className="label">Edit</span>
+  </button>
+
+  <button
+    className="entry-delete-btn"
+    onClick={() => deleteCompetition(c)}
+  >
+    <FaTrash className="icon" />
+    <span className="label">Delete</span>
+  </button>
+
+</td>
         </tr>
       ))}
       {competitionList.length === 0 && (

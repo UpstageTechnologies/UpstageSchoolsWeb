@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaPlus, FaSearch, FaEdit, FaTrash, FaPhotoVideo, FaUser } from "react-icons/fa";
+import { FaPlus, FaSearch, FaEdit, FaTrash, FaPhotoVideo, FaUser ,FaBan,FaCheck} from "react-icons/fa";
 import "../dashboard_styles/Teacher.css"; // reuse same CSS
 import CreateAccountModal from "../../components/CreateAccountModal"
 import "../dashboard_styles/CreateAccountModal.css"
@@ -465,9 +465,7 @@ await addDoc(
         <td data-label="Gender">{a.gender || "-"}</td>
         <td data-label="Qualification">{a.qualification || "-"}</td>
         <td data-label="Experience">{a.experience || "-"}</td>
-
         <td >
-     
         <button
   className="view-btn"
   onClick={() => handleView(a)}
@@ -486,14 +484,10 @@ await addDoc(
 </button>
 <button
   className="disable-btn"
-  style={{
-    background: a.isActive ? "#f59e0b" : "#10b981",
-    color: "#fff"
-  }}
   onClick={() => handleDisable(a)}
 >
+  {a.isActive ? <FaBan /> : <FaCheck />}
   {a.isActive ? "Disable" : "Enable"}
-  
 </button>
           <button
             className="delete-btn"

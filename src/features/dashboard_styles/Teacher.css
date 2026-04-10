@@ -422,14 +422,46 @@ input:-webkit-autofill{
     gap:8px;
   }
 
-  .edit-btn,
-  .delete-btn,
-  .view-btn{
-    width:100%;
-    height:32px;
-    font-size:12px;
-    justify-content:center;
-  }
+  /* ===== TEXT STYLE ACTION BUTTONS ===== */
+
+.edit-btn,
+.delete-btn,
+.view-btn{
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* COLORS மட்டும் */
+.view-btn{
+  color: #3b82f6;   /* blue */
+}
+
+.edit-btn{
+  color: #6366f1;   /* purple */
+}
+
+.delete-btn{
+  color: #ef4444;   /* red */
+}
+
+/* hover (light effect) */
+.view-btn:hover{
+  opacity: 0.7;
+}
+
+.edit-btn:hover{
+  opacity: 0.7;
+}
+
+.delete-btn:hover{
+  opacity: 0.7;
+}
 }
 /* ================= DESKTOP COMPACT (1200px – 1400px) ================= */
 @media (min-width: 1200px) and (max-width: 1400px){
@@ -455,15 +487,6 @@ input:-webkit-autofill{
     height:28px;
   }
 
-  /* action buttons compact */
-  .edit-btn,
-  .delete-btn,
-  .view-btn{
-    min-width:60px;
-    height:28px;
-    font-size:12px;
-    padding:0 8px;
-  }
 
   /* actions column stacked */
   .teacher-table td:last-child{
@@ -497,14 +520,6 @@ input:-webkit-autofill{
     font-weight:600;
   }
 
-  /* Buttons text */
-  .edit-btn,
-  .delete-btn,
-  .view-btn{
-    font-size:13px;
-    height:32px;
-    padding:0 25px;
-  }
 
   /* Modal inputs */
   .modal input,
@@ -522,17 +537,7 @@ input:-webkit-autofill{
     gap:12px;
   }
 
-  /* buttons */
-  .edit-btn,
-  .delete-btn,
-  .view-btn{
-    flex:1;                 /* 🔥 equal width */
-    width:auto !important;
-    height:38px;
-    font-size:14px;
-    justify-content:center;
-    padding:0 12px;
-  }
+  
 }
 /* ================= MODAL UPGRADE ================= */
 
@@ -699,7 +704,8 @@ input:-webkit-autofill{
   /* buttons */
   .view-btn,
   .edit-btn,
-  .delete-btn{
+  .delete-btn,
+  .disable-btn{
   padding:6px 14px;
   border-radius:8px;
   font-size:14px;
@@ -708,39 +714,39 @@ input:-webkit-autofill{
   display:inline-flex;
   align-items:center;
   gap:6px;
-  background:white;
+  background-color: transparent;
   }
   
   .view-btn{
-  border:1px solid #3b82f6;
   color:#3b82f6;
   }
   
   .edit-btn{
-  border:1px solid #6366f1;
+ 
   color:#6366f1;
   }
   
   .delete-btn{
-  border:1px solid #ef4444;
+ 
   color:#ef4444;
   }
   
-  .view-btn:hover{
-  background:#3b82f6;
-  color:white;
-  }
-  
-  .edit-btn:hover{
-  background:#6366f1;
-  color:white;
-  }
-  
-  .delete-btn:hover{
-  background:#ef4444;
-  color:white;
-  }
-  
+  /* ===== DISABLE / ENABLE TEXT STYLE ===== */
+
+/* DISABLE (orange) */
+.disable-btn{
+  color: #f59e0b;
+}
+
+/* ENABLE (green) */
+.disable-btn.enable{
+  color: #10b981;
+}
+
+/* hover effect */
+.disable-btn:hover{
+  opacity: 0.7;
+}
   /* ---------------- MOBILE ---------------- */
   
   @media(max-width:768px){
@@ -793,12 +799,16 @@ input:-webkit-autofill{
       table-layout: fixed;
     }
   
-    .teacher-table td{
-      position: relative;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
+    /* 🔥 FIX ACTION COLUMN ONLY */
+.teacher-table td:last-child{
+  overflow: visible !important;
+  white-space: normal !important;
+  text-overflow: unset !important;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
   
     /* 🔥 tooltip box */
     .teacher-table td:hover::after{
@@ -806,7 +816,7 @@ input:-webkit-autofill{
   
       position: absolute;
       left: 0;
-      top: 110%;   /* 🔥 கீழ வரும் (safe position) */
+      top: 110%;  
   
       background: #fff;
       color: #333;

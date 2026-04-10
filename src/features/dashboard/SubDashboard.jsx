@@ -5,8 +5,93 @@ import { auth ,db } from "../../services/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useState,useEffect } from "react";
 import { FaArrowLeft } from "react-icons/fa";
+
 const SubDashboard = ({ setActivePage, setAccountPopupOpen }) => {
-  const [innerPage, setInnerPage] = useState("home");
+  const [selectedDate, setSelectedDate] = useState(null);
+  const getWeekDates = (date) => {
+    const current = new Date(date);
+    const day = current.getDay(); // 0-6
+  
+    const diff = current.getDate() - day + (day === 0 ? -6 : 1); // Monday start
+  
+    const monday = new Date(current.setDate(diff));
+  
+    const week = [];
+  
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      week.push(d);
+    }
+  
+    return week;
+  };
+  const WeekStrip = ({ selectedDate }) => {
+    const week = getWeekDates(selectedDate);
+  
+    return (
+      <div className="week-strip">
+        {week.map((d, i) => {
+          const isSelected =
+            new Date(d).toDateString() ===
+            new Date(selectedDate).toDateString();
+  
+          return (
+            <div
+              key={i}
+              className={`day ${isSelected ? "active" : ""}`}
+            >
+              <div>{d.toLocaleDateString("en-US", { weekday: "short" })}</div>
+              <div>{d.getDate()}</div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+  const TimeGrid = () => {
+    const times = [];
+  
+    let hour = 8;
+    let minute = 30;
+  
+    while (hour < 18) {
+      const formatted =
+        `${hour}:${minute === 0 ? "00" : minute}`;
+  
+      times.push(formatted);
+  
+      minute += 30;
+      if (minute === 60) {
+        minute = 0;
+        hour++;
+      }
+    }
+  
+    // 🔴 CURRENT TIME LINE
+    const now = new Date();
+    const totalMinutes =
+      (now.getHours() * 60 + now.getMinutes()) - (8 * 60 + 30);
+  
+    const position = totalMinutes * 1; // 🔥 IMPORTANT FIX
+  
+    return (
+      <div className="time-grid">
+        {/* 🔴 LINE */}
+        <div
+          className="current-line"
+          style={{ top: position }}
+        />
+  
+        {times.map((t, i) => (
+          <div key={i} className="time-slot">
+            <div className="time-label">{t}</div>
+            <div className="time-box"></div>
+          </div>
+        ))}
+      </div>
+    );
+  };
 const [teacherClassId, setTeacherClassId] = useState(null);
 
   console.log("Popup function:", setAccountPopupOpen);
@@ -99,7 +184,7 @@ const photo =
     <div className="sub-wrapper">
       <div style={{ padding: "10px" }}>
       <div
-  onClick={() => setInnerPage("home")}
+  onClick={() => setActivePage("home")}
   style={{
     position: "fixed",
     top: "20px",
@@ -223,26 +308,102 @@ const photo =
 </div>
 {/* FULL WIDTH CALENDAR SECTION */}
 <div className="">
-<button
-  onClick={() => {
-    localStorage.setItem("selectedClassId", teacherClassId); // optional
-    setInnerPage("courses");
-  }}
->
-  Class Calendar
-</button>
+
+  <button
+    onClick={() => {
+      localStorage.setItem("selectedClassId", teacherClassId);
+      setActivePage("courses");
+    }}
+  >
+    Class Calendar
+  </button>
+
   <h3>Academic Calendar</h3>
-  {teacherClassId && (
-  <SchoolCalendar
-  adminUid={
-    localStorage.getItem("adminUid") ||
-    localStorage.getItem("adminId")
-  }
-    role={type}
-    compact={true}
-    classId={teacherClassId}
-  />
-)}
+
+  {/* 🔥 MAIN LOGIC */}
+  {selectedDate ? (
+    <div className="calendar-view">
+
+      {/* 🔙 BACK */}
+      <div
+        onClick={() => setSelectedDate(null)}
+        style={{
+          position: "fixed",
+          top: "80px",
+          left: "20px",
+          width: "40px",
+          height: "40px",
+          borderRadius: "50%",
+          background: "#fff",
+          boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          zIndex: 9999
+        }}
+      >
+        ←
+      </div>
+
+      {/* 📅 WEEK STRIP */}
+      <div className="week-strip">
+        {(() => {
+          const current = new Date(selectedDate);
+          const day = current.getDay();
+          const diff = current.getDate() - day + (day === 0 ? -6 : 1);
+          const monday = new Date(current.setDate(diff));
+
+          const week = [];
+
+          for (let i = 0; i < 7; i++) {
+            const d = new Date(monday);
+            d.setDate(monday.getDate() + i);
+            week.push(d);
+          }
+
+          return week.map((d, i) => {
+            const isSelected =
+              new Date(d).toDateString() ===
+              new Date(selectedDate).toDateString();
+
+            return (
+              <div
+                key={i}
+                className={`day ${isSelected ? "active" : ""}`}
+              >
+                <div>
+                  {d.toLocaleDateString("en-US", {
+                    weekday: "short",
+                  })}
+                </div>
+                <div>{d.getDate()}</div>
+              </div>
+            );
+          });
+        })()}
+      </div>
+
+      {/* ⏱️ TIMELINE */}
+      <TimeGrid />
+
+    </div>
+  ) : (
+    <>
+      {teacherClassId && (
+        <SchoolCalendar
+          adminUid={
+            localStorage.getItem("adminUid") ||
+            localStorage.getItem("adminId")
+          }
+          role={type}
+          compact={true}
+          classId={teacherClassId}
+          onDateSelect={(date) => setSelectedDate(date)}
+        />
+      )}
+    </>
+  )}
 </div>
 
       </div>

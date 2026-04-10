@@ -11,17 +11,21 @@ const FloatingRobot = () => {
     window.addEventListener("introSkipped", handleSkip);
     return () => window.removeEventListener("introSkipped", handleSkip);
   }, []);
-
-  // 🔥 POINTER DOWN (mouse + touch)
   const handlePointerDown = (e) => {
+    // 🔥 முக்கியம்: left click மட்டும் allow
+    if (e.button !== 0) return;
+  
     setDragging(true);
-
-    // where user touched inside robot
+  
     setOffset({
       x: e.clientX - position.x,
       y: e.clientY - position.y,
     });
+  
+    // 🔥 pointer capture (VERY IMPORTANT)
+    e.target.setPointerCapture(e.pointerId);
   };
+  
 
   // 🔥 POINTER MOVE
   const handlePointerMove = (e) => {
@@ -32,22 +36,23 @@ const FloatingRobot = () => {
       y: e.clientY - offset.y,
     });
   };
-
-  // 🔥 POINTER UP
-  const handlePointerUp = () => {
+  const handlePointerUp = (e) => {
     setDragging(false);
+  
+    try {
+      e.target.releasePointerCapture(e.pointerId);
+    } catch {}
   };
-
-  // 🔥 global listeners (smooth)
+ 
   useEffect(() => {
     window.addEventListener("pointermove", handlePointerMove);
     window.addEventListener("pointerup", handlePointerUp);
-
+  
     return () => {
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
     };
-  });
+  }, [dragging, offset]);
 
   return (
     <div
@@ -102,17 +107,19 @@ const FloatingRobot = () => {
         </div>
       )}
 
-      <img
-        src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png"
-        alt="robot"
-        width={60}
-        onPointerDown={handlePointerDown}
-        draggable={false}
-        style={{
-          cursor: dragging ? "grabbing" : "grab",
-          userSelect: "none",
-        }}
-      />
+<img
+  src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png"
+  alt="robot"
+  width={60}
+  onPointerDown={handlePointerDown}
+  onContextMenu={(e) => e.preventDefault()}
+  
+  draggable={false}
+  style={{
+    cursor: dragging ? "grabbing" : "grab",
+    userSelect: "none",
+  }}
+/>
     </div>
   );
 };

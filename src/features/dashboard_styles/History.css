@@ -659,11 +659,16 @@
 .in-table{
   overflow:visible;
 }
-.history-table td{
+/* LAST COLUMN = ACTION */
+.history-table td:last-child{
+  overflow: visible !important;
+  text-overflow: unset !important;
+  white-space: nowrap !important;
+}
+.history-table td:not(:last-child){
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
-  position:relative;
 }
 
 /* popup */
@@ -923,8 +928,7 @@
 
   .entry-delete-btn .icon{
     color: #ef4444;  
-    margin: 10px; 
-    margin-left: 20px;/* red icon */
+    margin-left: 5px;/* red icon */
     font-size: 20px;
     align-items: center;
   }
@@ -1175,10 +1179,4 @@
     margin:8px;       /* spacing */
   }
 
-}
-/* 🔥 FINAL FIX – ACTION மட்டும் ellipsis remove */
-.history-table td.action-cell{
-  overflow: visible !important;
-  text-overflow: unset !important;
-  white-space: nowrap !important;
 }

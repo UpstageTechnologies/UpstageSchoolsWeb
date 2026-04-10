@@ -1,6 +1,6 @@
     import React, { useEffect, useState } from "react";
     import { onSnapshot } from "firebase/firestore";
-    import { FaPlus, FaSearch, FaEdit, FaTrash, FaEye, FaEyeSlash , } from "react-icons/fa";
+    import { FaPlus, FaSearch, FaEdit, FaTrash, FaEye, FaEyeSlash , FaBan,FaCheck} from "react-icons/fa";
     import "../dashboard_styles/Teacher.css"; // same CSS reuse
     import FloatingInput from "../../components/FloatingInput";
     import {
@@ -573,14 +573,12 @@
                       >
                         <FaEdit /> Edit
                       </button>
-                      <button
-  className="disable-btn"
-  style={{
-    background: s.isActive ? "#f59e0b" : "#10b981",
-    color: "#fff"
-  }}
+                    
+<button
+  className={`disable-btn ${!s.isActive ? "enable" : ""}`}
   onClick={() => handleDisable(s)}
 >
+  {s.isActive ? <FaBan /> : <FaCheck />}
   {s.isActive ? "Disable" : "Enable"}
 </button>
                       <button

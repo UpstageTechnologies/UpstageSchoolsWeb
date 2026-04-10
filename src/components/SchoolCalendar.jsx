@@ -146,14 +146,12 @@ useEffect(() => {
     });
 
     globalData = temp;
-    console.log("🌍 GLOBAL:", globalData);
+    console.log("GLOBAL:", globalData);
     if (!classId) {
-      // 👉 admin / no class
       setEvents(globalData);
     } else {
       setEvents(globalData);
     }
-    
   });
   if (classId) {
     const classRef = collection(

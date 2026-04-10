@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaPlus, FaSearch, FaEdit, FaTrash , FaUser} from "react-icons/fa";
+import { FaPlus, FaSearch, FaEdit, FaTrash , FaUser , FaBan,FaCheck} from "react-icons/fa";
 import "../dashboard_styles/Teacher.css";
 import {
   collection,
@@ -657,14 +657,12 @@ useEffect(() => {
   >
     <FaEdit /> Edit
   </button>
-  <button
-  className="disable-btn"
-  style={{
-    background: t.isActive ? "#f59e0b" : "#10b981",
-    color: "#fff"
-  }}
+ 
+<button
+  className={`disable-btn ${!t.isActive ? "enable" : ""}`}
   onClick={() => handleDisable(t)}
 >
+  {t.isActive ? <FaBan /> : <FaCheck />}
   {t.isActive ? "Disable" : "Enable"}
 </button>
   <button

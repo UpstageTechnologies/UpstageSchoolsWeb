@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState ,useRef } from "react";
 import { collection, getDocs ,onSnapshot ,setDoc,doc } from "firebase/firestore";
 import { db } from "../services/firebase";
 import "./SchoolCalendar.css";
@@ -13,11 +13,47 @@ export default function SchoolScheduleCalendar({ adminUid }) {
   const [schoolEnd, setSchoolEnd] = useState(null);
   const [govHolidays, setGovHolidays] = useState({});
   const [editingDate, setEditingDate] = useState(null);
+  const [eventSearch, setEventSearch] = useState("");
+  const dropdownRef = useRef(null);
+  const modalRef = useRef(null);
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+  
+      // 🔻 DROPDOWN CLOSE
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target)
+      ) {
+        setShowEventDropdown(false);
+      }
+  
+      // 🔻 MODAL CLOSE (only if dropdown already closed)
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(e.target)
+      ) {
+        setEditingDate(null);
+      }
+    };
+  
+    document.addEventListener("mousedown", handleClickOutside);
+  
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+  const [showEventDropdown, setShowEventDropdown] = useState(false);
   const [editData, setEditData] = useState({
     title: "",
     type: "working"
   });
-
+  const [eventType, setEventType] = useState("");
+  const [eventTypeList, setEventTypeList] = useState([
+    { name: "Holiday", color: "#ff3d71" },
+    { name: "Exam", color: "#2140df" },
+    { name: "Meeting", color: "#00bcd4" },
+    { name: "Birthday", color: "#ff9800" }
+  ]);
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
@@ -299,7 +335,7 @@ new Date(year, month + 1, 1) <=
       {/* EDIT MODAL */}
       {editingDate && (
         <div className="sc-modal">
-          <div className="sc-modal-box">
+        <div className="sc-modal-box modern-modal">
             <h4>Edit {editingDate}</h4>
 
             <input
@@ -309,20 +345,75 @@ new Date(year, month + 1, 1) <=
               }
               placeholder="Title"
             />
+            <input
+            placeholder="Subtitle"/>
+            <textarea placeholder="Message"/>
+            <div className="student-dropdown" ref={dropdownRef}>
 
-            <select
-              value={editData.type}
-              onChange={(e) =>
-                setEditData({ ...editData, type: e.target.value })
-              }
-            >
-              <option value="working">Working Day</option>
-              <option value="holiday">Holiday</option>
-              <option value="exam">Exam</option>
-              <option value="meeting">Meeting</option>
-              <option value="birthday">Birthday</option>
-            </select>
+<input
+  placeholder="Event Type"
+  value={eventType || eventSearch}
+  onChange={e => {
+    setEventSearch(e.target.value);
+    setEventType("");
+    setShowEventDropdown(true);
+  }}
+  onFocus={() => setShowEventDropdown(true)}
+/>
 
+{showEventDropdown && (
+  <div className="student-dropdown-list">
+
+    {eventTypeList
+      .filter(t =>
+        t.name.toLowerCase().includes(eventSearch.toLowerCase())
+      )
+      .map((t, i) => (
+        <div
+          key={i}
+          className="student-option"
+          onClick={() => {
+            setEventType(t.name);
+            setEventSearch("");
+            setShowEventDropdown(false);
+          }}
+        >
+          <span
+            className="dot"
+            style={{ background: t.color }}
+          />
+          {t.name}
+        </div>
+      ))}
+
+    {/* ➕ ADD NEW TYPE */}
+    {eventSearch && (
+      <div
+        className="student-option"
+        style={{ color: "#2563eb" }}
+        onClick={() => {
+          const newType = eventSearch;
+
+          // 🔥 random color OR default yellow
+          const newColor = "#facc15"; // yellow
+
+          setEventTypeList(prev => [
+            ...prev,
+            { name: newType, color: newColor }
+          ]);
+
+          setEventType(newType);
+          setEventSearch("");
+          setShowEventDropdown(false);
+        }}
+      >
+        ➕ Add "{eventSearch}"
+      </div>
+    )}
+
+  </div>
+)}
+</div>
             <div className="sc-actions">
             <button
   onClick={async () => {

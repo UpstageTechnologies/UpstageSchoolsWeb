@@ -1,5 +1,5 @@
   import React, { useEffect, useState } from "react";
-  import { FaPlus, FaSearch, FaEdit, FaTrash ,FaUser ,FaUndo} from "react-icons/fa";
+  import { FaPlus, FaSearch, FaEdit, FaTrash ,FaUser ,FaUndo,FaBan,FaCheck} from "react-icons/fa";
   import {
     collection,
     addDoc,
@@ -750,16 +750,14 @@
   <button className="edit-btn"onClick={() => handleEdit(p)}>
   <FaEdit /> Edit
   </button>
-  <button
-    className="disable-btn"
-    style={{
-      background: p.isActive ? "#f59e0b" : "#10b981",
-      color: "#fff"
-    }}
-    onClick={() => handleDisable(p)}
-  >
-    {p.isActive ? "Disable" : "Enable"}
-  </button>
+ 
+<button
+  className={`disable-btn ${!p.isActive ? "enable" : ""}`}
+  onClick={() => handleDisable(p)}
+>
+  {p.isActive ? <FaBan /> : <FaCheck />}
+  {p.isActive ? "Disable" : "Enable"}
+</button>
   <button
     className="delete-btn"
     onClick={() =>

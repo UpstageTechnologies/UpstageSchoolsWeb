@@ -291,9 +291,6 @@ const [saveStatus, setSaveStatus] = useState("idle");
     // 🔥 Automatically open timetable
     setActiveSection(section);
   };
-  
-  
-  
   const createNewCycle = async (timetableRef, cycleKey) => {
     const timingRef = doc(
       db,

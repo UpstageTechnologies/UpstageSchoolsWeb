@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaPlus, FaSearch, FaEdit, FaTrash, FaEye ,FaUser } from "react-icons/fa";
+import { FaPlus, FaSearch, FaEdit, FaTrash, FaEye ,FaUser,FaBan,FaCheck } from "react-icons/fa";
 import "../dashboard_styles/Teacher.css";
 import { onSnapshot } from "firebase/firestore"; 
 import FloatingInput from "../../components/FloatingInput";
@@ -453,14 +453,12 @@ await setDoc(
   >
     <FaEdit /> Edit
   </button>
-  <button
-  className="disable-btn"
-  style={{
-    background: s.isActive ? "#f59e0b" : "#10b981",
-    color: "#fff"
-  }}
+  
+<button
+  className={`disable-btn ${!s.isActive ? "enable" : ""}`}
   onClick={() => handleDisable(s)}
 >
+  {s.isActive ? <FaBan /> : <FaCheck />}
   {s.isActive ? "Disable" : "Enable"}
 </button>
   <button

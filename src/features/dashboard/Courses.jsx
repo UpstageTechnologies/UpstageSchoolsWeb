@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { db, auth } from "../../services/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import "../dashboard_styles/courses.css";
-import { FaArrowCircleRight, FaArrowRight } from "react-icons/fa";
+import { FaArrowCircleRight, FaArrowRight ,FaArrowLeft} from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 export default function Course({ handleMenuClick }) {
@@ -94,7 +94,30 @@ export default function Course({ handleMenuClick }) {
     if (!adminUid) return;
   }, [adminUid, teacherClassId]); // 🔥 IMPORTANT
   return (
+
     <div className="course-container">
+      {role === "teacher" && (
+  <div
+    onClick={() => handleMenuClick("subdashboard")} // 🔥 back to SubDashboard inner home
+    style={{
+      position: "fixed",
+      top: "20px",
+      left: "20px",
+      width: "45px",
+      height: "45px",
+      borderRadius: "50%",
+      background: "#fff",
+      boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      cursor: "pointer",
+      zIndex: 9999
+    }}
+  >
+    <FaArrowLeft />
+  </div>
+)}
       <h2 className="page-title">Courses</h2>
       {showCourseGuide && (
   <div className="guide-banner">

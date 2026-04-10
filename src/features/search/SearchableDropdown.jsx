@@ -74,7 +74,7 @@ export default function SearchableDropdown({
         <div style={styles.list}>
           {filtered.length === 0 && (
             <div style={{ padding: 8, color: "gray" }}>
-              No results
+              select yours school...
             </div>
           )}
 
