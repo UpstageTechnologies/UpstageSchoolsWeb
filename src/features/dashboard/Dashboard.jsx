@@ -62,6 +62,8 @@
   const Classroom = lazy (() => import("./Classroom"))
   const CombinedPage = lazy(() => import("./CombinedPage"));
   const Library = lazy(() => import("./Library"));
+  const Visitors = lazy(() => import("./Visitors"));
+  const allowedVisitorUID = "wVTsbCcbctgcD5woQF1S9lTrZBl2"; 
     const Dashboard = () => {
       
       const [user, setUser] = useState(null);
@@ -197,7 +199,10 @@
     console.log("Students:", studentsList);
     console.log("Parents:", parentsList);
   }, [teachersList, studentsList, parentsList]);
-      const isPremium = plan === "premium" || plan === "lifetime"; 
+  const isPremium =
+  plan === "premium" ||
+  plan === "lifetime" ||
+  plan === "feetracker";   // 🔥 ADD THIS
 
       const navigate = useNavigate();
 
@@ -666,8 +671,15 @@ window.openIntroPopup = (type = "default") => {
   {/* ===== PROFILE POPUP ===== */}
 
   <ul>
-            
-    {isOfficeStaff && (
+  {user?.uid === allowedVisitorUID && (
+  <li
+    className={activePage === "visitors" ? "active" : ""}
+    onClick={() => handleMenuClick("visitors")}
+  >
+   Visitors
+  </li>
+)}
+  {(isOfficeStaff || (role === "master" && plan === "feetracker")) && (
       <li className={activePage === "accounts" ? "active" : ""} onClick={() => handleMenuClick("accounts")}>
         <FaMoneyBillWave /> Accounts
       </li>
@@ -718,21 +730,24 @@ window.openIntroPopup = (type = "default") => {
           </li>
         )}
 
-        {(
-          (role === "master"  && 
-            (plan === "premium" || plan === "lifetime" || plan === "basic")) ||
-          role === "admin"
-        ) && (
-          <>
-          <li className={activePage === "accounts" ? "active" : ""} onClick={() => handleMenuClick("accounts")}>
-              <FaMoneyBillWave /> Accounts
-            </li>
-            <li
-  className={activePage === "account_creation" ? "active" : ""}
-  onClick={() => handleMenuClick("account_creation")}
-  >
-  <FaUserCircle /> Account Creation
-  </li>
+{(
+  (role === "master" &&
+    (plan === "premium" ||
+      plan === "lifetime" ||
+      plan === "basic" ||
+      plan === "feetracker")) ||
+  role === "admin"
+) && (
+  <>
+    {/* ✅ Accounts (ONLY if NOT feetracker) */}
+    {plan !== "feetracker" && (
+      <li
+        className={activePage === "accounts" ? "active" : ""}
+        onClick={() => handleMenuClick("accounts")}
+      >
+        <FaMoneyBillWave /> Accounts
+      </li>
+    )}
   {/* {role === } */}
   <li className={activePage === "courses" ? "active" : ""}onClick={() => handleMenuClick("courses")}>
           <FaPlane/> Planner
@@ -784,7 +799,15 @@ window.openIntroPopup = (type = "default") => {
   >
     <FaClipboardCheck /> Attendance
   </li>
+  
 )}
+<li
+  className={activePage === "account_creation" ? "active" : ""}
+  onClick={() => handleMenuClick("account_creation")}
+>
+  <FaUserCircle /> Account Creation
+</li>
+
           </>
         )}
                   {(role === "teacher" || role === "parent" || viewAs === "parent") && (
@@ -1052,6 +1075,7 @@ localStorage.getItem("parentName") ||
       globalSearch={searchQuery}
     />
   )}
+  {activePage === "visitors" && <Visitors />}
 
   {(isAdminOrSubAdmin || isOfficeStaff) && activePage === "accounts" && (
     <ExpensesPage

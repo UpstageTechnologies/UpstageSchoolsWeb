@@ -526,14 +526,15 @@ useEffect(() => {
     const now = new Date();
   
     const hasAccess =
-      plan === "premium" ||
-      plan === "lifetime" ||
-      (
-        plan === "basic" &&
-        trialAccess === true &&
-        trialExpiresAt &&
-        trialExpiresAt.toDate() > now
-      );
+  plan === "premium" ||
+  plan === "lifetime" ||
+  plan === "feetracker" ||   // 🔥 ADD THIS
+  (
+    plan === "basic" &&
+    trialAccess === true &&
+    trialExpiresAt &&
+    trialExpiresAt.toDate() > now
+  );
   
     if (!hasAccess) {
       showUpgrade();

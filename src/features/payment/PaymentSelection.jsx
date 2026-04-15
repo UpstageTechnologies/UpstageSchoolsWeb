@@ -37,11 +37,17 @@ const Payment = () => {
   
       } else if (planName === "Lifetime Access") {
         planValue = "lifetime";
-  
+        
+
         // Lifetime – no expiry (or you can set very far future)
         planExpiry = null;
       }
-  
+      else if (planName === "FeeTracker Plan") {
+        planValue = "feetracker";
+         // example: 1 year validity (optional)
+  planExpiry = new Date();
+  planExpiry.setFullYear(planExpiry.getFullYear() + 1);
+}
       const userRef = doc(db, "users", user.uid);
   
       await updateDoc(userRef, {
@@ -109,7 +115,6 @@ const Payment = () => {
 
               <p className="price">
                 <span className="old">₹99</span>
-                <span className="new"> ₹0</span>
               </p>
 
               <p className="desc">No Specific Features</p>
@@ -132,7 +137,7 @@ const Payment = () => {
 
               <p className="price">
                 <span className="old">₹399</span>
-                <span className="new"> ₹299</span>
+             
               </p>
 
               <p className="desc">All Features + Priority Support</p>
@@ -158,7 +163,7 @@ const Payment = () => {
 
               <p className="price">
                 <span className="old">₹1999</span>
-                <span className="new"> ₹999</span>
+               
               </p>
 
               <p className="desc">One-Time Payment</p>
@@ -171,6 +176,30 @@ const Payment = () => {
                 Buy Lifetime
               </button>
             </div>
+            {/* FeeTracker Plan */}
+<div className="plan-box">
+  <h3>FeeTracker Plan</h3>
+  <ul className="tick">
+    <li>Fees Management</li>
+    <li>Salary Management</li>
+    <li>Income & Expenses Analytics</li>
+    <li>Competition Management</li>
+    <li>Reports & Invoice</li>
+  </ul>
+
+  <p className="price">
+    <span className="old">₹12999</span>
+  </p>
+
+  <p className="desc">Advanced Business Management</p>
+
+  <button
+    className="choose-btn"
+    onClick={() => openRazorpay(9999, "FeeTracker Plan")}
+  >
+    Buy FeeTracker
+  </button>
+</div>
 
           </div>
         </div>

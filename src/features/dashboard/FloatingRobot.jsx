@@ -5,16 +5,38 @@ const FloatingRobot = () => {
   const [dragging, setDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [showHelp, setShowHelp] = useState(true);
-
+  const handleTouchStart = (e) => {
+    const touch = e.touches[0];
+  
+    setDragging(true);
+  
+    setOffset({
+      x: touch.clientX - position.x,
+      y: touch.clientY - position.y,
+    });
+  };
+  
+  const handleTouchMove = (e) => {
+    if (!dragging) return;
+  
+    const touch = e.touches[0];
+  
+    setPosition({
+      x: touch.clientX - offset.x,
+      y: touch.clientY - offset.y,
+    });
+  };
+  
+  const handleTouchEnd = () => {
+    setDragging(false);
+  };
+  
   useEffect(() => {
     const handleSkip = () => setShowHelp(true);
     window.addEventListener("introSkipped", handleSkip);
     return () => window.removeEventListener("introSkipped", handleSkip);
   }, []);
   const handlePointerDown = (e) => {
-    // 🔥 முக்கியம்: left click மட்டும் allow
-    if (e.button !== 0) return;
-  
     setDragging(true);
   
     setOffset({
@@ -22,12 +44,9 @@ const FloatingRobot = () => {
       y: e.clientY - position.y,
     });
   
-    // 🔥 pointer capture (VERY IMPORTANT)
     e.target.setPointerCapture(e.pointerId);
   };
   
-
-  // 🔥 POINTER MOVE
   const handlePointerMove = (e) => {
     if (!dragging) return;
 
@@ -48,9 +67,16 @@ const FloatingRobot = () => {
     window.addEventListener("pointermove", handlePointerMove);
     window.addEventListener("pointerup", handlePointerUp);
   
+    // 🔥 ADD THESE
+    window.addEventListener("touchmove", handleTouchMove);
+    window.addEventListener("touchend", handleTouchEnd);
+  
     return () => {
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
+  
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
     };
   }, [dragging, offset]);
 
@@ -106,14 +132,13 @@ const FloatingRobot = () => {
           </button>
         </div>
       )}
-
 <img
   src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png"
   alt="robot"
   width={60}
   onPointerDown={handlePointerDown}
+  onTouchStart={handleTouchStart}   // 🔥 ADD THIS
   onContextMenu={(e) => e.preventDefault()}
-  
   draggable={false}
   style={{
     cursor: dragging ? "grabbing" : "grab",

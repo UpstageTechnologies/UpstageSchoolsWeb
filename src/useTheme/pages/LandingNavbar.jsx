@@ -247,11 +247,10 @@ export default function LandingNavbar({ showAbout = false, setShowAbout ,  showB
       About
     </span>
   )}
-
-  <div className="nav-item">
-    <FaPhoneAlt />
-    <span className="hover-text">95260960260</span>
-  </div>
+<div className="nav-item" onClick={() => window.location.href = "tel:+9195260960260"}>
+  <FaPhoneAlt />
+  <span className="hover-text">+91 9442461428</span>
+</div>
 
   {/* <div className="nav-item"> */}
     {/* <FaEnvelope /> */}

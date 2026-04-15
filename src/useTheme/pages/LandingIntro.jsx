@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import "../../useTheme/styles/Landing.css";
 import studentImg from "../../assets/student.jpg";
 import LandingNavbar from "./LandingNavbar";
-
+import AboutPanel from "../../Product/AboutPanel";
 // ✅ React Icons
 import {
   FaLayerGroup,
@@ -28,22 +28,10 @@ export default function LandingIntro() {
       <div className="intro-wrapper">
 
     
-<div className={`about-panel ${showAbout ? "active" : ""}`}>
-  <div className="about-content">
-    <h1>About Upstage Technologies</h1>
-
-    <p>
-      Upstage Technologies delivers innovative digital solutions that simplify 
-      school management, enhance learning experiences, and empower institutions 
-      with scalable, future-ready technology.
-    </p>
-
-    <p>
-      Our platforms are designed for performance, usability, and growth — helping 
-      organizations transition into the digital future seamlessly.
-    </p>
-  </div>
-</div>
+<AboutPanel 
+  show={showAbout} 
+  onClose={() => setShowAbout(false)} 
+/>
         {/* LEFT */}
         <div className={`intro-left ${showAbout ? "about-mode" : ""}`}>
 
