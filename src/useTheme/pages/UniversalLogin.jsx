@@ -158,7 +158,11 @@ const handleGoogleSignIn = async () => {
         const tData = teacherSnap.data();
     
         if (tData.assignedClassId && tData.assignedSection) {
-          localStorage.setItem("classId", tData.assignedClassId);
+          const fullClass = `${tData.assignedClassId}${tData.assignedSection}`;
+        
+          localStorage.setItem("className", fullClass);
+        
+          console.log("🔥 SAVED CLASS:", fullClass);
         }
       }
     }

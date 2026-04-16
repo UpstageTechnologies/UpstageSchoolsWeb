@@ -1,13 +1,16 @@
 import React from "react";
 import "../dashboard_styles/SubDashboard.css";
-import SchoolCalendar from "../../components/SchoolScheduleCalendar"
+import SchoolCalendar from "../../components/SchoolCalendar"
 import { auth ,db } from "../../services/firebase";
 import { doc, getDoc } from "firebase/firestore";
-import { useState,useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FaArrowLeft } from "react-icons/fa";
-
+import Timetable from "./Timetable";
 const SubDashboard = ({ setActivePage, setAccountPopupOpen }) => {
+ 
   const [selectedDate, setSelectedDate] = useState(null);
+  
+  const [realSlots, setRealSlots] = useState([]);
   const getWeekDates = (date) => {
     const current = new Date(date);
     const day = current.getDay(); // 0-6
@@ -49,17 +52,19 @@ const SubDashboard = ({ setActivePage, setAccountPopupOpen }) => {
       </div>
     );
   };
-  const TimeGrid = () => {
+  const TimeGrid = ({ slots }) => {
+
+    const gridRef = useRef(null);
+    
+    const [position, setPosition] = useState(0);
+  
     const times = [];
   
     let hour = 8;
     let minute = 30;
   
     while (hour < 18) {
-      const formatted =
-        `${hour}:${minute === 0 ? "00" : minute}`;
-  
-      times.push(formatted);
+      times.push(`${hour}:${minute === 0 ? "00" : minute}`);
   
       minute += 30;
       if (minute === 60) {
@@ -67,21 +72,108 @@ const SubDashboard = ({ setActivePage, setAccountPopupOpen }) => {
         hour++;
       }
     }
+   
+    useEffect(() => {
   
-    // 🔴 CURRENT TIME LINE
-    const now = new Date();
-    const totalMinutes =
-      (now.getHours() * 60 + now.getMinutes()) - (8 * 60 + 30);
+      const updateLine = () => {
+        const now = new Date();
   
-    const position = totalMinutes * 1; // 🔥 IMPORTANT FIX
+        const startMinutes = 8 * 60 + 30;
+        const endMinutes = 18 * 60;
   
+        const currentMinutes =
+          now.getHours() * 60 + now.getMinutes();
+  
+        const diff = currentMinutes - startMinutes;
+        const totalRange = endMinutes - startMinutes;
+  
+        const gridHeight =
+          gridRef.current?.offsetHeight || 600;
+  
+        const pos = Math.max(
+          0,
+          Math.min((diff / totalRange) * gridHeight, gridHeight)
+        );
+  
+        setPosition(pos);
+      };
+  
+      // 🔥 FIRST RUN AFTER DOM READY
+      setTimeout(updateLine, 100);
+  
+      // 🔥 AUTO UPDATE
+      const interval = setInterval(updateLine, 60000);
+  
+      return () => clearInterval(interval);
+  
+    }, []);
+    const getCurrentSlot = () => {
+      if (!slots) return null;
+    
+      const now = new Date();
+    
+      const currentTime =
+        now.getHours().toString().padStart(2, "0") +
+        ":" +
+        now.getMinutes().toString().padStart(2, "0");
+    
+      return slots.find((slot) => {
+        if (slot.type === "break") return false;
+    return currentTime >= slot.start && currentTime < slot.end;;
+    console.log("TIME:", currentTime);
+      });
+    };
+    const currentSlot = getCurrentSlot();
     return (
-      <div className="time-grid">
-        {/* 🔴 LINE */}
+      <div className="time-grid" ref={gridRef}>
+    <div
+  className="current-line"
+  style={{ top: position }}
+>
+  {currentSlot && (
+    <span className="line-label">
+      {currentSlot.subject} - {currentSlot.topic}
+    </span>
+  )}
+</div>
+{slots.map((slot, i) => {
+      if (slot.type === "break") return null;
+
+      const getMinutes = (time) => {
+        const [h, m] = time.split(":").map(Number);
+        return h * 60 + m;
+      };
+
+      const start = getMinutes(slot.start);
+      const end = getMinutes(slot.end);
+
+      const baseStart = 8 * 60 + 30;
+      const totalHeight = gridRef.current?.offsetHeight || 600;
+
+      const top = ((start - baseStart) / (9.5 * 60)) * totalHeight;
+      const height = ((end - start) / (9.5 * 60)) * totalHeight;
+
+      return (
         <div
-          className="current-line"
-          style={{ top: position }}
-        />
+          key={i}
+          style={{
+            position: "absolute",
+            top,
+            left: "80px",
+            right: "10px",
+            height,
+            background: "#4f46e5",
+            color: "#fff",
+            borderRadius: "6px",
+            padding: "4px",
+            fontSize: "12px"
+          }}
+        >
+          {slot.subject} - {slot.topic}
+        </div>
+      );
+    })}
+
   
         {times.map((t, i) => (
           <div key={i} className="time-slot">
@@ -89,6 +181,7 @@ const SubDashboard = ({ setActivePage, setAccountPopupOpen }) => {
             <div className="time-box"></div>
           </div>
         ))}
+      
       </div>
     );
   };
@@ -179,6 +272,72 @@ const photo =
   
     loadTeacher();
   }, [adminUid]);
+  useEffect(() => {
+    const loadSlots = async () => {
+  
+      const fullClass = localStorage.getItem("className");
+      const adminUid = localStorage.getItem("adminUid");
+  
+      if (!fullClass || !adminUid) {
+        console.log("❌ className / adminUid missing");
+        return;
+      }
+  
+      const className = fullClass.slice(0, -1);
+      const section = fullClass.slice(-1);
+  
+      console.log("🔥 DOC:", `${className}_${section}`);
+  
+      try {
+        const ref = doc(
+          db,
+          "users",
+          adminUid,
+          "timetables",
+          `${className}_${section}`
+        );
+  
+        const snap = await getDoc(ref);
+  
+        if (snap.exists()) {
+          const data = snap.data();
+  
+          const getDayKey = (date) => {
+            const d = new Date(date).getDay(); // 0-6
+          
+            const map = {
+              1: "Day1", // Monday
+              2: "Day2",
+              3: "Day3",
+              4: "Day4",
+              5: "Day5",
+              6: "Day6",
+              0: "Day7"  // Sunday
+            };
+          
+            return map[d];
+          };
+          
+          const dayKey = getDayKey(selectedDate);
+          
+          console.log("🔥 SELECTED DAY:", dayKey);
+          
+          const slotsData = data.cycles?.[dayKey] || [];
+  
+          console.log("🔥 REAL SLOTS:", slotsData);
+  
+          setRealSlots(slotsData);
+        } else {
+          console.log("❌ No timetable found");
+        }
+  
+      } catch (err) {
+        console.error("Error:", err);
+      }
+    };
+  
+    loadSlots();
+  }, [selectedDate]);
   return (
     
     <div className="sub-wrapper">
@@ -383,9 +542,10 @@ const photo =
           });
         })()}
       </div>
+    
 
-      {/* ⏱️ TIMELINE */}
-      <TimeGrid />
+<TimeGrid slots={realSlots} />
+   
 
     </div>
   ) : (

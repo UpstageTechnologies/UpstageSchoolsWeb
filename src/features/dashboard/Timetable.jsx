@@ -4,10 +4,7 @@ import { db, auth } from "../../services/firebase";
 import "../dashboard_styles/timetable.css";
 import { useNavigate } from "react-router-dom";
 import { FaCalendar } from "react-icons/fa";
-
-
-export default function Timetable({ classId }) {
- console.log("hihello")
+export default function Timetable({ classId, onSlotsUpdate }) {
 const navigate = useNavigate();
   const adminUid =
     auth.currentUser?.uid || localStorage.getItem("adminUid");
@@ -222,6 +219,11 @@ const [saveStatus, setSaveStatus] = useState("idle");
 
     return result;
   };
+  useEffect(() => {
+    if (slots && slots.length > 0) {
+      onSlotsUpdate && onSlotsUpdate(slots);
+    }
+  }, [slots]);
   const handleSectionClick = async (sectionName) => {
     if (!adminUid) return;
   
