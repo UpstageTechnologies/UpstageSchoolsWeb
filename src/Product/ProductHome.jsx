@@ -181,7 +181,7 @@ export default function ProductHome() {
             className="product-card"
             onClick={() =>
               window.open(
-                "https://vercalhospital-git-master-nirubans-projects-243ecde5.vercel.app/",
+                "https://hospital-delta-pink.vercel.app/",
                 "_blank"
               )
             }
