@@ -676,23 +676,15 @@ setShowStudentDropdown,
           key={type}
           className="student-option"
           onClick={() => {
-            setPaymentType(type);
-            const lower = type.toLowerCase().replace(" ", "");
-            setNewPayType(lower);
-          
-            // 🔥 AUTO TERM AMOUNT
-            if (lower.startsWith("term")) {
-              const fee = selectedFees[0];
-              if (fee) {
-                setNewPayAmount(getNewTermAmount(fee));
-              }
-            }
-          
-            setPaymentSearch("");
-            setShowPaymentDD(false);
-          }}
-          
-          
+  setPaymentType(type);
+
+  const lower = type.toLowerCase().replace(" ", "");
+
+  setNewPayType(lower);
+
+  setPaymentSearch("");
+  setShowPaymentDD(false);
+}}
         >
           {type}
         </div>

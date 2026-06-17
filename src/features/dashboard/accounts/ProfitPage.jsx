@@ -605,9 +605,11 @@ if (alreadyPaid) {
       const total = fee.amount;
       const feeDiscountPercent = fee.discount || 0;
       const discountAmount =
-        newPayType === "full"
-          ? total * (feeDiscountPercent / 100)
-          : 0;
+  ["full", "term1", "term2", "term3"].includes(
+    String(newPayType).toLowerCase()
+  )
+    ? total * (feeDiscountPercent / 100)
+    : 0;
       const payableAmount = total - discountAmount;
       let final = 0;
       if (newPayType === "full") {
@@ -667,7 +669,6 @@ const generatedParentId = `P-${Date.now()}`;
         ]
       }
     );
-    // 🔥 STUDENT CREATE HISTORY
 await addDoc(
   collection(db, "users", adminUid, "Account", "accounts", "History"),
   {
@@ -1323,14 +1324,37 @@ const getTermPaidCount = (studentId, feeId) =>
   }, [oldPayType, oldStudent, selectedFees]);
   
   useEffect(() => {
-    if (!newPayType.startsWith("term") || !selectedFees[0]) return;
-  
-    const fee = selectedFees[0];
-  
-    const termAmt = Math.ceil(fee.amount / 3);
-    setNewPayAmount(termAmt);
-  
-  }, [newPayType, selectedFees]);
+
+  const fee = selectedFees?.[0];
+
+  if (!fee) {
+    setNewPayAmount("");
+    return;
+  }
+
+  const payType = String(newPayType).toLowerCase();
+
+  if (
+    payType !== "term1" &&
+    payType !== "term2" &&
+    payType !== "term3"
+  ) {
+    return;
+  }
+
+  const discountPercent =
+    Number(fee.discount || 0);
+
+  const discountedAmount =
+    fee.amount -
+    (fee.amount * discountPercent) / 100;
+
+  const termAmount =
+    Math.ceil(discountedAmount / 3);
+
+  setNewPayAmount(termAmount);
+
+}, [newPayType, selectedFees]);
 
   useEffect(() => {
     setTeacherSearch("");
@@ -1489,15 +1513,14 @@ const getTermPaidCount = (studentId, feeId) =>
   <div className="history-controls">
 
 <div className="filter-dropdown" ref={dropdownRef}>
-
-  <input
-    type="text"
-    placeholder="Search filter..."
-    value={searchText}
-    onChange={(e)=>setSearchText(e.target.value)}
-    onFocus={()=>setShowFilterList(true)}
-    className="report-search"
-  />
+<input
+  type="text"
+  placeholder="Search entries..."
+  value={searchText}
+  onChange={(e) => setSearchText(e.target.value)}
+  onFocus={() => setShowFilterList(true)}
+  className="report-search"
+/>
  <button
       className="print-btn-inside"
       onClick={() => window.print()}

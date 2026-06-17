@@ -24,6 +24,9 @@ export default function Report({
   sortDirection,
   paginate,
   getFeeBalance,
+  classFilter,
+setClassFilter,
+classes,
   dropdownRef
 }) {
  
@@ -102,15 +105,14 @@ export default function Report({
 
           {/* 🔽 FILTER DROPDOWN */}
           <div className="filter-dropdown" ref={dropdownRef}>
-
-            <input
-              type="text"
-              placeholder="Search filter..."
-              value={filterSearch}
-              onChange={(e)=>setFilterSearch(e.target.value)}
-              onFocus={()=>setShowFilterList(true)}
-              className="report-search"
-            />
+<input
+  type="text"
+  placeholder="Search filter..."
+  value={filterSearch}
+  onChange={(e) => setFilterSearch(e.target.value)}
+  onFocus={() => setShowFilterList(true)}
+  className="report-search"
+/>
              <button
     className="print-btn-inside"
     onClick={() => window.print()}
@@ -156,7 +158,23 @@ export default function Report({
                     <option value="term2">Term 2</option>
                     <option value="term3">Term 3</option>
                   </select>
+                  <label>Class</label>
 
+<select
+  value={classFilter}
+  onChange={(e)=>setClassFilter(e.target.value)}
+  className="report-dropdown"
+>
+  <option value="">All Classes</option>
+{classes.map(cls => (
+  <option
+    key={cls.id}
+    value={cls.name}
+  >
+    {cls.name}
+  </option>
+))}
+</select>
                   <label>Actions</label>
 
                   <button

@@ -47,8 +47,29 @@ export default function EntriesTable({
       studentId: null
     }))
   ];
+  if (searchText) {
+  all = all.filter(row =>
+    row.source
+      ?.toLowerCase()
+      .includes(searchText.toLowerCase())
+  );
+}
+
+if (fromDate) {
+  all = all.filter(row => row.date >= fromDate);
+}
+
+if (toDate) {
+  all = all.filter(row => row.date <= toDate);
+}
+
+if (activityType) {
+  all = all.filter(
+    row => row.type === activityType
+  );
+}
   
-  if (appliedFilter) {
+  if (appliedFilter) {  
 
     const { searchText, fromDate, toDate, activityType } = appliedFilter;
   

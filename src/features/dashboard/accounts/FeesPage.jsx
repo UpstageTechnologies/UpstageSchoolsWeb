@@ -5,6 +5,7 @@ import "../../dashboard_styles/Accounts.css";
 import "../../dashboard_styles/History.css";
 import "../../dashboard_styles/ios.css";
 import "../../../components/IntroPopup.css";
+import StudentFeesReport from "./Income/StudentFeesReport";
 import ExpenseReport from "./ExpenseReport";
 import { FiChevronUp, FiChevronDown } from "react-icons/fi";
 import { FaBible, FaFileInvoice ,FaPrint } from "react-icons/fa";
@@ -43,7 +44,6 @@ const currentDatePartial = allDatesPartial[currentPageIndexPartial] || "";
 const [allDatesTerm1, setAllDatesTerm1] = useState([]);
 const [currentPageIndexTerm1, setCurrentPageIndexTerm1] = useState(0);
 const [term1TableData, setTerm1TableData] = useState([]);
-
 const currentDateTerm1 = allDatesTerm1[currentPageIndexTerm1] || "";
 const [allDatesTerm2, setAllDatesTerm2] = useState([]);
 const [currentPageIndexTerm2, setCurrentPageIndexTerm2] = useState(0);
@@ -795,6 +795,8 @@ const [feesMaster, setFeesMaster] = useState([]);
 const [students, setStudents] = useState([]);
 const [showGeneratedReport, setShowGeneratedReport] = useState(false);
 const [reportFilter, setReportFilter] = useState("all"); 
+const [classFilter, setClassFilter] = useState("");
+
 const [classes, setClasses] = useState([]);
 const [classSearchText, setClassSearchText] = useState("");
 const [showClassFilterDropdown, setShowClassFilterDropdown] = useState(false);
@@ -893,6 +895,7 @@ useEffect(() => {
 }, [adminUid]);
 const generateReport = () => {
 
+  console.log("SEARCH VALUE =", filterSearch);
   let data = [...allReportData];
 
   if (reportFilter !== "all") {
@@ -928,12 +931,38 @@ const generateReport = () => {
       i.date >= fromDate && i.date <= toDate
     );
   }
+  if (filterSearch.trim()) {
+  const search = filterSearch.toLowerCase().trim();
 
+  data = data.filter(item =>
+    item.studentName?.toLowerCase().includes(search) ||
+    item.parentName?.toLowerCase().includes(search) ||
+    item.className?.toLowerCase().includes(search) ||
+    item.feeName?.toLowerCase().includes(search) ||
+    item.paymentType?.toLowerCase().includes(search) ||
+    item.incomeType?.toLowerCase().includes(search) ||
+    item.name?.toLowerCase().includes(search)
+  );
+}
+if (classFilter) {
+  data = data.filter(
+    item => item.className === classFilter
+  );
+}
   console.log("FILTERED DATA:", data);
 
   setReportData(data);
   setShowGeneratedReport(true);
 };
+useEffect(() => {
+  generateReport();
+}, [
+  filterSearch,
+  reportFilter,
+  classFilter,
+  fromDate,
+  toDate
+]);
 const generateExpenseReport = () => {
 
   let data = [...expenseList]; // 🔥 use expenseList NOT report collection
@@ -1452,28 +1481,28 @@ const totalPagesTuition = Math.ceil(
     className={incomeTab === "new" ? "tab-btn active" : "tab-btn"}
     onClick={() => openTab("new")}
   >
-    New Admission
+    New 
   </button>
 
   <button
     className={incomeTab === "old" ? "tab-btn active" : "tab-btn"}
     onClick={() => openTab("old")}
   >
-    Old Admission
+    Old
   </button>
 
   <button
     className={incomeTab === "full" ? "tab-btn active" : "tab-btn"}
     onClick={() => openTab("full")}
   >
-    Full Payment
+    Full
   </button>
 
   <button
     className={incomeTab === "partial" ? "tab-btn active" : "tab-btn"}
     onClick={() => openTab("partial")}
   >
-    Partial Payment
+    Partial
   </button>
 
   {/* 🔽 TERMS DROPDOWN */}
@@ -1526,7 +1555,12 @@ Competition
 >
   Other
 </button>
-
+<button
+  className={incomeTab === "students" ? "tab-btn active" : "tab-btn"}
+  onClick={() => openTab("students")}
+>
+  Payment details
+</button>
 <button
   className="report-btn"
   onClick={() => {
@@ -1547,10 +1581,20 @@ Competition
 </button>
 
 </div>
+{incomeTab === "students" && (
+  <StudentFeesReport
+    students={students}
+    feesMaster={feesMaster}
+    incomeList={incomeList}
+  />
+)}
 {incomeTab === "report" && (
   <Report
     reportFilter={reportFilter}
     setReportFilter={setReportFilter}
+    classFilter={classFilter}
+setClassFilter={setClassFilter}
+classes={classes}
     filterSearch={filterSearch}
     setFilterSearch={setFilterSearch}
     showFilterList={showFilterList}
