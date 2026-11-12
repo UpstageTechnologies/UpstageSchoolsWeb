@@ -1,6 +1,5 @@
 import React from "react";
 import FloatingInput from "../../../../components/FloatingInput";
-import { useState } from "react";
 export default function SalaryExpense({
   salaryRole,
   setSalaryRole,
@@ -39,7 +38,6 @@ showPaymentMode,
 setShowPaymentMode
 }) 
 {
-  const [focused, setFocused] = useState(null);
   return (
     <>
      <div className="entry-row">

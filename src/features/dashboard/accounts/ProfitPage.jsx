@@ -1,21 +1,41 @@
-import React, { useEffect, useState ,useMemo ,useCallback,useRef } from "react";
-import { collection, onSnapshot, addDoc, updateDoc,  deleteDoc, doc ,getDoc ,setDoc,query, where, getDocs,Timestamp} from "firebase/firestore";
-  import { db } from "../../../services/firebase";
+import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, query, where, getDocs, Timestamp, writeBatch } from "firebase/firestore";
+import { db, auth } from "../../../services/firebase";
 import "../../dashboard_styles/Accounts.css";
 import "../../dashboard_styles/studentSearch.css";
-import { useNavigate } from "react-router-dom";
 import OfficeStaff from "../OfficeStaff";
 import TodaySummary from "./components/TodaySummary";
 import EntriesTable from "./components/EntriesTable";
+import EditEntryModal from "./components/EditEntryModal";
 import IncomeSection from "./Income/IncomeSection";
 import ExpenseSection from "./expense/ExpenseSection";
 import BillPage from "./BillPage";
 import "../../dashboard_styles/IE.css";
 import "../../../components/IntroPopup.css";
-import {  FaArrowLeft, FaPrint, FaTrash } from "react-icons/fa";
+import { FaArrowLeft, FaPrint, FaTrash } from "react-icons/fa";
 export default function ProfitPage({adminUid,setActivePage,activePage = "",plan,trialAccess,trialExpiresAt,showUpgrade}) {
   const role = localStorage.getItem("role");
 const isOfficeStaff = role === "office_staff";
+
+  const effectiveAdminUid = useMemo(() => {
+    return adminUid || localStorage.getItem("adminUid") || auth.currentUser?.uid || "";
+  }, [adminUid]);
+
+  const [feeClass, setFeeClass] = useState("");
+  const [feeName, setFeeName] = useState("");
+  const [feeAmount, setFeeAmount] = useState("");
+  const [editingEntry, setEditingEntry] = useState(null);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+
+  const incomesRef = useMemo(() => effectiveAdminUid ? collection(db, "users", effectiveAdminUid, "Account", "accounts", "Income") : null, [effectiveAdminUid]);
+  const expensesRef = useMemo(() => effectiveAdminUid ? collection(db, "users", effectiveAdminUid, "Account", "accounts", "Expenses") : null, [effectiveAdminUid]);
+  const historyRef = useMemo(() => effectiveAdminUid ? collection(db, "users", effectiveAdminUid, "Account", "accounts", "History") : null, [effectiveAdminUid]);
+  const sourceMasterRef = useMemo(() => effectiveAdminUid ? collection(db, "users", effectiveAdminUid, "Account", "accounts", "Masters", "Main", "Sources") : null, [effectiveAdminUid]);
+  const expenseMasterRef = useMemo(() => effectiveAdminUid ? collection(db, "users", effectiveAdminUid, "Account", "accounts", "Masters", "Main", "ExpenseNames") : null, [effectiveAdminUid]);
+  const studentsRef = useMemo(() => effectiveAdminUid ? collection(db, "users", effectiveAdminUid, "students") : null, [effectiveAdminUid]);
+  const feesRef = useMemo(() => effectiveAdminUid ? collection(db, "users", effectiveAdminUid, "Account", "accounts", "FeesMaster") : null, [effectiveAdminUid]);
+
   const [incomeList, setIncomeList] = useState([]);
   const [expenseList, setExpenseList] = useState([]);
   const [incomeLoaded, setIncomeLoaded] = useState(false);
@@ -120,20 +140,20 @@ useEffect(() => {
   }
 }, [entryType]);
 useEffect(() => {
-  if (!adminUid) return;
-  const ref = collection(db, "users", adminUid, "Classes");
+  if (!effectiveAdminUid) return;
+  const ref = collection(db, "users", effectiveAdminUid, "Classes");
   return onSnapshot(ref, snap => {
     setClasses(snap.docs.map(d => d.data().name));
-  });
-}, [adminUid]);
+  }, (err) => console.error("Classes listener error:", err));
+}, [effectiveAdminUid]);
 
 useEffect(() => {
-  if (!adminUid) return;
+  if (!effectiveAdminUid) return;
 
   const ref = collection(
     db,
     "users",
-    adminUid,
+    effectiveAdminUid,
     "Account",
     "accounts",
     "Competition"
@@ -142,13 +162,14 @@ useEffect(() => {
   return onSnapshot(ref, snap => {
     setCompetitionList(
       snap.docs.map(d => ({
+        ...d.data(),
         id: d.id,
-        ...d.data()
+        docId: d.id
       }))
     );
-  });
+  }, (err) => console.error("Competition listener error:", err));
 
-}, [adminUid]);
+}, [effectiveAdminUid]);
 
 const filteredCategories = categories.filter(c =>
   c.toLowerCase().includes(categorySearch.toLowerCase()));
@@ -173,47 +194,50 @@ const getClassFees = (cls) => {
   );
 };
 useEffect(() => {
-  if (!adminUid) return;
+  if (!effectiveAdminUid || !sourceMasterRef || !expenseMasterRef) return;
 
   const unsubSource = onSnapshot(sourceMasterRef, snap => {
     setSourceList(
       snap.docs.map(d => ({
+        ...d.data(),
         id: d.id,
-        ...d.data()
+        docId: d.id
       }))
     );
-  });
+  }, (err) => console.error("SourceMaster listener error:", err));
 
   const unsubExpense = onSnapshot(expenseMasterRef, snap => {
     setExpenseListMaster(
       snap.docs.map(d => ({
+        ...d.data(),
         id: d.id,
-        ...d.data()
+        docId: d.id
       }))
     );
-  });
+  }, (err) => console.error("ExpenseMaster listener error:", err));
 
   return () => {
     unsubSource();
     unsubExpense();
   };
-}, [adminUid]);
+}, [effectiveAdminUid, sourceMasterRef, expenseMasterRef]);
 useEffect(() => {
-  if (!adminUid) return;
+  if (!effectiveAdminUid) return;
 
-  const teachersRef = collection(db, "users", adminUid, "teachers");
+  const teachersRef = collection(db, "users", effectiveAdminUid, "teachers");
 
   const unsub = onSnapshot(teachersRef, snap => {
     setTeachers(
       snap.docs.map(d => ({
+        ...d.data(),
         id: d.id,
-        ...d.data()
+        docId: d.id
       }))
     );
-  });
+  }, (err) => console.error("Teachers listener error:", err));
 
   return () => unsub();   // 🔥 very important
-}, [adminUid]);
+}, [effectiveAdminUid]);
 const [showStudentType, setShowStudentType] = useState(false);
 const loaded = incomeLoaded && expenseLoaded;
   const [entryDate, setEntryDate] = useState(() => {
@@ -228,6 +252,15 @@ const loaded = incomeLoaded && expenseLoaded;
     setActivityType("");
     setAppliedFilter(null);
     setShowFilterList(false); // 🔥 close dropdown
+  };
+
+  const onGenerate = () => {
+    setAppliedFilter({
+      searchText,
+      fromDate,
+      toDate,
+      activityType
+    });
   };
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -254,14 +287,6 @@ const loaded = incomeLoaded && expenseLoaded;
   const [newPayType, setNewPayType] = useState("");
   const [newPayAmount, setNewPayAmount] = useState("");
   const [newTotal, setNewTotal] = useState(0);
-  const historyRef = collection(
-    db,
-    "users",
-    adminUid,
-    "Account",
-    "accounts",
-    "History"
-  );
   
   const newAdmissionStudents = students.filter(s => {
     const paid = incomeList.some(i =>
@@ -367,39 +392,6 @@ const getVisiblePages = () => {
   
   const prevPage = () => goToPage(currentPageIndex - 1);
   const nextPage = () => goToPage(currentPageIndex + 1);
-  
-  
-  const incomesRef  = collection(db,"users",adminUid,"Account","accounts","Income");
-  const expensesRef = collection(db,"users",adminUid,"Account","accounts","Expenses");
-  const sourceMasterRef = collection(
-    db,
-    "users",
-    adminUid,
-    "Account",
-    "accounts",
-    "Masters",
-
-    "Main",
-    "Sources"
-  );
-  
-  const expenseMasterRef = collection(
-    db,
-    "users",
-    adminUid,
-    "Account",
-    "accounts",
-    "Masters",
-    "Main",
-    "ExpenseNames"
-  );
-  const studentsRef = collection(db, "users", adminUid, "students");
-  const feesRef     = collection(db,"users",adminUid,"Account","accounts","FeesMaster");
-
-  const studentsMainRef = collection(db, "users", adminUid, "students");
-const parentsRef = collection(db, "users", adminUid, "parents");
-
-
 
 const filteredTeachers = teachers
   .filter(t => t.category === "Teaching Staff")
@@ -418,32 +410,33 @@ const filteredTeachers = teachers
   );
 
 useEffect(() => {
-  if (!adminUid) return;
+  if (!effectiveAdminUid || !incomesRef || !expensesRef || !studentsRef || !feesRef) return;
 
   const unsubIncome = onSnapshot(incomesRef, s => {
-    setIncomeList(s.docs.map(d => ({ id: d.id, ...d.data() })));
+    setIncomeList(s.docs.map(d => ({ ...d.data(), id: d.id, docId: d.id })));
     setIncomeLoaded(true);
-  });
+  }, (err) => console.error("Income listener error:", err));
 
   const unsubExpense = onSnapshot(expensesRef, s => {
-    setExpenseList(s.docs.map(d => ({ id: d.id, ...d.data() })));
+    setExpenseList(s.docs.map(d => ({ ...d.data(), id: d.id, docId: d.id })));
     setExpenseLoaded(true);
-  });
+  }, (err) => console.error("Expense listener error:", err));
 
   const unsubStudents = onSnapshot(studentsRef, s => {
-    setStudents(s.docs.map(d => ({ id: d.id, ...d.data() })));
-  });
+    setStudents(s.docs.map(d => ({ ...d.data(), id: d.id, docId: d.id })));
+  }, (err) => console.error("Students listener error:", err));
 
   const unsubFees = onSnapshot(feesRef, s => {
-    setFeesMaster(s.docs.map(d => ({ id: d.id, ...d.data() })));
-  });
+    setFeesMaster(s.docs.map(d => ({ ...d.data(), id: d.id, docId: d.id })));
+  }, (err) => console.error("Fees listener error:", err));
+
   return () => {
     unsubIncome();
     unsubExpense();
     unsubStudents();
     unsubFees();
   };
-}, [adminUid]);
+}, [effectiveAdminUid, incomesRef, expensesRef, studentsRef, feesRef]);
   const filteredStudents = students.filter(s =>
     String(s.class) === String(oldClass) &&
     s.studentName?.toLowerCase().includes(studentSearch.toLowerCase())
@@ -1045,6 +1038,7 @@ setShowPaymentDD(false);
       type: expenseMode,
       name:exName,
       amount:Number(exAmt),
+      paymentMode: paymentMode || "Cash",
       date:entryDate,
       createdAt:new Date()
     });
@@ -1054,12 +1048,13 @@ setShowPaymentDD(false);
       module:"EXPENSE",
       name: exName,
       amount:Number(exAmt),
+      paymentMode: paymentMode || "Cash",
       date:entryDate,
       createdAt:new Date()
     });
     
     setExName(""); setExAmt("");
-  },[exName, exAmt, entryDate]);
+  },[exName, exAmt, entryDate, expenseMode, expensesRef, historyRef, paymentMode]);
   const saveCompetitionIncome = async () => {
     if (
       !competitionClass ||
@@ -1374,12 +1369,12 @@ const getTermPaidCount = (studentId, feeId) =>
   }, [isOfficeStaff]);
 
   useEffect(() => {
-    if (!adminUid) return;
+    if (!effectiveAdminUid) return;
   
     const yearRef = doc(
       db,
       "users",
-      adminUid,
+      effectiveAdminUid,
       "AcademicYear",
       "currentYear"
     );
@@ -1391,64 +1386,346 @@ const getTermPaidCount = (studentId, feeId) =>
           ...snap.data()
         });
       }
-    });
+    }, (err) => console.error("AcademicYear listener error:", err));
   
     return () => unsubYear();
-  }, [adminUid]);
+  }, [effectiveAdminUid]);
+
+  useEffect(() => {
+    if (allDates.length > 0 && !allDates.includes(entryDate)) {
+      const today = new Date().toISOString().split("T")[0];
+      if (allDates.includes(today)) {
+        setEntryDate(today);
+      } else {
+        setEntryDate(allDates[allDates.length - 1]);
+      }
+    }
+  }, [allDates, entryDate]);
+
+  const logAccountingOp = (operation, collectionName, docId, success, error = null, extra = {}) => {
+    const authUid = auth.currentUser?.uid || "none";
+    const isOwner = authUid === effectiveAdminUid;
+    const sessionRole = localStorage.getItem("role") || "unknown";
+    const logData = {
+      operation,
+      collection: collectionName,
+      docId,
+      effectiveAdminUid,
+      authUid,
+      isOwner,
+      sessionRole,
+      success,
+      ...extra
+    };
+    if (error) {
+      logData.errorCode = error?.code || "unknown";
+      logData.errorMessage = error?.message || String(error);
+      console.error(`[Accounting Error] ${operation} on ${collectionName}/${docId}:`, logData);
+    } else {
+      console.log(`[Accounting Success] ${operation} on ${collectionName}/${docId}:`, logData);
+    }
+  };
+
   const deleteEntry = async (row) => {
-    if (!window.confirm("Delete this entry?")) return;
-  
+    if (!row || !row.id) {
+      alert("Invalid entry: Missing document ID");
+      return;
+    }
+
+    if (!effectiveAdminUid) {
+      alert("Authorization error: Missing school admin UID. Please log in again.");
+      return;
+    }
+
+    // Security & Authorization check
+    const authUser = auth.currentUser;
+    if (!isOfficeStaff && authUser && authUser.uid !== effectiveAdminUid) {
+      alert("Unauthorized: You do not have permission to delete accounting records for this school.");
+      logAccountingOp("DELETE", row.type === "income" ? "Income" : "Expenses", row.id, false, {
+        code: "permission-denied",
+        message: "Unauthorized school UID mismatch"
+      });
+      return;
+    }
+
     let collectionName = "";
     let entryType = "";
-  
+
     if (row.type === "income") {
       collectionName = "Income";
       entryType = "income";
-    } 
-    else if (row.type === "expense") {
+    } else if (row.type === "expense") {
       collectionName = "Expenses";
       entryType = "expense";
-    } 
-    else {
+    } else {
+      alert("Invalid entry type: " + row.type);
       return;
     }
-  
-    const docRef = doc(
+
+    const sourceName = row.source || row.name || row.studentName || row.competitionName || "entry";
+    const amountVal = row.income || row.expense || 0;
+    const amountFormatted = row.hidden ? "" : ` of ₹${amountVal}`;
+    const confirmMessage = `Are you sure you want to delete this ${entryType.toUpperCase()} entry "${sourceName}"${amountFormatted} on ${row.date || "selected date"}?`;
+
+    if (!window.confirm(confirmMessage)) return;
+
+    setDeletingId(row.id);
+
+    try {
+      const docRef = doc(
+        db,
+        "users",
+        effectiveAdminUid,
+        "Account",
+        "accounts",
+        collectionName,
+        row.id
+      );
+
+      const snap = await getDoc(docRef);
+
+      if (!snap.exists()) {
+        alert("Record not found in Firestore. It may have already been deleted.");
+        logAccountingOp("DELETE", collectionName, row.id, false, {
+          code: "not-found",
+          message: "Document does not exist in collection"
+        });
+        setDeletingId(null);
+        return;
+      }
+
+      const originalData = snap.data();
+
+      // Atomically delete from primary collection, and from companion Report doc if Income
+      if (entryType === "income") {
+        const batch = writeBatch(db);
+        batch.delete(docRef);
+
+        const reportRef = doc(
+          db,
+          "users",
+          effectiveAdminUid,
+          "Account",
+          "accounts",
+          "Report",
+          row.id
+        );
+        const reportSnap = await getDoc(reportRef);
+        if (reportSnap.exists()) {
+          batch.delete(reportRef);
+        }
+        await batch.commit();
+      } else {
+        await deleteDoc(docRef);
+      }
+
+      logAccountingOp("DELETE", collectionName, row.id, true);
+
+      // Record audit log in History
+      try {
+        const hRef = collection(
+          db,
+          "users",
+          effectiveAdminUid,
+          "Account",
+          "accounts",
+          "History"
+        );
+        await addDoc(hRef, {
+          entryType,
+          action: "DELETE",
+          module: collectionName,
+          originalData: {
+            id: row.id,
+            ...originalData
+          },
+          name: originalData.studentName || originalData.name || originalData.competitionName || sourceName,
+          amount: Number(originalData.paidAmount ?? originalData.amount ?? amountVal ?? 0),
+          paymentMode: originalData.paymentMode || row.mode || "",
+          date: originalData.date || row.date || new Date().toISOString().slice(0, 10),
+          createdAt: new Date()
+        });
+      } catch (histErr) {
+        console.warn("Failed to write deletion history audit log:", histErr);
+      }
+
+      alert("Deleted successfully ✅");
+    } catch (err) {
+      logAccountingOp("DELETE", collectionName, row.id, false, err);
+
+      let userMsg = "Failed to delete entry: " + (err.message || "Unknown error");
+      if (err.code === "permission-denied") {
+        userMsg = "Permission denied: You do not have permission to delete this record.";
+      } else if (err.code === "unavailable") {
+        userMsg = "Network error: Unable to connect to Firebase. Please check your internet connection.";
+      }
+      alert(userMsg);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const updateEntry = async (updatedData) => {
+    if (!updatedData || !updatedData.id) {
+      throw new Error("Missing document ID for update");
+    }
+    if (!updatedData.amount || Number(updatedData.amount) <= 0) {
+      throw new Error("Amount must be a positive number greater than zero");
+    }
+    if (!updatedData.date) {
+      throw new Error("Date is required");
+    }
+    if (!updatedData.name || !updatedData.name.trim()) {
+      throw new Error("Description / Name cannot be empty");
+    }
+    if (!updatedData.paymentMode) {
+      throw new Error("Payment mode is required");
+    }
+
+    if (!effectiveAdminUid) {
+      throw new Error("Authorization error: Missing school admin UID. Please log in again.");
+    }
+
+    // Security check
+    const authUser = auth.currentUser;
+    if (!isOfficeStaff && authUser && authUser.uid !== effectiveAdminUid) {
+      const err = new Error("Unauthorized: School UID mismatch");
+      err.code = "permission-denied";
+      throw err;
+    }
+
+    const collectionName = updatedData.type === "income" ? "Income" : "Expenses";
+    const primaryDocRef = doc(
       db,
       "users",
-      adminUid,
+      effectiveAdminUid,
       "Account",
       "accounts",
       collectionName,
-      row.id
+      updatedData.id
     );
-  
-    const snap = await getDoc(docRef);
-  
-    if (!snap.exists()) {
-      alert("Document not found");
-      return;
+
+    setIsSavingEdit(true);
+
+    try {
+      const currentSnap = await getDoc(primaryDocRef);
+      if (!currentSnap.exists()) {
+        const notFoundErr = new Error("Document not found in Firestore. It may have been deleted.");
+        notFoundErr.code = "not-found";
+        throw notFoundErr;
+      }
+
+      const previousData = currentSnap.data();
+      const numAmount = Number(updatedData.amount);
+      const trimmedName = updatedData.name.trim();
+      const now = new Date();
+
+      const primaryUpdate = {
+        date: updatedData.date,
+        paymentMode: updatedData.paymentMode,
+        updatedAt: now
+      };
+
+      if (updatedData.type === "income") {
+        primaryUpdate.paidAmount = numAmount;
+        if (previousData.studentName) {
+          primaryUpdate.studentName = trimmedName;
+        }
+        if (previousData.competitionName) {
+          primaryUpdate.competitionName = trimmedName;
+        }
+        if (previousData.name || (!previousData.studentName && !previousData.competitionName)) {
+          primaryUpdate.name = trimmedName;
+        }
+      } else {
+        primaryUpdate.amount = numAmount;
+        primaryUpdate.name = trimmedName;
+      }
+
+      await updateDoc(primaryDocRef, primaryUpdate);
+
+      // Check and update related companion Report document if Income
+      if (updatedData.type === "income") {
+        try {
+          const reportRef = doc(
+            db,
+            "users",
+            effectiveAdminUid,
+            "Account",
+            "accounts",
+            "Report",
+            updatedData.id
+          );
+          const reportSnap = await getDoc(reportRef);
+          if (reportSnap.exists()) {
+            const reportUpdate = {
+              date: updatedData.date,
+              paidAmount: numAmount,
+              paymentMode: updatedData.paymentMode,
+              updatedAt: now
+            };
+            if (reportSnap.data().studentName) {
+              reportUpdate.studentName = trimmedName;
+            }
+            if (reportSnap.data().competitionName) {
+              reportUpdate.competitionName = trimmedName;
+            }
+            if (reportSnap.data().name || (!reportSnap.data().studentName && !reportSnap.data().competitionName)) {
+              reportUpdate.name = trimmedName;
+            }
+            await updateDoc(reportRef, reportUpdate);
+          }
+        } catch (repErr) {
+          console.warn("Could not update companion Report document:", repErr);
+        }
+      }
+
+      // Record audit log in History
+      try {
+        const hRef = collection(
+          db,
+          "users",
+          effectiveAdminUid,
+          "Account",
+          "accounts",
+          "History"
+        );
+        await addDoc(hRef, {
+          entryType: updatedData.type,
+          action: "EDIT",
+          module: collectionName,
+          docId: updatedData.id,
+          originalData: {
+            id: updatedData.id,
+            ...previousData
+          },
+          updatedData: primaryUpdate,
+          name: trimmedName,
+          amount: numAmount,
+          date: updatedData.date,
+          paymentMode: updatedData.paymentMode,
+          createdAt: now
+        });
+      } catch (histErr) {
+        console.warn("Could not write History audit log for edit:", histErr);
+      }
+
+      logAccountingOp("EDIT", collectionName, updatedData.id, true);
+      alert("Updated successfully ✅");
+      setEditingEntry(null);
+    } catch (err) {
+      logAccountingOp("EDIT", collectionName, updatedData.id, false, err);
+      let userMsg = "Failed to update entry: " + (err.message || "Unknown error");
+      if (err.code === "permission-denied") {
+        userMsg = "Permission denied: You do not have permission to edit this record.";
+      } else if (err.code === "unavailable") {
+        userMsg = "Network error: Unable to connect to Firebase. Please check your internet connection.";
+      }
+      alert(userMsg);
+      throw err;
+    } finally {
+      setIsSavingEdit(false);
     }
-  
-    const originalData = snap.data();
-  
-    await deleteDoc(docRef);
-  
-    await addDoc(historyRef, {
-      entryType,
-      action: "DELETE",
-      module: collectionName,
-      originalData: {
-        id: row.id,   // 🔥 MUST ADD THIS
-        ...originalData
-      },
-      name: originalData.studentName || originalData.name || "",
-      amount: originalData.paidAmount || originalData.amount || 0,
-      date: originalData.date || new Date(),
-      createdAt: new Date()
-    });
-  
-    alert("Deleted successfully ✅");
   };
   return (
     <>
@@ -1853,24 +2130,34 @@ Save Fee</button>
 
       </div>
       <EntriesTable
-  incomeList={incomeList}
-  expenseList={expenseList}
-  entryDate={entryDate}
-  isOfficeStaff={isOfficeStaff}
-  deleteEntry={deleteEntry}
-  setActivePage={setActivePage}
-  currentPageIndex={currentPageIndex}
-  totalPages={totalPages}
-  prevPage={prevPage}
-  nextPage={nextPage}
-  getVisiblePages={getVisiblePages}
-  goToPage={goToPage}
-  searchText={searchText}
-  fromDate={fromDate}
-  toDate={toDate}
-  activityType={activityType}
-  appliedFilter={appliedFilter}
-/>
+        incomeList={incomeList}
+        expenseList={expenseList}
+        entryDate={entryDate}
+        isOfficeStaff={isOfficeStaff}
+        deleteEntry={deleteEntry}
+        onEditEntry={(entry) => setEditingEntry(entry)}
+        deletingId={deletingId}
+        setActivePage={setActivePage}
+        currentPageIndex={currentPageIndex}
+        totalPages={totalPages}
+        prevPage={prevPage}
+        nextPage={nextPage}
+        getVisiblePages={getVisiblePages}
+        goToPage={goToPage}
+        searchText={searchText}
+        fromDate={fromDate}
+        toDate={toDate}
+        activityType={activityType}
+        appliedFilter={appliedFilter}
+      />
+      <EditEntryModal
+        isOpen={Boolean(editingEntry)}
+        entry={editingEntry}
+        onClose={() => setEditingEntry(null)}
+        onSave={updateEntry}
+        isSaving={isSavingEdit}
+        isOfficeStaff={isOfficeStaff}
+      />
         </div>
         </>
     )}
